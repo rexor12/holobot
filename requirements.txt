@@ -1,0 +1,5 @@
+# Discord
+discord.py[voice]
+
+# PostgreSQL
+asyncpg

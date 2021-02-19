@@ -19,11 +19,12 @@ class DatabaseManager(DatabaseManagerInterface):
     
     async def close(self):
         await self.__connection_pool.close()
-        print(f"[DatabaseManager] Successfully shut down. ")
+        print("[DatabaseManager] Successfully shut down.")
 
     async def upgrade_all(self):
         print("[DatabaseManager] Upgrading the database...")
         async with self.__connection_pool.acquire() as connection:
+            connection: Connection
             async with connection.transaction():
                 for migration in self.__migrations:
                     await self.__upgrade_table(connection, migration)
@@ -32,6 +33,7 @@ class DatabaseManager(DatabaseManagerInterface):
     async def downgrade_many(self, version_by_table: Tuple[str, int]):
         print("[DatabaseManager] Rolling back the database...")
         async with self.__connection_pool.acquire() as connection:
+            connection: Connection
             async with connection.transaction():
                 for migration in self.__migrations:
                     # TODO Find the migration by the version_by_table.

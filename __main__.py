@@ -43,7 +43,7 @@ if __name__ == "__main__":
 	event_loop.run_until_complete(lifecycle_manager.start_all())
 
 	manager = service_collection.get(GlobalCredentialManagerInterface)
-	if (discord_token := manager.get("discord_token")) is None:
+	if not (discord_token := manager.get("discord_token")):
 		raise ValueError("The Discord token is not configured.")
 
 	# TODO Automatic extension discovery.

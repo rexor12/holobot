@@ -8,6 +8,6 @@ class Discord(DisplayInterface):
 
     async def send_dm(self, user_id: int, message: str):
         if not (user := self.__bot.get_user_by_id(user_id)):
-            print(f"[Display] The user with the identifier '{user_id}' doesn't exist.")
+            print(f"[Discord] Unexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         await user.send(message)

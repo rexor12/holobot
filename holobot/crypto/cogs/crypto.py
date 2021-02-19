@@ -1,4 +1,3 @@
-from asyncio.exceptions import TimeoutError
 from decimal import Decimal
 from discord import Embed
 from discord.ext.commands import Context
@@ -6,12 +5,11 @@ from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandOnCooldown
-from discord.message import Message
 from holobot.bot import Bot
 from holobot.crypto.alert_manager import AlertManagerInterface
 from holobot.crypto.enums.price_direction import PriceDirection
 from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
-from holobot.display.pager import DynamicPager
+from holobot.display.dynamic_pager import DynamicPager
 from typing import Optional
 
 ALARM_MIN_PRICE = Decimal("0.00000001")
@@ -27,7 +25,7 @@ class Crypto(Cog, name="Crypto"):
 
     @group(aliases=["c"], brief="A group of cryptocurrency related commands.")
     async def crypto(self, context: Context):
-        if context.invoked_subcommand is None:
+        if not context.invoked_subcommand:
             await context.send(f"{context.author.mention}, you have to specify a sub-command!", delete_after=3)
     
     @cooldown(1, 10, BucketType.user)
@@ -39,7 +37,7 @@ class Crypto(Cog, name="Crypto"):
             self.price.reset_cooldown(context)
             return
         price_data = await self.__crypto_repository.get_price(symbol)
-        if price_data is None:
+        if not price_data:
             await context.send(f"{context.author.mention}, I couldn't find that cryptocurrency.")
             return
         embed = Embed(
@@ -61,6 +59,7 @@ class Crypto(Cog, name="Crypto"):
     
     # TODO Expiration for alarms.
     # TODO Maximum number of alarms.
+    @cooldown(1, 10, BucketType.user)
     @crypto.command(name="setalarm", aliases=["sa"], brief="Sets an alarm for a change in a cryptocurrency's value.")
     async def set_alarm(self, context: Context, symbol: str, direction: str, value: Decimal):
         symbol = symbol.upper()
@@ -77,7 +76,7 @@ class Crypto(Cog, name="Crypto"):
             self.set_alarm.reset_cooldown(context)
             return
         price_data = await self.__crypto_repository.get_price(symbol)
-        if price_data is None:
+        if not price_data:
             await context.send(f"{context.author.mention}, I couldn't find that cryptocurrency.")
             self.set_alarm.reset_cooldown(context)
             return
@@ -87,11 +86,13 @@ class Crypto(Cog, name="Crypto"):
             return
         await self.__alert_manager.add(str(context.author.id), symbol, pdir, value)
         await context.send(f"{context.author.mention}, the alarm for {symbol} going {str(pdir)} the price of {value} has been set. It will expire at -datetime-.")
-
+    
+    @cooldown(1, 60, BucketType.user)
     @crypto.command(name="viewalarms", aliases=["va"], brief="Displays your currently set alarms.")
     async def view_alarms(self, context: Context):
         await DynamicPager(self.__bot, context, self.__create_alert_embed)
     
+    @cooldown(1, 120, BucketType.user)
     @crypto.command(name="clearalarm", aliases=["ca"], brief="Clears all alarms associated to a symbol.")
     async def clear_alarm(self, context: Context, symbol: str):
         symbol = symbol.upper()

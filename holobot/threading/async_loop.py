@@ -8,7 +8,7 @@ NO_DELAY = 0
 
 class AsyncLoop:
     def __init__(self, method: Callable[[], Coroutine], interval: int, delay: int = NO_DELAY, resolution: int = DEFAULT_RESOLUTION):
-        if method is None or not isinstance(method, Callable):
+        if not method or not isinstance(method, Callable):
             raise ValueError("The method must be a function that returns a coroutine.")
         if interval <= 0:
             raise ValueError("The interval must be greater than zero.")

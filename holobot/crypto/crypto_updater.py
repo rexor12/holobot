@@ -13,7 +13,7 @@ from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.network.resilience.circuit_broken_error import CircuitBrokenError
 from holobot.network.resilience.async_circuit_breaker import AsyncCircuitBreaker
 from holobot.threading.async_loop import AsyncLoop
-from typing import List
+from typing import List, Optional
 
 import asyncio
 
@@ -38,8 +38,8 @@ class CryptoUpdater(StartableInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)
         self.__crypto_repository: CryptoRepositoryInterface = service_collection.get(CryptoRepositoryInterface)
-        self.__background_loop: AsyncLoop = None
-        self.__background_task: Task = None
+        self.__background_loop: Optional[AsyncLoop] = None
+        self.__background_task: Optional[Task] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(
             FAILURE_THRESHOLD, RECOVERY_TIMEOUT, evaluate_error
         )
@@ -51,11 +51,9 @@ class CryptoUpdater(StartableInterface):
         
     async def stop(self):
         loop = self.__background_loop
-        if loop is not None:
-            loop.cancel()
+        if loop: loop.cancel()
         task = self.__background_task
-        if task is not None:
-            await task
+        if task: await task
         print("[CryptoUpdater] Stopped background task.")
     
     # TODO Automatic detection of the addition/removal of a symbol.
@@ -65,27 +63,18 @@ class CryptoUpdater(StartableInterface):
             prices = await self.__circuit_breaker(self.__get_symbol_prices)
             if len(prices) > 0:
                 await self.__crypto_repository.update_prices(prices)
-                print(f"[CryptoUpdater] Successfully updated the prices of {len(prices)} symbols.")
-            else: print(f"[CryptoUpdater] Received no symbol price data.")
+                print(f"[CryptoUpdater] Updated prices. {{ SymbolCount = {len(prices)} }}")
+            else: print(f"[CryptoUpdater] Got no symbol data.")
         except (TooManyRequestsError, ImATeapotError) as error:
-            print((
-                "[CryptoUpdater] Failed to update symbol prices due to rate limit violation."
-                f" Will try again in {self.__circuit_breaker.time_to_recover} seconds.\n{error}"
-            ))
+            print(f"[CryptoUpdater] Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n{error}")
         except HttpStatusError as error:
-            print((
-                "[CryptoUpdater] Binance failed to respond due to an internal server error."
-                f" Will try again in {self.__circuit_breaker.time_to_recover} seconds.\n{error}"
-            ))
+            print(f"[CryptoUpdater] Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n{error}")
         except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, TimeoutError) as error:
-            print((
-                "[CryptoUpdater] Failed to connect to the Binance API or PostgreSQL server."
-                f" Will try again in {self.__circuit_breaker.time_to_recover} seconds.\n{error}"
-            ))
+            print(f"[CryptoUpdater] Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n{error}")
         except CircuitBrokenError:
             pass
         except Exception as error:
-            print(f"[CryptoUpdater] Encountered an unexpected exception. Updates will stop.\n{error}")
+            print(f"[CryptoUpdater] Update failed. Updates will stop. {{ Reason = UnexpectedError }}\n{error}")
             raise
 
     async def __get_symbol_prices(self) -> List[PriceData]:

@@ -15,7 +15,7 @@ class Development(Cog, name="Development"):
 
     @group(hidden=True)
     async def cogs(self, context: Context):
-        if context.invoked_subcommand is None:
+        if not context.invoked_subcommand:
             await context.send(f"{context.author.mention}, you have to specify a sub-command!", delete_after=3)
     
     @cogs.command(hidden=True)

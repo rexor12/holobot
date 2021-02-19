@@ -16,6 +16,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
         self.__display = service_collection.get(DisplayInterface)
     
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal):
+        print(f"[AlertManager] Adding alert... {{ UserId = {user_id}, Symbol = {symbol} }}")
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -34,6 +35,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                     "INSERT INTO crypto_alerts (user_id, symbol, direction, price) VALUES ($1, $2, $3, $4)",
                     user_id, symbol, direction, value
                 )
+        print(f"[AlertManager] Added alert. {{ UserId = {user_id}, Symbol = {symbol} }}")
 
     async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Alert]:
         async with self.__database_manager.acquire_connection() as connection:
@@ -47,6 +49,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 ) for record in records]
 
     async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
+        print(f"[AlertManager] Deleting alerts... {{ UserId = {user_id}, Symbol = {symbol} }}")
         deleted_alerts = []
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -54,6 +57,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 records = await connection.fetch("DELETE FROM crypto_alerts WHERE user_id = $1 AND symbol = $2 RETURNING direction, price", user_id, symbol)
                 for record in records:
                     deleted_alerts.append(Alert(symbol, PriceDirection(record["direction"]), Decimal(record["price"])))
+        print(f"[AlertManager] Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol} }}")
         return deleted_alerts
 
     async def on_event(self, event: SymbolUpdateEvent):
@@ -79,7 +83,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 await connection.execute("UPDATE crypto_alerts SET notified_at = NOW() WHERE id IN ({})".format(
                     ",".join(record_ids)
                 ))
-                print(f"[AlertManager] Triggered {len(record_ids)} alerts.")
+                print(f"[AlertManager] Notified users. {{ AlertCount = {len(record_ids)}, Symbol = {event.symbol} }}")
     
     def __should_notify(self, event: SymbolUpdateEvent, direction: PriceDirection, target_price: Decimal):
         if direction == PriceDirection.ABOVE and event.price >= target_price:

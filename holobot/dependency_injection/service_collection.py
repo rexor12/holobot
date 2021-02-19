@@ -16,7 +16,7 @@ class ServiceCollection(ServiceCollectionInterface):
     
     async def close(self):
         print("[ServiceCollection] Closing services...")
-        errors = []
+        errors: List[Exception] = []
         for instances in self.__instances.values():
             for instance in instances:
                 close_method = getattr(instance, "close", None)
@@ -26,7 +26,7 @@ class ServiceCollection(ServiceCollectionInterface):
                     if inspect.iscoroutinefunction(close_method):
                         await close_method()
                     else: close_method()
-                except BaseException as error:
+                except Exception as error:
                     errors.append(error)
         if len(errors) > 0:
             raise AggregateError(errors)
@@ -59,8 +59,8 @@ class ServiceCollection(ServiceCollectionInterface):
 
     def __get_or_resolve_instances(self, intf: Type[T]) -> List[T]:
         # Determine if we have the instances for this interface.
-        instances: List[object] = self.__instances.get(intf, None)
-        if instances is None:
+        instances: List[T] = self.__instances.get(intf, None)
+        if not instances:
             self.__instances[intf] = instances = []
         if len(instances) > 0:
             return instances

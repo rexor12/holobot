@@ -4,7 +4,7 @@ from typing import Optional
 
 class SymbolUpdateEvent(EventBase):
     def __init__(self, symbol: str, price: Decimal, previous_price: Optional[Decimal]):
-        if symbol is None or len(symbol) == 0:
+        if not symbol or len(symbol) == 0:
             raise ValueError("The symbol must be specified.")
         self.symbol = symbol
         self.price = price

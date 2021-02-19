@@ -23,7 +23,7 @@ class Google(Cog, name="Google"):
     
     @group(aliases=["g"], brief="A group of Google Search Engine related commands.")
     async def google(self, context: Context):
-        if context.invoked_subcommand is None:
+        if not context.invoked_subcommand:
             await context.send(f"{context.author.mention}, you have to specify a sub-command!", delete_after=3)
     
     @cooldown(1, 10, BucketType.member)
@@ -45,16 +45,17 @@ class Google(Cog, name="Google"):
         raise error
 
     async def __search(self, context: Context, search_type: str, keywords: str):
-        if keywords is None or len(keywords) == 0:
+        if not keywords or len(keywords) == 0:
             await context.send(f"{context.author.mention}, you have to specify at least one keyword!")
             self.search.reset_cooldown(context)
             return
         api_key = self.__credential_manager.get(GCS_API_KEY)
         engine_id = self.__credential_manager.get(GCS_ENGINE_ID)
-        if api_key is None or engine_id is None:
+        if not api_key or not engine_id:
             await context.send(f"{context.author.mention}, the bot doesn't have Google searches configured. Please, contact the server administrator.")
             return
         try:
+            # TODO Use circuit breaker.
             response = await self.__http_client_pool.get(f"https://www.googleapis.com/customsearch/v1", {
                 "key": api_key,
                 "cx": engine_id,
@@ -71,7 +72,7 @@ class Google(Cog, name="Google"):
         if len(results := response.get("items", [])) == 0:
             await context.send(f"{context.author.mention}, there are no search results for your query. Please, try something else.")
             return
-        if (link := results[0].get("link", None)) is None:
+        if not (link := results[0].get("link", None)):
             await context.send(f"{context.author.mention}, Google has returned an unexpected response. Please, try again later.")
             return
         await context.send(link)

@@ -4,6 +4,7 @@ from discord.ext.commands.context import Context
 from discord.message import Message
 from discord.reaction import Reaction
 from holobot.bot import Bot
+from holobot.logging.log_interface import LogInterface
 from typing import Awaitable, Callable, Optional
 
 import asyncio
@@ -20,6 +21,7 @@ class DynamicPager(Awaitable[None]):
         self.__bot = bot
         self.__context = context
         self.__embed_factory = embed_factory
+        self.__log = bot.service_collection.get(LogInterface)
     
     def __await__(self):
         yield from asyncio.get_event_loop().create_task(self.__run())
@@ -52,7 +54,7 @@ class DynamicPager(Awaitable[None]):
         context = self.__context
         if not (message := await self.__send_initial_page()):
             return
-        print(f"[DynamicPager] Pager created. {{ UserId = {self.__context.author.id} }}")
+        self.__log.debug(f"[DynamicPager] Pager created. {{ UserId = {self.__context.author.id} }}")
 
         while True:
             try:
@@ -75,11 +77,11 @@ class DynamicPager(Awaitable[None]):
                     continue
 
                 await message.edit(embed=embed)
-                print(f"[DynamicPager] Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
+                self.__log.debug(f"[DynamicPager] Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
             except TimeoutError:
                 await message.delete()
                 break
-        print(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
+        self.__log.debug(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
     async def __send_initial_page(self) -> Optional[Message]:
         if not (embed := await self.__embed_factory(self.__context, self.current_page, DEFAULT_PAGE_SIZE)):

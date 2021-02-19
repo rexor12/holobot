@@ -1,7 +1,7 @@
 from holobot.dependency_injection.providers.service_provider_base import ServiceProviderBase
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface, T
 from holobot.exceptions.aggregate_error import AggregateError
-from typing import Dict, List, Type
+from typing import Any, Dict, List, Optional, Type
 
 import inspect
 
@@ -9,11 +9,14 @@ class ServiceCollection(ServiceCollectionInterface):
     def __init__(self):
         self.__providers: List[ServiceProviderBase] = []
         # The list of objects instantiated by a specific interface.
-        self.__instances: Dict[Type, List[object]] = {}
+        self.__instances: Dict[Type, List[Any]] = {}
         # The interfaces a specific type has already been instantiated by.
         # This exists for performance reasons for quick access in self.__instances.
         self.__interface_map: Dict[Type, List[Type]] = {}
     
+    # TODO Use the LifecycleManager with the StoppableInterface instead.
+    # This is a leftover from the early development when the ServiceCollection
+    # still didn't support exports by multiple interfaces.
     async def close(self):
         print("[ServiceCollection] Closing services...")
         errors: List[Exception] = []
@@ -59,7 +62,7 @@ class ServiceCollection(ServiceCollectionInterface):
 
     def __get_or_resolve_instances(self, intf: Type[T]) -> List[T]:
         # Determine if we have the instances for this interface.
-        instances: List[T] = self.__instances.get(intf, None)
+        instances: Optional[List[T]] = self.__instances.get(intf, None)
         if not instances:
             self.__instances[intf] = instances = []
         if len(instances) > 0:
@@ -68,7 +71,7 @@ class ServiceCollection(ServiceCollectionInterface):
         return self.__resolve_instances(intf)
     
     def __resolve_instances(self, intf: Type[T]) -> List[T]:
-        instances: List[object] = []
+        instances: List[Any] = []
         # Ask all providers to have all the exports.
         for provider in self.__providers:
             if not provider.knows(intf):
@@ -83,18 +86,16 @@ class ServiceCollection(ServiceCollectionInterface):
                     # Since we have the instance instantiated for at least
                     # one interface already, just take the first one.
                     instances.append(self.__get_instance_for(intfs[0], impl))
-                    print(f"[ServiceCollection] Found existing instance of {impl} for {intf}.")
                     continue
                 # The first instance needs to be created.
                 instance = impl(self)
                 self.__instances[intf] = [instance]
                 intfs.append(intf)
                 instances.append(instance)
-                print(f"[ServiceCollection] Resolved a new instance of {impl} for {intf}.")
         return instances
     
     def __get_instance_for(self, intf: Type, impl: Type) -> object:
         for instance in self.__instances[intf]:
             if isinstance(instance, impl):
                 return instance
-        raise ValueError("Expected a specific instance to exist for a specific interface and implementation.")
+        raise ValueError("Expected an instance to exist for a specific interface and implementation.")

@@ -7,6 +7,7 @@ from holobot.crypto.models.symbol_update_event import SymbolUpdateEvent
 from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.display.display_interface import DisplayInterface
+from holobot.logging.log_interface import LogInterface
 from holobot.reactive.listener_interface import ListenerInterface
 from typing import List
 
@@ -14,9 +15,10 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__database_manager = service_collection.get(DatabaseManagerInterface)
         self.__display = service_collection.get(DisplayInterface)
+        self.__log = service_collection.get(LogInterface)
     
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal):
-        print(f"[AlertManager] Adding alert... {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug(f"[AlertManager] Adding alert... {{ UserId = {user_id}, Symbol = {symbol} }}")
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -35,7 +37,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                     "INSERT INTO crypto_alerts (user_id, symbol, direction, price) VALUES ($1, $2, $3, $4)",
                     user_id, symbol, direction, value
                 )
-        print(f"[AlertManager] Added alert. {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug(f"[AlertManager] Added alert. {{ UserId = {user_id}, Symbol = {symbol} }}")
 
     async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Alert]:
         async with self.__database_manager.acquire_connection() as connection:
@@ -49,7 +51,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 ) for record in records]
 
     async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
-        print(f"[AlertManager] Deleting alerts... {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug(f"[AlertManager] Deleting alerts... {{ UserId = {user_id}, Symbol = {symbol} }}")
         deleted_alerts = []
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -57,7 +59,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 records = await connection.fetch("DELETE FROM crypto_alerts WHERE user_id = $1 AND symbol = $2 RETURNING direction, price", user_id, symbol)
                 for record in records:
                     deleted_alerts.append(Alert(symbol, PriceDirection(record["direction"]), Decimal(record["price"])))
-        print(f"[AlertManager] Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug(f"[AlertManager] Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol} }}")
         return deleted_alerts
 
     async def on_event(self, event: SymbolUpdateEvent):
@@ -83,7 +85,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 await connection.execute("UPDATE crypto_alerts SET notified_at = NOW() WHERE id IN ({})".format(
                     ",".join(record_ids)
                 ))
-                print(f"[AlertManager] Notified users. {{ AlertCount = {len(record_ids)}, Symbol = {event.symbol} }}")
+                self.__log.debug(f"[AlertManager] Notified users. {{ AlertCount = {len(record_ids)}, Symbol = {event.symbol} }}")
     
     def __should_notify(self, event: SymbolUpdateEvent, direction: PriceDirection, target_price: Decimal):
         if direction == PriceDirection.ABOVE and event.price >= target_price:
@@ -96,4 +98,4 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
         try:
             await self.__display.send_dm(user_id, f"{event.symbol} price is {event.price:,.8f}.")
         except Exception as error:
-            print(f"[AlertManager] Failed to notify the user '{user_id}': {error}")
+            self.__log.error(f"[AlertManager] Failed to notify a user. {{ UserId = {user_id} }}", error)

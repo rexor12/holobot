@@ -4,6 +4,7 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandOnCooldown
 from holobot.bot import Bot
+from holobot.logging.log_interface import LogInterface
 from holobot.network.exceptions.http_status_error import HttpStatusError
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
@@ -20,6 +21,7 @@ class Google(Cog, name="Google"):
         self.__bot = bot
         self.__http_client_pool = bot.service_collection.get(HttpClientPoolInterface)
         self.__credential_manager = bot.service_collection.get(GlobalCredentialManagerInterface)
+        self.__log = bot.service_collection.get(LogInterface)
     
     @group(aliases=["g"], brief="A group of Google Search Engine related commands.")
     async def google(self, context: Context):
@@ -64,7 +66,7 @@ class Google(Cog, name="Google"):
                 "q": quote_plus(keywords)
             })
         except HttpStatusError as error:
-            print(f"An error has occurred during a Google search HTTP request.\n{error}")
+            self.__log.error("An error has occurred during a Google search HTTP request.", error)
             if error.status_code == 429:
                 await context.send(f"{context.author.mention}, the daily search quota has been used up for the bot. Please, try again tomorrow or contact your server administrator.")
             else: await context.send(f"{context.author.mention}, encountered an unexpected error. Please, try again later.")

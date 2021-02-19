@@ -15,6 +15,8 @@ from holobot.display.display_interface import DisplayInterface
 from holobot.lifecycle.lifecycle_manager import LifecycleManager
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.lifecycle.startable_interface import StartableInterface
+from holobot.logging.console_log import ConsoleLog
+from holobot.logging.log_interface import LogInterface
 from holobot.network.http_client_pool import HttpClientPool
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.reactive.listener_interface import ListenerInterface
@@ -28,7 +30,6 @@ from holobot.security.global_credential_manager_interface import GlobalCredentia
 # Maybe a good idea here is to put these in the module __init__.py files?
 class ServiceDiscovery:
     def register_services(self, service_collection: ServiceCollection):
-        print("[ServiceDiscovery] Looking for services...")
         provider = SimpleServiceProvider()
         provider.register(CredentialManagerInterface, EnvironmentCredentialManager)
         provider.register(CredentialManagerInterface, FileCredentialManager)
@@ -43,5 +44,5 @@ class ServiceDiscovery:
         provider.register(ListenerInterface[SymbolUpdateEvent], AlertManager)
         provider.register(AlertManagerInterface, AlertManager)
         provider.register(DisplayInterface, Discord)
+        provider.register(LogInterface, ConsoleLog)
         service_collection.add_provider(provider)
-        print("[ServiceDiscovery] Successfully registered all services.")

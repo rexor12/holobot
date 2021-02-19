@@ -6,6 +6,7 @@ from holobot.crypto.price_data import PriceData
 from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.lifecycle.startable_interface import StartableInterface
+from holobot.logging.log_interface import LogInterface
 from holobot.network.exceptions.http_status_error import HttpStatusError
 from holobot.network.exceptions.im_a_teapot_error import ImATeapotError
 from holobot.network.exceptions.too_many_requests_error import TooManyRequestsError
@@ -38,6 +39,7 @@ class CryptoUpdater(StartableInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)
         self.__crypto_repository: CryptoRepositoryInterface = service_collection.get(CryptoRepositoryInterface)
+        self.__log = service_collection.get(LogInterface)
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(
@@ -47,34 +49,34 @@ class CryptoUpdater(StartableInterface):
     async def start(self):
         self.__background_loop = AsyncLoop(self.__update_prices, UPDATE_INTERVAL, INITIAL_UPDATE_DELAY)
         self.__background_task = asyncio.create_task(self.__background_loop())
-        print(f"[CryptoUpdater] Started background task. {{ Delay = {INITIAL_UPDATE_DELAY}, Interval = {UPDATE_INTERVAL} }}")
+        self.__log.info(f"[CryptoUpdater] Started background task. {{ Delay = {INITIAL_UPDATE_DELAY}, Interval = {UPDATE_INTERVAL} }}")
         
     async def stop(self):
         loop = self.__background_loop
         if loop: loop.cancel()
         task = self.__background_task
         if task: await task
-        print("[CryptoUpdater] Stopped background task.")
+        self.__log.debug("[CryptoUpdater] Stopped background task.")
     
     # TODO Automatic detection of the addition/removal of a symbol.
     async def __update_prices(self):
-        print(f"[CryptoUpdater] Updating prices...")
+        self.__log.debug(f"[CryptoUpdater] Updating prices...")
         try:
             prices = await self.__circuit_breaker(self.__get_symbol_prices)
             if len(prices) > 0:
                 await self.__crypto_repository.update_prices(prices)
-                print(f"[CryptoUpdater] Updated prices. {{ SymbolCount = {len(prices)} }}")
-            else: print(f"[CryptoUpdater] Got no symbol data.")
+                self.__log.debug(f"[CryptoUpdater] Updated prices. {{ SymbolCount = {len(prices)} }}")
+            else: self.__log.warning(f"[CryptoUpdater] Got no symbol data.")
         except (TooManyRequestsError, ImATeapotError) as error:
-            print(f"[CryptoUpdater] Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n{error}")
+            self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except HttpStatusError as error:
-            print(f"[CryptoUpdater] Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n{error}")
+            self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n", error)
         except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, TimeoutError) as error:
-            print(f"[CryptoUpdater] Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n{error}")
+            self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except CircuitBrokenError:
             pass
         except Exception as error:
-            print(f"[CryptoUpdater] Update failed. Updates will stop. {{ Reason = UnexpectedError }}\n{error}")
+            self.__log.error(f"[CryptoUpdater] Update failed. Updates will stop. {{ Reason = UnexpectedError }}", error)
             raise
 
     async def __get_symbol_prices(self) -> List[PriceData]:

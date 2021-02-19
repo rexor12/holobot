@@ -4,6 +4,7 @@ from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.dependency_injection.service_discovery import ServiceDiscovery
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
+from holobot.logging.log_interface import LogInterface
 from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
 
 import asyncio
@@ -21,10 +22,11 @@ intents = discord.Intents(
 )
 
 if __name__ == "__main__":
-	print("[Main] Starting application...")
 	event_loop = asyncio.get_event_loop()
 	service_collection = ServiceCollection()
 	ServiceDiscovery().register_services(service_collection)
+	log = service_collection.get(LogInterface)
+	log.info("[Main] Starting application...")
 
 	bot = Bot(
 		service_collection,
@@ -47,21 +49,21 @@ if __name__ == "__main__":
 		raise ValueError("The Discord token is not configured.")
 
 	# TODO Automatic extension discovery.
-	print("[Main] Loading cogs...")
+	log.info("[Main] Loading cogs...")
 	bot.load_extension("holobot.cogs.development")
 	bot.load_extension("holobot.cogs.general")
 	bot.load_extension("holobot.cogs.google")
 	bot.load_extension("holobot.crypto.cogs.crypto")
-	print("[Main] Successfully loaded cogs.")
+	log.info("[Main] Successfully loaded cogs.")
 
 	try:
-		print("[Main] Application started.")
+		log.info("[Main] Application started.")
 		event_loop.run_until_complete(bot.start(discord_token))
 	except KeyboardInterrupt:
-		print("[Main] Shutting down due to keyboard interrupt...")
+		log.info("[Main] Shutting down due to keyboard interrupt...")
 		event_loop.run_until_complete(bot.logout())
 	finally:
 		event_loop.run_until_complete(lifecycle_manager.stop_all())
 		event_loop.run_until_complete(service_collection.close())
 		event_loop.close()
-	print("[Main] Successful shutdown.")
+	log.info("[Main] Successful shutdown.")

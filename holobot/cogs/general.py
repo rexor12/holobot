@@ -7,12 +7,14 @@ from discord.ext.commands.core import command, cooldown, has_permissions
 from discord.ext.commands.errors import CommandOnCooldown
 from discord.message import Message
 from holobot.bot import Bot
+from holobot.logging.log_interface import LogInterface
 from random import randrange
 
 class General(Cog, name="General"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot = bot
+        self.__log = bot.service_collection.get(LogInterface)
     
     @cooldown(1, 10, BucketType.member)
     @command(brief="Repeats the specified text.")
@@ -44,7 +46,7 @@ class General(Cog, name="General"):
     @has_permissions(administrator=True)
     async def set_status_text(self, context: Context, *, text: str):
         await self.__bot.set_status_text(ActivityType.watching, text)
-        print(f"[Cog] [General] Changed status text to '{text}'.")
+        self.__log.info(f"[Cog] [General] Changed status text to '{text}'.")
 
     @say.error
     @roll.error

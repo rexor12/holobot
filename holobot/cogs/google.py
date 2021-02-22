@@ -4,10 +4,10 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandOnCooldown
 from holobot.bot import Bot
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.logging.log_interface import LogInterface
 from holobot.network.exceptions.http_status_error import HttpStatusError
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
-from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
 from urllib.parse import quote_plus
 
 GCS_API_KEY = "google_custom_search_api_key"
@@ -20,7 +20,7 @@ class Google(Cog, name="Google"):
         super().__init__()
         self.__bot = bot
         self.__http_client_pool = bot.service_collection.get(HttpClientPoolInterface)
-        self.__credential_manager = bot.service_collection.get(GlobalCredentialManagerInterface)
+        self.__configurator = bot.service_collection.get(ConfiguratorInterface)
         self.__log = bot.service_collection.get(LogInterface)
     
     @group(aliases=["g"], brief="A group of Google Search Engine related commands.")
@@ -51,8 +51,8 @@ class Google(Cog, name="Google"):
             await context.send(f"{context.author.mention}, you have to specify at least one keyword!")
             self.search.reset_cooldown(context)
             return
-        api_key = self.__credential_manager.get(GCS_API_KEY)
-        engine_id = self.__credential_manager.get(GCS_ENGINE_ID)
+        api_key = self.__configurator.get("General", GCS_API_KEY, "")
+        engine_id = self.__configurator.get("General", GCS_ENGINE_ID, "")
         if not api_key or not engine_id:
             await context.send(f"{context.author.mention}, the bot doesn't have Google searches configured. Please, contact the server administrator.")
             return

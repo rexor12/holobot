@@ -4,16 +4,17 @@ from discord.ext.commands.core import group
 from discord.ext.commands.errors import ExtensionAlreadyLoaded, ExtensionFailed, ExtensionNotFound, ExtensionNotLoaded, NoEntryPointError
 from holobot.bot import Bot
 from holobot.cogs.utils.is_developer import is_developer
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.exceptions.authorization_error import AuthorizationError
 from holobot.logging.log_interface import LogInterface
 from holobot.logging.log_level import LogLevel
-from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
+from typing import Optional
 
 class Development(Cog, name="Development"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot = bot
-        self.__credential_manager = bot.service_collection.get(GlobalCredentialManagerInterface)
+        self.__configurator = bot.service_collection.get(ConfiguratorInterface)
         self.__log = bot.service_collection.get(LogInterface)
 
     @group(hidden=True)
@@ -50,8 +51,8 @@ class Development(Cog, name="Development"):
 
     @cogs.command(hidden=True)
     @is_developer
-    async def log_level(self, context: Context, log_level: LogLevel):
-        self.__log.log_level = log_level
+    async def log_level(self, context: Context, log_level: str):
+        self.__log.log_level = LogLevel.parse(log_level)
         await context.send(f"{context.author.mention}, the log level has been changed.")
     
     # This is an extremely dangerous piece of code because it evaluates ANY expression.
@@ -59,14 +60,14 @@ class Development(Cog, name="Development"):
     @cogs.command(hidden=True)
     @is_developer
     async def eval(self, context: Context, *, expression: str):
-        if not self.__credential_manager.get("is_debug", False, bool):
+        if not self.__configurator.get("General", "IsDebug", False):
             self.__log.warning(f"[Cogs] [Development] The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
             return
         self.__log.info(f"Evaluating the following expression:\n{expression}")
         eval(expression)
     
     async def __load(self, context: Context, name: str) -> bool:
-        reason: str = None
+        reason: Optional[str] = None
         try:
             self.__bot.load_extension(name)
             return True

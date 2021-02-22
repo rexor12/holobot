@@ -1,11 +1,11 @@
 from holobot.bot import Bot
 from holobot.bot_interface import BotInterface
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.dependency_injection.service_discovery import ServiceDiscovery
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.logging.log_interface import LogInterface
-from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
 
 import asyncio
 import discord
@@ -44,8 +44,8 @@ if __name__ == "__main__":
 	lifecycle_manager = service_collection.get(LifecycleManagerInterface)
 	event_loop.run_until_complete(lifecycle_manager.start_all())
 
-	manager = service_collection.get(GlobalCredentialManagerInterface)
-	if not (discord_token := manager.get("discord_token")):
+	configurator = service_collection.get(ConfiguratorInterface)
+	if not (discord_token := configurator.get("General", "DiscordToken", "")):
 		raise ValueError("The Discord token is not configured.")
 
 	# TODO Automatic extension discovery.

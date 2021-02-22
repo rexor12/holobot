@@ -1,6 +1,6 @@
 from discord.ext.commands import Context
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.exceptions.authorization_error import AuthorizationError
-from holobot.security.credential_manager_interface import CredentialManagerInterface
 from typing import Callable, Optional
 
 import functools
@@ -9,14 +9,10 @@ def is_developer(wrapped_func = None):
     def decorator(wrapped_func):
         @functools.wraps(wrapped_func)
         async def wrapper(self, context: Context, *args, **kwargs):
-            credential_manager = __find_credential_manager(self)
-            if not credential_manager:
+            if not (configurator := __find_configurator(self)):
                 raise TypeError("The class the decorated function belongs to holds no attribute of type CredentialManagerInterface.")
-            if not (dev_ids := credential_manager.get("developer_user_ids")):
-                raise AuthorizationError(context.author.id)
-
-            dev_ids_split = [int(dev_id) for dev_id in dev_ids.split(",")]
-            if not context.author.id in dev_ids_split:
+            dev_ids = configurator.get("Development", "DeveloperUserIds", [])
+            if not str(context.author.id) in dev_ids:
                 raise AuthorizationError(context.author.id)
 
             await wrapped_func(self, context, *args, **kwargs)
@@ -29,7 +25,7 @@ def is_developer(wrapped_func = None):
     # @is_developer()
     return decorator
 
-def __find_credential_manager(instance) -> Optional[CredentialManagerInterface]:
+def __find_configurator(instance) -> Optional[ConfiguratorInterface]:
     for value in instance.__dict__.values():
-        if isinstance(value, CredentialManagerInterface):
+        if isinstance(value, ConfiguratorInterface):
             return value

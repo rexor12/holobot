@@ -23,7 +23,7 @@ class CryptoRepository(CryptoRepositoryInterface):
         return result
     
     async def update_prices(self, prices: List[PriceData]):
-        self.__log.debug("[CryptoRepository] Updating prices...]")
+        self.__log.debug("[CryptoRepository] Updating prices...")
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():

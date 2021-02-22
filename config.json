@@ -1,0 +1,26 @@
+{
+    "General": {
+        "parameters": {
+            "IsDebug": false,
+            "DiscordToken": "",
+            "GoogleSearchApiKey": "",
+            "GoogleSearchEngineId": "",
+            "HttpPoolSize": 50
+        }
+    },
+    "Development": {
+        "parameters": {
+            "DeveloperUserIds": []
+        }
+    },
+    "Database": {
+        "parameters": {
+            "Host": "127.0.0.1",
+            "Port": 5432,
+            "Database": "holobot",
+            "User": "postgres",
+            "Password": "",
+            "AutoCreateDatabase": false
+        }
+    }
+}

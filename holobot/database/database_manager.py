@@ -1,11 +1,10 @@
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
 from holobot.database.database_manager_interface import DatabaseManagerInterface
-from holobot.database.exceptions.database_error import DatabaseError
 from holobot.database.migration.migration_interface import MigrationInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.logging.log_interface import LogInterface
-from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
 from typing import List, Tuple
 
 import asyncio
@@ -14,7 +13,7 @@ import ssl
 
 class DatabaseManager(DatabaseManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
-        self.__credential_manager: GlobalCredentialManagerInterface = service_collection.get(GlobalCredentialManagerInterface)
+        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__migrations: List[MigrationInterface] = service_collection.get_all(MigrationInterface)
         self.__log = service_collection.get(LogInterface)
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
@@ -46,40 +45,27 @@ class DatabaseManager(DatabaseManagerInterface):
         return self.__connection_pool.acquire()
     
     async def __initialize_database(self) -> Pool:
-        credentials = self.__credential_manager.get_many({
-            "database_host": None,
-            "database_port": None,
-            "database_name": None,
-            "database_user": None,
-            "database_password": None
-        })
-        if None in credentials.values():
-            raise DatabaseError("Some of the database configurations are missing.")
+        database_host = self.__configurator.get("Database", "Host", "127.0.0.1")
+        database_port = self.__configurator.get("Database", "Port", 5432)
+        database_name = self.__configurator.get("Database", "Database", "holobot")
+        database_user = self.__configurator.get("Database", "User", "postgres")
+        database_password = self.__configurator.get("Database", "Password", "")
 
         ssl_object = self.__create_ssl_context()
-        if self.__credential_manager.get("auto_create_database", "False", bool):
+        if self.__configurator.get("Database", "AutoCreateDatabase", False):
             self.__log.debug("[DatabaseManager] Connecting to the database 'postgres'...")
-            postgres_dsn = "postgres://{}:{}@{}:{}/postgres".format(
-                credentials["database_user"],
-                credentials["database_password"],
-                credentials["database_host"],
-                credentials["database_port"]
-            )
+            postgres_dsn = f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/postgres"
             connection = await asyncpg.connect(postgres_dsn,ssl=ssl_object)
             self.__log.debug("[DatabaseManager] Successfully connected to the database.")
             try:
-                await self.__try_create_database(connection, credentials["database_name"])
+                await self.__try_create_database(connection, database_name)
             finally:
                 await connection.close()
 
         self.__log.debug("[DatabaseManager] Initializing the connection pool...")
-        pool = await asyncpg.create_pool("postgres://{}:{}@{}:{}/{}".format(
-            credentials["database_user"],
-            credentials["database_password"],
-            credentials["database_host"],
-            credentials["database_port"],
-            credentials["database_name"]
-        ), ssl=ssl_object)
+        pool = await asyncpg.create_pool(
+            f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/{database_name}",
+            ssl=ssl_object)
         self.__log.debug("[DatabaseManager] Successfully initialized the connection pool.")
 
         async with pool.acquire() as connection:
@@ -95,7 +81,7 @@ class DatabaseManager(DatabaseManagerInterface):
 
     def __create_ssl_context(self):
         ssl_context = None
-        if not self.__credential_manager.get("is_debug", "False", bool):
+        if not self.__configurator.get("General", "IsDebug", False):
             ssl_context = ssl.create_default_context(cafile="")
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE

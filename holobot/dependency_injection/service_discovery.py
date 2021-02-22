@@ -1,3 +1,5 @@
+from holobot.configs.configurator import Configurator
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.crypto.alert_manager import AlertManager, AlertManagerInterface
 from holobot.crypto.crypto_updater import CryptoUpdater
 from holobot.crypto.database.crypto_migration import CryptoMigration
@@ -20,20 +22,12 @@ from holobot.logging.log_interface import LogInterface
 from holobot.network.http_client_pool import HttpClientPool
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.reactive.listener_interface import ListenerInterface
-from holobot.security.credential_manager_interface import CredentialManagerInterface
-from holobot.security.environment_credential_manager import EnvironmentCredentialManager
-from holobot.security.file_credential_manager import FileCredentialManager
-from holobot.security.global_credential_manager import GlobalCredentialManager
-from holobot.security.global_credential_manager_interface import GlobalCredentialManagerInterface
 
 # TODO Implement automatic service discovery. (Look at all those imports!)
 # Maybe a good idea here is to put these in the module __init__.py files?
 class ServiceDiscovery:
     def register_services(self, service_collection: ServiceCollection):
         provider = SimpleServiceProvider()
-        provider.register(CredentialManagerInterface, EnvironmentCredentialManager)
-        provider.register(CredentialManagerInterface, FileCredentialManager)
-        provider.register(GlobalCredentialManagerInterface, GlobalCredentialManager)
         provider.register(HttpClientPoolInterface, HttpClientPool)
         provider.register(CryptoRepositoryInterface, CryptoRepository)
         provider.register(StartableInterface, CryptoUpdater)
@@ -45,4 +39,5 @@ class ServiceDiscovery:
         provider.register(AlertManagerInterface, AlertManager)
         provider.register(DisplayInterface, Discord)
         provider.register(LogInterface, ConsoleLog)
+        provider.register(ConfiguratorInterface, Configurator)
         service_collection.add_provider(provider)

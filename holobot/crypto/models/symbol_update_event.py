@@ -33,3 +33,11 @@ class SymbolUpdateEvent(EventBase):
     @previous_price.setter
     def previous_price(self, value: Optional[Decimal]):
         self.__previous_price = value
+    
+    @property
+    def has_increased(self) -> bool:
+        return self.previous_price is None or self.price > self.previous_price
+    
+    @property
+    def has_decreased(self) -> bool:
+        return self.previous_price is None or self.price < self.previous_price

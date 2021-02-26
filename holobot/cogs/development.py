@@ -18,11 +18,11 @@ class Development(Cog, name="Development"):
         self.__log = bot.service_collection.get(LogInterface)
 
     @group(hidden=True)
-    async def cogs(self, context: Context):
+    async def dev(self, context: Context):
         if not context.invoked_subcommand:
             await context.send(f"{context.author.mention}, you have to specify a sub-command!", delete_after=3)
     
-    @cogs.command(hidden=True)
+    @dev.command(hidden=True)
     @is_developer
     async def load(self, context: Context, name: str):
         if name == self.__module__:
@@ -31,7 +31,7 @@ class Development(Cog, name="Development"):
         if await self.__load(context, name):
             await context.send(f"{context.author.mention}, the extension '{name}' has been **loaded**.")
     
-    @cogs.command(hidden=True)
+    @dev.command(hidden=True)
     @is_developer
     async def reload(self, context: Context, name: str):
         if name == self.__module__:
@@ -40,7 +40,7 @@ class Development(Cog, name="Development"):
         if await self.__unload(context, name) and await self.__load(context, name):
             await context.send(f"{context.author.mention}, the extension '{name}' has been **reloaded**.")
     
-    @cogs.command(hidden=True)
+    @dev.command(hidden=True)
     @is_developer
     async def unload(self, context: Context, name: str):
         if name == self.__module__:
@@ -49,7 +49,7 @@ class Development(Cog, name="Development"):
         if await self.__unload(context, name):
             await context.send(f"{context.author.mention}, the extension '{name}' has been **unloaded**.")
 
-    @cogs.command(hidden=True)
+    @dev.command(hidden=True)
     @is_developer
     async def log_level(self, context: Context, log_level: str):
         self.__log.log_level = LogLevel.parse(log_level)
@@ -57,11 +57,11 @@ class Development(Cog, name="Development"):
     
     # This is an extremely dangerous piece of code because it evaluates ANY expression.
     # Use it at your own risk only and never in a production environment!
-    @cogs.command(hidden=True)
+    @dev.command(hidden=True)
     @is_developer
     async def eval(self, context: Context, *, expression: str):
         if not self.__configurator.get("General", "IsDebug", False):
-            self.__log.warning(f"[Cogs] [Development] The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
+            self.__log.warning(f"[Dev] [Development] The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
             return
         self.__log.info(f"Evaluating the following expression:\n{expression}")
         eval(expression)
@@ -96,7 +96,7 @@ class Development(Cog, name="Development"):
     @reload.error
     async def on_error(self, context: Context, error):
         if isinstance(error, AuthorizationError):
-            self.__log.warning(f"[Cogs] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
+            self.__log.warning(f"[Dev] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
             return
         await context.author.send(f"Your command '{context.command}' generated the following error: {error}")
         await context.send(f"{context.author.mention}, an error has occurred while executing your command. A DM has been sent to you with the details.")

@@ -1,4 +1,5 @@
 from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
+from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
 from datetime import datetime
 from decimal import Decimal
@@ -71,7 +72,7 @@ class CryptoUpdater(StartableInterface):
             self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except HttpStatusError as error:
             self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n", error)
-        except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, TimeoutError) as error:
+        except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, TimeoutError, AsyncIoTimeoutError) as error:
             self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except CircuitBrokenError:
             pass

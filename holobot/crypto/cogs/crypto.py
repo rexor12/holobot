@@ -7,6 +7,7 @@ from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandOnCooldown
 from holobot.bot import Bot
 from holobot.crypto.alert_manager import AlertManagerInterface
+from holobot.crypto.enums.frequency_type import FrequencyType
 from holobot.crypto.enums.price_direction import PriceDirection
 from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.display.dynamic_pager import DynamicPager
@@ -61,7 +62,8 @@ class Crypto(Cog, name="Crypto"):
     # TODO Maximum number of alarms.
     @cooldown(1, 10, BucketType.user)
     @crypto.command(name="setalarm", aliases=["sa"], brief="Sets an alarm for a change in a cryptocurrency's value.")
-    async def set_alarm(self, context: Context, symbol: str, direction: str, value: Decimal):
+    async def set_alarm(self, context: Context, symbol: str, direction: str, value: Decimal,
+        frequency_type: str, frequency: int):
         symbol = symbol.upper()
         if not Crypto.__is_valid_symbol(symbol):
             await context.send(f"{context.author.mention}, you must specify a valid symbol!")
@@ -72,19 +74,27 @@ class Crypto(Cog, name="Crypto"):
             self.set_alarm.reset_cooldown(context)
             return
         if value < ALARM_MIN_PRICE:
-            await context.send(f"{context.author.mention}, the target price cannot be lower than {ALARM_MIN_PRICE}.")
+            await context.send(f"{context.author.mention}, the target price cannot be lower than {ALARM_MIN_PRICE}!")
+            self.set_alarm.reset_cooldown(context)
+            return
+        if not (ftype := FrequencyType.parse(frequency_type)):
+            await context.send(f"{context.author.mention}, you must specify a valid frequency type!")
+            self.set_alarm.reset_cooldown(context)
+            return
+        if frequency < 0:
+            await context.send(f"{context.author.mention}, the frequency must be a positive number!")
             self.set_alarm.reset_cooldown(context)
             return
         price_data = await self.__crypto_repository.get_price(symbol)
         if not price_data:
-            await context.send(f"{context.author.mention}, I couldn't find that cryptocurrency.")
+            await context.send(f"{context.author.mention}, I couldn't find that cryptocurrency!")
             self.set_alarm.reset_cooldown(context)
             return
         if value > price_data.price * ALARM_PRICE_UPPER_RATE or value < price_data.price * ALARM_PRICE_LOWER_RATE:
-            await context.send(f"{context.author.mention}, the target price cannot be more than x{ALARM_PRICE_UPPER_RATE} or x{ALARM_PRICE_LOWER_RATE} of the current price.")
+            await context.send(f"{context.author.mention}, the target price cannot be more than x{ALARM_PRICE_UPPER_RATE} or x{ALARM_PRICE_LOWER_RATE} of the current price!")
             self.set_alarm.reset_cooldown(context)
             return
-        await self.__alert_manager.add(str(context.author.id), symbol, pdir, value)
+        await self.__alert_manager.add(str(context.author.id), symbol, pdir, value, ftype, frequency)
         await context.send(f"{context.author.mention}, the alarm for {symbol} going {str(pdir)} the price of {value} has been set. It will expire at -datetime-.")
     
     @cooldown(1, 60, BucketType.user)
@@ -129,6 +139,9 @@ class Crypto(Cog, name="Crypto"):
 
     # TODO Implement a decorator for handling specific exception types to avoid duplication. Eg. @price.error.CommandOnCooldown
     @price.error
+    @set_alarm.error
+    @view_alarms.error
+    @clear_alarm.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandOnCooldown):
             await context.send(f"{context.author.mention}, you're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)

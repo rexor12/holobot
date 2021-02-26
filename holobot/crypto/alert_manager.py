@@ -1,6 +1,7 @@
 from asyncpg.connection import Connection
 from decimal import Decimal
 from holobot.crypto.alert_manager_interface import AlertManagerInterface
+from holobot.crypto.enums.frequency_type import FrequencyType
 from holobot.crypto.enums.price_direction import PriceDirection
 from holobot.crypto.models.alert import Alert
 from holobot.crypto.models.symbol_update_event import SymbolUpdateEvent
@@ -17,7 +18,8 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
         self.__display = service_collection.get(DisplayInterface)
         self.__log = service_collection.get(LogInterface)
     
-    async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal):
+    async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
+        frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):
         self.__log.debug(f"[AlertManager] Adding alert... {{ UserId = {user_id}, Symbol = {symbol} }}")
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -28,14 +30,14 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 )
                 if row_count != 0:
                     await connection.execute(
-                        "UPDATE crypto_alerts SET price = $1 WHERE user_id = $2 AND symbol = $3 AND direction = $4",
-                        value, user_id, symbol, direction
+                        "UPDATE crypto_alerts SET price = $1, frequency_type = $5, frequency = $6 WHERE user_id = $2 AND symbol = $3 AND direction = $4",
+                        value, user_id, symbol, direction, frequency_type, frequency
                     )
                     return
                 # TODO Limit the maximum number of alerts per user.
                 await connection.execute(
-                    "INSERT INTO crypto_alerts (user_id, symbol, direction, price) VALUES ($1, $2, $3, $4)",
-                    user_id, symbol, direction, value
+                    "INSERT INTO crypto_alerts (user_id, symbol, direction, price, frequency_type, frequency) VALUES ($1, $2, $3, $4, $5, $6)",
+                    user_id, symbol, direction, value, frequency_type, frequency
                 )
         self.__log.debug(f"[AlertManager] Added alert. {{ UserId = {user_id}, Symbol = {symbol} }}")
 
@@ -62,20 +64,28 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
         self.__log.debug(f"[AlertManager] Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol} }}")
         return deleted_alerts
 
+    # TODO Use an "INNER JOIN" instead of processing these events one by one.
+    # So we can either implement deferred updates (collect events),
+    # or refactor the event to contain all symbol updates (fire once).
+    # The former is probably a better choice, because 1) it's reusable, and
+    # 2) we'd like to batch these queries anyway.
     async def on_event(self, event: SymbolUpdateEvent):
         sent_notifications = set()
         record_ids = set()
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                async for record in connection.cursor("SELECT id, user_id, direction, price FROM crypto_alerts WHERE symbol = $1 AND notified_at::date != current_date", event.symbol):
+                async for record in connection.cursor((
+                        "SELECT id, user_id, direction"
+                        " FROM crypto_alerts"
+                        " WHERE symbol = $1"
+                        " AND targethit($2, direction, price)"
+                        " AND inrange(notified_at, frequency_type, frequency)"
+                    ), event.symbol, event.price):
                     user_id: str = record["user_id"]
                     direction: PriceDirection = PriceDirection(record["direction"])
                     notification_id = f"{user_id}/{direction.value}"
                     if notification_id in sent_notifications:
-                        continue
-                    target_price: Decimal = Decimal(record["price"])
-                    if not self.__should_notify(event, direction, target_price):
                         continue
                     sent_notifications.add(notification_id)
                     record_ids.add(str(record["id"]))
@@ -86,13 +96,6 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                     ",".join(record_ids)
                 ))
                 self.__log.debug(f"[AlertManager] Notified users. {{ AlertCount = {len(record_ids)}, Symbol = {event.symbol} }}")
-    
-    def __should_notify(self, event: SymbolUpdateEvent, direction: PriceDirection, target_price: Decimal):
-        if direction == PriceDirection.ABOVE and event.price >= target_price:
-            return True
-        if direction == PriceDirection.BELOW and event.price <= target_price:
-            return True
-        return False
     
     async def __try_notify(self, user_id: int, event: SymbolUpdateEvent):
         try:

@@ -37,4 +37,6 @@ class Configurator(ConfiguratorInterface):
             return value.upper() == "TRUE"
         elif type(default_value) is int:
             return int(value)
+        elif type(default_value) is list:
+            return value.split(",")
         return None

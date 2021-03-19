@@ -66,6 +66,11 @@ class Development(Cog, name="Development"):
         self.__log.info(f"Evaluating the following expression:\n{expression}")
         eval(expression)
     
+    @dev.command(hidden=True)
+    @is_developer
+    async def ping(self, context: Context):
+        await context.send(f"{context.author.mention}, pong!")
+    
     async def __load(self, context: Context, name: str) -> bool:
         reason: Optional[str] = None
         try:
@@ -94,6 +99,9 @@ class Development(Cog, name="Development"):
     @unload.error
     @load.error
     @reload.error
+    @log_level.error
+    @eval.error
+    @ping.error
     async def on_error(self, context: Context, error):
         if isinstance(error, AuthorizationError):
             self.__log.warning(f"[Dev] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")

@@ -28,4 +28,4 @@ class Configurator(ConfiguratorInterface):
         # Because of this check, only the string queries are supported, technically.
         if not isinstance(default_value, str):
             return None
-        return environ.get(f"{section_name}/{parameter_name}", None)
+        return environ.get(f"{section_name}-{parameter_name}", None)

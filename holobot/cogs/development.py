@@ -69,7 +69,8 @@ class Development(Cog, name="Development"):
     @dev.command(hidden=True)
     @is_developer
     async def ping(self, context: Context):
-        await context.send(f"{context.author.mention}, pong!")
+        latency = self.__bot.latency * 1000
+        await context.send(f"{context.author.mention}, pong! ({latency:,.2f}ms)")
     
     async def __load(self, context: Context, name: str) -> bool:
         reason: Optional[str] = None

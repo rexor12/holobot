@@ -1,5 +1,6 @@
 from asyncpg.connection import Connection
 from holobot.caching.cache import ConcurrentCache
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.crypto.models.symbol_update_event import SymbolUpdateEvent
 from holobot.crypto.price_data import PriceData
 from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
@@ -11,6 +12,7 @@ from typing import List, Optional
 
 class CryptoRepository(CryptoRepositoryInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
+        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__database_manager: DatabaseManagerInterface = service_collection.get(DatabaseManagerInterface)
         self.__log = service_collection.get(LogInterface)
         self.__listeners: List[ListenerInterface[SymbolUpdateEvent]] = service_collection.get_all(ListenerInterface[SymbolUpdateEvent])
@@ -45,7 +47,9 @@ class CryptoRepository(CryptoRepositoryInterface):
                 return PriceData(symbol, result["price"], result["timestamp"]) if result is not None else None
     
     async def __save(self, connection: Connection, price_data: PriceData, previous: PriceData = None):
-        await connection.execute("INSERT INTO crypto_binance (symbol, timestamp, price) VALUES ($1, $2, $3)", price_data.symbol, price_data.timestamp, price_data.price)
+        # TODO Implement this persistence toggle in a more efficient way, so that no database connection is made.
+        if self.__configurator.get("Crypto", "PersistPrices", True):
+            await connection.execute("INSERT INTO crypto_binance (symbol, timestamp, price) VALUES ($1, $2, $3)", price_data.symbol, price_data.timestamp, price_data.price)
         if previous is not None and price_data.price == previous.price:
             return
         # TODO Detach notifications from the current connection.

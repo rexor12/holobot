@@ -6,6 +6,7 @@ from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.dependency_injection.service_discovery import ServiceDiscovery
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.logging.log_interface import LogInterface
+from holobot.logging.log_level import LogLevel
 
 import asyncio
 import discord
@@ -26,6 +27,8 @@ if __name__ == "__main__":
 	service_collection = ServiceCollection()
 	ServiceDiscovery().register_services(service_collection)
 	log = service_collection.get(LogInterface)
+	configurator = service_collection.get(ConfiguratorInterface)
+	log.log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
 	log.info("[Main] Starting application...")
 
 	bot = Bot(
@@ -44,7 +47,6 @@ if __name__ == "__main__":
 	lifecycle_manager = service_collection.get(LifecycleManagerInterface)
 	event_loop.run_until_complete(lifecycle_manager.start_all())
 
-	configurator = service_collection.get(ConfiguratorInterface)
 	if not (discord_token := configurator.get("General", "DiscordToken", "")):
 		raise ValueError("The Discord token is not configured.")
 

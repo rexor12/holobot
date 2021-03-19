@@ -5,6 +5,7 @@
             "DiscordToken": "",
             "GoogleSearchApiKey": "",
             "GoogleSearchEngineId": "",
+            "LogLevel": "Information",
             "HttpPoolSize": 50
         }
     },
@@ -21,6 +22,11 @@
             "User": "postgres",
             "Password": "",
             "AutoCreateDatabase": false
+        }
+    },
+    "Crypto": {
+        "parameters": {
+            "PersistPrices": true
         }
     }
 }

@@ -32,10 +32,10 @@ class Configurator(ConfiguratorInterface):
         if not value:
             return None
         # Because of this check, only the string/bool/int queries are supported, technically.
-        if isinstance(default_value, str):
+        if type(default_value) is str:
             return value
-        elif isinstance(default_value, int):
-            return int(value)
-        elif isinstance(default_value, bool):
+        elif type(default_value) is bool:
             return bool(value)
+        elif type(default_value) is int:
+            return int(value)
         return None

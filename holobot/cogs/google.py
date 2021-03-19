@@ -10,8 +10,8 @@ from holobot.network.exceptions.http_status_error import HttpStatusError
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from urllib.parse import quote_plus
 
-GCS_API_KEY = "google_custom_search_api_key"
-GCS_ENGINE_ID = "google_custom_search_engine_id"
+GCS_API_KEY = "GoogleSearchApiKey"
+GCS_ENGINE_ID = "GoogleSearchEngineId"
 TEXT_SEARCH_TYPE = "SEARCH_TYPE_UNDEFINED"
 IMAGE_SEARCH_TYPE = "IMAGE"
 

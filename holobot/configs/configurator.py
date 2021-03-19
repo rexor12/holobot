@@ -28,14 +28,13 @@ class Configurator(ConfiguratorInterface):
     
     @staticmethod
     def __get_env(section_name: str, parameter_name: str, default_value: T) -> Optional[T]:
-        value = os.environ.get(f"{section_name}-{parameter_name}", None)
-        if not value:
+        if (value := os.environ.get(f"{section_name}-{parameter_name}", None)) is None:
             return None
         # Because of this check, only the string/bool/int queries are supported, technically.
         if type(default_value) is str:
             return value
         elif type(default_value) is bool:
-            return bool(value)
+            return value.upper() == "TRUE"
         elif type(default_value) is int:
             return int(value)
         return None

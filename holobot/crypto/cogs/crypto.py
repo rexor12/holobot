@@ -4,7 +4,7 @@ from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
-from discord.ext.commands.errors import CommandOnCooldown
+from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown
 from holobot.bot import Bot
 from holobot.crypto.alert_manager import AlertManagerInterface
 from holobot.crypto.enums.frequency_type import FrequencyType
@@ -146,7 +146,7 @@ class Crypto(Cog, name="Crypto"):
         if isinstance(error, CommandOnCooldown):
             await context.send(f"{context.author.mention}, you're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)
             return
-        if isinstance(error, ConnectionRefusedError):
+        if isinstance(error, CommandInvokeError) and isinstance(error.original, ConnectionRefusedError):
             await context.send(f"{context.author.mention}, I'm unable to complete your request due to an internal error. Please, try again later.", delete_after=5)
             return
         raise error

@@ -12,6 +12,7 @@ import asyncio
 import discord
 
 DEFAULT_BOT_PREFIX = "h!"
+DEBUG_MODE_BOT_PREFIX = "h#"
 
 intents = discord.Intents(
 	guilds=True,
@@ -34,7 +35,7 @@ if __name__ == "__main__":
 	bot = Bot(
 		service_collection,
 		# TODO Guild-specific custom prefix.
-		command_prefix = DEFAULT_BOT_PREFIX,
+		command_prefix = DEFAULT_BOT_PREFIX if not configurator.get("General", "IsDebug", False) else DEBUG_MODE_BOT_PREFIX,
 		case_insensitive = True,
 		intents = intents,
 		loop = event_loop

@@ -1,7 +1,7 @@
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
 from discord.ext.commands.core import group
-from discord.ext.commands.errors import ExtensionAlreadyLoaded, ExtensionFailed, ExtensionNotFound, ExtensionNotLoaded, NoEntryPointError
+from discord.ext.commands.errors import CommandInvokeError, ExtensionAlreadyLoaded, ExtensionFailed, ExtensionNotFound, ExtensionNotLoaded, NoEntryPointError
 from holobot.bot import Bot
 from holobot.cogs.utils.is_developer import is_developer
 from holobot.configs.configurator_interface import ConfiguratorInterface
@@ -104,9 +104,10 @@ class Development(Cog, name="Development"):
     @eval.error
     @ping.error
     async def on_error(self, context: Context, error):
-        if isinstance(error, AuthorizationError):
+        if isinstance(error, CommandInvokeError) and isinstance(error.original, AuthorizationError):
             self.__log.warning(f"[Dev] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
             return
+        self.__log.error(f"[Dev] [Development] An error has occurred while executing the command '{context.command}'.", error)
         await context.author.send(f"Your command '{context.command}' generated the following error: {error}")
         await context.send(f"{context.author.mention}, an error has occurred while executing your command. A DM has been sent to you with the details.")
 

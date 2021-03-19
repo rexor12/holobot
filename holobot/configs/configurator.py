@@ -2,10 +2,13 @@ from holobot.logging.log_interface import LogInterface
 from holobot.configs.configurator_interface import ConfiguratorInterface, T
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from json import load
-from os import environ
 from typing import Final, Optional
 
-CONFIG_FILE_PATH: Final[str] = ".\\config.json"
+import os
+
+# TODO Move this to a new service that provides environment related information.
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CONFIG_FILE_PATH: Final[str] = os.path.join(BASE_DIR, "config.json")
 
 class Configurator(ConfiguratorInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
@@ -28,4 +31,4 @@ class Configurator(ConfiguratorInterface):
         # Because of this check, only the string queries are supported, technically.
         if not isinstance(default_value, str):
             return None
-        return environ.get(f"{section_name}-{parameter_name}", None)
+        return os.environ.get(f"{section_name}-{parameter_name}", None)

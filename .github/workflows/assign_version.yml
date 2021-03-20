@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Generate the version number
-        run: generate_version.sh
+        run: chmod +x ./generate_version.sh && ./generate_version.sh
       
       - name: Commit the changes
         uses: EndBug/add-and-commit@v7

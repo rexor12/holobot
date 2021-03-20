@@ -7,7 +7,7 @@ from discord.ext.commands.core import command, cooldown, has_permissions
 from discord.ext.commands.errors import CommandOnCooldown
 from discord.message import Message
 from holobot.bot import Bot
-from holobot.env.environment_interface import EnvironmentInterface
+from holobot.system.environment_interface import EnvironmentInterface
 from holobot.logging.log_interface import LogInterface
 from random import randrange
 

@@ -7,6 +7,7 @@ from discord.ext.commands.core import command, cooldown, has_permissions
 from discord.ext.commands.errors import CommandOnCooldown
 from discord.message import Message
 from holobot.bot import Bot
+from holobot.env.environment_interface import EnvironmentInterface
 from holobot.logging.log_interface import LogInterface
 from random import randrange
 
@@ -15,6 +16,7 @@ class General(Cog, name="General"):
         super().__init__()
         self.__bot = bot
         self.__log = bot.service_collection.get(LogInterface)
+        self.__environment = bot.service_collection.get(EnvironmentInterface)
     
     @cooldown(1, 10, BucketType.member)
     @command(brief="Repeats the specified text.")
@@ -47,9 +49,15 @@ class General(Cog, name="General"):
     async def set_status_text(self, context: Context, *, text: str):
         await self.__bot.set_status_text(ActivityType.watching, text)
         self.__log.info(f"[Cog] [General] Changed status text to '{text}'.")
+    
+    @cooldown(1, 10, BucketType.member)
+    @command(brief="Tells the current version of the bot.")
+    async def version(self, context: Context):
+        await context.send(f"{context.author.mention}, my current version is {self.__environment.version}.")
 
     @say.error
     @roll.error
+    @version.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandOnCooldown):
             await context.send(f"{context.author.mention}, you're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)

@@ -14,6 +14,8 @@ from holobot.dependency_injection.providers.simple_service_provider import Simpl
 from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.display.discord import Discord
 from holobot.display.display_interface import DisplayInterface
+from holobot.env.environment import Environment
+from holobot.env.environment_interface import EnvironmentInterface
 from holobot.lifecycle.lifecycle_manager import LifecycleManager
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.lifecycle.startable_interface import StartableInterface
@@ -28,6 +30,7 @@ from holobot.reactive.listener_interface import ListenerInterface
 class ServiceDiscovery:
     def register_services(self, service_collection: ServiceCollection):
         provider = SimpleServiceProvider()
+        provider.register(EnvironmentInterface, Environment)
         provider.register(HttpClientPoolInterface, HttpClientPool)
         provider.register(CryptoRepositoryInterface, CryptoRepository)
         provider.register(StartableInterface, CryptoUpdater)

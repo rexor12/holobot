@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       
       - name: Generate the version number
         run: chmod +x ./generate_version.sh && ./generate_version.sh

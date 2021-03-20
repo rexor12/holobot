@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # The concept for our semantic versioning is based on the format of the branch names:
 # - main: the head of the code with the latest, next-gen development
 # - develop/major.minor: the branch that targets the specified major-minor pair (no patches)

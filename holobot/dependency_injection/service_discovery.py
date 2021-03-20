@@ -14,8 +14,8 @@ from holobot.dependency_injection.providers.simple_service_provider import Simpl
 from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.display.discord import Discord
 from holobot.display.display_interface import DisplayInterface
-from holobot.env.environment import Environment
-from holobot.env.environment_interface import EnvironmentInterface
+from holobot.system.environment import Environment
+from holobot.system.environment_interface import EnvironmentInterface
 from holobot.lifecycle.lifecycle_manager import LifecycleManager
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.lifecycle.startable_interface import StartableInterface

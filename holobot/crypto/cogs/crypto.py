@@ -77,7 +77,7 @@ class Crypto(Cog, name="Crypto"):
             await context.send(f"{context.author.mention}, the target price cannot be lower than {ALARM_MIN_PRICE}!")
             self.set_alarm.reset_cooldown(context)
             return
-        if not (ftype := FrequencyType.parse(frequency_type)):
+        if (ftype := FrequencyType.parse(frequency_type)) is None:
             await context.send(f"{context.author.mention}, you must specify a valid frequency type!")
             self.set_alarm.reset_cooldown(context)
             return

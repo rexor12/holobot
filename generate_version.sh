@@ -7,7 +7,6 @@
 DEVELOP_BRANCH_REGEX="^develop\/([0-9]*)\.([0-9]*)(\.([0-9]*))?$"
 ACTIVE_BRANCH_NAME=`git branch --show-current`
 REMOTE_NAME=`git remote`
-REMOTE_BRANCH_NAMES=`git branch -r`
 VERSION_MAJOR=0
 VERSION_MINOR=0
 VERSION_PATCH=0
@@ -85,6 +84,7 @@ if [[ $has_version -eq 0  ]]; then # develop branch
 else # main branch
     echo "Determining version for main branch..."
     version_tuples=()
+    REMOTE_BRANCH_NAMES=($(echo `git branch -r`))
     for branch_name in "${REMOTE_BRANCH_NAMES[@]}"
     do
         branch_name=${branch_name/${REMOTE_NAME}\//}

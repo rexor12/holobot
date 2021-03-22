@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from decimal import Decimal
 from discord import Embed
 from discord.ext.commands import Context
@@ -5,6 +6,7 @@ from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown
+from discord.message import Message
 from holobot.bot import Bot
 from holobot.crypto.alert_manager import AlertManagerInterface
 from holobot.crypto.enums.frequency_type import FrequencyType
@@ -111,7 +113,25 @@ class Crypto(Cog, name="Crypto"):
             self.set_alarm.reset_cooldown(context)
             return
         alerts = await self.__alert_manager.remove_many(str(context.author.id), symbol)
-        await context.send(f"{context.author.mention}, {len(alerts)} alerts for {symbol} have been removed.")
+        await context.send(f"{context.author.mention}, {len(alerts)} alarms for {symbol} have been removed.")
+
+    @cooldown(1, 120, BucketType.user)
+    @crypto.command(name="purgealarms", aliases=["pa"], brief="Clears ALL alarms of ALL symbols.")
+    async def purge_alarms(self, context: Context):
+        await context.send(f"{context.author.mention}, **__ALL__** of your alarms will be removed. Type 'confirm' if you're sure about this.")
+        def check_message(message: Message) -> bool:
+            return (message.author == context.author
+                    and message.channel == context.channel)
+        
+        try:
+            response_message: Message = await self.__bot.wait_for('message', check=check_message, timeout=30)
+            if not response_message or not response_message.content == "confirm":
+                await context.send(f"{context.author.mention}, your alarms won't be purged.")
+                return
+            await self.__alert_manager.remove_all(str(context.author.id))
+            await context.send(f"{context.author.mention}, your alarms have been purged.")
+        except TimeoutError:
+            pass
 
     @staticmethod
     def __is_valid_symbol(symbol: str) -> bool:
@@ -124,8 +144,8 @@ class Crypto(Cog, name="Crypto"):
             return None
         
         embed = Embed(
-            title="Crypto alerts",
-            description=f"Cryptocurrency alerts of {context.author.mention}.",
+            title="Crypto alarms",
+            description=f"Cryptocurrency alarms of {context.author.mention}.",
             color=0xeb7d00
         )
         for alert in alerts:
@@ -142,6 +162,7 @@ class Crypto(Cog, name="Crypto"):
     @set_alarm.error
     @view_alarms.error
     @clear_alarm.error
+    @purge_alarms.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandOnCooldown):
             await context.send(f"{context.author.mention}, you're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)

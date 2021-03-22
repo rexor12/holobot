@@ -14,3 +14,6 @@ class AlertManagerInterface:
 
     async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
         raise NotImplementedError
+
+    async def remove_all(self, user_id: str) -> List[Alert]:
+        raise NotImplementedError

@@ -61,7 +61,19 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 records = await connection.fetch("DELETE FROM crypto_alerts WHERE user_id = $1 AND symbol = $2 RETURNING direction, price", user_id, symbol)
                 for record in records:
                     deleted_alerts.append(Alert(symbol, PriceDirection(record["direction"]), Decimal(record["price"])))
-        self.__log.debug(f"[AlertManager] Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug(f"[AlertManager] Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol}, Count = {len(deleted_alerts)} }}")
+        return deleted_alerts
+
+    async def remove_all(self, user_id: str) -> List[Alert]:
+        self.__log.debug(f"[AlertManager] Deleting all alerts... {{ UserId = {user_id} }}")
+        deleted_alerts = []
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                records = await connection.fetch("DELETE FROM crypto_alerts WHERE user_id = $1 RETURNING symbol, direction, price", user_id)
+                for record in records:
+                    deleted_alerts.append(Alert(record["symbol"], PriceDirection(record["direction"]), Decimal(record["price"])))
+        self.__log.debug(f"[AlertManager] Deleted all alerts. {{ UserId = {user_id}, Count = {len(deleted_alerts)} }}")
         return deleted_alerts
 
     # TODO Use an "INNER JOIN" instead of processing these events one by one.

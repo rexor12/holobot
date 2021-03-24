@@ -6,4 +6,4 @@ class Environment(EnvironmentInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()
         # NOTE: This version number is automatically updated on build by the script assign_version.yml.
-        self.version = Version(1, 2, 0, 53)
+        self.version = Version(1, 2, 0, 56)

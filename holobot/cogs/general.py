@@ -1,4 +1,5 @@
 from asyncio.tasks import sleep
+from discord.embeds import Embed
 from discord.enums import ActivityType
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
@@ -6,10 +7,13 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import command, cooldown, has_permissions
 from discord.ext.commands.errors import CommandOnCooldown
 from discord.message import Message
+from discord.user import User
 from holobot.bot import Bot
-from holobot.system.environment_interface import EnvironmentInterface
 from holobot.logging.log_interface import LogInterface
+from holobot.system.environment_interface import EnvironmentInterface
+from holobot.utils.context_utils import find_member
 from random import randrange
+from typing import Optional
 
 class General(Cog, name="General"):
     def __init__(self, bot: Bot):
@@ -17,6 +21,35 @@ class General(Cog, name="General"):
         self.__bot = bot
         self.__log = bot.service_collection.get(LogInterface)
         self.__environment = bot.service_collection.get(EnvironmentInterface)
+    
+    @cooldown(1, 10, BucketType.member)
+    @command(aliases=["a"], brief="Displays the specified user's or the sender's avatar.")
+    async def avatar(self, context: Context, *, name: Optional[str]):
+        message: Optional[Message] = context.message
+        if message is None:
+            self.__log.warning(f"The message for the command '{context.command}' by user '{context.author.id}' is undefined.")
+            await context.reply("An internal error has occurred. Please, try again a bit later.")
+            return
+        if len(message.mentions) > 1:
+            await context.reply("You must mention a single user!")
+            return
+        
+        user: Optional[User]
+        if len(message.mentions) > 0:
+            user = message.mentions[0]
+        elif name is not None:
+            user = find_member(context, name)
+        else:
+            user = message.author
+        if user is None:
+            await context.reply("The user you specified cannot be found. Please, try again after a moment.")
+            return
+        
+        embed = Embed(
+            title=f"{user.display_name}'s avatar",
+            color=0xeb7d00
+        ).set_image(url=user.avatar_url)
+        await context.reply(embed=embed)
     
     @cooldown(1, 10, BucketType.member)
     @command(brief="Repeats the specified text.")
@@ -55,6 +88,7 @@ class General(Cog, name="General"):
     async def version(self, context: Context):
         await context.send(f"{context.author.mention}, my current version is {self.__environment.version}.")
 
+    @avatar.error
     @say.error
     @roll.error
     @version.error

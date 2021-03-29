@@ -1,11 +1,12 @@
 from asyncio.tasks import sleep
 from discord.embeds import Embed
+from discord.emoji import Emoji
 from discord.enums import ActivityType
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import command, cooldown, has_permissions
-from discord.ext.commands.errors import CommandOnCooldown
+from discord.ext.commands.errors import CommandOnCooldown, MissingRequiredArgument
 from discord.message import Message
 from discord.user import User
 from holobot.bot import Bot
@@ -52,6 +53,11 @@ class General(Cog, name="General"):
         await context.reply(embed=embed)
     
     @cooldown(1, 10, BucketType.member)
+    @command(aliases=["e"], brief="Displays the specified emoji in a larger size.")
+    async def emoji(self, context: Context, emoji: Emoji):
+        await context.reply(emoji.url)
+    
+    @cooldown(1, 10, BucketType.member)
     @command(brief="Repeats the specified text.")
     async def say(self, context: Context, *, message: str):
         await context.message.delete()
@@ -89,12 +95,16 @@ class General(Cog, name="General"):
         await context.send(f"{context.author.mention}, my current version is {self.__environment.version}.")
 
     @avatar.error
+    @emoji.error
     @say.error
     @roll.error
     @version.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandOnCooldown):
             await context.send(f"{context.author.mention}, you're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)
+            return
+        if isinstance(error, MissingRequiredArgument):
+            await context.reply("You used an invalid syntax for this command. Please, see the help for more information.")
             return
         raise error
 

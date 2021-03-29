@@ -8,6 +8,7 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import command, cooldown, has_permissions
 from discord.ext.commands.errors import CommandOnCooldown, MissingRequiredArgument
 from discord.message import Message
+from discord.partial_emoji import PartialEmoji
 from discord.user import User
 from holobot.bot import Bot
 from holobot.logging.log_interface import LogInterface
@@ -34,7 +35,7 @@ class General(Cog, name="General"):
         if len(message.mentions) > 1:
             await context.reply("You must mention a single user!")
             return
-        
+
         user: Optional[User]
         if len(message.mentions) > 0:
             user = message.mentions[0]
@@ -54,7 +55,7 @@ class General(Cog, name="General"):
     
     @cooldown(1, 10, BucketType.member)
     @command(aliases=["e"], brief="Displays the specified emoji in a larger size.")
-    async def emoji(self, context: Context, emoji: Emoji):
+    async def emoji(self, context: Context, emoji: PartialEmoji):
         await context.reply(emoji.url)
     
     @cooldown(1, 10, BucketType.member)

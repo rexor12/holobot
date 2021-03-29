@@ -55,10 +55,6 @@ class General(Cog, name="General"):
     @cooldown(1, 10, BucketType.member)
     @command(aliases=["e"], brief="Displays the specified emoji in a larger size.")
     async def emoji(self, context: Context, emoji: Emoji):
-        # embed = Embed(
-        #     color=0xeb7d00
-        # ).set_image(url=emoji.url)
-        # await context.reply(embed=embed)
         await context.reply(emoji.url)
     
     @cooldown(1, 10, BucketType.member)

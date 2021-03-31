@@ -26,7 +26,8 @@
     },
     "Crypto": {
         "parameters": {
-            "PersistPrices": true
+            "PersistPrices": true,
+            "EnableUpdates": true
         }
     }
 }

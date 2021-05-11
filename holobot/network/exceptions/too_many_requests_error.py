@@ -11,8 +11,7 @@ class TooManyRequestsError(HttpStatusError):
     
     @staticmethod
     def from_client_response(response: ClientResponse):
-        headers: CIMultiDictProxy[str] = response.headers()
-        retry_after = headers.get("Retry-After", None)
+        retry_after = response.headers.get("Retry-After", None)
         if retry_after is not None:
             http_date = try_parse_http_date(retry_after)
             if http_date is not None:

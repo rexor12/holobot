@@ -24,23 +24,33 @@ from holobot.logging.log_interface import LogInterface
 from holobot.network.http_client_pool import HttpClientPool
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.reactive.listener_interface import ListenerInterface
+from holobot.reminders.database.reminder_migration import ReminderMigration
+from holobot.reminders.repositories.reminder_repository_interface import ReminderRepository, ReminderRepositoryInterface
 
 # TODO Implement automatic service discovery. (Look at all those imports!)
 # Maybe a good idea here is to put these in the module __init__.py files?
 class ServiceDiscovery:
     def register_services(self, service_collection: ServiceCollection):
         provider = SimpleServiceProvider()
+        # Core
         provider.register(EnvironmentInterface, Environment)
         provider.register(HttpClientPoolInterface, HttpClientPool)
-        provider.register(CryptoRepositoryInterface, CryptoRepository)
         provider.register(StartableInterface, CryptoUpdater)
         provider.register(LifecycleManagerInterface, LifecycleManager)
         provider.register(DatabaseManagerInterface, DatabaseManager)
+        provider.register(DisplayInterface, Discord)
+        provider.register(LogInterface, ConsoleLog)
+        provider.register(ConfiguratorInterface, Configurator)
+
+        # Crypto
+        provider.register(CryptoRepositoryInterface, CryptoRepository)
         provider.register(MigrationInterface, CryptoMigration)
         provider.register(MigrationInterface, AlertMigration)
         provider.register(ListenerInterface[SymbolUpdateEvent], AlertManager)
         provider.register(AlertManagerInterface, AlertManager)
-        provider.register(DisplayInterface, Discord)
-        provider.register(LogInterface, ConsoleLog)
-        provider.register(ConfiguratorInterface, Configurator)
+
+        # Reminders
+        provider.register(MigrationInterface, ReminderMigration)
+        provider.register(ReminderRepositoryInterface, ReminderRepository)
+
         service_collection.add_provider(provider)

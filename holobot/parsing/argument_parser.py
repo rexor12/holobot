@@ -1,9 +1,10 @@
-from enum import IntEnum
+from enum import IntEnum, unique
 from typing import Dict, Tuple
 
 DEFAULT_BREAK_CHARS = (" ",)
 UNBOUND_KEY = "__unbound"
 
+@unique
 class ParserState(IntEnum):
     PARSING_KEY = 0,
     PARSING_VALUE = 1,

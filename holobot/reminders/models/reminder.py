@@ -7,6 +7,7 @@ class Reminder:
     def __init__(self) -> None:
         self.id = 0
         self.user_id = ""
+        self.message = ""
         self.created_at = datetime.utcnow()
         self.is_repeating = False
         self.frequency_type = FrequencyType.NEVER
@@ -31,6 +32,14 @@ class Reminder:
     @user_id.setter
     def user_id(self, value: str) -> None:
         self.__user_id = value
+    
+    @property
+    def message(self) -> str:
+        return self.__message
+
+    @message.setter
+    def message(self, value: str) -> None:
+        self.__message = value
     
     @property
     def created_at(self) -> datetime:

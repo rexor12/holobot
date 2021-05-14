@@ -67,7 +67,7 @@ class CryptoUpdater(StartableInterface):
     
     # TODO Automatic detection of the addition/removal of a symbol.
     async def __update_prices(self):
-        self.__log.debug(f"[CryptoUpdater] Updating prices...")
+        self.__log.debug("[CryptoUpdater] Updating prices...")
         try:
             prices = await self.__circuit_breaker(self.__get_symbol_prices)
             if len(prices) > 0:

@@ -2,12 +2,12 @@ from asyncpg.connection import Connection
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.database.migration.migration_interface import MigrationInterface
 from holobot.database.migration.migration_plan import MigrationPlan
-from typing import Optional
+from typing import Dict, Optional
 
 class ReminderMigration(MigrationInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         super().__init__("reminders")
-        self.__plans = {
+        self.__plans: Dict[str, Dict[int, MigrationPlan]] = {
             "upgrades": {
                 0: MigrationPlan(0, 1, self.__initialize_table)
             },
@@ -31,7 +31,8 @@ class ReminderMigration(MigrationInterface):
             "CREATE TABLE reminders ("
             " id SERIAL PRIMARY KEY,"
             " user_id VARCHAR(20) NOT NULL,"
-            " created_at TIMESTAMP NOT NULL,"
+            " created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),"
+            " message VARCHAR(120) NOT NULL,"
             " is_repeating BOOLEAN DEFAULT FALSE,"
             # Repetition related attributes
             " frequency_type SMALLINT DEFAULT 0," # None, Hourly, Daily, Weekly, Specific interval

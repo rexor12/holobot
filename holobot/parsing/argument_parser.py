@@ -21,6 +21,8 @@ class State:
         self.key: str = ""
 
 def parse_arguments(keys: Tuple[str, ...], value: str, break_chars: Tuple[str, ...] = DEFAULT_BREAK_CHARS) -> Dict[str, str]:
+    if UNBOUND_KEY in keys:
+        raise ValueError("The reserved unbound key cannot be among the keys.")
     state: State = State(keys, break_chars)
     for char in value:
         __on_char(state, char)

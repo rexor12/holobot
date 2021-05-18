@@ -1,12 +1,5 @@
 from holobot.configs.configurator import Configurator
 from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.crypto.alert_manager import AlertManager, AlertManagerInterface
-from holobot.crypto.crypto_updater import CryptoUpdater
-from holobot.crypto.database.crypto_migration import CryptoMigration
-from holobot.crypto.database.alert_migration import AlertMigration
-from holobot.crypto.models.symbol_update_event import SymbolUpdateEvent
-from holobot.crypto.repositories.crypto_repository import CryptoRepository
-from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.database.database_manager import DatabaseManager
 from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.database.migration.migration_interface import MigrationInterface
@@ -14,6 +7,13 @@ from holobot.dependency_injection.providers.simple_service_provider import Simpl
 from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.display.discord import Discord
 from holobot.display.display_interface import DisplayInterface
+from holobot.extensions.crypto import AlertManager, AlertManagerInterface, CryptoUpdater
+from holobot.extensions.crypto.database import AlertMigration, CryptoMigration
+from holobot.extensions.crypto.models import SymbolUpdateEvent
+from holobot.extensions.crypto.repositories import CryptoRepository, CryptoRepositoryInterface
+from holobot.extensions.reminders import ReminderManager, ReminderManagerInterface, ReminderProcessor
+from holobot.extensions.reminders.database import ReminderMigration
+from holobot.extensions.reminders.repositories import ReminderRepository, ReminderRepositoryInterface
 from holobot.lifecycle.lifecycle_manager import LifecycleManager
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.lifecycle.startable_interface import StartableInterface
@@ -22,12 +22,6 @@ from holobot.logging.log_interface import LogInterface
 from holobot.network.http_client_pool import HttpClientPool
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.reactive.listener_interface import ListenerInterface
-from holobot.reminders.database.reminder_migration import ReminderMigration
-from holobot.reminders.reminder_manager import ReminderManager
-from holobot.reminders.reminder_manager_interface import ReminderManagerInterface
-from holobot.reminders.reminder_processor import ReminderProcessor
-from holobot.reminders.repositories.reminder_repository import ReminderRepository
-from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
 from holobot.system.environment import Environment
 from holobot.system.environment_interface import EnvironmentInterface
 

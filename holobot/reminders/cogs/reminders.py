@@ -17,6 +17,17 @@ from holobot.reminders.repositories.reminder_repository_interface import Reminde
 from typing import Optional
 
 MAX_REMINDER_PER_USER = 3
+SET_DESCRIPTION = (
+    "Examples:\n"
+    "- Set a reminder that is triggered after a specific time:\n"
+    "h!reminders set in 3h15m Drink some water.\n\n"
+    "- Set a reminder that is triggered at a specific absolute time:\n"
+    "h!reminders set at 16:32 Eat a bit of food.\n"
+    "This will be triggered when the clock hits 16:32 _in the UTC time zone_. If it's already past 16:32, the reminder will be triggered tomorrow.\n\n"
+    "- Set a reminder that repeats after a specific time until removed:\n"
+    "h!reminders set every 30m Move your body.\n"
+    "h!reminders set every day Don't forget to wake up."
+)
 
 class Reminders(Cog, name="Reminders"):
     def __init__(self, bot: Bot) -> None:
@@ -32,21 +43,21 @@ class Reminders(Cog, name="Reminders"):
             await context.reply("You have to specify a sub-command!", delete_after=3)
     
     @cooldown(1, 10, BucketType.user)
-    @reminders.command(aliases=["s"], brief="Sets a new reminder.")
+    @reminders.command(aliases=["s"], brief="Sets a new reminder.", description=SET_DESCRIPTION)
     async def set(self, context: Context, *, config: str):
         await self.__set_reminder(context, config)
 
-    @command(brief="Shorthand for <h!reminders set>.")
+    @command(brief="Shorthand for <h!reminders set>.", description="See the help for the mirrored command.")
     async def remindme(self, context: Context, *, config: str):
         await self.__set_reminder(context, config)
 
     @cooldown(1, 10, BucketType.user)
-    @reminders.command(name="viewall", aliases=["va"], brief="Displays all your reminders.")
+    @reminders.command(name="viewall", aliases=["va"], brief="Displays all your reminders.", description="Displays all of your reminders in a paging box you can navigate with reactions.")
     async def view_all(self, context: Context):
         await DynamicPager(self.__bot, context, self.__create_reminder_embed)
     
     @cooldown(1, 10, BucketType.user)
-    @reminders.command(aliases=["r"], brief="Removes the reminder with the specified identifier.")
+    @reminders.command(aliases=["r"], brief="Removes the reminder with the specified identifier.", description="To find the identifier of your reminder, view your reminders and use the numbers for removal.")
     async def remove(self, context: Context, reminder_id: int):
         deleted_count = await self.__reminder_repository.delete_by_user(str(context.author.id), reminder_id)
         if deleted_count == 0:
@@ -66,7 +77,7 @@ class Reminders(Cog, name="Reminders"):
         reminder_config.message = args[UNBOUND_KEY]
         try:
             reminder = await self.__reminder_manager.set_reminder(str(context.author.id), reminder_config)
-            await context.reply(f"Your reminder has been set. I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y}.")
+            await context.reply(f"Your reminder has been set. I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC.")
         except ArgumentError as error:
             if error.argument_name == "message":
                 await context.reply("Your message is either too short or too long. Please, see the help for more information.")
@@ -92,7 +103,7 @@ class Reminders(Cog, name="Reminders"):
                 name=f"#{reminder.id}",
                 value=(
                     f"> Message: {reminder.message}\n"
-                    f"> Next trigger: {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y}\n"
+                    f"> Next trigger: {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC\n"
                     f"> Repeats: {'yes' if reminder.is_repeating else 'no'}"
                 ),
                 inline=False

@@ -1,7 +1,6 @@
+from .enums import FrequencyType, PriceDirection
+from .models import Alert
 from decimal import Decimal
-from holobot.crypto.enums.frequency_type import FrequencyType
-from holobot.crypto.enums.price_direction import PriceDirection
-from holobot.crypto.models.alert import Alert
 from typing import List
 
 class AlertManagerInterface:

@@ -1,9 +1,8 @@
+from .crypto_repository_interface import CryptoRepositoryInterface
+from ..models import PriceData, SymbolUpdateEvent
 from asyncpg.connection import Connection
 from holobot.caching.cache import ConcurrentCache
 from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.crypto.models.symbol_update_event import SymbolUpdateEvent
-from holobot.crypto.price_data import PriceData
-from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.logging.log_interface import LogInterface

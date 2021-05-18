@@ -1,10 +1,8 @@
+from .alert_manager_interface import AlertManagerInterface
+from .enums import FrequencyType, PriceDirection
+from .models import Alert, SymbolUpdateEvent
 from asyncpg.connection import Connection
 from decimal import Decimal
-from holobot.crypto.alert_manager_interface import AlertManagerInterface
-from holobot.crypto.enums.frequency_type import FrequencyType
-from holobot.crypto.enums.price_direction import PriceDirection
-from holobot.crypto.models.alert import Alert
-from holobot.crypto.models.symbol_update_event import SymbolUpdateEvent
 from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.display.display_interface import DisplayInterface

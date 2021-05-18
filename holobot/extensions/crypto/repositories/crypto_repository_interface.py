@@ -1,4 +1,4 @@
-from holobot.crypto.price_data import PriceData
+from ..models import PriceData
 from typing import List, Optional
 
 class CryptoRepositoryInterface:

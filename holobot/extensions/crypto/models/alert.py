@@ -1,5 +1,5 @@
+from ..enums import PriceDirection
 from decimal import Decimal
-from holobot.crypto.enums.price_direction import PriceDirection
 
 class Alert:
     def __init__(self, symbol: str, direction: PriceDirection, price: Decimal):

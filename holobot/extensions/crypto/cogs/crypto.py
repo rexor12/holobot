@@ -1,3 +1,6 @@
+from .. import AlertManagerInterface
+from ..enums import FrequencyType, PriceDirection
+from ..repositories import CryptoRepositoryInterface
 from asyncio import TimeoutError
 from decimal import Decimal
 from discord import Embed
@@ -8,10 +11,6 @@ from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown
 from discord.message import Message
 from holobot.bot import Bot
-from holobot.crypto.alert_manager import AlertManagerInterface
-from holobot.crypto.enums.frequency_type import FrequencyType
-from holobot.crypto.enums.price_direction import PriceDirection
-from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.display.dynamic_pager import DynamicPager
 from typing import Optional
 

@@ -1,11 +1,11 @@
+from .models import PriceData
+from .repositories import CryptoRepositoryInterface
 from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
 from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
 from datetime import datetime
 from decimal import Decimal
 from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.crypto.price_data import PriceData
-from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.lifecycle.startable_interface import StartableInterface
 from holobot.logging.log_interface import LogInterface

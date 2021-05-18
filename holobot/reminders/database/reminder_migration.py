@@ -27,6 +27,8 @@ class ReminderMigration(MigrationInterface):
 
     async def __initialize_table(self, connection: Connection):
         await connection.execute("DROP TABLE IF EXISTS reminders")
+        # TODO Isn't is_repeating enough instead of the frequency_type?
+        # Everything maps to a frequency time either way.
         await connection.execute((
             "CREATE TABLE reminders ("
             " id SERIAL PRIMARY KEY,"
@@ -34,15 +36,10 @@ class ReminderMigration(MigrationInterface):
             " created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),"
             " message VARCHAR(120) NOT NULL,"
             " is_repeating BOOLEAN DEFAULT FALSE,"
-            # Repetition related attributes
             " frequency_type SMALLINT DEFAULT 0," # None, Hourly, Daily, Weekly, Specific interval
             " frequency_time INTERVAL DEFAULT NULL," # "Specific interval"
             " day_of_week SMALLINT DEFAULT 0," # On which day (mon, tue...)
             " until_date DATE DEFAULT NULL," # Until which date to repeat
-            # Single trigger
-            # " trigger_date DATE DEFAULT NULL," # On which date
-            # " trigger_time TIME(0) DEFAULT NULL," # At which time
-            # Common
             " last_trigger TIMESTAMP NOT NULL,"
             " next_trigger TIMESTAMP NOT NULL"
             " )"

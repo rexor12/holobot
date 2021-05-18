@@ -23,6 +23,8 @@ from holobot.network.http_client_pool import HttpClientPool
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.reactive.listener_interface import ListenerInterface
 from holobot.reminders.database.reminder_migration import ReminderMigration
+from holobot.reminders.reminder_manager import ReminderManager
+from holobot.reminders.reminder_manager_interface import ReminderManagerInterface
 from holobot.reminders.reminder_processor import ReminderProcessor
 from holobot.reminders.repositories.reminder_repository import ReminderRepository
 from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
@@ -54,6 +56,7 @@ class ServiceDiscovery:
         # Reminders
         provider.register(MigrationInterface, ReminderMigration)
         provider.register(ReminderRepositoryInterface, ReminderRepository)
+        provider.register(ReminderManagerInterface, ReminderManager)
         provider.register(StartableInterface, ReminderProcessor)
 
         service_collection.add_provider(provider)

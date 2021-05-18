@@ -8,6 +8,9 @@ class ReminderRepositoryInterface:
 
     async def get(self, id: int) -> Optional[Reminder]:
         raise NotImplementedError
+    
+    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Reminder]:
+        raise NotImplementedError
 
     async def get_triggerable(self) -> List[Reminder]:
         raise NotImplementedError
@@ -19,4 +22,7 @@ class ReminderRepositoryInterface:
         raise NotImplementedError
 
     async def delete(self, reminder_id: int) -> None:
+        raise NotImplementedError
+    
+    async def delete_by_user(self, user_id: str, reminder_id: int) -> int:
         raise NotImplementedError

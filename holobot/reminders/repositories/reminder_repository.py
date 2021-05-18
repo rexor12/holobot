@@ -31,6 +31,17 @@ class ReminderRepository(ReminderRepositoryInterface):
                 if result is None:
                     return None
                 return ReminderRepository.__parse_reminder(result)
+    
+    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Reminder]:
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                records = await connection.fetch((
+                    "SELECT id, user_id, created_at, message, is_repeating, frequency_type,"
+                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
+                    " FROM reminders WHERE user_id = $1 LIMIT $3 OFFSET $2"
+                ), user_id, start_offset, page_size)
+                return [ReminderRepository.__parse_reminder(record) for record in records]
 
     async def get_triggerable(self) -> List[Reminder]:
         async with self.__database_manager.acquire_connection() as connection:
@@ -66,6 +77,17 @@ class ReminderRepository(ReminderRepositoryInterface):
             connection: Connection
             async with connection.transaction():
                 await connection.execute("DELETE FROM reminders WHERE id = $1", reminder_id)
+    
+    async def delete_by_user(self, user_id: str, reminder_id: int) -> int:
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                record = await connection.fetchrow((
+                    "WITH deleted AS"
+                    " (DELETE FROM reminders WHERE user_id = $1 AND id = $2 RETURNING *)"
+                    " SELECT COUNT(*) AS deleted_count FROM deleted"
+                ), user_id, reminder_id)
+                return record["deleted_count"]
     
     @staticmethod
     def __parse_reminder(record) -> Reminder:

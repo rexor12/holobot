@@ -1,3 +1,4 @@
+from .repositories import ReminderRepositoryInterface
 from asyncio.tasks import Task
 from datetime import datetime
 from holobot.configs.configurator_interface import ConfiguratorInterface
@@ -5,7 +6,6 @@ from holobot.dependency_injection.service_collection_interface import ServiceCol
 from holobot.display.display_interface import DisplayInterface
 from holobot.lifecycle.startable_interface import StartableInterface
 from holobot.logging.log_interface import LogInterface
-from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
 from holobot.threading.async_loop import AsyncLoop
 from typing import Optional
 

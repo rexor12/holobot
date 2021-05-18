@@ -1,4 +1,7 @@
-from holobot.reminders.models.reminder_config import ReminderConfig
+from .. import ReminderManagerInterface
+from ..exceptions import ArgumentError, TooManyRemindersError
+from ..models import ReminderConfig
+from ..repositories import ReminderRepositoryInterface
 from discord.embeds import Embed
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
@@ -10,10 +13,6 @@ from holobot.display.dynamic_pager import DynamicPager
 from holobot.logging.log_interface import LogInterface
 from holobot.parsing.argument_parser import UNBOUND_KEY, parse_arguments
 from holobot.parsing.interval_parser import parse_interval
-from holobot.reminders.exceptions.ArgumentError import ArgumentError
-from holobot.reminders.exceptions.TooManyRemindersError import TooManyRemindersError
-from holobot.reminders.reminder_manager_interface import ReminderManagerInterface
-from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
 from typing import Optional
 
 MAX_REMINDER_PER_USER = 3

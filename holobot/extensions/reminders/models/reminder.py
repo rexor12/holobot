@@ -1,5 +1,5 @@
+from ..enums import DayOfWeek
 from datetime import date, datetime, timedelta
-from holobot.reminders.enums.day_of_week import DayOfWeek
 from typing import Optional
 
 class Reminder:

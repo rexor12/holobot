@@ -1,5 +1,5 @@
+from ..models import Reminder
 from datetime import datetime
-from holobot.reminders.models.reminder import Reminder
 from typing import List, Optional
 
 class ReminderRepositoryInterface:

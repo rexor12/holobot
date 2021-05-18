@@ -1,10 +1,10 @@
+from ..enums import DayOfWeek
+from ..models import Reminder
+from .reminder_repository_interface import ReminderRepositoryInterface
 from asyncpg.connection import Connection
 from datetime import datetime
 from holobot.database.database_manager_interface import DatabaseManagerInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.reminders.enums.day_of_week import DayOfWeek
-from holobot.reminders.models.reminder import Reminder
-from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
 from typing import List, Optional
 
 class ReminderRepository(ReminderRepositoryInterface):

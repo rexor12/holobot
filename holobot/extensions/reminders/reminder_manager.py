@@ -1,13 +1,11 @@
+from .exceptions import ArgumentError, TooManyRemindersError
+from .models import Reminder, ReminderConfig
+from .reminder_manager_interface import ReminderManagerInterface
+from .repositories import ReminderRepositoryInterface
 from datetime import datetime, timedelta
 from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.logging.log_interface import LogInterface
-from holobot.reminders.exceptions.ArgumentError import ArgumentError
-from holobot.reminders.exceptions.TooManyRemindersError import TooManyRemindersError
-from holobot.reminders.models.reminder import Reminder
-from holobot.reminders.models.reminder_config import ReminderConfig
-from holobot.reminders.reminder_manager_interface import ReminderManagerInterface
-from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
 
 MAX_REMINDERS_PER_USER = 3
 

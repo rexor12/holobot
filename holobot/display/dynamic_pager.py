@@ -85,7 +85,7 @@ class DynamicPager(Awaitable[None]):
     
     async def __send_initial_page(self) -> Optional[Message]:
         if not (embed := await self.__embed_factory(self.__context, self.current_page, DEFAULT_PAGE_SIZE)):
-            await self.__context.send(f"{self.__context.author.mention}, you don't have any alerts set.")
+            await self.__context.reply("There's nothing to view.")
             return None
         
         message: Message = await self.__context.send(embed=embed)

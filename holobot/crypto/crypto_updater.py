@@ -3,6 +3,7 @@ from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
 from datetime import datetime
 from decimal import Decimal
+from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.crypto.price_data import PriceData
 from holobot.crypto.repositories.crypto_repository_interface import CryptoRepositoryInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
@@ -40,6 +41,7 @@ class CryptoUpdater(StartableInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)
         self.__crypto_repository: CryptoRepositoryInterface = service_collection.get(CryptoRepositoryInterface)
+        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__log = service_collection.get(LogInterface)
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None
@@ -48,6 +50,10 @@ class CryptoUpdater(StartableInterface):
         )
 
     async def start(self):
+        if not self.__configurator.get("Crypto", "EnableUpdates", False):
+            self.__log.info("[CryptoUpdater] Updates are disabled by configuration.")
+            return
+
         self.__background_loop = AsyncLoop(self.__update_prices, UPDATE_INTERVAL, INITIAL_UPDATE_DELAY)
         self.__background_task = asyncio.create_task(self.__background_loop())
         self.__log.info(f"[CryptoUpdater] Started background task. {{ Delay = {INITIAL_UPDATE_DELAY}, Interval = {UPDATE_INTERVAL} }}")
@@ -61,7 +67,7 @@ class CryptoUpdater(StartableInterface):
     
     # TODO Automatic detection of the addition/removal of a symbol.
     async def __update_prices(self):
-        self.__log.debug(f"[CryptoUpdater] Updating prices...")
+        self.__log.debug("[CryptoUpdater] Updating prices...")
         try:
             prices = await self.__circuit_breaker(self.__get_symbol_prices)
             if len(prices) > 0:

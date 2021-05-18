@@ -17,8 +17,8 @@ class AsyncLoop:
         if resolution <= 0:
             raise ValueError("The resolution must be greater than zero.")
         self.__method: Callable[[], Coroutine] = method
-        self.__interval: int = interval * 1e9 # converting to nanoseconds
-        self.__delay: int = delay * 1e9
+        self.__interval: int = int(interval * 1e9) # converting to nanoseconds
+        self.__delay: int = int(delay * 1e9)
         self.__resolution: int = resolution
         self.__cancellation_requested: bool = False
     

@@ -90,7 +90,7 @@ class DatabaseManager(DatabaseManagerInterface):
     async def __try_create_database(self, connection: Connection, name: str):
         if await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name) != 1:
             self.__log.debug(f"[DatabaseManager] Creating the database '{name}'...")
-            await connection.execute(f"CREATE DATABASE {name}") # TODO Check why args isn't working.
+            await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0") # TODO Check why args isn't working.
             self.__log.debug("[DatabaseManager] Successfully created the database.")
 
     async def __upgrade_table(self, connection: Connection, migration: MigrationInterface):

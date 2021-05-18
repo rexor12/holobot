@@ -14,8 +14,6 @@ from holobot.dependency_injection.providers.simple_service_provider import Simpl
 from holobot.dependency_injection.service_collection import ServiceCollection
 from holobot.display.discord import Discord
 from holobot.display.display_interface import DisplayInterface
-from holobot.system.environment import Environment
-from holobot.system.environment_interface import EnvironmentInterface
 from holobot.lifecycle.lifecycle_manager import LifecycleManager
 from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.lifecycle.startable_interface import StartableInterface
@@ -24,23 +22,41 @@ from holobot.logging.log_interface import LogInterface
 from holobot.network.http_client_pool import HttpClientPool
 from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from holobot.reactive.listener_interface import ListenerInterface
+from holobot.reminders.database.reminder_migration import ReminderMigration
+from holobot.reminders.reminder_manager import ReminderManager
+from holobot.reminders.reminder_manager_interface import ReminderManagerInterface
+from holobot.reminders.reminder_processor import ReminderProcessor
+from holobot.reminders.repositories.reminder_repository import ReminderRepository
+from holobot.reminders.repositories.reminder_repository_interface import ReminderRepositoryInterface
+from holobot.system.environment import Environment
+from holobot.system.environment_interface import EnvironmentInterface
 
 # TODO Implement automatic service discovery. (Look at all those imports!)
 # Maybe a good idea here is to put these in the module __init__.py files?
 class ServiceDiscovery:
     def register_services(self, service_collection: ServiceCollection):
         provider = SimpleServiceProvider()
+        # Core
         provider.register(EnvironmentInterface, Environment)
         provider.register(HttpClientPoolInterface, HttpClientPool)
-        provider.register(CryptoRepositoryInterface, CryptoRepository)
-        provider.register(StartableInterface, CryptoUpdater)
         provider.register(LifecycleManagerInterface, LifecycleManager)
         provider.register(DatabaseManagerInterface, DatabaseManager)
-        provider.register(MigrationInterface, CryptoMigration)
-        provider.register(MigrationInterface, AlertMigration)
-        provider.register(ListenerInterface[SymbolUpdateEvent], AlertManager)
-        provider.register(AlertManagerInterface, AlertManager)
         provider.register(DisplayInterface, Discord)
         provider.register(LogInterface, ConsoleLog)
         provider.register(ConfiguratorInterface, Configurator)
+
+        # Crypto
+        provider.register(CryptoRepositoryInterface, CryptoRepository)
+        provider.register(MigrationInterface, CryptoMigration)
+        provider.register(MigrationInterface, AlertMigration)
+        provider.register(StartableInterface, CryptoUpdater)
+        provider.register(ListenerInterface[SymbolUpdateEvent], AlertManager)
+        provider.register(AlertManagerInterface, AlertManager)
+
+        # Reminders
+        provider.register(MigrationInterface, ReminderMigration)
+        provider.register(ReminderRepositoryInterface, ReminderRepository)
+        provider.register(ReminderManagerInterface, ReminderManager)
+        provider.register(StartableInterface, ReminderProcessor)
+
         service_collection.add_provider(provider)

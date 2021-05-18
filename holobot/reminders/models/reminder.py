@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 from holobot.reminders.enums.day_of_week import DayOfWeek
-from holobot.reminders.enums.frequency_type import FrequencyType
 from typing import Optional
 
 class Reminder:
@@ -10,7 +9,6 @@ class Reminder:
         self.message = ""
         self.created_at = datetime.utcnow()
         self.is_repeating = False
-        self.frequency_type = FrequencyType.NEVER
         self.frequency_time = timedelta()
         self.day_of_week = DayOfWeek.SUNDAY
         self.until_date = None
@@ -56,14 +54,6 @@ class Reminder:
     @is_repeating.setter
     def is_repeating(self, value: bool) -> None:
         self.__is_repeating = value
-    
-    @property
-    def frequency_type(self) -> FrequencyType:
-        return self.__frequency_type
-
-    @frequency_type.setter
-    def frequency_type(self, value: FrequencyType) -> None:
-        self.__frequency_type = value
     
     @property
     def frequency_time(self) -> timedelta:
@@ -113,19 +103,12 @@ class Reminder:
     
     def __str__(self) -> str:
         return (
-            "<Reminder id: {}, repeats: {}, last trigger: {}, next trigger: {}, frequency type: {}>"
-        ).format(self.id, self.is_repeating, self.last_trigger, self.next_trigger, self.frequency_type)
+            "<Reminder id: {}, repeats: {}, last trigger: {}, next trigger: {}, frequency: {}>"
+        ).format(self.id, self.is_repeating, self.last_trigger, self.next_trigger, self.frequency_time)
 
     def recalculate_next_trigger(self) -> None:
-        if self.frequency_type == FrequencyType.NEVER:
+        if not self.is_repeating:
             raise ValueError("A non-recurring reminder cannot have a new trigger date-time.")
         current_time = datetime.utcnow()
-        if self.frequency_type == FrequencyType.WEEKLY:
-            trigger_time = self.last_trigger + timedelta(weeks=1)
-        elif self.frequency_type == FrequencyType.DAILY:
-            trigger_time = self.last_trigger + timedelta(days=1)
-        elif self.frequency_type == FrequencyType.HOURLY:
-            trigger_time = self.last_trigger + timedelta(hours=1)
-        else:
-            trigger_time = self.last_trigger + self.frequency_time
+        trigger_time = self.last_trigger + self.frequency_time
         self.next_trigger = trigger_time if trigger_time > current_time else current_time

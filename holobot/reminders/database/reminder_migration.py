@@ -36,7 +36,6 @@ class ReminderMigration(MigrationInterface):
             " created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),"
             " message VARCHAR(120) NOT NULL,"
             " is_repeating BOOLEAN DEFAULT FALSE,"
-            " frequency_type SMALLINT DEFAULT 0," # None, Hourly, Daily, Weekly, Specific interval
             " frequency_time INTERVAL DEFAULT NULL," # "Specific interval"
             " day_of_week SMALLINT DEFAULT 0," # On which day (mon, tue...)
             " until_date DATE DEFAULT NULL," # Until which date to repeat

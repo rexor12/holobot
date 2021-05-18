@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.logging.log_interface import LogInterface
-from holobot.reminders.enums.frequency_type import FrequencyType
 from holobot.reminders.exceptions.ArgumentError import ArgumentError
 from holobot.reminders.exceptions.TooManyRemindersError import TooManyRemindersError
 from holobot.reminders.models.reminder import Reminder
@@ -50,7 +49,6 @@ class ReminderManager(ReminderManagerInterface):
         reminder.user_id = user_id
         reminder.message = message
         reminder.is_repeating = True
-        reminder.frequency_type = FrequencyType.SPECIFIC
         reminder.frequency_time = frequency_time
         reminder.recalculate_next_trigger()
         await self.__reminder_repository.store(reminder)

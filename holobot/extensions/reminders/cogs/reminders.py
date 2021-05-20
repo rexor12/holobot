@@ -15,7 +15,6 @@ from holobot.parsing.argument_parser import UNBOUND_KEY, parse_arguments
 from holobot.parsing.interval_parser import parse_interval
 from typing import Optional
 
-MAX_REMINDER_PER_USER = 3
 SET_DESCRIPTION = (
     "Examples:\n"
     "- Set a reminder that is triggered after a specific time:\n"

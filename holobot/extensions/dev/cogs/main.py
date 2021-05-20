@@ -20,40 +20,40 @@ class Development(Cog, name="Development"):
     @group(hidden=True)
     async def dev(self, context: Context):
         if not context.invoked_subcommand:
-            await context.send(f"{context.author.mention}, you have to specify a sub-command!", delete_after=3)
+            await context.reply("You have to specify a sub-command!", delete_after=3)
     
     @dev.command(hidden=True)
     @is_developer
     async def load(self, context: Context, name: str):
         if name == self.__module__:
-            await context.send(f"{context.author.mention}, you can't load the extension '{name}'.")
+            await context.reply(f"You can't load the extension '{name}'.")
             return
         if await self.__load(context, name):
-            await context.send(f"{context.author.mention}, the extension '{name}' has been **loaded**.")
+            await context.reply(f"The extension '{name}' has been **loaded**.")
     
     @dev.command(hidden=True)
     @is_developer
     async def reload(self, context: Context, name: str):
         if name == self.__module__:
-            await context.send(f"{context.author.mention}, you can't reload the extension '{name}'.")
+            await context.reply(f"You can't reload the extension '{name}'.")
             return
         if await self.__unload(context, name) and await self.__load(context, name):
-            await context.send(f"{context.author.mention}, the extension '{name}' has been **reloaded**.")
+            await context.reply(f"The extension '{name}' has been **reloaded**.")
     
     @dev.command(hidden=True)
     @is_developer
     async def unload(self, context: Context, name: str):
         if name == self.__module__:
-            await context.send(f"{context.author.mention}, you can't unload the extension '{name}'.")
+            await context.reply(f"You can't unload the extension '{name}'.")
             return
         if await self.__unload(context, name):
-            await context.send(f"{context.author.mention}, the extension '{name}' has been **unloaded**.")
+            await context.reply(f"The extension '{name}' has been **unloaded**.")
 
     @dev.command(hidden=True)
     @is_developer
     async def log_level(self, context: Context, log_level: str):
         self.__log.log_level = LogLevel.parse(log_level)
-        await context.send(f"{context.author.mention}, the log level has been changed.")
+        await context.reply("The log level has been changed.")
     
     # This is an extremely dangerous piece of code because it evaluates ANY expression.
     # Use it at your own risk only and never in a production environment!
@@ -70,7 +70,7 @@ class Development(Cog, name="Development"):
     @is_developer
     async def ping(self, context: Context):
         latency = self.__bot.latency * 1000
-        await context.send(f"{context.author.mention}, pong! ({latency:,.2f}ms)")
+        await context.reply(f"Pong! ({latency:,.2f}ms)")
     
     async def __load(self, context: Context, name: str) -> bool:
         reason: Optional[str] = None
@@ -86,7 +86,7 @@ class Development(Cog, name="Development"):
         except ExtensionFailed as error:
             reason = "an error has occurred"
             self.__log.error("An extension has failed while being loaded.", error)
-        await context.send(f"{context.author.mention}, failed to load the extension '{name}', because {reason}.")
+        await context.reply(f"Failed to load the extension '{name}', because {reason}.")
         return False
     
     async def __unload(self, context: Context, name: str):
@@ -94,7 +94,7 @@ class Development(Cog, name="Development"):
             self.__bot.unload_extension(name)
             return True
         except ExtensionNotLoaded:
-            await context.send(f"{context.author.mention}, the extension '{name}' isn't loaded.")
+            await context.reply(f"The extension '{name}' isn't loaded.")
         return False
 
     @unload.error
@@ -109,7 +109,7 @@ class Development(Cog, name="Development"):
             return
         self.__log.error(f"[Dev] [Development] An error has occurred while executing the command '{context.command}'.", error)
         await context.author.send(f"Your command '{context.command}' generated the following error: {error}")
-        await context.send(f"{context.author.mention}, an error has occurred while executing your command. A DM has been sent to you with the details.")
+        await context.reply("An error has occurred while executing your command. A DM has been sent to you with the details.")
 
 def setup(bot: Bot):
     bot.add_cog(Development(bot))

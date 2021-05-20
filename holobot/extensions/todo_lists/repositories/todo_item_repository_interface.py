@@ -16,3 +16,6 @@ class TodoItemRepositoryInterface:
 
     async def delete_by_user(self, user_id: str, todo_id: int) -> int:
         raise NotImplementedError
+    
+    async def delete_all(self, user_id: str) -> int:
+        raise NotImplementedError

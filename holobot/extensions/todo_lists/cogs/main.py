@@ -2,12 +2,14 @@ from .. import TodoItemManagerInterface
 from ..exceptions import TooManyTodoItemsError
 from ..models import TodoItem
 from ..repositories import TodoItemRepositoryInterface
+from asyncio import TimeoutError
 from discord.embeds import Embed
 from discord.ext.commands.cog import Cog
 from discord.ext.commands.context import Context
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown, MissingRequiredArgument
+from discord.message import Message, MessageReference
 from holobot import Bot
 from holobot.display import DynamicPager
 from holobot.exceptions import ArgumentOutOfRangeError
@@ -49,6 +51,17 @@ class TodoLists(Cog, name="To-do list"):
             await context.reply("That to-do item doesn't exist or belong to you.")
             return
         await context.reply("The to-do item has been deleted.")
+    
+    @cooldown(1, 10, BucketType.user)
+    @todos.command(name="removeall", aliases=["ra"], brief="Removes ALL to-do items from your list.", description="Removes ALL to-do items from your list.")
+    async def remove_all(self, context: Context):
+        reply_target: Message = await context.reply("This command will remove **ALL** of the items on your to-do list. Reply to this message with 'confirm' if you're sure about this.")
+        message: Message = await self.__bot.wait_for("message", timeout=30, check=lambda m: TodoLists.__is_confirmation_message(context, reply_target, m))
+        deleted_count = await self.__todo_item_repository.delete_all(str(context.author.id))
+        if deleted_count > 0:
+            await message.reply(f"All {deleted_count} of your to-do items have been removed.")
+        else:
+            await message.reply("You have no to-do items to be removed.")
 
     async def __create_todo_list_embed(self, context: Context, page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
@@ -68,10 +81,20 @@ class TodoLists(Cog, name="To-do list"):
                 inline=False
             )
         return embed
+
+    @staticmethod
+    def __is_confirmation_message(context: Context, reply_target: Message, message: Message) -> bool:
+        return (message.author == context.author
+                and message.reference is not None
+                and isinstance(message.reference, MessageReference)
+                and message.reference.message_id == reply_target.id
+                and isinstance(message.content, str)
+                and message.content.lower() == "confirm")
     
     @add.error
     @view_all.error
     @remove.error
+    @remove_all.error
     async def __on_error(self, context: Context, error):
         if isinstance(error, CommandOnCooldown):
             await context.reply(f"You're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)
@@ -84,6 +107,8 @@ class TodoLists(Cog, name="To-do list"):
             return
         if isinstance(error, CommandInvokeError) and isinstance(error.original, ArgumentOutOfRangeError):
             await context.reply(f"Your message's length has to be between {error.original.lower_bound} and {error.original.upper_bound}.")
+            return
+        if isinstance(error, CommandInvokeError) and isinstance(error.original, TimeoutError):
             return
         await context.reply("An internal error has occurred. Please, try again later.")
         self.__log.error(f"[Cogs] [TodoLists] Failed to process the command '{context.command}'.", error)

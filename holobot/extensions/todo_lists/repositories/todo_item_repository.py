@@ -55,6 +55,17 @@ class TodoItemRepository(TodoItemRepositoryInterface):
                 ), user_id, todo_id)
                 return record["deleted_count"]
     
+    async def delete_all(self, user_id: str) -> int:
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                record = await connection.fetchrow((
+                    "WITH deleted AS"
+                    " (DELETE FROM todo_lists WHERE user_id = $1 RETURNING *)"
+                    " SELECT COUNT(*) AS deleted_count FROM deleted"
+                ), user_id)
+                return record["deleted_count"]
+    
     @staticmethod
     def __parse_todo_item(record) -> TodoItem:
         todo_item = TodoItem()

@@ -1,5 +1,4 @@
 from .display_interface import DisplayInterface
-# from .. import BotInterface
 from ..dependency_injection import ServiceCollectionInterface
 from ..logging import LogInterface
 from holobot.bot_interface import BotInterface

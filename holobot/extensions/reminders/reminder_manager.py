@@ -7,14 +7,13 @@ from holobot.configs.configurator_interface import ConfiguratorInterface
 from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 from holobot.logging.log_interface import LogInterface
 
-MAX_REMINDERS_PER_USER = 3
-
 class ReminderManager(ReminderManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()
         self.__log: LogInterface = service_collection.get(LogInterface)
         self.__reminder_repository: ReminderRepositoryInterface = service_collection.get(ReminderRepositoryInterface)
         configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
+        self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
         self.__message_length_min: int = configurator.get("Reminders", "MessageLengthMin", 10)
         self.__message_length_max: int = configurator.get("Reminders", "MessageLengthMax", 120)
         
@@ -39,7 +38,7 @@ class ReminderManager(ReminderManagerInterface):
 
     async def __assert_reminder_count(self, user_id: str) -> None:
         count = await self.__reminder_repository.count(user_id)
-        if count >= MAX_REMINDERS_PER_USER:
+        if count >= self.__reminders_per_user_max:
             raise TooManyRemindersError(count)
     
     async def __set_recurring_reminder(self, user_id: str, message: str, frequency_time: timedelta) -> Reminder:

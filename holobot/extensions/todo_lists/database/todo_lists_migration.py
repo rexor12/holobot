@@ -1,12 +1,11 @@
 from asyncpg.connection import Connection
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.database.migration.migration_interface import MigrationInterface
-from holobot.database.migration.migration_plan import MigrationPlan
+from holobot.dependency_injection import ServiceCollectionInterface
+from holobot.database.migration import MigrationInterface, MigrationPlan
 from typing import Dict, Optional
 
-class ReminderMigration(MigrationInterface):
+class TodoListsMigration(MigrationInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
-        super().__init__("reminders")
+        super().__init__("todo_lists")
         self.__plans: Dict[str, Dict[int, MigrationPlan]] = {
             "upgrades": {
                 0: MigrationPlan(0, 1, self.__initialize_table)
@@ -26,18 +25,12 @@ class ReminderMigration(MigrationInterface):
         raise NotImplementedError
 
     async def __initialize_table(self, connection: Connection):
-        await connection.execute("DROP TABLE IF EXISTS reminders")
+        await connection.execute(f"DROP TABLE IF EXISTS {self.table_name}")
         await connection.execute((
-            "CREATE TABLE reminders ("
+            f"CREATE TABLE {self.table_name} ("
             " id SERIAL PRIMARY KEY,"
             " user_id VARCHAR(20) NOT NULL,"
             " created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),"
-            " message VARCHAR(120) NOT NULL,"
-            " is_repeating BOOLEAN DEFAULT FALSE,"
-            " frequency_time INTERVAL DEFAULT NULL," # "Specific interval"
-            " day_of_week SMALLINT DEFAULT 0," # On which day (mon, tue...)
-            " until_date DATE DEFAULT NULL," # Until which date to repeat
-            " last_trigger TIMESTAMP NOT NULL,"
-            " next_trigger TIMESTAMP NOT NULL"
+            " message VARCHAR(192) NOT NULL"
             " )"
         ))

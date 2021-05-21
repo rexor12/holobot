@@ -1,7 +1,7 @@
+from .display_interface import DisplayInterface
+from ..dependency_injection import ServiceCollectionInterface
+from ..logging import LogInterface
 from holobot.bot_interface import BotInterface
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.display.display_interface import DisplayInterface
-from holobot.logging.log_interface import LogInterface
 
 class Discord(DisplayInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):

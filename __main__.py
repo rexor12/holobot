@@ -1,12 +1,12 @@
-from holobot.bot import Bot
-from holobot.bot_interface import BotInterface
-from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.database.database_manager_interface import DatabaseManagerInterface
-from holobot.dependency_injection.service_collection import ServiceCollection
+from holobot import Bot, BotInterface
+from holobot.configs import ConfiguratorInterface
+from holobot.database import DatabaseManagerInterface
+from holobot.dependency_injection import ServiceCollection
+# ServiceDiscovery is imported independently to avoid circular dependencies
+# triggered by initializing it together with the dependency_injection module.
 from holobot.dependency_injection.service_discovery import ServiceDiscovery
-from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
-from holobot.logging.log_interface import LogInterface
-from holobot.logging.log_level import LogLevel
+from holobot.lifecycle import LifecycleManagerInterface
+from holobot.logging import LogInterface, LogLevel
 
 import asyncio
 import discord
@@ -53,11 +53,12 @@ if __name__ == "__main__":
 
 	# TODO Automatic extension discovery.
 	log.info("[Main] Loading cogs...")
-	bot.load_extension("holobot.cogs.development")
 	bot.load_extension("holobot.cogs.general")
 	bot.load_extension("holobot.cogs.google")
 	bot.load_extension("holobot.extensions.crypto.cogs.crypto")
+	bot.load_extension("holobot.extensions.dev.cogs.main")
 	bot.load_extension("holobot.extensions.reminders.cogs.reminders")
+	bot.load_extension("holobot.extensions.todo_lists.cogs.main")
 	log.info("[Main] Successfully loaded cogs.")
 
 	try:

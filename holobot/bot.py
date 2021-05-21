@@ -1,8 +1,8 @@
+from .bot_interface import BotInterface
+from .dependency_injection import ServiceCollectionInterface
 from discord.activity import Activity
 from discord.enums import ActivityType, Status
 from discord.user import User
-from holobot.bot_interface import BotInterface
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
 
 import discord.ext.commands as commands
 

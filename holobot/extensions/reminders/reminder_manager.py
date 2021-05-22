@@ -4,10 +4,10 @@ from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import ReminderRepositoryInterface
 from datetime import datetime, timedelta
 from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import export, ServiceCollectionInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
 from holobot.logging import LogInterface
 
-@export(ReminderManagerInterface)
+@injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()

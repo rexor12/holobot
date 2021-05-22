@@ -4,10 +4,10 @@ from ..models import Reminder
 from asyncpg.connection import Connection
 from datetime import datetime
 from holobot.database import DatabaseManagerInterface
-from holobot.dependency_injection import export, ServiceCollectionInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
 from typing import List, Optional
 
-@export(ReminderRepositoryInterface)
+@injectable(ReminderRepositoryInterface)
 class ReminderRepository(ReminderRepositoryInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         self.__database_manager: DatabaseManagerInterface = service_collection.get(DatabaseManagerInterface)

@@ -2,7 +2,7 @@ from .repositories import ReminderRepositoryInterface
 from asyncio.tasks import Task
 from datetime import datetime
 from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import export, ServiceCollectionInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
 from holobot.display import DisplayInterface
 from holobot.lifecycle import StartableInterface
 from holobot.logging import LogInterface
@@ -14,7 +14,7 @@ import asyncio
 DEFAULT_RESOLUTION: int = 60
 DEFAULT_DELAY: int = 30
 
-@export(StartableInterface)
+@injectable(StartableInterface)
 class ReminderProcessor(StartableInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()

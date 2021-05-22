@@ -1,37 +1,14 @@
+from . import ServiceCollection
 from .models import ExportMetadata
-from ..display import Discord, DisplayInterface
-from ..configs import Configurator, ConfiguratorInterface
-from ..database import DatabaseManager, DatabaseManagerInterface
-from ..dependency_injection import ServiceCollection
-from ..dependency_injection.providers import SimpleServiceProvider
-from ..lifecycle import LifecycleManager, LifecycleManagerInterface
-from ..logging import ConsoleLog, LogInterface
-from ..network import HttpClientPool, HttpClientPoolInterface
-from ..system import Environment, EnvironmentInterface
+from .providers import SimpleServiceProvider
 from types import ModuleType
 from typing import List, Tuple
 
 import importlib, inspect, pkgutil
 
 class ServiceDiscovery:
-    def register_services(self, service_collection: ServiceCollection):
-        provider = SimpleServiceProvider()
-        # Core
-        provider.register(EnvironmentInterface, Environment)
-        provider.register(HttpClientPoolInterface, HttpClientPool)
-        provider.register(LifecycleManagerInterface, LifecycleManager)
-        provider.register(DatabaseManagerInterface, DatabaseManager)
-        provider.register(DisplayInterface, Discord)
-        provider.register(LogInterface, ConsoleLog)
-        provider.register(ConfiguratorInterface, Configurator)
-
-        service_collection.add_provider(provider)
-
-        self.register_services_by_module("holobot.extensions.crypto", service_collection)
-        self.register_services_by_module("holobot.extensions.reminders", service_collection)
-        self.register_services_by_module("holobot.extensions.todo_lists", service_collection)
-
-    def register_services_by_module(self, package_name: str, service_collection: ServiceCollection) -> None:
+    @staticmethod
+    def register_services_by_module(package_name: str, service_collection: ServiceCollection) -> None:
         provider = SimpleServiceProvider()
         for metadata in ServiceDiscovery.__get_exports_iteratively(package_name):
             provider.register(metadata.contract_type, metadata.export_type)

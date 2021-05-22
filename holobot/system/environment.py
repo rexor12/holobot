@@ -1,7 +1,8 @@
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.system.environment_interface import EnvironmentInterface
-from holobot.system.models.version import Version
+from .environment_interface import EnvironmentInterface
+from .models import Version
+from ..dependency_injection import injectable, ServiceCollectionInterface
 
+@injectable(EnvironmentInterface)
 class Environment(EnvironmentInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()

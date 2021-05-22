@@ -1,4 +1,4 @@
-from holobot.system.models.version import Version
+from .models import Version
 
 class EnvironmentInterface:
     @property

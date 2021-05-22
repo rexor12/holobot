@@ -1,6 +1,6 @@
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.logging.log_base import LogBase
-from holobot.logging.log_level import LogLevel
+from .log_base import LogBase
+from .log_level import LogLevel
+from ..dependency_injection import ServiceCollectionInterface
 from typing import Optional
 
 class EmptyLog(LogBase):

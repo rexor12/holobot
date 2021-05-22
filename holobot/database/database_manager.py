@@ -1,16 +1,17 @@
-from holobot.configs.configurator_interface import ConfiguratorInterface
+from .database_manager_interface import DatabaseManagerInterface
+from .migration import MigrationInterface
+from ..configs import ConfiguratorInterface
+from ..dependency_injection import injectable, ServiceCollectionInterface
+from ..logging import LogInterface
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
-from holobot.database.database_manager_interface import DatabaseManagerInterface
-from holobot.database.migration.migration_interface import MigrationInterface
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.logging.log_interface import LogInterface
 from typing import List, Tuple
 
 import asyncio
 import asyncpg
 import ssl
 
+@injectable(DatabaseManagerInterface)
 class DatabaseManager(DatabaseManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)

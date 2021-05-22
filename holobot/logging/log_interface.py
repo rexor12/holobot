@@ -1,4 +1,4 @@
-from holobot.logging.log_level import LogLevel
+from .log_level import LogLevel
 from typing import Optional
 
 class LogInterface:

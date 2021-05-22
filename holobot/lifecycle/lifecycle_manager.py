@@ -1,10 +1,11 @@
-from holobot.dependency_injection.service_collection import ServiceCollectionInterface
-from holobot.exceptions.aggregate_error import AggregateError
-from holobot.lifecycle.lifecycle_manager_interface import LifecycleManagerInterface
-from holobot.lifecycle.startable_interface import StartableInterface
-from holobot.logging.log_interface import LogInterface
+from .lifecycle_manager_interface import LifecycleManagerInterface
+from .startable_interface import StartableInterface
+from ..dependency_injection import injectable, ServiceCollectionInterface
+from ..exceptions import AggregateError
+from ..logging import LogInterface
 from typing import List
 
+@injectable(LifecycleManagerInterface)
 class LifecycleManager(LifecycleManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__startables: List[StartableInterface] = service_collection.get_all(StartableInterface)

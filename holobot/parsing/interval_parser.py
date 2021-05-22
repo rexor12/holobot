@@ -1,6 +1,5 @@
+from ..utils import pad_left, try_parse_int
 from datetime import timedelta
-from holobot.utils.list_utils import pad_left
-from holobot.utils.string_utils import try_parse_int
 from typing import Dict, List
 
 TIME_PARTS: List[str] = [ "D", "H", "M", "S" ]

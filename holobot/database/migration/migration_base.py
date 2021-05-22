@@ -1,6 +1,6 @@
+from .migration_interface import MigrationInterface
+from .migration_plan import MigrationPlan
 from asyncpg.connection import Connection
-from holobot.database.migration.migration_interface import MigrationInterface
-from holobot.database.migration.migration_plan import MigrationPlan
 from typing import Dict, Optional
 
 class MigrationBase(MigrationInterface):

@@ -1,18 +1,17 @@
 from asyncpg.connection import Connection
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.database.migration.migration_base import MigrationBase
-from holobot.database.migration.migration_plan import MigrationPlan
+from holobot.dependency_injection import ServiceCollectionInterface
+from holobot.database.migration import MigrationBase, MigrationPlan
 
 TABLE_NAME = "crypto_alerts"
 
 class AlertMigration(MigrationBase):
-    def __init__(self, service_collection: ServiceCollectionInterface):
+    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__(TABLE_NAME, {
             0: MigrationPlan(0, 1, self.__initialize_table),
             1: MigrationPlan(1, 2, self.__upgrade_1)
         }, {})
 
-    async def __initialize_table(self, connection: Connection):
+    async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute(f"DROP TABLE IF EXISTS {TABLE_NAME}")
         await connection.execute((
             f"CREATE TABLE {TABLE_NAME} ("
@@ -26,7 +25,7 @@ class AlertMigration(MigrationBase):
             " )"
         ))
 
-    async def __upgrade_1(self, connection: Connection):
+    async def __upgrade_1(self, connection: Connection) -> None:
         await connection.execute((
             f"ALTER TABLE {TABLE_NAME}"
             " ADD COLUMN frequency_type SMALLINT DEFAULT 0,"

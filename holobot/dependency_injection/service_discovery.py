@@ -47,7 +47,10 @@ class ServiceDiscovery:
             module = importlib.import_module(module_name)
             metadatas.extend(ServiceDiscovery.__get_exports(module))
 
-            for loader, name, is_package in pkgutil.walk_packages(module.__path__):
+            if (path := getattr(module, "__path__", None)) is None:
+                continue
+
+            for loader, name, is_package in pkgutil.walk_packages(path):
                 if not is_package:
                     continue
                 module_names.append(f"{module_name}.{name}")

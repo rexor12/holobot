@@ -3,10 +3,11 @@ from .models import TodoItem
 from .repositories import TodoItemRepositoryInterface
 from .todo_item_manager_interface import TodoItemManagerInterface
 from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import ServiceCollectionInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
 from holobot.exceptions import ArgumentOutOfRangeError
 from holobot.logging import LogInterface
 
+@injectable(TodoItemManagerInterface)
 class TodoItemManager(TodoItemManagerInterface):
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()

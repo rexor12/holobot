@@ -14,12 +14,6 @@ from holobot.extensions.crypto import AlertManager, AlertManagerInterface, Crypt
 from holobot.extensions.crypto.database import AlertMigration, CryptoMigration
 from holobot.extensions.crypto.models import SymbolUpdateEvent
 from holobot.extensions.crypto.repositories import CryptoRepository, CryptoRepositoryInterface
-# from holobot.extensions.reminders import ReminderManager, ReminderManagerInterface, ReminderProcessor
-# from holobot.extensions.reminders.database import ReminderMigration
-# from holobot.extensions.reminders.repositories import ReminderRepository, ReminderRepositoryInterface
-from holobot.extensions.todo_lists import TodoItemManager, TodoItemManagerInterface
-from holobot.extensions.todo_lists.database import TodoListsMigration
-from holobot.extensions.todo_lists.repositories import TodoItemRepository, TodoItemRepositoryInterface
 from types import ModuleType
 from typing import List, Optional, Tuple
 
@@ -37,11 +31,6 @@ class ServiceDiscovery:
         provider.register(LogInterface, ConsoleLog)
         provider.register(ConfiguratorInterface, Configurator)
 
-        # Dev extension
-        provider.register(MigrationInterface, TodoListsMigration)
-        provider.register(TodoItemRepositoryInterface, TodoItemRepository)
-        provider.register(TodoItemManagerInterface, TodoItemManager)
-
         # Crypto extension
         provider.register(CryptoRepositoryInterface, CryptoRepository)
         provider.register(MigrationInterface, CryptoMigration)
@@ -50,15 +39,10 @@ class ServiceDiscovery:
         provider.register(ListenerInterface[SymbolUpdateEvent], AlertManager)
         provider.register(AlertManagerInterface, AlertManager)
 
-        # Reminders extension
-        # provider.register(MigrationInterface, ReminderMigration)
-        # provider.register(ReminderRepositoryInterface, ReminderRepository)
-        # provider.register(ReminderManagerInterface, ReminderManager)
-        # provider.register(StartableInterface, ReminderProcessor)
-
         service_collection.add_provider(provider)
 
         self.register_services_by_module("holobot.extensions.reminders", service_collection)
+        self.register_services_by_module("holobot.extensions.todo_lists", service_collection)
 
     def register_services_by_module(self, package_name: str, service_collection: ServiceCollection) -> None:
         provider = SimpleServiceProvider()

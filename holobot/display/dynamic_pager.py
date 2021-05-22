@@ -54,7 +54,7 @@ class DynamicPager(Awaitable[None]):
         context = self.__context
         if not (message := await self.__send_initial_page()):
             return
-        self.__log.debug(f"[DynamicPager] Pager created. {{ UserId = {self.__context.author.id} }}")
+        self.__log.trace(f"[DynamicPager] Pager created. {{ UserId = {self.__context.author.id} }}")
 
         while True:
             try:
@@ -77,11 +77,11 @@ class DynamicPager(Awaitable[None]):
                     continue
 
                 await message.edit(embed=embed)
-                self.__log.debug(f"[DynamicPager] Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
+                self.__log.trace(f"[DynamicPager] Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
             except TimeoutError:
                 await message.delete()
                 break
-        self.__log.debug(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
+        self.__log.trace(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
     async def __send_initial_page(self) -> Optional[Message]:
         if not (embed := await self.__embed_factory(self.__context, self.current_page, DEFAULT_PAGE_SIZE)):

@@ -43,7 +43,8 @@ class ReminderProcessor(StartableInterface):
         self.__log.debug("[ReminderProcessor] Stopped background task.")
     
     async def __process_reminders_async(self):
-        self.__log.debug("[ReminderProcessor] Processing reminders...")
+        self.__log.trace("[ReminderProcessor] Processing reminders...")
+        processed_reminders: int = 0
         try:
             reminders = await self.__reminder_repository.get_triggerable()
             for reminder in reminders:
@@ -55,6 +56,9 @@ class ReminderProcessor(StartableInterface):
                     await self.__reminder_repository.update_next_trigger(reminder.id, reminder.next_trigger)
                 else:
                     await self.__reminder_repository.delete(reminder.id)
+                processed_reminders += 1
         except Exception as error:
             self.__log.error(f"[ReminderProcessor] Processing failed. Further processing will stop. {{ Reason = UnexpectedError }}", error)
             raise
+        finally:
+            self.__log.trace(f"[ReminderProcessor] Processed reminders. {{ Count = {processed_reminders} }}")

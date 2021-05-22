@@ -57,6 +57,7 @@ if __name__ == "__main__":
 	bot.load_extension("holobot.cogs.google")
 	bot.load_extension("holobot.extensions.crypto.cogs.crypto")
 	bot.load_extension("holobot.extensions.dev.cogs.main")
+	bot.load_extension("holobot.extensions.hentai.cogs.main")
 	bot.load_extension("holobot.extensions.reminders.cogs.reminders")
 	bot.load_extension("holobot.extensions.todo_lists.cogs.main")
 	log.info("[Main] Successfully loaded cogs.")

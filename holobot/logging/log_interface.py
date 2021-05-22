@@ -10,23 +10,23 @@ class LogInterface:
     def log_level(self, value: LogLevel):
         self.__log_level = value
 
-    def write(self, level: LogLevel, message: str, error: Optional[Exception] = None):
+    def write(self, level: LogLevel, message: str, error: Optional[Exception] = None) -> None:
         raise NotImplementedError
 
-    def trace(self, message: str):
+    def trace(self, message: str) -> None:
         raise NotImplementedError
 
-    def debug(self, message: str):
+    def debug(self, message: str) -> None:
         raise NotImplementedError
 
-    def info(self, message: str):
+    def info(self, message: str) -> None:
         raise NotImplementedError
 
-    def warning(self, message: str):
+    def warning(self, message: str) -> None:
         raise NotImplementedError
 
-    def error(self, message: str, error: Exception):
+    def error(self, message: str, error: Exception) -> None:
         raise NotImplementedError
 
-    def critical(self, message: str, error: Exception):
+    def critical(self, message: str, error: Exception) -> None:
         raise NotImplementedError

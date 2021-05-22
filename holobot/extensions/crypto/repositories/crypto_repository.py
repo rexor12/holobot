@@ -1,14 +1,15 @@
 from .crypto_repository_interface import CryptoRepositoryInterface
 from ..models import PriceData, SymbolUpdateEvent
 from asyncpg.connection import Connection
-from holobot.caching.cache import ConcurrentCache
-from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.database.database_manager_interface import DatabaseManagerInterface
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.logging.log_interface import LogInterface
-from holobot.reactive.listener_interface import ListenerInterface
+from holobot.caching import ConcurrentCache
+from holobot.configs import ConfiguratorInterface
+from holobot.database import DatabaseManagerInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
+from holobot.logging import LogInterface
+from holobot.reactive import ListenerInterface
 from typing import List, Optional
 
+@injectable(CryptoRepositoryInterface)
 class CryptoRepository(CryptoRepositoryInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)

@@ -1,7 +1,6 @@
+from .http_status_error import HttpStatusError
+from .parsers import try_parse_http_date, try_parse_int
 from aiohttp.client_reqrep import ClientResponse
-from holobot.network.exceptions.http_status_error import HttpStatusError
-from multidict import CIMultiDictProxy
-from holobot.network.exceptions.parsers import try_parse_http_date, try_parse_int
 
 class ImATeapotError(HttpStatusError):
     STATUS_CODE: int = 418

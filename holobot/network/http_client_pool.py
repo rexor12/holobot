@@ -1,18 +1,17 @@
+from .http_client_pool_interface import HttpClientPoolInterface
+from .exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
+from ..dependency_injection import injectable, ServiceCollectionInterface
+from ..logging import LogInterface
 from aiohttp import ClientSession
 from aiohttp.client import ClientTimeout
 from aiohttp.client_reqrep import ClientResponse
 from aiohttp.web_exceptions import HTTPForbidden, HTTPNotFound
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.logging.log_interface import LogInterface
-from holobot.network.exceptions.http_status_error import HttpStatusError
-from holobot.network.exceptions.im_a_teapot_error import ImATeapotError
-from holobot.network.exceptions.too_many_requests_error import TooManyRequestsError
-from holobot.network.http_client_pool_interface import HttpClientPoolInterface
 from typing import Any, Callable, Dict
 
 DEFAULT_TIMEOUT = ClientTimeout(total=5)
 
 # https://julien.danjou.info/python-and-fast-http-clients/
+@injectable(HttpClientPoolInterface)
 class HttpClientPool(HttpClientPoolInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__error_map: Dict[int, Callable[[ClientResponse], Exception]] = {

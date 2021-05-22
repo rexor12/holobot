@@ -5,17 +5,14 @@ from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
 from datetime import datetime
 from decimal import Decimal
-from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.lifecycle.startable_interface import StartableInterface
-from holobot.logging.log_interface import LogInterface
-from holobot.network.exceptions.http_status_error import HttpStatusError
-from holobot.network.exceptions.im_a_teapot_error import ImATeapotError
-from holobot.network.exceptions.too_many_requests_error import TooManyRequestsError
-from holobot.network.http_client_pool_interface import HttpClientPoolInterface
-from holobot.network.resilience.circuit_broken_error import CircuitBrokenError
-from holobot.network.resilience.async_circuit_breaker import AsyncCircuitBreaker
-from holobot.threading.async_loop import AsyncLoop
+from holobot.configs import ConfiguratorInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
+from holobot.lifecycle import StartableInterface
+from holobot.logging import LogInterface
+from holobot.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
+from holobot.network import HttpClientPoolInterface
+from holobot.network.resilience import AsyncCircuitBreaker, CircuitBrokenError
+from holobot.threading import AsyncLoop
 from typing import List, Optional
 
 import asyncio
@@ -26,10 +23,6 @@ INITIAL_UPDATE_DELAY: int = 15
 UPDATE_INTERVAL: int = 60
 BINANCE_API_BASE_URL: str = "https://api.binance.com/api/v3/"
 
-# Test values
-# UPDATE_INTERVAL: int = 10
-# BINANCE_API_BASE_URL: str = "http://localhost:8000/"
-
 async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception):
     if (isinstance(error, (TooManyRequestsError, ImATeapotError))
         and (retry_after := error.attrs.get("retry_after", None)) is not None
@@ -37,6 +30,7 @@ async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception)
         return retry_after
     return circuit_breaker.recovery_timeout
 
+@injectable(StartableInterface)
 class CryptoUpdater(StartableInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)

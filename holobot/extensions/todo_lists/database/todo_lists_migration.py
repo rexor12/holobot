@@ -1,9 +1,10 @@
 from asyncpg.connection import Connection
-from holobot.dependency_injection import ServiceCollectionInterface
-from holobot.database.migration import MigrationBase, MigrationPlan
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
+from holobot.database.migration import MigrationBase, MigrationInterface, MigrationPlan
 
 TABLE_NAME = "todo_lists"
 
+@injectable(MigrationInterface)
 class TodoListsMigration(MigrationBase):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__(TABLE_NAME, {

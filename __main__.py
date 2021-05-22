@@ -1,10 +1,7 @@
 from holobot import Bot, BotInterface
 from holobot.configs import ConfiguratorInterface
 from holobot.database import DatabaseManagerInterface
-from holobot.dependency_injection import ServiceCollection
-# ServiceDiscovery is imported independently to avoid circular dependencies
-# triggered by initializing it together with the dependency_injection module.
-from holobot.dependency_injection.service_discovery import ServiceDiscovery
+from holobot.dependency_injection import ServiceCollection, ServiceDiscovery
 from holobot.lifecycle import LifecycleManagerInterface
 from holobot.logging import LogInterface, LogLevel
 
@@ -26,7 +23,12 @@ intents = discord.Intents(
 if __name__ == "__main__":
 	event_loop = asyncio.get_event_loop()
 	service_collection = ServiceCollection()
-	ServiceDiscovery().register_services(service_collection)
+	# The idea here is to register the services for each extension independently,
+	# however, today it doesn't make sense as they're still in the same package.
+	# Therefore, for now we just register everything from the entire package.
+	ServiceDiscovery.register_services_by_module("holobot", service_collection)
+	# self.register_services_by_module("holobot.extensions.crypto", service_collection)
+	
 	log = service_collection.get(LogInterface)
 	configurator = service_collection.get(ConfiguratorInterface)
 	log.log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))

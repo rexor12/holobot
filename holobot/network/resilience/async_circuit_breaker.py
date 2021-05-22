@@ -1,5 +1,5 @@
-from holobot.network.resilience.circuit_broken_error import CircuitBrokenError
-from holobot.network.resilience.circuit_state import CircuitState
+from .circuit_broken_error import CircuitBrokenError
+from .circuit_state import CircuitState
 from time import time
 from typing import Callable, Coroutine
 

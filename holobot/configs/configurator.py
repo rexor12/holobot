@@ -1,6 +1,6 @@
-from holobot.logging.log_interface import LogInterface
-from holobot.configs.configurator_interface import ConfiguratorInterface, T
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
+from .configurator_interface import ConfiguratorInterface, T
+from ..dependency_injection import injectable, ServiceCollectionInterface
+from ..logging import LogInterface
 from json import load
 from typing import Final, Optional
 
@@ -10,6 +10,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONFIG_FILE_PATH: Final[str] = os.path.join(BASE_DIR, "config.json")
 
+@injectable(ConfiguratorInterface)
 class Configurator(ConfiguratorInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         with open(CONFIG_FILE_PATH) as config_file:

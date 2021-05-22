@@ -1,8 +1,9 @@
 from .display_interface import DisplayInterface
-from ..dependency_injection import ServiceCollectionInterface
+from ..dependency_injection import injectable, ServiceCollectionInterface
 from ..logging import LogInterface
-from holobot.bot_interface import BotInterface
+from holobot import BotInterface
 
+@injectable(DisplayInterface)
 class Discord(DisplayInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__bot = service_collection.get(BotInterface)

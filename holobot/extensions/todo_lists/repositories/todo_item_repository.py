@@ -2,9 +2,10 @@ from .todo_item_repository_interface import TodoItemRepositoryInterface
 from ..models import TodoItem
 from asyncpg.connection import Connection
 from holobot.database import DatabaseManagerInterface
-from holobot.dependency_injection import ServiceCollectionInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
 from typing import List, Optional
 
+@injectable(TodoItemRepositoryInterface)
 class TodoItemRepository(TodoItemRepositoryInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()

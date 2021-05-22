@@ -1,7 +1,7 @@
 from typing import Any, Type
 
 class ExportMetadata:
-    PROPERTY_NAME: str = "holo_export_metadata"
+    PROPERTY_NAME: str = "di_export_metadatas"
 
     def __init__(self, contract_type: Type[Any], export_type: Type[Any]) -> None:
         self.contract_type = contract_type
@@ -24,4 +24,4 @@ class ExportMetadata:
         self.__export_type = value
     
     def __str__(self) -> str:
-        return f"<ExportMetadata contract_type={self.contract_type.__name__}, export_type={self.export_type.__name__}>"
+        return f"<ExportMetadata contract_type={self.contract_type}, export_type={self.export_type}>"

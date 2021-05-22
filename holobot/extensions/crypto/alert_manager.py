@@ -3,13 +3,15 @@ from .enums import FrequencyType, PriceDirection
 from .models import Alert, SymbolUpdateEvent
 from asyncpg.connection import Connection
 from decimal import Decimal
-from holobot.database.database_manager_interface import DatabaseManagerInterface
-from holobot.dependency_injection.service_collection_interface import ServiceCollectionInterface
-from holobot.display.display_interface import DisplayInterface
-from holobot.logging.log_interface import LogInterface
-from holobot.reactive.listener_interface import ListenerInterface
+from holobot.database import DatabaseManagerInterface
+from holobot.dependency_injection import injectable, ServiceCollectionInterface
+from holobot.display import DisplayInterface
+from holobot.logging import LogInterface
+from holobot.reactive import ListenerInterface
 from typing import List
 
+@injectable(AlertManagerInterface)
+@injectable(ListenerInterface[SymbolUpdateEvent])
 class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__database_manager = service_collection.get(DatabaseManagerInterface)

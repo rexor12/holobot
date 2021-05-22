@@ -2,20 +2,14 @@ from .models import ExportMetadata
 from ..display import Discord, DisplayInterface
 from ..configs import Configurator, ConfiguratorInterface
 from ..database import DatabaseManager, DatabaseManagerInterface
-from ..database.migration import MigrationInterface
 from ..dependency_injection import ServiceCollection
 from ..dependency_injection.providers import SimpleServiceProvider
-from ..lifecycle import LifecycleManager, LifecycleManagerInterface, StartableInterface
+from ..lifecycle import LifecycleManager, LifecycleManagerInterface
 from ..logging import ConsoleLog, LogInterface
 from ..network import HttpClientPool, HttpClientPoolInterface
-from ..reactive import ListenerInterface
 from ..system import Environment, EnvironmentInterface
-from holobot.extensions.crypto import AlertManager, AlertManagerInterface, CryptoUpdater
-from holobot.extensions.crypto.database import AlertMigration, CryptoMigration
-from holobot.extensions.crypto.models import SymbolUpdateEvent
-from holobot.extensions.crypto.repositories import CryptoRepository, CryptoRepositoryInterface
 from types import ModuleType
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import importlib, inspect, pkgutil
 
@@ -31,16 +25,9 @@ class ServiceDiscovery:
         provider.register(LogInterface, ConsoleLog)
         provider.register(ConfiguratorInterface, Configurator)
 
-        # Crypto extension
-        provider.register(CryptoRepositoryInterface, CryptoRepository)
-        provider.register(MigrationInterface, CryptoMigration)
-        provider.register(MigrationInterface, AlertMigration)
-        provider.register(StartableInterface, CryptoUpdater)
-        provider.register(ListenerInterface[SymbolUpdateEvent], AlertManager)
-        provider.register(AlertManagerInterface, AlertManager)
-
         service_collection.add_provider(provider)
 
+        self.register_services_by_module("holobot.extensions.crypto", service_collection)
         self.register_services_by_module("holobot.extensions.reminders", service_collection)
         self.register_services_by_module("holobot.extensions.todo_lists", service_collection)
 
@@ -48,6 +35,7 @@ class ServiceDiscovery:
         provider = SimpleServiceProvider()
         for metadata in ServiceDiscovery.__get_exports_iteratively(package_name):
             provider.register(metadata.contract_type, metadata.export_type)
+            #print(f"[ServiceDiscovery] Registered service. {{ ContractType = {metadata.contract_type}, ExportType = {metadata.export_type} }}")
         service_collection.add_provider(provider)
     
     @staticmethod
@@ -70,8 +58,7 @@ class ServiceDiscovery:
     def __get_exports(module: ModuleType) -> Tuple[ExportMetadata, ...]:
         exports: List[ExportMetadata] = []
         for name, obj in inspect.getmembers(module, inspect.isclass):
-            metadata: Optional[ExportMetadata] = getattr(obj, ExportMetadata.PROPERTY_NAME, None)
-            if metadata is not None:
-                exports.append(metadata)
+            metadatas: List[ExportMetadata] = getattr(obj, ExportMetadata.PROPERTY_NAME, [])
+            exports.extend(metadatas)
 
         return tuple(exports)

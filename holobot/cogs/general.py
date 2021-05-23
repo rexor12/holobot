@@ -1,6 +1,10 @@
+from .. import Bot
+from ..logging import LogInterface
+from ..system import EnvironmentInterface
+from ..utils import find_member
 from asyncio.tasks import sleep
+from datetime import datetime
 from discord.embeds import Embed
-from discord.emoji import Emoji
 from discord.enums import ActivityType
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
@@ -10,12 +14,10 @@ from discord.ext.commands.errors import CommandOnCooldown, MissingRequiredArgume
 from discord.message import Message
 from discord.partial_emoji import PartialEmoji
 from discord.user import User
-from holobot.bot import Bot
-from holobot.logging.log_interface import LogInterface
-from holobot.system.environment_interface import EnvironmentInterface
-from holobot.utils.context_utils import find_member
 from random import randrange
 from typing import Optional
+
+import tzlocal
 
 class General(Cog, name="General"):
     def __init__(self, bot: Bot):
@@ -65,7 +67,7 @@ class General(Cog, name="General"):
         await context.send(message)
 
     @cooldown(1, 10, BucketType.member)
-    @command(brief="Rolls the dice. The second boundary is optional, used when you want to specify the range.")
+    @command(brief="Rolls the dice.", description="Generates a random number between the specified lower and upper boundaries. If one boundary is specified only, it's considered as the upper boundary and the lower boundary defaults to 0.")
     async def roll(self, context: Context, boundary1: int, boundary2: int = None):
         if boundary2 is not None:
             if boundary2 <= boundary1:
@@ -94,12 +96,19 @@ class General(Cog, name="General"):
     @command(brief="Tells the current version of the bot.")
     async def version(self, context: Context):
         await context.send(f"{context.author.mention}, my current version is {self.__environment.version}.")
+    
+    @cooldown(1, 60, BucketType.user)
+    @command(brief="Displays the bot's current date and time.", description="Displays the current date and time at the server hosting the bot.")
+    async def servertime(self, context: Context):
+        current_time = datetime.now(tzlocal.get_localzone())
+        await context.reply(f"The current date and time is {current_time:%I:%M:%S %p, %m/%d/%Y %Z}.")
 
     @avatar.error
     @emoji.error
     @say.error
     @roll.error
     @version.error
+    @servertime.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandOnCooldown):
             await context.send(f"{context.author.mention}, you're too fast! ({int(error.retry_after)} seconds cooldown)", delete_after=5)

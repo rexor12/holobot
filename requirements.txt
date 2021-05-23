@@ -1,5 +1,4 @@
-# Discord
-discord.py[voice]
-
-# PostgreSQL
-asyncpg
+discord.py[voice] # Discord bot framework.
+asyncpg # Used for working with PostgreSQL databases.
+pytz # Used for working with timezones.
+tzlocal # Used for determining the current system timezone.

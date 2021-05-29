@@ -1,7 +1,8 @@
 from .display_interface import DisplayInterface
-from ..dependency_injection import injectable, ServiceCollectionInterface
-from ..logging import LogInterface
 from holobot import BotInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.logging import LogInterface
 
 @injectable(DisplayInterface)
 class Discord(DisplayInterface):

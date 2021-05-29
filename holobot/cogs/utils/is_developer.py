@@ -1,6 +1,6 @@
 from discord.ext.commands import Context
-from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.exceptions.authorization_error import AuthorizationError
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.exceptions import AuthorizationError
 from typing import Callable, Optional
 
 import functools

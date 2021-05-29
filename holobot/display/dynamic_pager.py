@@ -1,10 +1,10 @@
 from .. import Bot
-from ..logging import LogInterface
 from asyncio.exceptions import TimeoutError
 from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord.message import Message
 from discord.reaction import Reaction
+from holobot.sdk.logging import LogInterface
 from typing import Awaitable, Callable, Optional
 
 import asyncio

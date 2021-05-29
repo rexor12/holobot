@@ -4,10 +4,11 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandOnCooldown
 from holobot.bot import Bot
-from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.logging.log_interface import LogInterface
-from holobot.network.exceptions.http_status_error import HttpStatusError
-from holobot.network.http_client_pool_interface import HttpClientPoolInterface
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network.exceptions import HttpStatusError
+from holobot.sdk.system import EnvironmentInterface
 from urllib.parse import quote_plus
 
 GCS_API_KEY = "GoogleSearchApiKey"

@@ -1,9 +1,10 @@
 from holobot import Bot, BotInterface
-from holobot.configs import ConfiguratorInterface
-from holobot.database import DatabaseManagerInterface
-from holobot.dependency_injection import ServiceCollection, ServiceDiscovery
-from holobot.lifecycle import LifecycleManagerInterface
-from holobot.logging import LogInterface, LogLevel
+from holobot.framework.ioc import ServiceCollection, ServiceDiscovery
+from holobot.framework.lifecycle import LifecycleManagerInterface
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging.enums import LogLevel
 
 import asyncio
 import discord

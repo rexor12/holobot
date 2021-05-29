@@ -1,6 +1,4 @@
 from .. import Bot
-from ..logging import LogInterface
-from ..system import EnvironmentInterface
 from ..utils import find_member
 from asyncio.tasks import sleep
 from datetime import datetime
@@ -14,6 +12,8 @@ from discord.ext.commands.errors import CommandOnCooldown, MissingRequiredArgume
 from discord.message import Message
 from discord.partial_emoji import PartialEmoji
 from discord.user import User
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.system import EnvironmentInterface
 from random import randrange
 from typing import Optional
 

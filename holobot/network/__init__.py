@@ -1,2 +1,0 @@
-from .http_client_pool import HttpClientPool
-from .http_client_pool_interface import HttpClientPoolInterface

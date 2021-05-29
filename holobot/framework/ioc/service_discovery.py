@@ -21,6 +21,7 @@ class ServiceDiscovery:
         module_names: List[str] = [module_name]
         while len(module_names) > 0:
             module_name = module_names.pop()
+            #print(f"[ServiceDiscovery] Loading module... {{ Name = {module_name} }}")
             module = importlib.import_module(module_name)
             metadatas.extend(ServiceDiscovery.__get_exports(module))
 

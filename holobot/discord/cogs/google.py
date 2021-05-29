@@ -3,7 +3,7 @@ from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandOnCooldown
-from holobot.bot import Bot
+from holobot.discord import Bot
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.network import HttpClientPoolInterface

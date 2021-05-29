@@ -1,0 +1,2 @@
+class KernelInterface:
+    pass

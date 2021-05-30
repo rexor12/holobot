@@ -10,10 +10,10 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown, MissingRequiredArgument
 from discord.message import Message, MessageReference
-from holobot import Bot
-from holobot.display import DynamicPager
-from holobot.exceptions import ArgumentOutOfRangeError
-from holobot.logging import LogInterface
+from holobot.discord.bot import Bot
+from holobot.discord.components import DynamicPager
+from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.logging import LogInterface
 from typing import Optional
 
 class TodoLists(Cog, name="To-do list"):

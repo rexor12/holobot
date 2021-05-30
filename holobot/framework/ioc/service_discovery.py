@@ -28,9 +28,11 @@ class ServiceDiscovery:
             if (path := getattr(module, "__path__", None)) is None:
                 continue
 
+            #print(f"[ServiceDiscovery] Walking path... {{ Path = {path} }}")
             for loader, name, is_package in pkgutil.walk_packages(path):
                 if not is_package:
                     continue
+                #print(f"[ServiceDiscovery] Found additional package. {{ Name = {name}, Parent = {module_name} }}")
                 module_names.append(f"{module_name}.{name}")
         
         return tuple(metadatas)

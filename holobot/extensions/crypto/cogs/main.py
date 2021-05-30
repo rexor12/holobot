@@ -10,8 +10,8 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown
 from discord.message import Message
-from holobot.bot import Bot
-from holobot.display.dynamic_pager import DynamicPager
+from holobot.discord.bot import Bot
+from holobot.discord.components import DynamicPager
 from typing import Optional
 
 ALARM_MIN_PRICE = Decimal("0.00000001")

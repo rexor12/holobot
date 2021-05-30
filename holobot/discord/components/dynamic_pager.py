@@ -1,4 +1,4 @@
-from .. import Bot
+from ..bot import Bot
 from asyncio.exceptions import TimeoutError
 from discord.embeds import Embed
 from discord.ext.commands.context import Context

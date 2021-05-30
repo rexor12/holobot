@@ -1,4 +1,4 @@
-from typing import List, Type, TypeVar
+from typing import Tuple, Type, TypeVar
 
 TService = TypeVar("TService")
 
@@ -9,5 +9,5 @@ class ServiceCollectionInterface:
     def get(self, type: Type[TService]) -> TService:
         raise NotImplementedError
     
-    def get_all(self, type: Type[TService]) -> List[TService]:
+    def get_all(self, type: Type[TService]) -> Tuple[TService, ...]:
         raise NotImplementedError

@@ -1,6 +1,7 @@
 from .. import ReminderManagerInterface
 from ..exceptions import ArgumentError, TooManyRemindersError
 from ..models import ReminderConfig
+from ..parsing import UNBOUND_KEY, parse_arguments, parse_interval
 from ..repositories import ReminderRepositoryInterface
 from discord.embeds import Embed
 from discord.ext.commands import Context
@@ -8,11 +9,9 @@ from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import command, cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown, MissingRequiredArgument
-from holobot.bot import Bot
-from holobot.display.dynamic_pager import DynamicPager
-from holobot.logging.log_interface import LogInterface
-from holobot.parsing.argument_parser import UNBOUND_KEY, parse_arguments
-from holobot.parsing.interval_parser import parse_interval
+from holobot.discord.bot import Bot
+from holobot.discord.components import DynamicPager
+from holobot.sdk.logging import LogInterface
 from typing import Optional
 
 SET_DESCRIPTION = (

@@ -1,2 +1,3 @@
+from .extension_provider import ExtensionProvider
 from .todo_item_manager import TodoItemManager
 from .todo_item_manager_interface import TodoItemManagerInterface

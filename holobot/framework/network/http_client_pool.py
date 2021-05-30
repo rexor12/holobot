@@ -29,12 +29,12 @@ class HttpClientPool(HttpClientPoolInterface):
         await self.__session.close()
         self.__log.debug("[HttpClientPool] Successfully closed session.")
 
-    async def get(self, url: str, query_parameters: Dict[str, str] = None):
+    async def get(self, url: str, query_parameters: Dict[str, Any] = None) -> Any:
         async with self.__session.get(url, params=query_parameters, timeout=DEFAULT_TIMEOUT) as response:
             self.__raise_on_error(response)
             return await response.json()
     
-    async def post(self, url: str, json: Dict[str, Any]):
+    async def post(self, url: str, json: Dict[str, Any]) -> Any:
         async with self.__session.post(url, json=json, timeout=DEFAULT_TIMEOUT) as response:
             self.__raise_on_error(response)
             return await response.json()

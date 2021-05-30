@@ -3,8 +3,9 @@ from ..enums import DayOfWeek
 from ..models import Reminder
 from asyncpg.connection import Connection
 from datetime import datetime
-from holobot.database import DatabaseManagerInterface
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.database import DatabaseManagerInterface
 from typing import List, Optional
 
 @injectable(ReminderRepositoryInterface)

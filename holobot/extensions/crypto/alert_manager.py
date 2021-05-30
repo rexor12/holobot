@@ -3,20 +3,21 @@ from .enums import FrequencyType, PriceDirection
 from .models import Alert, SymbolUpdateEvent
 from asyncpg.connection import Connection
 from decimal import Decimal
-from holobot.database import DatabaseManagerInterface
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
-from holobot.display import DisplayInterface
-from holobot.logging import LogInterface
-from holobot.reactive import ListenerInterface
+from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.integration import MessagingInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.reactive import ListenerInterface
 from typing import List
 
 @injectable(AlertManagerInterface)
 @injectable(ListenerInterface[SymbolUpdateEvent])
 class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
-    def __init__(self, service_collection: ServiceCollectionInterface):
-        self.__database_manager = service_collection.get(DatabaseManagerInterface)
-        self.__display = service_collection.get(DisplayInterface)
-        self.__log = service_collection.get(LogInterface)
+    def __init__(self, services: ServiceCollectionInterface):
+        self.__database_manager = services.get(DatabaseManagerInterface)
+        self.__messaging = services.get(MessagingInterface)
+        self.__log = services.get(LogInterface)
     
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
         frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):
@@ -101,7 +102,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                         continue
                     sent_notifications.add(notification_id)
                     record_ids.add(str(record["id"]))
-                    await self.__try_notify(int(user_id), event)
+                    await self.__try_notify(user_id, event)
                 if len(record_ids) == 0:
                     return
                 await connection.execute("UPDATE crypto_alerts SET notified_at = NOW() WHERE id IN ({})".format(
@@ -109,8 +110,8 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
                 ))
                 self.__log.debug(f"[AlertManager] Notified users. {{ AlertCount = {len(record_ids)}, Symbol = {event.symbol} }}")
     
-    async def __try_notify(self, user_id: int, event: SymbolUpdateEvent):
+    async def __try_notify(self, user_id: str, event: SymbolUpdateEvent):
         try:
-            await self.__display.send_dm(user_id, f"{event.symbol} price is {event.price:,.8f}.")
+            await self.__messaging.send_dm(user_id, f"{event.symbol} price is {event.price:,.8f}.")
         except Exception as error:
             self.__log.error(f"[AlertManager] Failed to notify a user. {{ UserId = {user_id} }}", error)

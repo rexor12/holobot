@@ -1,12 +1,13 @@
 from .repositories import ReminderRepositoryInterface
 from asyncio.tasks import Task
 from datetime import datetime
-from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
-from holobot.display import DisplayInterface
-from holobot.lifecycle import StartableInterface
-from holobot.logging import LogInterface
-from holobot.threading import AsyncLoop
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.integration import MessagingInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.threading import AsyncLoop
 from typing import Optional
 
 import asyncio
@@ -16,12 +17,12 @@ DEFAULT_DELAY: int = 30
 
 @injectable(StartableInterface)
 class ReminderProcessor(StartableInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
+    def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__display: DisplayInterface = service_collection.get(DisplayInterface)
-        self.__log: LogInterface = service_collection.get(LogInterface)
-        self.__reminder_repository: ReminderRepositoryInterface = service_collection.get(ReminderRepositoryInterface)
+        self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
+        self.__messaging: MessagingInterface = services.get(MessagingInterface)
+        self.__log: LogInterface = services.get(LogInterface)
+        self.__reminder_repository: ReminderRepositoryInterface = services.get(ReminderRepositoryInterface)
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None
         self.__process_resolution = self.__configurator.get("Reminders", "ProcessorResolution", DEFAULT_RESOLUTION)
@@ -49,7 +50,7 @@ class ReminderProcessor(StartableInterface):
         try:
             reminders = await self.__reminder_repository.get_triggerable()
             for reminder in reminders:
-                await self.__display.send_dm(int(reminder.user_id), f"Your reminder: {reminder.message}")
+                await self.__messaging.send_dm(reminder.user_id, f"Your reminder: {reminder.message}")
 
                 if reminder.is_repeating:
                     reminder.last_trigger = datetime.utcnow()

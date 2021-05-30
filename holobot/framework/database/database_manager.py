@@ -6,7 +6,7 @@ from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import List, Tuple
+from typing import Tuple
 
 import asyncio
 import asyncpg
@@ -16,7 +16,7 @@ import ssl
 class DatabaseManager(DatabaseManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__migrations: List[MigrationInterface] = service_collection.get_all(MigrationInterface)
+        self.__migrations: Tuple[MigrationInterface, ...] = service_collection.get_all(MigrationInterface)
         self.__log = service_collection.get(LogInterface)
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
     

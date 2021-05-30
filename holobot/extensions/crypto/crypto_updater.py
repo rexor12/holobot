@@ -5,14 +5,16 @@ from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
 from datetime import datetime
 from decimal import Decimal
-from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
-from holobot.lifecycle import StartableInterface
-from holobot.logging import LogInterface
-from holobot.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
-from holobot.network import HttpClientPoolInterface
-from holobot.network.resilience import AsyncCircuitBreaker, CircuitBrokenError
-from holobot.threading import AsyncLoop
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
+from holobot.sdk.network.resilience import AsyncCircuitBreaker
+from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from holobot.sdk.threading import AsyncLoop
 from typing import List, Optional
 
 import asyncio

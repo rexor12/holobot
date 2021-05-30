@@ -4,10 +4,10 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown, MissingRequiredArgument
 from discord.message import DeletedReferencedMessage, Message, MessageReference
-from holobot import Bot
-from holobot.logging import LogInterface
-from holobot.utils.string_utils import try_parse_int
-from typing import Optional, Union
+from holobot.discord.bot import Bot
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.utils import try_parse_int
+from typing import Optional
 
 class Hentai(Cog, name="Hentai"):
     def __init__(self, bot: Bot):

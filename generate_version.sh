@@ -107,4 +107,4 @@ else # main branch
 fi
 
 echo "New version: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_BUILD}"
-sed -i "s/self.version = Version\(.*\)/self.version = Version\(${VERSION_MAJOR}, ${VERSION_MINOR}, ${VERSION_PATCH}, ${VERSION_BUILD}\)/" ./holobot/system/environment.py
+sed -i "s/__version = Version\(.*\)/__version = Version\(${VERSION_MAJOR}, ${VERSION_MINOR}, ${VERSION_PATCH}, ${VERSION_BUILD}\)/" ./holobot/framework/system/environment.py

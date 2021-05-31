@@ -1,6 +1,8 @@
 from asyncpg.connection import Connection
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
-from holobot.database.migration import MigrationBase, MigrationInterface, MigrationPlan
+from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration.models import MigrationPlan
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
 
 TABLE_NAME = "crypto_prices"
 

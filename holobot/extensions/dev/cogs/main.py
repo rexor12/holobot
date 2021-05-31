@@ -2,12 +2,12 @@ from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
 from discord.ext.commands.core import group
 from discord.ext.commands.errors import CommandInvokeError, ExtensionAlreadyLoaded, ExtensionFailed, ExtensionNotFound, ExtensionNotLoaded, NoEntryPointError
-from holobot.bot import Bot
-from holobot.cogs.utils.is_developer import is_developer
-from holobot.configs.configurator_interface import ConfiguratorInterface
-from holobot.exceptions.authorization_error import AuthorizationError
-from holobot.logging.log_interface import LogInterface
-from holobot.logging.log_level import LogLevel
+from holobot.discord.bot import Bot
+from holobot.discord.decorators import is_developer
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.exceptions import AuthorizationError
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging.enums import LogLevel
 from typing import Optional
 
 class Development(Cog, name="Development"):

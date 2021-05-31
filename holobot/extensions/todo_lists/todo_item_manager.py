@@ -2,10 +2,11 @@ from .exceptions import TooManyTodoItemsError
 from .models import TodoItem
 from .repositories import TodoItemRepositoryInterface
 from .todo_item_manager_interface import TodoItemManagerInterface
-from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
-from holobot.exceptions import ArgumentOutOfRangeError
-from holobot.logging import LogInterface
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.logging import LogInterface
 
 @injectable(TodoItemManagerInterface)
 class TodoItemManager(TodoItemManagerInterface):

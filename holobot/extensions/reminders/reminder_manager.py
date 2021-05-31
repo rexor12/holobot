@@ -3,9 +3,10 @@ from .models import Reminder, ReminderConfig
 from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import ReminderRepositoryInterface
 from datetime import datetime, timedelta
-from holobot.configs import ConfiguratorInterface
-from holobot.dependency_injection import injectable, ServiceCollectionInterface
-from holobot.logging import LogInterface
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.logging import LogInterface
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):

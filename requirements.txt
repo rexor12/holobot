@@ -2,3 +2,4 @@ discord.py[voice] # Discord bot framework.
 asyncpg # Used for working with PostgreSQL databases.
 pytz # Used for working with timezones.
 tzlocal # Used for determining the current system timezone.
+discord-py-slash-command # Unofficial extension for discord.py to support slash commands.

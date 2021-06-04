@@ -1,11 +1,10 @@
-from discord_slash.context import SlashContext
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 from ..messaging import Messaging
 from ..sdk import ExtensionProviderInterface
 from asyncio.tasks import Task
 from discord import Intents
-from discord_slash import SlashCommand
+from discord_slash import SlashCommand, SlashContext
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc import ServiceCollectionInterface

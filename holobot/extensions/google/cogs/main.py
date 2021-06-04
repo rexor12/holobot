@@ -53,7 +53,10 @@ class Google(Cog, name="Google"):
             if len(results) == 0:
                 await self.__reply(context, "There are no good results for your query. Please, try something else in a bit.")
                 return
-            await self.__reply(context, results[0].link)
+            link = results[0].link
+            if not link:
+                await self.__reply(context, "An unexpected Google error has occurred. Please, try again later.")
+            else: await self.__reply(context, link)
         except InvalidOperationError:
             await self.__reply(context, "Google Search isn't configured. Please, contact your server administrator.")
         except SearchQuotaExhaustedError:

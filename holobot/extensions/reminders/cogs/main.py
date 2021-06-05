@@ -48,7 +48,7 @@ class Reminders(Cog, name="Reminders"):
         args = parse_arguments(("at", "every", "in"), config)
         await self.__set_reminder(context, args[UNBOUND_KEY], args["in"], args["at"], args["every"])
 
-    @cog_ext.cog_subcommand(base="reminder", name="set", description="Sets a new reminder.", guild_ids=[822228166381797427], options=[
+    @cog_ext.cog_subcommand(base="reminder", name="set", description="Sets a new reminder.", options=[
         create_option("message", "The message you'd like sent to you.", SlashCommandOptionType.STRING, True),
         create_option("in_time", "After the specified time passes. Eg. 1h30m or 01:30.", SlashCommandOptionType.STRING, False),
         create_option("at_time", "At a specific moment in time. Eg. 15:30 or 15h30m.", SlashCommandOptionType.STRING, False),
@@ -68,7 +68,7 @@ class Reminders(Cog, name="Reminders"):
     async def view_all(self, context: Context):
         await DynamicPager(self.__bot, context, self.__create_reminder_embed)
     
-    @cog_ext.cog_subcommand(base="reminder", name="view", description="Displays your reminders.", guild_ids=[822228166381797427])
+    @cog_ext.cog_subcommand(base="reminder", name="view", description="Displays your reminders.")
     async def slash_view_all(self, context: SlashContext):
         await DynamicPager(self.__bot, context, self.__create_reminder_embed)
     
@@ -77,7 +77,7 @@ class Reminders(Cog, name="Reminders"):
     async def remove(self, context: Context, reminder_id: int):
         await self.__delete_reminder(context, reminder_id)
     
-    @cog_ext.cog_subcommand(base="reminder", name="remove", description="Removes a reminder.", guild_ids=[822228166381797427], options=[
+    @cog_ext.cog_subcommand(base="reminder", name="remove", description="Removes a reminder.", options=[
         create_option("id", "The identifier of the reminder.", SlashCommandOptionType.INTEGER, True)
     ])
     async def slash_remove(self, context: SlashContext, id: int):

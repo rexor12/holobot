@@ -1,4 +1,5 @@
 from .aggregate_error import AggregateError
+from .argument_error import ArgumentError
 from .argument_out_of_range_error import ArgumentOutOfRangeError
 from .authorization_error import AuthorizationError
 from .invalid_operation_error import InvalidOperationError

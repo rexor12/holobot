@@ -6,7 +6,7 @@ from datetime import datetime
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database import DatabaseManagerInterface
-from typing import List, Optional
+from typing import Tuple, Optional
 
 @injectable(ReminderRepositoryInterface)
 class ReminderRepository(ReminderRepositoryInterface):
@@ -33,7 +33,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     return None
                 return ReminderRepository.__parse_reminder(result)
     
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Reminder]:
+    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[Reminder, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -42,9 +42,9 @@ class ReminderRepository(ReminderRepositoryInterface):
                     " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
                     " FROM reminders WHERE user_id = $1 LIMIT $3 OFFSET $2"
                 ), user_id, start_offset, page_size)
-                return [ReminderRepository.__parse_reminder(record) for record in records]
+                return tuple([ReminderRepository.__parse_reminder(record) for record in records])
 
-    async def get_triggerable(self) -> List[Reminder]:
+    async def get_triggerable(self) -> Tuple[Reminder, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -53,7 +53,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
                     " FROM reminders WHERE next_trigger <= (NOW() AT TIME ZONE 'utc')"
                 ))
-                return [ReminderRepository.__parse_reminder(record) for record in records]
+                return tuple([ReminderRepository.__parse_reminder(record) for record in records])
 
     async def store(self, reminder: Reminder) -> None:
         async with self.__database_manager.acquire_connection() as connection:

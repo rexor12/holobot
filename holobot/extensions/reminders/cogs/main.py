@@ -1,8 +1,7 @@
 from .. import ReminderManagerInterface
-from ..exceptions import ArgumentError, TooManyRemindersError
+from ..exceptions import InvalidReminderError, TooManyRemindersError
 from ..models import ReminderConfig
 from ..parsing import UNBOUND_KEY, parse_arguments, parse_interval
-from ..repositories import ReminderRepositoryInterface
 from discord.embeds import Embed
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
@@ -14,9 +13,10 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.bot import Bot
 from holobot.discord.components import DynamicPager
+from holobot.sdk.exceptions import ArgumentError
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.logging import LogInterface
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 
 SET_DESCRIPTION = (
     "Examples:\n"
@@ -36,7 +36,6 @@ class Reminders(Cog, name="Reminders"):
         self.__bot: Bot = bot
         self.__log: LogInterface = bot.service_collection.get(LogInterface)
         self.__reminder_manager: ReminderManagerInterface = bot.service_collection.get(ReminderManagerInterface)
-        self.__reminder_repository: ReminderRepositoryInterface = bot.service_collection.get(ReminderRepositoryInterface)
 
     @group(aliases=["r"], brief="A group of reminder related commands.")
     async def reminders(self, context: Context):
@@ -50,7 +49,7 @@ class Reminders(Cog, name="Reminders"):
         await self.__set_reminder(context, args[UNBOUND_KEY], args["in"], args["at"], args["every"])
 
     @cog_ext.cog_subcommand(base="reminder", name="set", description="Sets a new reminder.", guild_ids=[822228166381797427], options=[
-        create_option("message", "Message.", SlashCommandOptionType.STRING, True),
+        create_option("message", "The message you'd like sent to you.", SlashCommandOptionType.STRING, True),
         create_option("in_time", "After the specified time passes. Eg. 1h30m or 01:30.", SlashCommandOptionType.STRING, False),
         create_option("at_time", "At a specific moment in time. Eg. 15:30 or 15h30m.", SlashCommandOptionType.STRING, False),
         create_option("every_interval", "Repeat in intervals. Eg. 1h30m, 01:30 or day/week.", SlashCommandOptionType.STRING, False)
@@ -72,12 +71,14 @@ class Reminders(Cog, name="Reminders"):
     @cooldown(1, 10, BucketType.user)
     @reminders.command(aliases=["r"], brief="Removes the reminder with the specified identifier.", description="To find the identifier of your reminder, view your reminders and use the numbers for removal.")
     async def remove(self, context: Context, reminder_id: int):
-        deleted_count = await self.__reminder_repository.delete_by_user(str(context.author.id), reminder_id)
-        if deleted_count == 0:
-            await context.reply("That reminder doesn't exist or belong to you.")
-            return
-        await context.reply("The reminder has been deleted.")
+        await self.__delete_reminder(context, reminder_id)
     
+    @cog_ext.cog_subcommand(base="reminder", name="remove", description="Removes a reminder.", guild_ids=[822228166381797427], options=[
+        create_option("id", "The identifier of the reminder.", SlashCommandOptionType.INTEGER, True)
+    ])
+    async def slash_remove(self, context: SlashContext, id: int):
+        await self.__delete_reminder(context, id)
+
     async def __set_reminder(self, context: Union[Context, SlashContext],
         message: str, in_time: Optional[str], at_time: Optional[str],
         every_interval: Optional[str]) -> None:
@@ -102,9 +103,16 @@ class Reminders(Cog, name="Reminders"):
         except TooManyRemindersError:
             await reply(context, "You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
 
+    async def __delete_reminder(self, context: Union[Context, SlashContext], reminder_id: int) -> None:
+        try:
+            await self.__reminder_manager.delete_reminder(get_author_id(context), reminder_id)
+            await reply(context, "The reminder has been deleted.")
+        except InvalidReminderError:
+            await reply(context, "That reminder doesn't exist or belong to you.")
+
     async def __create_reminder_embed(self, context: Context, page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
-        reminders = await self.__reminder_repository.get_many(str(context.author.id), start_offset, page_size)
+        reminders = await self.__reminder_manager.get_by_user(get_author_id(context), start_offset, page_size)
         if len(reminders) == 0:
             return None
         

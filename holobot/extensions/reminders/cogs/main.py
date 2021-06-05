@@ -9,10 +9,14 @@ from discord.ext.commands.cog import Cog
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import command, cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown, MissingRequiredArgument
+from discord_slash import cog_ext, SlashContext
+from discord_slash.model import SlashCommandOptionType
+from discord_slash.utils.manage_commands import create_option
 from holobot.discord.bot import Bot
 from holobot.discord.components import DynamicPager
+from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.logging import LogInterface
-from typing import Optional
+from typing import Any, Dict, Optional, Union
 
 SET_DESCRIPTION = (
     "Examples:\n"
@@ -42,11 +46,23 @@ class Reminders(Cog, name="Reminders"):
     @cooldown(1, 10, BucketType.user)
     @reminders.command(aliases=["s"], brief="Sets a new reminder.", description=SET_DESCRIPTION)
     async def set(self, context: Context, *, config: str):
-        await self.__set_reminder(context, config)
+        args = parse_arguments(("at", "every", "in"), config)
+        await self.__set_reminder(context, args[UNBOUND_KEY], args["in"], args["at"], args["every"])
 
+    @cog_ext.cog_subcommand(base="reminder", name="set", description="Sets a new reminder.", guild_ids=[822228166381797427], options=[
+        create_option("message", "Message.", SlashCommandOptionType.STRING, True),
+        create_option("in_time", "After the specified time passes. Eg. 1h30m or 01:30.", SlashCommandOptionType.STRING, False),
+        create_option("at_time", "At a specific moment in time. Eg. 15:30 or 15h30m.", SlashCommandOptionType.STRING, False),
+        create_option("every_interval", "Repeat in intervals. Eg. 1h30m, 01:30 or day/week.", SlashCommandOptionType.STRING, False)
+    ])
+    async def slash_set(self, context: SlashContext, message: str, in_time: Optional[str] = None, at_time: Optional[str] = None, every_interval: Optional[str] = None):
+        await self.__set_reminder(context, message, in_time, at_time, every_interval)
+
+    @cooldown(1, 10, BucketType.user)
     @command(brief="Shorthand for <h!reminders set>.", description="See the help for the mirrored command.")
     async def remindme(self, context: Context, *, config: str):
-        await self.__set_reminder(context, config)
+        args = parse_arguments(("at", "every", "in"), config)
+        await self.__set_reminder(context, args[UNBOUND_KEY], args["in"], args["at"], args["every"])
 
     @cooldown(1, 10, BucketType.user)
     @reminders.command(name="viewall", aliases=["va"], brief="Displays all your reminders.", description="Displays all of your reminders in a paging box you can navigate with reactions.")
@@ -61,28 +77,30 @@ class Reminders(Cog, name="Reminders"):
             await context.reply("That reminder doesn't exist or belong to you.")
             return
         await context.reply("The reminder has been deleted.")
-
-    async def __set_reminder(self, context: Context, config: str) -> None:
-        args = parse_arguments(("at", "every", "in"), config)
+    
+    async def __set_reminder(self, context: Union[Context, SlashContext],
+        message: str, in_time: Optional[str], at_time: Optional[str],
+        every_interval: Optional[str]) -> None:
         reminder_config = ReminderConfig()
-        if len(args["at"]) > 0:
-            reminder_config.at_time = parse_interval(args["at"])
-        if len(args["in"]) > 0:
-            reminder_config.in_time = parse_interval(args["in"])
-        if len(args["every"]) > 0:
-            reminder_config.every_interval = parse_interval(args["every"])
-        reminder_config.message = args[UNBOUND_KEY]
+        if in_time is not None and len(in_time) > 0:
+            reminder_config.in_time = parse_interval(in_time)
+        if at_time is not None and len(at_time) > 0:
+            reminder_config.at_time = parse_interval(at_time)
+        if every_interval is not None and len(every_interval) > 0:
+            reminder_config.every_interval = parse_interval(every_interval)
+        reminder_config.message = message
+
         try:
-            reminder = await self.__reminder_manager.set_reminder(str(context.author.id), reminder_config)
-            await context.reply(f"Your reminder has been set. I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC.")
+            reminder = await self.__reminder_manager.set_reminder(get_author_id(context), reminder_config)
+            await reply(context, f"I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC.")
         except ArgumentError as error:
             if error.argument_name == "message":
-                await context.reply("Your message is either too short or too long. Please, see the help for more information.")
+                await reply(context, "Your message is either too short or too long. Please, see the help for more information.")
             elif error.argument_name == "occurrence":
-                await context.reply("You have to specify either the frequency of the reminder or the date/time of the occurrence. Please, see the help for more information.")
+                await reply(context, "You have to specify either the frequency of the reminder or the date/time of the occurrence. Please, see the help for more information.")
             else: raise
         except TooManyRemindersError:
-            await context.reply("You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
+            await reply(context, "You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
 
     async def __create_reminder_embed(self, context: Context, page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size

@@ -1,11 +1,14 @@
+from discord_slash.model import SlashMessage
 from ..bot import Bot
 from asyncio.exceptions import TimeoutError
 from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord.message import Message
 from discord.reaction import Reaction
+from discord_slash.context import SlashContext
+from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.logging import LogInterface
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable, Optional, Union
 
 import asyncio
 
@@ -14,7 +17,8 @@ DEFAULT_REACTION_PREVIOUS: str = "◀️"
 DEFAULT_REACTION_NEXT: str = "▶️"
 
 class DynamicPager(Awaitable[None]):
-    def __init__(self, bot: Bot, context: Context, embed_factory: Callable[[Context, int, int], Awaitable[Optional[Embed]]]):
+    def __init__(self, bot: Bot, context: Union[Context, SlashContext],
+        embed_factory: Callable[[Union[Context, SlashContext], int, int], Awaitable[Optional[Embed]]]):
         self.current_page = 0
         self.reaction_next = DEFAULT_REACTION_NEXT
         self.reaction_previous = DEFAULT_REACTION_PREVIOUS
@@ -54,7 +58,7 @@ class DynamicPager(Awaitable[None]):
         context = self.__context
         if not (message := await self.__send_initial_page()):
             return
-        self.__log.trace(f"[DynamicPager] Pager created. {{ UserId = {self.__context.author.id} }}")
+        self.__log.trace(f"[DynamicPager] Pager created. {{ UserId = {get_author_id(self.__context)} }}")
 
         while True:
             try:
@@ -83,12 +87,12 @@ class DynamicPager(Awaitable[None]):
                 break
         self.__log.trace(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
-    async def __send_initial_page(self) -> Optional[Message]:
+    async def __send_initial_page(self) -> Optional[Union[Message, SlashMessage]]:
         if not (embed := await self.__embed_factory(self.__context, self.current_page, DEFAULT_PAGE_SIZE)):
-            await self.__context.reply("There's nothing to view.")
+            await reply(self.__context, "There's nothing to view.")
             return None
         
-        message: Message = await self.__context.send(embed=embed)
+        message = await reply(self.__context, embed)
         await message.add_reaction(self.reaction_previous)
         await message.add_reaction(self.reaction_next)
 

@@ -68,6 +68,10 @@ class Reminders(Cog, name="Reminders"):
     async def view_all(self, context: Context):
         await DynamicPager(self.__bot, context, self.__create_reminder_embed)
     
+    @cog_ext.cog_subcommand(base="reminder", name="view", description="Displays your reminders.", guild_ids=[822228166381797427])
+    async def slash_view_all(self, context: SlashContext):
+        await DynamicPager(self.__bot, context, self.__create_reminder_embed)
+    
     @cooldown(1, 10, BucketType.user)
     @reminders.command(aliases=["r"], brief="Removes the reminder with the specified identifier.", description="To find the identifier of your reminder, view your reminders and use the numbers for removal.")
     async def remove(self, context: Context, reminder_id: int):
@@ -110,7 +114,7 @@ class Reminders(Cog, name="Reminders"):
         except InvalidReminderError:
             await reply(context, "That reminder doesn't exist or belong to you.")
 
-    async def __create_reminder_embed(self, context: Context, page: int, page_size: int) -> Optional[Embed]:
+    async def __create_reminder_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
         reminders = await self.__reminder_manager.get_by_user(get_author_id(context), start_offset, page_size)
         if len(reminders) == 0:

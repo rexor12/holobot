@@ -10,9 +10,10 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown
 from discord.message import Message
+from discord_slash.context import SlashContext
 from holobot.discord.bot import Bot
 from holobot.discord.components import DynamicPager
-from typing import Optional
+from typing import Optional, Union
 
 ALARM_MIN_PRICE = Decimal("0.00000001")
 ALARM_PRICE_UPPER_RATE = Decimal("100")
@@ -136,7 +137,7 @@ class Crypto(Cog, name="Crypto"):
     def __is_valid_symbol(symbol: str) -> bool:
         return symbol is not None and len(symbol) >= 4
 
-    async def __create_alert_embed(self, context: Context, page: int, page_size: int) -> Optional[Embed]:
+    async def __create_alert_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
         alerts = await self.__alert_manager.get_many(context.author.id, start_offset, page_size)
         if len(alerts) == 0:

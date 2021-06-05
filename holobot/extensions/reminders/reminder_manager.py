@@ -1,12 +1,14 @@
-from .exceptions import ArgumentError, TooManyRemindersError
+from .exceptions import InvalidReminderError, TooManyRemindersError
 from .models import Reminder, ReminderConfig
 from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import ReminderRepositoryInterface
 from datetime import datetime, timedelta
 from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from typing import Tuple
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
@@ -37,6 +39,17 @@ class ReminderManager(ReminderManagerInterface):
 
         self.__log.debug(f"[ReminderManager] Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger} }}")
         return reminder
+    
+    async def delete_reminder(self, user_id: str, reminder_id: int) -> None:
+        if user_id is None or len(user_id) == 0:
+            raise ArgumentError("user_id", "The user identifier must not be empty.")
+        
+        deleted_count = await self.__reminder_repository.delete_by_user(user_id, reminder_id)
+        if deleted_count == 0:
+            raise InvalidReminderError("The specified reminder doesn't exist or belong to the specified user.")
+
+    async def get_by_user(self, user_id: str, offset: int, page_size: int) -> Tuple[Reminder, ...]:
+        return await self.__reminder_repository.get_many(user_id, offset, page_size)
 
     async def __assert_reminder_count(self, user_id: str) -> None:
         count = await self.__reminder_repository.count(user_id)

@@ -1,2 +1,2 @@
-from .argument_error import ArgumentError
+from .invalid_reminder_error import InvalidReminderError
 from .too_many_reminders_error import TooManyRemindersError

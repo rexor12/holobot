@@ -1,6 +1,6 @@
 from ..models import Reminder
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional, Tuple
 
 class ReminderRepositoryInterface:
     async def count(self, user_id: str) -> int:
@@ -9,10 +9,10 @@ class ReminderRepositoryInterface:
     async def get(self, id: int) -> Optional[Reminder]:
         raise NotImplementedError
     
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Reminder]:
+    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[Reminder, ...]:
         raise NotImplementedError
 
-    async def get_triggerable(self) -> List[Reminder]:
+    async def get_triggerable(self) -> Tuple[Reminder, ...]:
         raise NotImplementedError
 
     async def store(self, reminder: Reminder) -> None:

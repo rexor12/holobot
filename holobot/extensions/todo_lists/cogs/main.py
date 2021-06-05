@@ -10,11 +10,12 @@ from discord.ext.commands.cooldowns import BucketType
 from discord.ext.commands.core import cooldown, group
 from discord.ext.commands.errors import CommandInvokeError, CommandOnCooldown, MissingRequiredArgument
 from discord.message import Message, MessageReference
+from discord_slash.context import SlashContext
 from holobot.discord.bot import Bot
 from holobot.discord.components import DynamicPager
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.logging import LogInterface
-from typing import Optional
+from typing import Optional, Union
 
 class TodoLists(Cog, name="To-do list"):
     def __init__(self, bot: Bot):
@@ -63,7 +64,7 @@ class TodoLists(Cog, name="To-do list"):
         else:
             await message.reply("You have no to-do items to be removed.")
 
-    async def __create_todo_list_embed(self, context: Context, page: int, page_size: int) -> Optional[Embed]:
+    async def __create_todo_list_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
         items = await self.__todo_item_repository.get_many(str(context.author.id), start_offset, page_size)
         if len(items) == 0:

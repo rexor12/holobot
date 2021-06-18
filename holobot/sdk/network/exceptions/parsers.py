@@ -8,9 +8,3 @@ def try_parse_http_date(value: str) -> Optional[datetime.datetime]:
     if not timetuple:
         return None
     return datetime(*timetuple[:6], tzinfo=datetime.timezone.utc)
-
-def try_parse_int(value: str) -> Optional[int]:
-    try:
-        return int(value)
-    except ValueError:
-        return None

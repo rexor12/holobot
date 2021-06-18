@@ -8,7 +8,7 @@ import asyncio
 DEFAULT_FAILURE_THRESHOLD: int = 5
 DEFAULT_RECOVERY_TIMEOUT: int = 30
 
-async def constant_break(circuit_breaker, error: Exception):
+async def constant_break(circuit_breaker: 'AsyncCircuitBreaker', error: Exception) -> int:
     return circuit_breaker.recovery_timeout
 
 class AsyncCircuitBreaker:
@@ -53,7 +53,7 @@ class AsyncCircuitBreaker:
     @error_evaluator.setter
     def error_evaluator(self, corof):
         if not asyncio.iscoroutinefunction(corof):
-            raise ValueError("The error evaluator be a coroutine function.")
+            raise ValueError("The error evaluator must be a coroutine function.")
         self.__error_evaluator = corof
 
     @property
@@ -66,12 +66,12 @@ class AsyncCircuitBreaker:
     def time_to_recover(self) -> int:
         return int(self.__close_time - time()) if self.state != CircuitState.CLOSED else 0
 
-    async def call(self, fcoro: Callable[[], Coroutine]):
+    async def call(self, fcoro: Callable[[], Coroutine], *args, **kwargs):
         if self.state == CircuitState.OPEN:
             raise CircuitBrokenError("The circuit is broken.")
 
         try:
-            result = await fcoro()
+            result = await fcoro(*args, **kwargs)
         except Exception as error:
             await self.__on_failure(error)
             raise
@@ -82,6 +82,7 @@ class AsyncCircuitBreaker:
     async def __on_failure(self, error: Exception):
         self.__failure_count += 1
         if self.__failure_count >= self.__failure_threshold:
+            # TODO Support datetime and int as well (from the Retry-After HTTP header).
             recovery_timeout = await self.error_evaluator(self, error)
             self.__state = CircuitState.OPEN
             self.__close_time = time() + recovery_timeout

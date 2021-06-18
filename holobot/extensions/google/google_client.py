@@ -10,7 +10,6 @@ from holobot.sdk.logging import LogInterface
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from typing import Dict, Tuple
-from urllib.parse import quote_plus
 
 GCS_API_KEY = "GoogleSearchApiKey"
 GCS_ENGINE_ID = "GoogleSearchEngineId"
@@ -31,7 +30,7 @@ class GoogleClient(GoogleClientInterface):
         self.__api_key: str = self.__configurator.get("Google", GCS_API_KEY, "")
         self.__engine_id: str = self.__configurator.get("Google", GCS_ENGINE_ID, "")
 
-    async def search(self, type: SearchType, query: str, max_results: int = 1) -> Tuple[SearchResult, ...]:
+    async def search(self, search_type: SearchType, query: str, max_results: int = 1) -> Tuple[SearchResult, ...]:
         if not self.__api_key or not self.__engine_id:
             raise InvalidOperationError("Google searches aren't configured.")
         if not query:
@@ -39,17 +38,20 @@ class GoogleClient(GoogleClientInterface):
         
         try:
             # TODO Use circuit breaker.
-            response = await self.__http_client_pool.get(f"https://www.googleapis.com/customsearch/v1", {
+            response = await self.__http_client_pool.get("https://www.googleapis.com/customsearch/v1", {
                 "key": self.__api_key,
                 "cx": self.__engine_id,
-                "searchType": GoogleClient.search_types.get(type, TEXT_SEARCH_TYPE),
+                "searchType": GoogleClient.search_types.get(search_type, TEXT_SEARCH_TYPE),
                 "num": max_results,
-                "q": quote_plus(query)
+                "q": query
             })
         except TooManyRequestsError:
             raise SearchQuotaExhaustedError
         except HttpStatusError as error:
-            self.__log.error("An error has occurred during a Google search HTTP request.", error)
+            self.__log.error("An HTTP error has occurred during a Google search request.", error)
+            raise
+        except Exception as error:
+            self.__log.error(f"An unexpected error has occurred during a Google request. ({type(error)})", error)
             raise
         
         if len(results := response.get("items", [])) == 0:

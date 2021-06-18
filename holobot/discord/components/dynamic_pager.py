@@ -1,11 +1,12 @@
-from discord_slash.model import SlashMessage
 from ..bot import Bot
 from asyncio.exceptions import TimeoutError
 from discord.embeds import Embed
+from discord.errors import HTTPException
 from discord.ext.commands.context import Context
 from discord.message import Message
 from discord.reaction import Reaction
 from discord_slash.context import SlashContext
+from discord_slash.model import SlashMessage
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.logging import LogInterface
 from typing import Awaitable, Callable, Optional, Union
@@ -85,6 +86,10 @@ class DynamicPager(Awaitable[None]):
             except TimeoutError:
                 await message.delete()
                 break
+            except HTTPException as error:
+                # 10008 means the message cannot be found. It was probably deleted by someone.
+                if error.code != 10008:
+                    raise
         self.__log.trace(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
     async def __send_initial_page(self) -> Optional[Union[Message, SlashMessage]]:

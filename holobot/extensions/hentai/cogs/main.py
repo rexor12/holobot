@@ -38,8 +38,7 @@ class Hentai(Cog, name="Hentai"):
             await context.reply("The referenced message has been deleted. Please, type the identifier manually.")
             return
         if isinstance(resolved_message, Message):
-            is_success, value = try_parse_int(resolved_message.content)
-            if not is_success:
+            if (value := try_parse_int(resolved_message.content)) is None:
                 await context.reply(f"The referenced message is something that isn't a proper identifier.")
                 return
             await self.__reply_with_nhentai_url(context, value)

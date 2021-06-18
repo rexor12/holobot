@@ -3,10 +3,14 @@
         "parameters": {
             "IsDebug": false,
             "DiscordToken": "",
-            "GoogleSearchApiKey": "",
-            "GoogleSearchEngineId": "",
             "LogLevel": "Information",
             "HttpPoolSize": 50
+        }
+    },
+    "Google": {
+        "parameters": {
+            "GoogleSearchApiKey": "",
+            "GoogleSearchEngineId": ""
         }
     },
     "Development": {
@@ -28,6 +32,34 @@
         "parameters": {
             "PersistPrices": true,
             "EnableUpdates": true
+        }
+    },
+    "Reminders": {
+        "parameters": {
+            "Enable": true,
+            "ProcessorResolution": 60,
+            "ProcessorDelay": 30,
+            "RemindersPerUserMax": 5,
+            "MessageLengthMin": 10,
+            "MessageLengthMax": 120
+        }
+    },
+    "TodoLists": {
+        "parameters": {
+            "TodoItemsPerUserMax": 10,
+            "MessageLengthMin": 10,
+            "MessageLengthMax": 192
+        }
+    },
+    "OpenWeather": {
+        "parameters": {
+            "ApiKey": "",
+            "EnableCaching": true,
+            "CacheExpiration": 300,
+            "CircuitBreakerFailureThreshold": 1,
+            "CircuitBreakerRecoveryTime": 300,
+            "ApiGatewayBaseUrl": "https://api.openweathermap.org/data/2.5/weather",
+            "ConditionImageBaseUrl": "https://openweathermap.org/img/wn/"
         }
     }
 }

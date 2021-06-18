@@ -25,8 +25,8 @@ def __parse_delimited_into(value: str, args: Dict[str, int]) -> None:
     split_values = value.split(":")
     padded_values = pad_left(split_values, "0", len(TIME_PARTS))
     for index in range(0, len(TIME_PARTS)):
-        is_success, part_value = try_parse_int(padded_values[index])
-        args[TIME_PARTS[index]] = part_value if is_success else 0
+        part_value = try_parse_int(padded_values[index])
+        args[TIME_PARTS[index]] = part_value if part_value is not None else 0
     if len(split_values) == 2:
         args["H"] = args["M"]
         args["M"] = args["S"]
@@ -36,8 +36,8 @@ def __parse_denoted_into(value: str, args: Dict[str, int]) -> None:
     for time_part in args.keys():
         split_values = value.split(time_part, 1)
         if len(split_values) == 2:
-            is_success, part_value = try_parse_int(split_values[0])
-            args[time_part] = part_value if is_success else 0
+            part_value = try_parse_int(split_values[0])
+            args[time_part] = part_value if part_value is not None else 0
             value = split_values[1]
             continue
         value = split_values[0]

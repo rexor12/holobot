@@ -27,9 +27,9 @@ BINANCE_API_BASE_URL: str = "https://api.binance.com/api/v3/"
 
 async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception):
     if (isinstance(error, (TooManyRequestsError, ImATeapotError))
-        and (retry_after := error.attrs.get("retry_after", None)) is not None
-        and isinstance(retry_after, int)):
-        return retry_after
+        and error.retry_after is not None
+        and isinstance(error.retry_after, int)):
+        return error.retry_after
     return circuit_breaker.recovery_timeout
 
 @injectable(StartableInterface)

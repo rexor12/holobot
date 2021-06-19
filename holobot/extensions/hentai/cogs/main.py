@@ -38,7 +38,7 @@ class Hentai(Cog, name="Hentai"):
         ]),
         create_option("id", "The identifier of the title.", SlashCommandOptionType.STRING, True)
     ])
-    async def slash_remove(self, context: SlashContext, site: str, id: str):
+    async def slash_hentai(self, context: SlashContext, site: str, id: str):
         if not site or not id:
             await reply(context, "You must specify both the site and the identifier.")
             return

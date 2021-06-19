@@ -1,3 +1,4 @@
+from discord.enums import ActivityType
 from discord.ext.commands import Context
 from discord.ext.commands.cog import Cog
 from discord.ext.commands.core import group
@@ -21,6 +22,12 @@ class Development(Cog, name="Development"):
     async def dev(self, context: Context):
         if not context.invoked_subcommand:
             await context.reply("You have to specify a sub-command!", delete_after=3)
+    
+    @dev.command(hidden=True)
+    @is_developer
+    async def say(self, context: Context, *, message: str):
+        await context.message.delete()
+        await context.send(message)
     
     @dev.command(hidden=True)
     @is_developer
@@ -72,6 +79,12 @@ class Development(Cog, name="Development"):
         latency = self.__bot.latency * 1000
         await context.reply(f"Pong! ({latency:,.2f}ms)")
     
+    @dev.command(aliases=["status"], hidden=True)
+    @is_developer
+    async def set_status_text(self, context: Context, *, text: str):
+        await self.__bot.set_status_text(ActivityType.watching, text)
+        self.__log.info(f"Changed status text to '{text}'.")
+    
     async def __load(self, context: Context, name: str) -> bool:
         reason: Optional[str] = None
         try:
@@ -97,12 +110,14 @@ class Development(Cog, name="Development"):
             await context.reply(f"The extension '{name}' isn't loaded.")
         return False
 
+    @say.error
     @unload.error
     @load.error
     @reload.error
     @log_level.error
     @eval.error
     @ping.error
+    @set_status_text.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandInvokeError) and isinstance(error.original, AuthorizationError):
             self.__log.warning(f"[Dev] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")

@@ -18,7 +18,7 @@ class Weather(Cog, name="Weather"):
     @cog_ext.cog_subcommand(base="weather", name="basic", description="Displays the current temperature in a city.", options=[
         create_option("city", "The name of the city.", SlashCommandOptionType.STRING, True)
     ])
-    async def slash_remove(self, context: SlashContext, city: str):
+    async def slash_weather_basic(self, context: SlashContext, city: str):
         try:
             weather_data = await self.__weather_client.get_weather_data(city)
             if weather_data.temperature is None:

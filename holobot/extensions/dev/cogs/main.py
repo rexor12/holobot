@@ -83,7 +83,7 @@ class Development(Cog, name="Development"):
     @is_developer
     async def set_status_text(self, context: Context, *, text: str):
         await self.__bot.set_status_text(ActivityType.watching, text)
-        self.__log.info(f"[Cog] [General] Changed status text to '{text}'.")
+        self.__log.info(f"Changed status text to '{text}'.")
     
     async def __load(self, context: Context, name: str) -> bool:
         reason: Optional[str] = None

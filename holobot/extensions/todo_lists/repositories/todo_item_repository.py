@@ -4,7 +4,7 @@ from asyncpg.connection import Connection
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
-from typing import List, Optional
+from typing import Optional, Tuple
 
 @injectable(TodoItemRepositoryInterface)
 class TodoItemRepository(TodoItemRepositoryInterface):
@@ -28,14 +28,14 @@ class TodoItemRepository(TodoItemRepositoryInterface):
                 ), todo_id)
                 return TodoItemRepository.__parse_todo_item(record) if record is not None else None
     
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[TodoItem]:
+    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[TodoItem, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
                 records = await connection.fetch((
                     "SELECT id, user_id, created_at, message FROM todo_lists WHERE user_id = $1 LIMIT $3 OFFSET $2"
                 ), user_id, start_offset, page_size)
-                return [TodoItemRepository.__parse_todo_item(record) for record in records]
+                return tuple([TodoItemRepository.__parse_todo_item(record) for record in records])
     
     async def store(self, todo_item: TodoItem) -> None:
         async with self.__database_manager.acquire_connection() as connection:

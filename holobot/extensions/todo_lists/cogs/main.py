@@ -42,7 +42,7 @@ class TodoLists(Cog, name="To-do list"):
     
     @cog_ext.cog_subcommand(base="todo", name="add", description="Adds a new item to your to-do list.", options=[
         create_option("description", "The description of the to-do item.", SlashCommandOptionType.STRING, True)
-    ], guild_ids=[822228166381797427])
+    ])
     async def slash_add(self, context: SlashContext, description: str):
         todo_item = TodoItem()
         todo_item.user_id = str(context.author.id)
@@ -60,7 +60,7 @@ class TodoLists(Cog, name="To-do list"):
     async def view_all(self, context: Context):
         await DynamicPager(self.__bot, context, self.__create_todo_list_embed)
     
-    @cog_ext.cog_subcommand(base="todo", name="view", description="Displays all your to-do items.", guild_ids=[822228166381797427])
+    @cog_ext.cog_subcommand(base="todo", name="view", description="Displays all your to-do items.")
     async def slash_view_all(self, context: SlashContext):
         await DynamicPager(self.__bot, context, self.__create_todo_list_embed)
     
@@ -72,7 +72,7 @@ class TodoLists(Cog, name="To-do list"):
     
     @cog_ext.cog_subcommand(base="todo", name="remove", description="Removes a to-do item from your list.", options=[
         create_option("identifier", "The identifier of the to-do item.", SlashCommandOptionType.INTEGER, True)
-    ], guild_ids=[822228166381797427])
+    ])
     async def slash_remove(self, context: SlashContext, identifier: int):
         try:
             await self.__todo_item_manager.delete_by_user(str(context.author.id), identifier)
@@ -91,7 +91,7 @@ class TodoLists(Cog, name="To-do list"):
         else:
             await message.reply("You have no to-do items to be removed.")
     
-    @cog_ext.cog_subcommand(base="todo", name="removeall", description="Removes all to-do items from your list.", guild_ids=[822228166381797427])
+    @cog_ext.cog_subcommand(base="todo", name="removeall", description="Removes all to-do items from your list.")
     async def slash_remove_all(self, context: SlashContext):
         deleted_count = await self.__todo_item_manager.delete_all(str(context.author.id))
         if deleted_count > 0:

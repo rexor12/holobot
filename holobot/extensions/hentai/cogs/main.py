@@ -94,7 +94,7 @@ class Hentai(Cog, name="Hentai"):
         if isinstance(error, CommandInvokeError) and isinstance(error.original, TimeoutError):
             return
         await context.reply("An internal error has occurred. Please, try again later.")
-        self.__log.error(f"[Cogs] [Hentai] Failed to process the command '{context.command}'.", error)
+        self.__log.error(f"Failed to process the command '{context.command}'.", error)
     
 def setup(bot: Bot):
     bot.add_cog(Hentai(bot))

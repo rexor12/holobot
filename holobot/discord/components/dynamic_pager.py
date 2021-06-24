@@ -59,7 +59,7 @@ class DynamicPager(Awaitable[None]):
         context = self.__context
         if not (message := await self.__send_initial_page()):
             return
-        self.__log.trace(f"[DynamicPager] Pager created. {{ UserId = {get_author_id(self.__context)} }}")
+        self.__log.trace(f"Pager created. {{ UserId = {get_author_id(self.__context)} }}")
 
         while True:
             try:
@@ -82,7 +82,7 @@ class DynamicPager(Awaitable[None]):
                     continue
 
                 await message.edit(embed=embed)
-                self.__log.trace(f"[DynamicPager] Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
+                self.__log.trace(f"Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
             except TimeoutError:
                 await message.delete()
                 break
@@ -90,7 +90,7 @@ class DynamicPager(Awaitable[None]):
                 # 10008 means the message cannot be found. It was probably deleted by someone.
                 if error.code != 10008:
                     raise
-        self.__log.trace(f"[DynamicPager] Pager destroyed. {{ UserId = {self.__context.author.id} }}")
+        self.__log.trace(f"Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
     async def __send_initial_page(self) -> Optional[Union[Message, SlashMessage]]:
         if not (embed := await self.__embed_factory(self.__context, self.current_page, DEFAULT_PAGE_SIZE)):

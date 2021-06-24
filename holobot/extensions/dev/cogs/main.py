@@ -68,7 +68,7 @@ class Development(Cog, name="Development"):
     @is_developer
     async def eval(self, context: Context, *, expression: str):
         if not self.__configurator.get("General", "IsDebug", False):
-            self.__log.warning(f"[Dev] [Development] The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
+            self.__log.warning(f"The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
             return
         self.__log.info(f"Evaluating the following expression:\n{expression}")
         eval(expression)
@@ -120,9 +120,9 @@ class Development(Cog, name="Development"):
     @set_status_text.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandInvokeError) and isinstance(error.original, AuthorizationError):
-            self.__log.warning(f"[Dev] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
+            self.__log.warning(f"The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
             return
-        self.__log.error(f"[Dev] [Development] An error has occurred while executing the command '{context.command}'.", error)
+        self.__log.error(f"An error has occurred while executing the command '{context.command}'.", error)
         await context.author.send(f"Your command '{context.command}' generated the following error: {error}")
         await context.reply("An error has occurred while executing your command. A DM has been sent to you with the details.")
 

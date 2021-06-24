@@ -16,7 +16,7 @@ class Configurator(ConfiguratorInterface):
         self.__configs = Configurator.__load_config(services.get(EnvironmentInterface))
         services.get(LogInterface).with_name(
             "Framework", "Configurator"
-        ).info(f"[Configurator] Loaded configuration. {{ SectionCount = {len(self.__configs)} }}")
+        ).info(f"Loaded configuration. {{ SectionCount = {len(self.__configs)} }}")
 
     def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
         # TODO Temporary change to support Heroku's way of configuration.

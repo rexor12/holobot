@@ -30,10 +30,10 @@ class ReminderProcessor(StartableInterface):
     
     async def start(self):
         if not self.__configurator.get("Reminders", "Enable", True):
-            self.__log.info("[ReminderProcessor] Reminders are disabled by configuration.")
+            self.__log.info("Reminders are disabled by configuration.")
             return
         
-        self.__log.info(f"[ReminderProcessor] Reminders are enabled. {{ Delay = {self.__process_delay}, Resolution = {self.__process_resolution} }}")
+        self.__log.info(f"Reminders are enabled. {{ Delay = {self.__process_delay}, Resolution = {self.__process_resolution} }}")
         self.__background_loop = AsyncLoop(self.__process_reminders_async, self.__process_delay, self.__process_resolution)
         self.__background_task = asyncio.create_task(self.__background_loop())
     
@@ -42,10 +42,10 @@ class ReminderProcessor(StartableInterface):
         if loop: loop.cancel()
         task = self.__background_task
         if task: await task
-        self.__log.debug("[ReminderProcessor] Stopped background task.")
+        self.__log.debug("Stopped background task.")
     
     async def __process_reminders_async(self):
-        self.__log.trace("[ReminderProcessor] Processing reminders...")
+        self.__log.trace("Processing reminders...")
         processed_reminders: int = 0
         try:
             reminders = await self.__reminder_repository.get_triggerable()
@@ -60,7 +60,7 @@ class ReminderProcessor(StartableInterface):
                     await self.__reminder_repository.delete(reminder.id)
                 processed_reminders += 1
         except Exception as error:
-            self.__log.error(f"[ReminderProcessor] Processing failed. Further processing will stop. {{ Reason = UnexpectedError }}", error)
+            self.__log.error(f"Processing failed. Further processing will stop. {{ Reason = UnexpectedError }}", error)
             raise
         finally:
-            self.__log.trace(f"[ReminderProcessor] Processed reminders. {{ Count = {processed_reminders} }}")
+            self.__log.trace(f"Processed reminders. {{ Count = {processed_reminders} }}")

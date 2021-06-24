@@ -29,7 +29,7 @@ class TodoItemManager(TodoItemManagerInterface):
 
         await self.__assert_todo_item_count(todo_item.user_id)
         await self.__todo_item_repository.store(todo_item)
-        self.__log.debug(f"[TodoItemManager] Set new to-do item. {{ UserId = {todo_item.user_id} }}")
+        self.__log.debug(f"Set new to-do item. {{ UserId = {todo_item.user_id} }}")
     
     async def delete_by_user(self, user_id: str, todo_item_id: int) -> None:
         if not user_id:

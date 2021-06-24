@@ -24,7 +24,7 @@ class Kernel(KernelInterface):
         log = service_collection.get(LogInterface).with_name("Framework", "Kernel")
         configurator = service_collection.get(ConfiguratorInterface)
         log.log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
-        log.info("[Kernel] Starting application...")
+        log.info("Starting application...")
 
         event_loop.run_until_complete(service_collection.get(DatabaseManagerInterface).upgrade_all())
 
@@ -33,13 +33,13 @@ class Kernel(KernelInterface):
 
         integrations = service_collection.get_all(IntegrationInterface)
         integration_tasks = tuple([event_loop.create_task(integration.start()) for integration in integrations])
-        log.debug(f"[Kernel] Started integrations. {{ Count = {len(integration_tasks)} }}")
+        log.debug(f"Started integrations. {{ Count = {len(integration_tasks)} }}")
 
         try:
-            log.info("[Kernel] Application started.")
+            log.info("Application started.")
             event_loop.run_forever()
         except KeyboardInterrupt:
-            log.info("[Kernel] Shutting down due to keyboard interrupt...")
+            log.info("Shutting down due to keyboard interrupt...")
             for integration in integrations:
                 event_loop.run_until_complete(integration.stop())
         finally:
@@ -48,4 +48,4 @@ class Kernel(KernelInterface):
             event_loop.run_until_complete(service_collection.close())
             event_loop.stop()
             event_loop.close()
-        log.info("[Kernel] Successful shutdown.")
+        log.info("Successful shutdown.")

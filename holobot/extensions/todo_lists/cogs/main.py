@@ -149,7 +149,7 @@ class TodoLists(Cog, name="To-do list"):
             await context.reply("That to-do item doesn't exist or belong to you.")
             return
         await context.reply("An internal error has occurred. Please, try again later.")
-        self.__log.error(f"[Cogs] [TodoLists] Failed to process the command '{context.command}'.", error)
+        self.__log.error(f"Failed to process the command '{context.command}'.", error)
     
 def setup(bot: Bot):
     bot.add_cog(TodoLists(bot))

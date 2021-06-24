@@ -34,7 +34,7 @@ class Reminders(Cog, name="Reminders"):
     def __init__(self, bot: Bot) -> None:
         super().__init__()
         self.__bot: Bot = bot
-        self.__log: LogInterface = bot.service_collection.get(LogInterface)
+        self.__log: LogInterface = bot.service_collection.get(LogInterface).with_name("Reminders", "Reminders")
         self.__reminder_manager: ReminderManagerInterface = bot.service_collection.get(ReminderManagerInterface)
 
     @group(aliases=["r"], brief="A group of reminder related commands.")
@@ -151,7 +151,7 @@ class Reminders(Cog, name="Reminders"):
             await context.reply("You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
             return
         await context.reply("An internal error has occurred. Please, try again later.")
-        self.__log.error(f"[Cogs] [Reminders] Failed to process the command '{context.command}'.", error)
+        self.__log.error(f"Failed to process the command '{context.command}'.", error)
 
 def setup(bot: Bot):
     bot.add_cog(Reminders(bot))

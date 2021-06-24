@@ -18,13 +18,13 @@ class Messaging(MessagingInterface):
 
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
-        self.__log: LogInterface = services.get(LogInterface)
+        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "Messaging")
     
     async def send_dm(self, user_id: str, message: str) -> None:
         if Messaging.bot is None:
-            self.__log.warning(f"[Messaging] Bot isn't initialized. {{ UserId = {user_id}, Operation = DM }}")
+            self.__log.warning(f"Bot isn't initialized. {{ UserId = {user_id}, Operation = DM }}")
             return
         if not (user := Messaging.bot.get_user_by_id(int(user_id))):
-            self.__log.warning(f"[Messaging] Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
+            self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         await user.send(message)

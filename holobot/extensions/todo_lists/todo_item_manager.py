@@ -14,7 +14,7 @@ class TodoItemManager(TodoItemManagerInterface):
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
         self.__configurator = services.get(ConfiguratorInterface)
-        self.__log = services.get(LogInterface)
+        self.__log = services.get(LogInterface).with_name("TodoLists", "TodoItemManager")
         self.__todo_item_repository: TodoItemRepositoryInterface = services.get(TodoItemRepositoryInterface)
         self.__todo_items_per_user_max: int = self.__configurator.get("TodoLists", "TodoItemsPerUserMax", 5)
         self.__message_length_min: int = self.__configurator.get("TodoLists", "MessageLengthMin", 10)
@@ -29,7 +29,7 @@ class TodoItemManager(TodoItemManagerInterface):
 
         await self.__assert_todo_item_count(todo_item.user_id)
         await self.__todo_item_repository.store(todo_item)
-        self.__log.debug(f"[TodoItemManager] Set new to-do item. {{ UserId = {todo_item.user_id} }}")
+        self.__log.debug(f"Set new to-do item. {{ UserId = {todo_item.user_id} }}")
     
     async def delete_by_user(self, user_id: str, todo_item_id: int) -> None:
         if not user_id:

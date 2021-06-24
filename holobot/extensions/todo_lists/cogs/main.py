@@ -23,7 +23,7 @@ class TodoLists(Cog, name="To-do list"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot: Bot = bot
-        self.__log: LogInterface = bot.service_collection.get(LogInterface)
+        self.__log: LogInterface = bot.service_collection.get(LogInterface).with_name("TodoLists", "TodoLists")
         self.__todo_item_manager: TodoItemManagerInterface = bot.service_collection.get(TodoItemManagerInterface)
     
     @group(aliases=["td"], brief="A group of reminder related commands.")
@@ -149,7 +149,7 @@ class TodoLists(Cog, name="To-do list"):
             await context.reply("That to-do item doesn't exist or belong to you.")
             return
         await context.reply("An internal error has occurred. Please, try again later.")
-        self.__log.error(f"[Cogs] [TodoLists] Failed to process the command '{context.command}'.", error)
+        self.__log.error(f"Failed to process the command '{context.command}'.", error)
     
 def setup(bot: Bot):
     bot.add_cog(TodoLists(bot))

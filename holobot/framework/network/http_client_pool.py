@@ -22,12 +22,12 @@ class HttpClientPool(HttpClientPoolInterface):
             TooManyRequestsError.STATUS_CODE: TooManyRequestsError.from_headers
         }
         self.__session: ClientSession = ClientSession()
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Framework", "HttpClientPool")
 
     async def close(self):
-        self.__log.debug("[HttpClientPool] Closing session...")
+        self.__log.debug("Closing session...")
         await self.__session.close()
-        self.__log.debug("[HttpClientPool] Successfully closed session.")
+        self.__log.debug("Successfully closed session.")
 
     async def get(self, url: str, query_parameters: Dict[str, Any] = None) -> Any:
         try:

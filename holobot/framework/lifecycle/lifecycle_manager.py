@@ -10,7 +10,7 @@ from typing import Tuple
 class LifecycleManager(LifecycleManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__startables: Tuple[StartableInterface, ...] = service_collection.get_all(StartableInterface)
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Framework", "LifecycleManager")
     
     async def start_all(self):
         errors = []
@@ -21,7 +21,7 @@ class LifecycleManager(LifecycleManagerInterface):
                 errors.append(error)
         if len(errors) > 0:
             raise AggregateError(errors)
-        self.__log.info("[LifecycleManager] Successfully started all services.")
+        self.__log.info("Successfully started all services.")
     
     async def stop_all(self):
         errors = []
@@ -32,4 +32,4 @@ class LifecycleManager(LifecycleManagerInterface):
                 errors.append(error)
         if len(errors) > 0:
             raise AggregateError(errors)
-        self.__log.info("[LifecycleManager] Successfully stopped all services.")
+        self.__log.info("Successfully stopped all services.")

@@ -14,7 +14,7 @@ from typing import Tuple
 class ReminderManager(ReminderManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()
-        self.__log: LogInterface = service_collection.get(LogInterface)
+        self.__log: LogInterface = service_collection.get(LogInterface).with_name("Reminders", "ReminderManager")
         self.__reminder_repository: ReminderRepositoryInterface = service_collection.get(ReminderRepositoryInterface)
         configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
@@ -37,7 +37,7 @@ class ReminderManager(ReminderManagerInterface):
         else:
             raise ArgumentError("occurrence", "Either the frequency or the specific time of the occurrence must be specified.")
 
-        self.__log.debug(f"[ReminderManager] Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger} }}")
+        self.__log.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger} }}")
         return reminder
     
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:

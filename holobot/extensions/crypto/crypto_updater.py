@@ -38,7 +38,7 @@ class CryptoUpdater(StartableInterface):
         self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)
         self.__crypto_repository: CryptoRepositoryInterface = service_collection.get(CryptoRepositoryInterface)
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Crypto", "CryptoUpdater")
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(
@@ -47,39 +47,39 @@ class CryptoUpdater(StartableInterface):
 
     async def start(self):
         if not self.__configurator.get("Crypto", "EnableUpdates", False):
-            self.__log.info("[CryptoUpdater] Updates are disabled by configuration.")
+            self.__log.info("Updates are disabled by configuration.")
             return
 
         self.__background_loop = AsyncLoop(self.__update_prices, UPDATE_INTERVAL, INITIAL_UPDATE_DELAY)
         self.__background_task = asyncio.create_task(self.__background_loop())
-        self.__log.info(f"[CryptoUpdater] Started background task. {{ Delay = {INITIAL_UPDATE_DELAY}, Interval = {UPDATE_INTERVAL} }}")
+        self.__log.info(f"Started background task. {{ Delay = {INITIAL_UPDATE_DELAY}, Interval = {UPDATE_INTERVAL} }}")
         
     async def stop(self):
         loop = self.__background_loop
         if loop: loop.cancel()
         task = self.__background_task
         if task: await task
-        self.__log.debug("[CryptoUpdater] Stopped background task.")
+        self.__log.debug("Stopped background task.")
     
     # TODO Automatic detection of the addition/removal of a symbol.
     async def __update_prices(self):
-        self.__log.debug("[CryptoUpdater] Updating prices...")
+        self.__log.debug("Updating prices...")
         try:
             prices = await self.__circuit_breaker(self.__get_symbol_prices)
             if len(prices) > 0:
                 await self.__crypto_repository.update_prices(prices)
-                self.__log.debug(f"[CryptoUpdater] Updated prices. {{ SymbolCount = {len(prices)} }}")
-            else: self.__log.warning(f"[CryptoUpdater] Got no symbol data.")
+                self.__log.debug(f"Updated prices. {{ SymbolCount = {len(prices)} }}")
+            else: self.__log.warning(f"Got no symbol data.")
         except (TooManyRequestsError, ImATeapotError) as error:
-            self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
+            self.__log.error(f"Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except HttpStatusError as error:
-            self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n", error)
+            self.__log.error(f"Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n", error)
         except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, TimeoutError, AsyncIoTimeoutError) as error:
-            self.__log.error(f"[CryptoUpdater] Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
+            self.__log.error(f"Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except CircuitBrokenError:
             pass
         except Exception as error:
-            self.__log.error(f"[CryptoUpdater] Update failed. Updates will stop. {{ Reason = UnexpectedError }}", error)
+            self.__log.error(f"Update failed. Updates will stop. {{ Reason = UnexpectedError }}", error)
             raise
 
     async def __get_symbol_prices(self) -> List[PriceData]:

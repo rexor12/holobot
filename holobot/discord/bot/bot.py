@@ -12,7 +12,7 @@ class Bot(commands.Bot, BotInterface):
 	def __init__(self, services: ServiceCollectionInterface, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.service_collection: ServiceCollectionInterface = services
-		self.__log: LogInterface = services.get(LogInterface)
+		self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "Bot")
 	
 	async def set_status_text(self, type: ActivityType, text: str, status: Status = None):
 		await self.change_presence(

@@ -25,7 +25,7 @@ class General(Cog, name="General"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot = bot
-        self.__log = bot.service_collection.get(LogInterface)
+        self.__log = bot.service_collection.get(LogInterface).with_name("General", "General")
         self.__environment = bot.service_collection.get(EnvironmentInterface)
     
     @cooldown(1, 10, BucketType.member)

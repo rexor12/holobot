@@ -33,7 +33,7 @@ class BotService(BotServiceInterface):
         super().__init__()
         self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = services.get_all(ExtensionProviderInterface)
-        self.__log: LogInterface = services.get(LogInterface)
+        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "BotService")
         self.__bot: Bot = self.__initialize_bot(services)
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True)
         self.__bot_task: Optional[Task] = None

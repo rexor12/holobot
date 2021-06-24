@@ -16,7 +16,7 @@ class Development(Cog, name="Development"):
         super().__init__()
         self.__bot = bot
         self.__configurator = bot.service_collection.get(ConfiguratorInterface)
-        self.__log = bot.service_collection.get(LogInterface)
+        self.__log = bot.service_collection.get(LogInterface).with_name("Dev", "Development")
 
     @group(hidden=True)
     async def dev(self, context: Context):
@@ -59,7 +59,7 @@ class Development(Cog, name="Development"):
     @dev.command(hidden=True)
     @is_developer
     async def log_level(self, context: Context, log_level: str):
-        self.__log.log_level = LogLevel.parse(log_level)
+        self.__log.set_global_log_level(LogLevel.parse(log_level))
         await context.reply("The log level has been changed.")
     
     # This is an extremely dangerous piece of code because it evaluates ANY expression.
@@ -68,7 +68,7 @@ class Development(Cog, name="Development"):
     @is_developer
     async def eval(self, context: Context, *, expression: str):
         if not self.__configurator.get("General", "IsDebug", False):
-            self.__log.warning(f"[Dev] [Development] The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
+            self.__log.warning(f"The user '{context.author.id}' attempted to evaluate arbitrary code, but debug mode is disabled.")
             return
         self.__log.info(f"Evaluating the following expression:\n{expression}")
         eval(expression)
@@ -120,9 +120,9 @@ class Development(Cog, name="Development"):
     @set_status_text.error
     async def on_error(self, context: Context, error):
         if isinstance(error, CommandInvokeError) and isinstance(error.original, AuthorizationError):
-            self.__log.warning(f"[Dev] [Development] The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
+            self.__log.warning(f"The unauthorized user with the identifier '{context.author.id}' tried to execute '{context.command}'.")
             return
-        self.__log.error(f"[Dev] [Development] An error has occurred while executing the command '{context.command}'.", error)
+        self.__log.error(f"An error has occurred while executing the command '{context.command}'.", error)
         await context.author.send(f"Your command '{context.command}' generated the following error: {error}")
         await context.reply("An error has occurred while executing your command. A DM has been sent to you with the details.")
 

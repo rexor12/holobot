@@ -8,7 +8,8 @@ from discord.partial_emoji import PartialEmoji
 from discord.user import User
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashMessage
-from typing import Callable, Optional, Union
+from holobot.sdk.utils import first_or_default
+from typing import List, Optional, Tuple, Union
 
 import re
 
@@ -22,15 +23,20 @@ def find_member(context: Union[Context, SlashContext], name_or_mention: str) -> 
     if not guild or not isinstance(guild, Guild):
         return None
     
-    predicate: Callable[[User], bool] = lambda user: name_or_mention in user.display_name or name_or_mention in user.name
     if (match := mention_regex.match(name_or_mention)) is not None:
-        predicate = lambda user: str(user.id) == match.group("id")
+        captured_match = match
+        return first_or_default(guild.members, lambda user: str(user.id) == captured_match.group("id"))
+    
+    relevant_members: List[Tuple[User, int]] = []
     for member in guild.members:
         # An attempt to fix type hints for the messy discord.py.
         member: User
-        if predicate(member):
-            return member
-    return None
+        relevance = __match_user_with_relevance(name_or_mention, member)
+        if relevance > 0:
+            relevant_members.append((member, relevance))
+    
+    best_match = first_or_default(sorted(relevant_members, key=lambda p: p[1], reverse=True))
+    return best_match[0] if best_match is not None else None
 
 async def find_emoji(context: Union[Context, SlashContext], mention: str) -> Optional[PartialEmoji]:
     try:
@@ -52,3 +58,35 @@ async def reply(context: Union[Context, SlashContext], content: Union[str, Embed
         if isinstance(content, str):
             return await context.reply(content)
         else: return await context.reply(embed=content)
+
+def __match_with_relevance(pattern: str, value: str) -> int:
+    relevance = 0
+    pattern_lower = pattern.lower()
+    value_lower = value.lower()
+
+    # Containment, different casing.
+    if not pattern_lower in value_lower:
+        return relevance
+    relevance = relevance + 1
+
+    # Full match, different casing.
+    if pattern_lower == value_lower:
+        relevance = relevance + 1
+    
+    # Containment, same casing.
+    if not pattern in value:
+        return relevance
+    relevance = relevance + 1
+
+    # Full match, same casing.
+    if not pattern == value:
+        return relevance
+    
+    return relevance + 1
+
+def __match_user_with_relevance(pattern: str, user: User) -> int:
+    # Display names are more relevant than real names.
+    relevance = __match_with_relevance(pattern, user.display_name)
+    if relevance > 0:
+        return relevance + 1
+    return __match_with_relevance(pattern, user.name)

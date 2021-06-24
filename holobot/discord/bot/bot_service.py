@@ -47,15 +47,15 @@ class BotService(BotServiceInterface):
         if not (discord_token := self.__configurator.get("General", "DiscordToken", "")):
             raise ValueError("The Discord token is not configured.")
         
-        self.__log.info("[BotService] Loading extensions...")
+        self.__log.info("Loading extensions...")
         extension_count = 0
         for extension_provider in self.__extension_providers:
             for package in extension_provider.get_packages():
-                self.__log.debug(f"[BotService] Loading extension... {{ Package = {package} }}")
+                self.__log.debug(f"Loading extension... {{ Package = {package} }}")
                 self.__bot.load_extension(package)
                 extension_count += 1
-                self.__log.debug(f"[BotService] Loaded extension. {{ Package = {package} }}")
-        self.__log.info(f"[BotService] Successfully loaded extensions. {{ Count = {extension_count} }}")
+                self.__log.debug(f"Loaded extension. {{ Package = {package} }}")
+        self.__log.info(f"Successfully loaded extensions. {{ Count = {extension_count} }}")
         
         self.__bot_task = asyncio.get_event_loop().create_task(self.__bot.start(discord_token))
     
@@ -69,7 +69,7 @@ class BotService(BotServiceInterface):
 
     async def send_dm(self, user_id: str, message: str) -> None:
         if not (user := self.__bot.get_user_by_id(int(user_id))):
-            self.__log.warning(f"[BotService] Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
+            self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         await user.send(message)
     
@@ -88,4 +88,4 @@ class BotService(BotServiceInterface):
         return bot
 	
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
-        self.__log.write(LogLevel.DEBUG, "[BotService] An error has occurred while processing a slash command.", exception)
+        self.__log.write(LogLevel.DEBUG, "An error has occurred while processing a slash command.", exception)

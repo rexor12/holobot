@@ -14,7 +14,9 @@ CONFIG_FILE_NAME = "config.json"
 class Configurator(ConfiguratorInterface):
     def __init__(self, services: ServiceCollectionInterface):
         self.__configs = Configurator.__load_config(services.get(EnvironmentInterface))
-        services.get(LogInterface).info(f"[Configurator] Loaded configuration. {{ SectionCount = {len(self.__configs)} }}")
+        services.get(LogInterface).with_name(
+            "Framework", "Configurator"
+        ).info(f"[Configurator] Loaded configuration. {{ SectionCount = {len(self.__configs)} }}")
 
     def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
         # TODO Temporary change to support Heroku's way of configuration.

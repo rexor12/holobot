@@ -10,7 +10,7 @@ from typing import Tuple
 class LifecycleManager(LifecycleManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__startables: Tuple[StartableInterface, ...] = service_collection.get_all(StartableInterface)
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Framework", "LifecycleManager")
     
     async def start_all(self):
         errors = []

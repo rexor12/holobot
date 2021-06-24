@@ -17,7 +17,7 @@ class DatabaseManager(DatabaseManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__migrations: Tuple[MigrationInterface, ...] = service_collection.get_all(MigrationInterface)
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Framework", "DatabaseManager")
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
     
     async def close(self):

@@ -15,7 +15,7 @@ class CryptoRepository(CryptoRepositoryInterface):
     def __init__(self, service_collection: ServiceCollectionInterface):
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__database_manager: DatabaseManagerInterface = service_collection.get(DatabaseManagerInterface)
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Crypto", "CryptoRepository")
         self.__listeners: Tuple[ListenerInterface[SymbolUpdateEvent], ...] = service_collection.get_all(ListenerInterface[SymbolUpdateEvent])
         self.__cache: ConcurrentCache[str, Optional[PriceData]] = ConcurrentCache()
 

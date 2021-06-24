@@ -34,7 +34,7 @@ class Reminders(Cog, name="Reminders"):
     def __init__(self, bot: Bot) -> None:
         super().__init__()
         self.__bot: Bot = bot
-        self.__log: LogInterface = bot.service_collection.get(LogInterface)
+        self.__log: LogInterface = bot.service_collection.get(LogInterface).with_name("Reminders", "Reminders")
         self.__reminder_manager: ReminderManagerInterface = bot.service_collection.get(ReminderManagerInterface)
 
     @group(aliases=["r"], brief="A group of reminder related commands.")

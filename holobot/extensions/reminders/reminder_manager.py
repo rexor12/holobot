@@ -14,7 +14,7 @@ from typing import Tuple
 class ReminderManager(ReminderManagerInterface):
     def __init__(self, service_collection: ServiceCollectionInterface) -> None:
         super().__init__()
-        self.__log: LogInterface = service_collection.get(LogInterface)
+        self.__log: LogInterface = service_collection.get(LogInterface).with_name("Reminders", "ReminderManager")
         self.__reminder_repository: ReminderRepositoryInterface = service_collection.get(ReminderRepositoryInterface)
         configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
         self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)

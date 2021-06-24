@@ -23,7 +23,7 @@ class TodoLists(Cog, name="To-do list"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot: Bot = bot
-        self.__log: LogInterface = bot.service_collection.get(LogInterface)
+        self.__log: LogInterface = bot.service_collection.get(LogInterface).with_name("TodoLists", "TodoLists")
         self.__todo_item_manager: TodoItemManagerInterface = bot.service_collection.get(TodoItemManagerInterface)
     
     @group(aliases=["td"], brief="A group of reminder related commands.")

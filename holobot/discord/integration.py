@@ -9,7 +9,7 @@ class Integration(IntegrationInterface):
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
         self.__bot: BotServiceInterface = services.get(BotServiceInterface)
-        self.__log: LogInterface = services.get(LogInterface)
+        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "Integration")
 
     async def start(self) -> None:
         self.__log.debug("[Integration] Starting Discord integration...")

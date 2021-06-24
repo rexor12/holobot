@@ -17,7 +17,7 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
     def __init__(self, services: ServiceCollectionInterface):
         self.__database_manager = services.get(DatabaseManagerInterface)
         self.__messaging = services.get(MessagingInterface)
-        self.__log = services.get(LogInterface)
+        self.__log = services.get(LogInterface).with_name("Crypto", "AlertManager")
     
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
         frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):

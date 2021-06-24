@@ -21,7 +21,7 @@ class ReminderProcessor(StartableInterface):
         super().__init__()
         self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
         self.__messaging: MessagingInterface = services.get(MessagingInterface)
-        self.__log: LogInterface = services.get(LogInterface)
+        self.__log: LogInterface = services.get(LogInterface).with_name("Reminders", "ReminderProcessor")
         self.__reminder_repository: ReminderRepositoryInterface = services.get(ReminderRepositoryInterface)
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None

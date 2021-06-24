@@ -24,7 +24,7 @@ class Hentai(Cog, name="Hentai"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot: Bot = bot
-        self.__log: LogInterface = bot.service_collection.get(LogInterface)
+        self.__log: LogInterface = bot.service_collection.get(LogInterface).with_name("Hentai", "Hentai")
 
     @group(aliases=["h"], brief="A group of hentai related commands.")
     async def hentai(self, context: Context):

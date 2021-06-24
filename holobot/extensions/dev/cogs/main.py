@@ -16,7 +16,7 @@ class Development(Cog, name="Development"):
         super().__init__()
         self.__bot = bot
         self.__configurator = bot.service_collection.get(ConfiguratorInterface)
-        self.__log = bot.service_collection.get(LogInterface)
+        self.__log = bot.service_collection.get(LogInterface).with_name("Dev", "Development")
 
     @group(hidden=True)
     async def dev(self, context: Context):

@@ -38,7 +38,7 @@ class CryptoUpdater(StartableInterface):
         self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)
         self.__crypto_repository: CryptoRepositoryInterface = service_collection.get(CryptoRepositoryInterface)
         self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__log = service_collection.get(LogInterface)
+        self.__log = service_collection.get(LogInterface).with_name("Crypto", "CryptoUpdater")
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(

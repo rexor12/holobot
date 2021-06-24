@@ -20,7 +20,7 @@ class Google(Cog, name="Google"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__google_client = bot.service_collection.get(GoogleClientInterface)
-        self.__log = bot.service_collection.get(LogInterface)
+        self.__log = bot.service_collection.get(LogInterface).with_name("Google", "Google")
     
     @group(aliases=["g"], brief="A group of Google Search Engine related commands.")
     async def google(self, context: Context):

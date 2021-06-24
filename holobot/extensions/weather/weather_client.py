@@ -23,7 +23,7 @@ class WeatherClient(WeatherClientInterface):
         super().__init__()
         self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
         self.__http_client_pool: HttpClientPoolInterface = services.get(HttpClientPoolInterface)
-        self.__log: LogInterface = services.get(LogInterface)
+        self.__log: LogInterface = services.get(LogInterface).with_name("Weather", "WeatherClient")
         self.__api_gateway: str = self.__configurator.get(CONFIG_SECTION, API_GATEWAY_PARAMETER, "")
         self.__api_key: str = self.__configurator.get(CONFIG_SECTION, API_KEY_PARAMETER, "")
         self.__condition_image_base_url: str = self.__configurator.get(CONFIG_SECTION, CONDITION_IMAGE_BASE_URL_PARAMETER, "")

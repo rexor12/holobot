@@ -18,7 +18,7 @@ class Messaging(MessagingInterface):
 
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
-        self.__log: LogInterface = services.get(LogInterface)
+        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "Messaging")
     
     async def send_dm(self, user_id: str, message: str) -> None:
         if Messaging.bot is None:

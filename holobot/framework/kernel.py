@@ -21,7 +21,7 @@ class Kernel(KernelInterface):
         ServiceDiscovery.register_services_by_module("holobot", service_collection)
         # self.register_services_by_module("holobot.extensions.crypto", service_collection)
         
-        log = service_collection.get(LogInterface)
+        log = service_collection.get(LogInterface).with_name("Framework", "Kernel")
         configurator = service_collection.get(ConfiguratorInterface)
         log.log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
         log.info("[Kernel] Starting application...")

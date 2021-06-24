@@ -26,7 +26,7 @@ class DynamicPager(Awaitable[None]):
         self.__bot = bot
         self.__context = context
         self.__embed_factory = embed_factory
-        self.__log = bot.service_collection.get(LogInterface)
+        self.__log = bot.service_collection.get(LogInterface).with_name("Discord", "DynamicPager")
     
     def __await__(self):
         yield from asyncio.get_event_loop().create_task(self.__run())

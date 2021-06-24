@@ -59,7 +59,7 @@ class Development(Cog, name="Development"):
     @dev.command(hidden=True)
     @is_developer
     async def log_level(self, context: Context, log_level: str):
-        self.__log.log_level = LogLevel.parse(log_level)
+        self.__log.set_global_log_level(LogLevel.parse(log_level))
         await context.reply("The log level has been changed.")
     
     # This is an extremely dangerous piece of code because it evaluates ANY expression.

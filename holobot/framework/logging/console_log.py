@@ -9,6 +9,8 @@ import tzlocal
 
 @injectable(LogInterface)
 class ConsoleLog(LogBase):
+    """A logger that formats and writes messages to the console."""
+
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
 

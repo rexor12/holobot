@@ -1,2 +1,3 @@
+from .invalid_reminder_config_error import InvalidReminderConfigError
 from .invalid_reminder_error import InvalidReminderError
 from .too_many_reminders_error import TooManyRemindersError

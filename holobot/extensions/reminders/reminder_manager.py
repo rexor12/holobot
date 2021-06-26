@@ -1,4 +1,4 @@
-from .exceptions import InvalidReminderError, TooManyRemindersError
+from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
 from .models import Reminder, ReminderConfig
 from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import ReminderRepositoryInterface
@@ -8,7 +8,7 @@ from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Tuple
+from typing import Optional, Tuple
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
@@ -24,10 +24,14 @@ class ReminderManager(ReminderManagerInterface):
     async def set_reminder(self, user_id: str, config: ReminderConfig) -> Reminder:
         if not (self.__message_length_min <= len(config.message) <= self.__message_length_max):
             raise ArgumentError("message", f"The length of the message must be between {self.__message_length_min} and {self.__message_length_max} characters.")
+        if config.every_interval is not None and config.in_time is not None:
+            raise InvalidReminderConfigError("every", "in")
+        if config.in_time is not None and config.at_time is not None:
+            raise InvalidReminderConfigError("in", "at")
         
         await self.__assert_reminder_count(user_id)
         if config.every_interval is not None:
-            reminder = await self.__set_recurring_reminder(user_id, config.message, config.every_interval)
+            reminder = await self.__set_recurring_reminder(user_id, config.message, config.every_interval, config.at_time)
         elif config.in_time is not None:
             next_trigger = datetime.utcnow() + config.in_time
             reminder = await self.__set_single_reminder(user_id, config.message, next_trigger)
@@ -37,7 +41,7 @@ class ReminderManager(ReminderManagerInterface):
         else:
             raise ArgumentError("occurrence", "Either the frequency or the specific time of the occurrence must be specified.")
 
-        self.__log.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger} }}")
+        self.__log.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger}, LastTrigger = {reminder.last_trigger} }}")
         return reminder
     
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:
@@ -56,12 +60,13 @@ class ReminderManager(ReminderManagerInterface):
         if count >= self.__reminders_per_user_max:
             raise TooManyRemindersError(count)
     
-    async def __set_recurring_reminder(self, user_id: str, message: str, frequency_time: timedelta) -> Reminder:
+    async def __set_recurring_reminder(self, user_id: str, message: str, frequency_time: timedelta, at_time: Optional[timedelta]) -> Reminder:
         reminder = Reminder()
         reminder.user_id = user_id
         reminder.message = message
         reminder.is_repeating = True
         reminder.frequency_time = frequency_time
+        reminder.last_trigger = self.__calculate_recurring_last_trigger(frequency_time, at_time)
         reminder.recalculate_next_trigger()
         await self.__reminder_repository.store(reminder)
         return reminder
@@ -74,11 +79,17 @@ class ReminderManager(ReminderManagerInterface):
         await self.__reminder_repository.store(reminder)
         return reminder
     
-    def __calculate_single_trigger_at(self, time_at: timedelta) -> datetime:
+    def __calculate_recurring_last_trigger(self, frequency_time: timedelta, at_time: Optional[timedelta]):
+        current_time = datetime.utcnow()
+        if at_time is None:
+            return current_time
+        
+        last_trigger = datetime(current_time.year, current_time.month, current_time.day) + at_time
+        return last_trigger - frequency_time if last_trigger > current_time else last_trigger
+    
+    def __calculate_single_trigger_at(self, at_time: timedelta) -> datetime:
         # TODO Make this aware of the user's locale. We can't expect random people to deal with UTC.
         # https://discordpy.readthedocs.io/en/stable/api.html#discord.ClientUser.locale
         current_time = datetime.utcnow()
-        trigger_time = datetime(current_time.year, current_time.month, current_time.day) + time_at
-        if trigger_time < current_time:
-            return trigger_time + timedelta(1)
-        return trigger_time
+        trigger_time = datetime(current_time.year, current_time.month, current_time.day) + at_time
+        return trigger_time + timedelta(1) if trigger_time < current_time else trigger_time

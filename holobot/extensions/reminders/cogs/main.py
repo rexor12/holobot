@@ -105,7 +105,7 @@ class Reminders(Cog, name="Reminders"):
                 await reply(context, "You have to specify either the frequency of the reminder or the date/time of the occurrence. Please, see the help for more information.")
             else: raise
         except InvalidReminderConfigError as error:
-            await reply(context, f"The configurations '{error.param1}' and '{error.param2}' cannot be used together.")
+            await reply(context, f"The parameters '{error.param1}' and '{error.param2}' cannot be used together.")
         except TooManyRemindersError:
             await reply(context, "You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
 

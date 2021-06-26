@@ -1,5 +1,5 @@
 from .. import ReminderManagerInterface
-from ..exceptions import InvalidReminderError, TooManyRemindersError
+from ..exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
 from ..models import ReminderConfig
 from ..parsing import UNBOUND_KEY, parse_arguments, parse_interval
 from discord.embeds import Embed
@@ -104,6 +104,8 @@ class Reminders(Cog, name="Reminders"):
             elif error.argument_name == "occurrence":
                 await reply(context, "You have to specify either the frequency of the reminder or the date/time of the occurrence. Please, see the help for more information.")
             else: raise
+        except InvalidReminderConfigError as error:
+            await reply(context, f"The configurations '{error.param1}' and '{error.param2}' cannot be used together.")
         except TooManyRemindersError:
             await reply(context, "You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
 

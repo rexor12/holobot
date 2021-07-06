@@ -1,0 +1,2 @@
+from .command_descriptor import CommandDescriptor
+from .command_registry_interface import CommandRegistryInterface

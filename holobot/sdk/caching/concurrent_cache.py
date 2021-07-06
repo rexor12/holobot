@@ -1,3 +1,4 @@
+from asyncio import iscoroutine
 from asyncio.locks import Lock
 from typing import Awaitable, Callable, Dict, Generic, TypeVar
 
@@ -30,3 +31,18 @@ class ConcurrentCache(Generic[TKey, TValue]):
             value = await add_factory(key)
             self.__dict[key] = value
             return value
+    
+    async def add_or_update_sync(self, key: TKey,
+        add_factory: Callable[[TKey], TValue],
+        update_factory: Callable[[TKey, TValue], TValue]) -> TValue:
+        async def add_wrapper(k: TKey) -> TValue:
+            return add_factory(k)
+            
+        async def update_wrapper(k: TKey, p: TValue) -> TValue:
+            return update_factory(k, p)
+        
+        return await self.add_or_update(key, add_wrapper, update_wrapper)
+    
+    async def contains_key(self, key: TKey) -> bool:
+        async with self.__lock:
+            return key in self.__dict.keys()

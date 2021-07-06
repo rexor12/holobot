@@ -10,7 +10,7 @@ def is_developer(wrapped_func = None):
         @functools.wraps(wrapped_func)
         async def wrapper(self, context: Context, *args, **kwargs):
             if not (configurator := __find_configurator(self)):
-                raise TypeError("The class the decorated function belongs to holds no attribute of type CredentialManagerInterface.")
+                raise TypeError("The class the decorated function belongs to holds no attribute of type ConfiguratorInterface.")
             dev_ids = configurator.get("Development", "DeveloperUserIds", [])
             if not str(context.author.id) in dev_ids:
                 raise AuthorizationError(context.author.id)

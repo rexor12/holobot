@@ -7,7 +7,7 @@ class CommandInterface:
         return self.__group_name
     
     @group_name.setter
-    def group_name(self, value: str) -> None:
+    def group_name(self, value: Optional[str]) -> None:
         self.__group_name = value
         
     @property
@@ -15,7 +15,7 @@ class CommandInterface:
         return self.__subgroup_name
     
     @subgroup_name.setter
-    def subgroup_name(self, value: str) -> None:
+    def subgroup_name(self, value: Optional[str]) -> None:
         self.__subgroup_name = value
         
     @property
@@ -23,7 +23,7 @@ class CommandInterface:
         return self.__name
     
     @name.setter
-    def name(self, value: str) -> None:
+    def name(self, value: Optional[str]) -> None:
         self.__name = value
         
     @property
@@ -31,7 +31,7 @@ class CommandInterface:
         return self.__description
     
     @description.setter
-    def description(self, value: str) -> None:
+    def description(self, value: Optional[str]) -> None:
         self.__description = value
     
     @property

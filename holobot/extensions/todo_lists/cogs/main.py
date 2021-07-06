@@ -32,30 +32,6 @@ class TodoLists(Cog, name="To-do list"):
             await context.reply("You have to specify a sub-command!", delete_after=3)
     
     @cooldown(1, 10, BucketType.user)
-    @todos.command(aliases=["a"], brief="Adds a new item to your to-do list.", description="Adds a new item to your to-do list.")
-    async def add(self, context: Context, *, message: str):
-        todo_item = TodoItem()
-        todo_item.user_id = str(context.author.id)
-        todo_item.message = message
-        await self.__todo_item_manager.add_todo_item(todo_item)
-        await context.reply(f"The item has been added to your to-do list.")
-    
-    @cog_ext.cog_subcommand(base="todo", name="add", description="Adds a new item to your to-do list.", options=[
-        create_option("description", "The description of the to-do item.", SlashCommandOptionType.STRING, True)
-    ])
-    async def slash_add(self, context: SlashContext, description: str):
-        todo_item = TodoItem()
-        todo_item.user_id = str(context.author.id)
-        todo_item.message = description
-        try:
-            await self.__todo_item_manager.add_todo_item(todo_item)
-            await reply(context, "The item has been added to your to-do list.")
-        except ArgumentOutOfRangeError as error:
-            await reply(context, f"Your message's length has to be between {error.lower_bound} and {error.upper_bound}.")
-        except TooManyTodoItemsError:
-            await reply(context, "You have reached the maximum number of to-do items. Please, remove at least one to be able to add this new one.")
-
-    @cooldown(1, 10, BucketType.user)
     @todos.command(name="viewall", aliases=["va"], brief="Displays all your to-do items.", description="Displays all of your to-do items in a paging box you can navigate with reactions.")
     async def view_all(self, context: Context):
         await DynamicPager(self.__bot, context, self.__create_todo_list_embed)
@@ -126,7 +102,6 @@ class TodoLists(Cog, name="To-do list"):
                 and isinstance(message.content, str)
                 and message.content.lower() == "confirm")
     
-    @add.error
     @view_all.error
     @remove.error
     @remove_all.error

@@ -1,4 +1,5 @@
-from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.ioc import DeferredService, ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import EnvironmentInterface
 from holobot.sdk.system.models import Version
@@ -12,8 +13,9 @@ class Environment(EnvironmentInterface):
     # NOTE: This version number is automatically updated on build by the script assign_version.yml.
     __version = Version(2, 0, 0, 174)
 
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
+    def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
+        self.__configurator: DeferredService[ConfiguratorInterface] = services.get_deferred(ConfiguratorInterface)
     
     @property
     def root_path(self) -> str:
@@ -22,3 +24,7 @@ class Environment(EnvironmentInterface):
     @property
     def version(self) -> Version:
         return self.__version
+    
+    async def is_debug_mode(self) -> bool:
+        configurator = await self.__configurator.resolve()
+        return configurator.get("General", "IsDebug", False)

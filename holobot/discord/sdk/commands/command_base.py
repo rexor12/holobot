@@ -1,10 +1,13 @@
 from .command_interface import CommandInterface
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.system import EnvironmentInterface
 from typing import Tuple
 
 class CommandBase(CommandInterface):
-    def __init__(self, name: str) -> None:
+    def __init__(self, services: ServiceCollectionInterface, name: str) -> None:
         super().__init__()
-        self.name = name
+        environment = services.get(EnvironmentInterface)
+        self.name = name if not environment.is_debug_mode else f"d{name}"
         self.options = []
     
     async def is_allowed_for_guild(self, guild_id: str) -> bool:

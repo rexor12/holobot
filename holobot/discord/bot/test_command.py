@@ -9,7 +9,7 @@ from holobot.sdk.ioc.decorators import injectable
 @injectable(CommandInterface)
 class TestCommand(CommandBase):
     def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__("two")
+        super().__init__(services, "two")
         self.group_name = "one"
         self.subgroup_name = "or"
         self.description = "A test command."

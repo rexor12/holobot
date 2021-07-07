@@ -16,7 +16,7 @@ from holobot.sdk.logging import LogInterface
 class AddTodoItemCommand(CommandBase):
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__(services, "add")
-        self.__log: LogInterface = services.get(LogInterface).with_name("TodoLists", "TodoLists")
+        self.__log: LogInterface = services.get(LogInterface).with_name("TodoLists", "AddTodoItemCommand")
         self.__todo_item_manager: TodoItemManagerInterface = services.get(TodoItemManagerInterface)
         self.group_name = "todo"
         self.description = "Adds a new item to your to-do list."

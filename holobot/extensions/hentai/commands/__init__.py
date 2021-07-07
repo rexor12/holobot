@@ -1,0 +1,1 @@
+from .link_hentai_command import LinkHentaiCommand

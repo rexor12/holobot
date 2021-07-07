@@ -4,7 +4,7 @@ from ..messaging import Messaging
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
-from discord_slash.model import SubcommandObject
+from discord_slash.model import CommandObject, SubcommandObject
 from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.sdk.configs import ConfiguratorInterface
@@ -13,7 +13,7 @@ from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.logging.enums import LogLevel
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import asyncio
 
@@ -81,7 +81,16 @@ class BotService(BotServiceInterface):
             return
         await user.send(message)
 
-    async def __add_slash_command(self, command: CommandInterface) -> SubcommandObject:
+    async def __add_slash_command(self, command: CommandInterface) -> Union[CommandObject, SubcommandObject]:
+        if not command.group_name:
+            return self.__slash.add_slash_command(
+                command.execute,
+                command.name,
+                command.description,
+                list(await command.get_allowed_guild_ids()),
+                command.options
+            )
+        
         return self.__slash.add_subcommand(
             command.execute,
             command.group_name,
@@ -107,4 +116,4 @@ class BotService(BotServiceInterface):
         return bot
 	
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
-        self.__log.write(LogLevel.DEBUG, "An error has occurred while processing a slash command.", exception)
+        self.__log.error("An error has occurred while processing a slash command.", exception)

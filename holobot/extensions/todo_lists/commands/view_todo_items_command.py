@@ -4,6 +4,7 @@ from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext
 from holobot.discord.components import DynamicPager2
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -25,7 +26,7 @@ class ViewTodoItemsCommand(CommandBase):
 
     async def __create_todo_list_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
-        items = await self.__todo_item_manager.get_by_user(str(context.author.id), start_offset, page_size)
+        items = await self.__todo_item_manager.get_by_user(get_author_id(context), start_offset, page_size)
         if len(items) == 0:
             return None
         

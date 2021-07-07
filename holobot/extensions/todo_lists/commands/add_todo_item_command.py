@@ -1,12 +1,11 @@
 from .. import TodoItemManagerInterface
 from ..exceptions import TooManyTodoItemsError
 from ..models import TodoItem
-from discord.embeds import Embed
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import reply
+from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -26,7 +25,7 @@ class AddTodoItemCommand(CommandBase):
     
     async def execute(self, context: SlashContext, description: str):
         todo_item = TodoItem()
-        todo_item.user_id = str(context.author.id)
+        todo_item.user_id = get_author_id(context)
         todo_item.message = description
         try:
             await self.__todo_item_manager.add_todo_item(todo_item)

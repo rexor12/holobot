@@ -67,9 +67,10 @@ class DynamicPager2(Awaitable[None]):
 
         while True:
             try:
-                reaction = await self.__messaging.wait_for_reaction(self.__is_reaction_from_author)
+                reaction = await self.__messaging.wait_for_reaction(lambda r: self.__is_reaction_from_author(r, message))
+                self.__log.trace(f"Reaction added. {{ OwnerId = {reaction.owner_id}, MessageId = {message.id} }}")
                 if not reaction.owner_id:
-                    self.__log.trace(f"Received a reaction without an owner. {{ EmojiId = {reaction.emoji_id} }}")
+                    self.__log.debug(f"Received a reaction without an owner. {{ EmojiId = {reaction.emoji_id} }}")
                     continue
                 
                 previous_page = self.current_page
@@ -110,6 +111,7 @@ class DynamicPager2(Awaitable[None]):
 
         return message
 
-    def __is_reaction_from_author(self, reaction: Reaction) -> bool:
+    def __is_reaction_from_author(self, reaction: Reaction, message: Union[Message, SlashMessage]) -> bool:
         return (reaction.owner_id == get_author_id(self.__context)
+                and reaction.message_id == str(message.id)
                 and reaction.emoji_id in (self.reaction_previous, self.reaction_next))

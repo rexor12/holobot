@@ -46,5 +46,5 @@ class Messaging(MessagingInterface):
         def filter(reaction: DiscordReaction, user: User) -> bool:
             if user_filter is None:
                 return True
-            return user_filter(Reaction(str(reaction.emoji), str(user.id)))
+            return user_filter(Reaction(str(reaction.emoji), str(user.id), str(reaction.message.id)))
         return filter

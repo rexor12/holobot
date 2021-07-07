@@ -1,7 +1,7 @@
 from typing import Optional
 
 class Reaction:
-    def __init__(self, emoji_id: str, owner_id: Optional[str] = None) -> None:
+    def __init__(self, emoji_id: str, owner_id: Optional[str] = None, message_id: Optional[str] = None) -> None:
         """Initializes a new instance of ``Reaction``.
         
         Initializes a new instance of ``Reaction`` with the associated properties.
@@ -17,6 +17,7 @@ class Reaction:
 
         self.emoji_id = emoji_id
         self.owner_id = owner_id
+        self.message_id = message_id
 
     @property
     def emoji_id(self) -> str:
@@ -41,3 +42,15 @@ class Reaction:
         """Sets the identifier of the user the reaction belongs to."""
 
         self.__owner_id = value
+
+    @property
+    def message_id(self) -> Optional[str]:
+        """Gets the identifier of the message the reaction belongs to."""
+
+        return self.__message_id
+    
+    @message_id.setter
+    def message_id(self, value: Optional[str]) -> None:
+        """Sets the identifier of the message the reaction belongs to."""
+
+        self.__message_id = value

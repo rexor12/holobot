@@ -32,15 +32,6 @@ class TodoLists(Cog, name="To-do list"):
             await context.reply("You have to specify a sub-command!", delete_after=3)
     
     @cooldown(1, 10, BucketType.user)
-    @todos.command(name="viewall", aliases=["va"], brief="Displays all your to-do items.", description="Displays all of your to-do items in a paging box you can navigate with reactions.")
-    async def view_all(self, context: Context):
-        await DynamicPager(self.__bot, context, self.__create_todo_list_embed)
-    
-    @cog_ext.cog_subcommand(base="todo", name="view", description="Displays all your to-do items.")
-    async def slash_view_all(self, context: SlashContext):
-        await DynamicPager(self.__bot, context, self.__create_todo_list_embed)
-    
-    @cooldown(1, 10, BucketType.user)
     @todos.command(aliases=["r"], brief="Removes the to-do item with the specified identifier.", description="To find the identifier of your to-do item, view your to-do list and use the numbers for removal.")
     async def remove(self, context: Context, reminder_id: int):
         await self.__todo_item_manager.delete_by_user(str(context.author.id), reminder_id)
@@ -74,25 +65,6 @@ class TodoLists(Cog, name="To-do list"):
             await reply(context, f"All {deleted_count} of your to-do items have been removed.")
         else: await reply(context, "You have no to-do items to be removed.")
 
-    async def __create_todo_list_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
-        start_offset = page * page_size
-        items = await self.__todo_item_manager.get_by_user(str(context.author.id), start_offset, page_size)
-        if len(items) == 0:
-            return None
-        
-        embed = Embed(
-            title="To-do list",
-            description=f"To-do items of {context.author.mention}.",
-            color=0xeb7d00
-        ).set_footer(text="Use the to-do item's number for removal.")
-        for item in items:
-            embed.add_field(
-                name=f"#{item.id}",
-                value=item.message,
-                inline=False
-            )
-        return embed
-
     @staticmethod
     def __is_confirmation_message(context: Context, reply_target: Message, message: Message) -> bool:
         return (message.author == context.author
@@ -102,7 +74,6 @@ class TodoLists(Cog, name="To-do list"):
                 and isinstance(message.content, str)
                 and message.content.lower() == "confirm")
     
-    @view_all.error
     @remove.error
     @remove_all.error
     async def __on_error(self, context: Context, error):

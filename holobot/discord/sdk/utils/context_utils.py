@@ -38,6 +38,14 @@ def find_member(context: Union[Context, SlashContext], name_or_mention: str) -> 
     best_match = first_or_default(sorted(relevant_members, key=lambda p: p[1], reverse=True))
     return best_match[0] if best_match is not None else None
 
+def find_member_by_id(context: Union[Context, SlashContext], user_id: str) -> Optional[User]:
+    guild = context.guild
+    # An attempt to fix type hints for the messy discord.py.
+    if not guild or not isinstance(guild, Guild):
+        return None
+    
+    return guild.get_member(int(user_id))
+
 async def find_emoji(context: Union[Context, SlashContext], mention: str) -> Optional[PartialEmoji]:
     try:
         return await emoji_converter.convert(context, mention)

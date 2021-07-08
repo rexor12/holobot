@@ -1,13 +1,13 @@
-from ..bot import Bot
 from asyncio.exceptions import TimeoutError
 from discord.embeds import Embed
 from discord.errors import HTTPException
 from discord.ext.commands.context import Context
 from discord.message import Message
-from discord.reaction import Reaction
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashMessage
-from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.discord.sdk.utils import find_member_by_id, get_author_id, reply
+from holobot.sdk.integration import MessagingInterface
+from holobot.sdk.integration.models import Reaction
 from holobot.sdk.logging import LogInterface
 from typing import Awaitable, Callable, Optional, Union
 
@@ -17,16 +17,20 @@ DEFAULT_PAGE_SIZE: int = 5
 DEFAULT_REACTION_PREVIOUS: str = "◀️"
 DEFAULT_REACTION_NEXT: str = "▶️"
 
+# TODO The dynamic pager component should be in the SDK for extensions.
 class DynamicPager(Awaitable[None]):
-    def __init__(self, bot: Bot, context: Union[Context, SlashContext],
+    def __init__(self,
+        messaging: MessagingInterface,
+        log: LogInterface,
+        context: Union[Context, SlashContext],
         embed_factory: Callable[[Union[Context, SlashContext], int, int], Awaitable[Optional[Embed]]]):
         self.current_page = 0
         self.reaction_next = DEFAULT_REACTION_NEXT
         self.reaction_previous = DEFAULT_REACTION_PREVIOUS
-        self.__bot = bot
+        self.__messaging = messaging
+        self.__log = log
         self.__context = context
         self.__embed_factory = embed_factory
-        self.__log = bot.service_collection.get(LogInterface).with_name("Discord", "DynamicPager")
     
     def __await__(self):
         yield from asyncio.get_event_loop().create_task(self.__run())
@@ -63,16 +67,20 @@ class DynamicPager(Awaitable[None]):
 
         while True:
             try:
-                reaction, user = await self.__bot.wait_for("reaction_add", timeout=60, check=self.__is_reaction_from_author)
+                reaction = await self.__messaging.wait_for_reaction(lambda r: self.__is_reaction_from_author(r, message))
+                self.__log.trace(f"Reaction added. {{ OwnerId = {reaction.owner_id}, MessageId = {message.id} }}")
+                if not reaction.owner_id:
+                    self.__log.debug(f"Received a reaction without an owner. {{ EmojiId = {reaction.emoji_id} }}")
+                    continue
+                
                 previous_page = self.current_page
-                emoji = str(reaction.emoji)
-                if emoji == self.reaction_next:
+                if reaction.emoji_id == self.reaction_next:
                     self.current_page += 1
-                elif emoji == self.reaction_previous:
+                elif reaction.emoji_id == self.reaction_previous:
                     self.current_page -= 1
                 else: continue
 
-                await message.remove_reaction(reaction, user)
+                await message.remove_reaction(reaction.emoji_id, find_member_by_id(self.__context, reaction.owner_id))
                 if self.current_page < 0:
                     self.current_page = 0
                     continue
@@ -103,5 +111,7 @@ class DynamicPager(Awaitable[None]):
 
         return message
 
-    def __is_reaction_from_author(self, reaction: Reaction, user) -> bool:
-        return user == self.__context.author and str(reaction.emoji) in (self.reaction_previous, self.reaction_next)
+    def __is_reaction_from_author(self, reaction: Reaction, message: Union[Message, SlashMessage]) -> bool:
+        return (reaction.owner_id == get_author_id(self.__context)
+                and reaction.message_id == str(message.id)
+                and reaction.emoji_id in (self.reaction_previous, self.reaction_next))

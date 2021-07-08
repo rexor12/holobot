@@ -1,15 +1,15 @@
 from .command_interface import CommandInterface
+from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc import ServiceCollectionInterface
-from holobot.sdk.system import EnvironmentInterface
 from typing import Tuple
 
 class CommandBase(CommandInterface):
     def __init__(self, services: ServiceCollectionInterface, name: str) -> None:
         super().__init__()
-        environment = services.get(EnvironmentInterface)
+        debugger = services.get(DebuggerInterface)
         self.group_name = None
         self.subgroup_name = None
-        self.name = name if not environment.is_debug_mode else f"d{name}"
+        self.name = name if not debugger.is_debug_mode_enabled() else f"d{name}"
         self.description = None
         self.options = []
     

@@ -17,7 +17,7 @@ class GetBasicWeatherCommand(CommandBase):
         super().__init__(services, "basic")
         self.__weather_client: WeatherClientInterface = services.get(WeatherClientInterface)
         self.group_name = "weather"
-        self.description = "Displays teh current temperature in a city."
+        self.description = "Displays the current temperature in a city."
         self.options = [
             create_option("city", "The name of the city", SlashCommandOptionType.STRING, True)
         ]

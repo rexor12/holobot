@@ -63,6 +63,7 @@ class BotService(BotServiceInterface):
         self.__log.info("Registering commands...")
         for command in self.__commands:
             await self.__add_slash_command(command)
+            self.__log.debug(f"Registered command. {{ Group = {command.group_name}, SubGroup = {command.subgroup_name}, Name = {command.name} }}")
         self.__log.info(f"Successfully registered commands. {{ Count = {len(self.__commands)} }}")
         
         self.__bot_task = asyncio.get_event_loop().create_task(self.__bot.start(discord_token))

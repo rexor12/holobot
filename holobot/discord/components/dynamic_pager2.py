@@ -18,6 +18,7 @@ DEFAULT_REACTION_PREVIOUS: str = "◀️"
 DEFAULT_REACTION_NEXT: str = "▶️"
 
 # TODO Rename this to DynamicPager when the original one is removed.
+# TODO The dynamic pager component should be in the SDK for extensions.
 class DynamicPager2(Awaitable[None]):
     def __init__(self,
         messaging: MessagingInterface,

@@ -10,7 +10,7 @@ from holobot.sdk.system import EnvironmentInterface
 import tzlocal
 
 @injectable(CommandInterface)
-class ViewUserAvatarCommand(CommandBase):
+class ViewBotInfoCommand(CommandBase):
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__(services, "info")
         self.__environment = services.get(EnvironmentInterface)

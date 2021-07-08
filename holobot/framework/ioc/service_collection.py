@@ -1,5 +1,5 @@
 from holobot.sdk.exceptions import AggregateError
-from holobot.sdk.ioc import DeferredService, ServiceCollectionInterface, TService
+from holobot.sdk.ioc import ServiceCollectionInterface, TService
 from holobot.sdk.ioc.providers import ServiceProviderBase
 from threading import RLock
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
@@ -66,9 +66,6 @@ class ServiceCollection(ServiceCollectionInterface):
 
     def get_all(self, intf: Type[TService]) -> Tuple[TService, ...]:
         return self.__get_or_resolve_instances(intf)
-    
-    def get_deferred(self, type: Type[TService]) -> DeferredService[TService]:
-        return DeferredService(lambda: self.get(type))
 
     def __get_or_resolve_instances(self, intf: Type[TService]) -> Tuple[TService, ...]:
         with self.__lock:

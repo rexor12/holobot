@@ -2,29 +2,33 @@ from .. import WeatherClientInterface
 from ..exceptions import QueryQuotaExhaustedError
 from ..models import WeatherData
 from discord.embeds import Embed
-from discord.ext.commands.cog import Cog
-from discord_slash import cog_ext, SlashContext
+from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.bot import Bot
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.exceptions import InvalidOperationError
+from holobot.sdk.ioc import ServiceCollectionInterface
+from holobot.sdk.ioc.decorators import injectable
 
-class Weather(Cog, name="Weather"):
-    def __init__(self, bot: Bot) -> None:
-        super().__init__()
-        self.__weather_client: WeatherClientInterface = bot.service_collection.get(WeatherClientInterface)
+@injectable(CommandInterface)
+class GetBasicWeatherCommand(CommandBase):
+    def __init__(self, services: ServiceCollectionInterface) -> None:
+        super().__init__(services, "basic")
+        self.__weather_client: WeatherClientInterface = services.get(WeatherClientInterface)
+        self.group_name = "weather"
+        self.description = "Displays the current temperature in a city."
+        self.options = [
+            create_option("city", "The name of the city", SlashCommandOptionType.STRING, True)
+        ]
     
-    @cog_ext.cog_subcommand(base="weather", name="basic", description="Displays the current temperature in a city.", options=[
-        create_option("city", "The name of the city.", SlashCommandOptionType.STRING, True)
-    ])
-    async def slash_weather_basic(self, context: SlashContext, city: str):
+    async def execute(self, context: SlashContext, city: str) -> None:
         try:
             weather_data = await self.__weather_client.get_weather_data(city)
             if weather_data.temperature is None:
                 await reply(context, "No information is available right now. Please, try again later.")
                 return
-            await reply(context, Weather.__create_embed(weather_data))
+            await reply(context, GetBasicWeatherCommand.__create_embed(weather_data))
         except InvalidOperationError:
             await reply(context, "OpenWeather isn't configured. Please, contact your server administrator.")
             return
@@ -48,6 +52,3 @@ class Weather(Cog, name="Weather"):
         if weather_data.condition.condition_image_url is not None:
             embed.set_thumbnail(url=weather_data.condition.condition_image_url)
         return embed
-
-def setup(bot: Bot):
-    bot.add_cog(Weather(bot))

@@ -10,9 +10,9 @@ ROOT_PATH: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname
 @injectable(EnvironmentInterface)
 class Environment(EnvironmentInterface):
     # NOTE: This version number is automatically updated on build by the script assign_version.yml.
-    __version = Version(2, 0, 0, 170)
+    __version = Version(2, 0, 0, 194)
 
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
+    def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
     
     @property

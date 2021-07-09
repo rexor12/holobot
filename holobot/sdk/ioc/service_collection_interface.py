@@ -1,6 +1,5 @@
-from typing import Tuple, Type, TypeVar
-
-TService = TypeVar("TService")
+from .tservice import TService
+from typing import Tuple, Type
 
 class ServiceCollectionInterface:
     async def close(self):

@@ -13,6 +13,8 @@ from discord.message import Message
 from discord_slash.context import SlashContext
 from holobot.discord.bot import Bot
 from holobot.discord.components import DynamicPager
+from holobot.sdk.integration import MessagingInterface
+from holobot.sdk.logging import LogInterface
 from typing import Optional, Union
 
 ALARM_MIN_PRICE = Decimal("0.00000001")
@@ -23,8 +25,10 @@ class Crypto(Cog, name="Crypto"):
     def __init__(self, bot: Bot):
         super().__init__()
         self.__bot = bot
-        self.__crypto_repository = self.__bot.service_collection.get(CryptoRepositoryInterface)
         self.__alert_manager = self.__bot.service_collection.get(AlertManagerInterface)
+        self.__crypto_repository = self.__bot.service_collection.get(CryptoRepositoryInterface)
+        self.__log = self.__bot.service_collection.get(LogInterface).with_name("Crypto", "Crypto")
+        self.__messaging: MessagingInterface = self.__bot.service_collection.get(MessagingInterface)
 
     @group(aliases=["c"], brief="A group of cryptocurrency related commands.")
     async def crypto(self, context: Context):
@@ -102,7 +106,7 @@ class Crypto(Cog, name="Crypto"):
     @cooldown(1, 60, BucketType.user)
     @crypto.command(name="viewalarms", aliases=["va"], brief="Displays your currently set alarms.")
     async def view_alarms(self, context: Context):
-        await DynamicPager(self.__bot, context, self.__create_alert_embed)
+        await DynamicPager(self.__messaging, self.__log, context, self.__create_alert_embed)
     
     @cooldown(1, 120, BucketType.user)
     @crypto.command(name="clearalarm", aliases=["ca"], brief="Clears all alarms associated to a symbol.")

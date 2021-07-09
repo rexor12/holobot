@@ -1,9 +1,12 @@
 from .bot import Bot
+from discord import Reaction as DiscordReaction
+from discord import User
 from holobot.sdk.integration import MessagingInterface
+from holobot.sdk.integration.models import Reaction
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional
+from typing import Callable, Optional
 
 @injectable(MessagingInterface)
 class Messaging(MessagingInterface):
@@ -28,3 +31,20 @@ class Messaging(MessagingInterface):
             self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         await user.send(message)
+
+    async def wait_for_reaction(self, filter: Optional[Callable[[Reaction], bool]] = None, timeout: int = 60) -> Reaction:
+        if Messaging.bot is None:
+            self.__log.error(f"Bot isn't initialized. {{ Operation = AwaitReaction }}")
+            # TODO Specific exception. Also, handle it.
+            raise ValueError("Messaging isn't initialized yet.")
+        discord_filter = Messaging.__create_reaction_filter(filter)
+        reaction, user = await Messaging.bot.wait_for("reaction_add", check=discord_filter, timeout=timeout)
+        return Reaction(str(reaction.emoji), str(user.id))
+    
+    @staticmethod
+    def __create_reaction_filter(user_filter: Optional[Callable[[Reaction], bool]]) -> Callable[[DiscordReaction, User], bool]:
+        def filter(reaction: DiscordReaction, user: User) -> bool:
+            if user_filter is None:
+                return True
+            return user_filter(Reaction(str(reaction.emoji), str(user.id), str(reaction.message.id)))
+        return filter

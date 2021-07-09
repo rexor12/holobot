@@ -1,4 +1,3 @@
-from .extension_provider import ExtensionProvider
 from .reminder_manager import ReminderManager
 from .reminder_manager_interface import ReminderManagerInterface
 from .reminder_processor import ReminderProcessor

@@ -1,17 +1,19 @@
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 from ..messaging import Messaging
-from ..sdk import ExtensionProviderInterface
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
+from discord_slash.model import CommandObject, SubcommandObject
+from holobot.discord.sdk import ExtensionProviderInterface
+from holobot.discord.sdk.commands import CommandInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.logging.enums import LogLevel
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import asyncio
 
@@ -34,6 +36,7 @@ class BotService(BotServiceInterface):
         self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = services.get_all(ExtensionProviderInterface)
         self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "BotService")
+        self.__commands: Tuple[CommandInterface, ...] = services.get_all(CommandInterface)
         self.__bot: Bot = self.__initialize_bot(services)
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True)
         self.__bot_task: Optional[Task] = None
@@ -56,6 +59,12 @@ class BotService(BotServiceInterface):
                 extension_count += 1
                 self.__log.debug(f"Loaded extension. {{ Package = {package} }}")
         self.__log.info(f"Successfully loaded extensions. {{ Count = {extension_count} }}")
+
+        self.__log.info("Registering commands...")
+        for command in self.__commands:
+            await self.__add_slash_command(command)
+            self.__log.debug(f"Registered command. {{ Group = {command.group_name}, SubGroup = {command.subgroup_name}, Name = {command.name} }}")
+        self.__log.info(f"Successfully registered commands. {{ Count = {len(self.__commands)} }}")
         
         self.__bot_task = asyncio.get_event_loop().create_task(self.__bot.start(discord_token))
     
@@ -72,7 +81,27 @@ class BotService(BotServiceInterface):
             self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         await user.send(message)
-    
+
+    async def __add_slash_command(self, command: CommandInterface) -> Union[CommandObject, SubcommandObject]:
+        if not command.group_name:
+            return self.__slash.add_slash_command(
+                command.execute,
+                command.name,
+                command.description,
+                list(await command.get_allowed_guild_ids()),
+                command.options
+            )
+        
+        return self.__slash.add_subcommand(
+            command.execute,
+            command.group_name,
+            command.subgroup_name,
+            command.name,
+            command.description,
+            guild_ids=list(await command.get_allowed_guild_ids()),
+            options=command.options
+        )
+
     def __initialize_bot(self, services: ServiceCollectionInterface) -> Bot:
         bot = Bot(
             services,
@@ -88,4 +117,4 @@ class BotService(BotServiceInterface):
         return bot
 	
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
-        self.__log.write(LogLevel.DEBUG, "An error has occurred while processing a slash command.", exception)
+        self.__log.error("An error has occurred while processing a slash command.", exception)

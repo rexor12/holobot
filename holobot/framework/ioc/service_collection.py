@@ -1,10 +1,7 @@
-from holobot.sdk.exceptions import AggregateError
 from holobot.sdk.ioc import ServiceCollectionInterface, TService
 from holobot.sdk.ioc.providers import ServiceProviderBase
 from threading import RLock
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
-
-import inspect
 
 class ServiceCollection(ServiceCollectionInterface):
     def __init__(self):
@@ -17,27 +14,6 @@ class ServiceCollection(ServiceCollectionInterface):
         self.__interface_map: Dict[Type, List[Type]] = {}
         # Used for finding loops in the dependency graph.
         self.__types_under_initialization: Set[Type[Any]] = set()
-    
-    # TODO Use the LifecycleManager with the StoppableInterface instead.
-    # This is a leftover from the early development when the ServiceCollection
-    # still didn't support exports by multiple interfaces.
-    async def close(self):
-        print("[ServiceCollection] Closing services...")
-        errors: List[Exception] = []
-        for instances in self.__instances.values():
-            for instance in instances:
-                close_method = getattr(instance, "close", None)
-                if not callable(close_method):
-                    continue
-                try:
-                    if inspect.iscoroutinefunction(close_method):
-                        await close_method()
-                    else: close_method()
-                except Exception as error:
-                    errors.append(error)
-        if len(errors) > 0:
-            raise AggregateError(errors)
-        print("[ServiceCollection] Successfully closed services.")
 
     def add_provider(self, provider: ServiceProviderBase):
         with self.__lock:

@@ -2,9 +2,6 @@ from .tservice import TService
 from typing import Tuple, Type
 
 class ServiceCollectionInterface:
-    async def close(self):
-        pass
-
     def get(self, type: Type[TService]) -> TService:
         raise NotImplementedError
     

@@ -45,7 +45,6 @@ class Kernel(KernelInterface):
         finally:
             event_loop.run_until_complete(when_all(integration_tasks))
             event_loop.run_until_complete(lifecycle_manager.stop_all())
-            event_loop.run_until_complete(service_collection.close())
             event_loop.stop()
             event_loop.close()
         log.info("Successful shutdown.")

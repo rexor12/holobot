@@ -117,4 +117,4 @@ class BotService(BotServiceInterface):
         return bot
 	
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
-        self.__log.error("An error has occurred while processing a slash command.", exception)
+        self.__log.error(f"An error has occurred while processing a slash command. Type: {type(exception)}", exception)

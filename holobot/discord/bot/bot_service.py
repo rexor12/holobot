@@ -7,12 +7,12 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.model import CommandObject, SubcommandObject
 from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
+from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from holobot.sdk.logging.enums import LogLevel
 from typing import Optional, Tuple, Union
 
 import asyncio
@@ -117,4 +117,7 @@ class BotService(BotServiceInterface):
         return bot
 	
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
-        self.__log.error(f"An error has occurred while processing a slash command. Type: {type(exception)}", exception)
+        self.__log.error((
+            "An error has occurred while processing a slash command. "
+            f"{{ Type = {type(exception).__name__}, UserId = {get_author_id(context)} }}"
+            ), exception)

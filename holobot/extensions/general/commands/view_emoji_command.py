@@ -17,6 +17,6 @@ class ViewEmojiCommand(CommandBase):
 
     async def execute(self, context: SlashContext, name: str) -> None:
         if (emoji := await find_emoji(context, name)) is None:
-            await reply(context, "The specified emoji cannot be found. Did you insert it properly?")
+            await reply(context, "The specified emoji cannot be found. Did you make a typo?")
             return
         await reply(context, str(emoji.url))

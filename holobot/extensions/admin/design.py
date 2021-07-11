@@ -1,18 +1,3 @@
-from typing import Optional
-from .. import CommandRuleManagerInterface
-from ..enums import RuleState
-from ..models import CommandRule
-from discord.ext.commands.cog import Cog
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_choice, create_option
-from holobot.discord.bot import Bot
-from holobot.discord.sdk.commands.decorators import register_command
-from holobot.discord.sdk.utils import reply
-from holobot.sdk.logging import LogInterface
-
-import re
-
 # By default (when the bot joins), all of the commands are allowed in every channel.
 # Let's make sure we allow commands to be used in #bots only:
 #   /admin commandrule state: allow channel: #bots
@@ -95,44 +80,3 @@ import re
 # $ nhentai ehentai
 # 
 # The commands _nhentai_ and _ehentai_ of the group _hentai_ are now **forbidden** in #general, #art and #programming.
-
-channel_regex = re.compile(r"^<#(?P<id>\d+)>$")
-
-class Rules(Cog, name="Rules"):
-    def __init__(self, bot: Bot):
-        super().__init__()
-        self.__log = bot.service_collection.get(LogInterface).with_name("Admin", "Features")
-        self.__command_rule_manager: CommandRuleManagerInterface = bot.service_collection.get(CommandRuleManagerInterface)
-    
-    @register_command
-    @cog_ext.cog_subcommand(base="admin", subcommand_group="command", name="setrule", options=[
-        create_option("state", "Whether to allow or forbid commands.", SlashCommandOptionType.STRING, True, [
-            create_choice("Allow", "Allow"),
-            create_choice("Forbid", "Forbid")
-        ]),
-        create_option("group", "An entire command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
-        create_option("command", "A command inside a command group, such as \"roll\".", SlashCommandOptionType.STRING, False),
-        create_option("channel", "The link of the applicable channel.", SlashCommandOptionType.STRING, False)
-    ], guild_ids=[822228166381797427])
-    async def slash_set_command_rule(self, context: SlashContext, state: str, group: Optional[str] = None, command: Optional[str] = None, channel: Optional[str] = None):
-        if context.guild is None:
-            await reply(context, "Command rules can be defined in servers only.")
-            return
-        channel_id: Optional[str] = None
-        if channel is not None:
-            if (channel_match := channel_regex.match(channel)) is None:
-                await reply(context, "Invalid channel. Did you link it properly?")
-                return
-            channel_id = channel_match.group("id")
-        rule = CommandRule()
-        rule.created_by = str(context.author_id)
-        rule.server_id = str(context.guild.id)
-        rule.state = RuleState.parse(state)
-        rule.group = group
-        rule.command = command
-        rule.channel_id = channel_id
-        await self.__command_rule_manager.set_rule(rule)
-        await reply(context, f"Your rule has been set: {rule.textify()}")
-
-def setup(bot: Bot):
-    bot.add_cog(Rules(bot))

@@ -23,7 +23,7 @@ class Kernel(KernelInterface):
         
         log = service_collection.get(LogInterface).with_name("Framework", "Kernel")
         configurator = service_collection.get(ConfiguratorInterface)
-        log.log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
+        log.set_global_log_level(LogLevel.parse(configurator.get("General", "LogLevel", "Information")))
         log.info("Starting application...")
 
         event_loop.run_until_complete(service_collection.get(DatabaseManagerInterface).upgrade_all())

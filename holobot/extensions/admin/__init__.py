@@ -1,4 +1,3 @@
 from .command_rule_manager import CommandRuleManager
 from .command_rule_manager_interface import CommandRuleManagerInterface
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
-from .extension_provider import ExtensionProvider

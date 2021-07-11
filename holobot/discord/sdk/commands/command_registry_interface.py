@@ -1,12 +1,11 @@
-from .command_descriptor import CommandDescriptor
-from typing import Optional
+from typing import Dict, Optional, Tuple
 
 class CommandRegistryInterface:
-    async def register(self, command: CommandDescriptor) -> None:
+    def command_exists(self, command_name: str, group_name: Optional[str] = None, subgroup_name: Optional[str] = None) -> bool:
         raise NotImplementedError
     
-    async def command_exists(self, name: str, group: Optional[str] = None, sub_group: Optional[str] = None) -> bool:
+    def group_exists(self, group_name: str) -> bool:
         raise NotImplementedError
     
-    async def group_exists(self, group: str) -> bool:
+    def get_commands(self) -> Dict[str, Dict[str, Tuple[str, ...]]]:
         raise NotImplementedError

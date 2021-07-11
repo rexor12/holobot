@@ -19,11 +19,11 @@ class CommandInterface:
         self.__subgroup_name = value
         
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str:
         return self.__name
     
     @name.setter
-    def name(self, value: Optional[str]) -> None:
+    def name(self, value: str) -> None:
         self.__name = value
         
     @property

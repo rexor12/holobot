@@ -1,4 +1,3 @@
-from discord.errors import Forbidden
 from ..enums import RuleState
 from datetime import datetime
 from typing import Dict, Optional
@@ -10,7 +9,14 @@ rule_to_text_map: Dict[RuleState, str] = {
 
 class CommandRule:
     def __init__(self) -> None:
-        pass
+        self.id = -1
+        self.created_at = datetime.utcnow()
+        self.created_by = ""
+        self.server_id = ""
+        self.state = RuleState.ALLOW
+        self.group = None
+        self.command = None
+        self.channel_id = None
 
     @property
     def id(self) -> int:

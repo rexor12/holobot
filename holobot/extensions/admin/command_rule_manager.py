@@ -1,5 +1,6 @@
 from .command_rule_manager_interface import CommandRuleManagerInterface
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
+from .exceptions import InvalidCommandError
 from .models import CommandRule
 from holobot.discord.sdk.commands import CommandRegistryInterface
 from holobot.sdk.ioc import ServiceCollectionInterface
@@ -16,12 +17,11 @@ class CommandRuleManager(CommandRuleManagerInterface):
     async def set_rule(self, rule: CommandRule) -> int:
         assert_not_none(rule.server_id, "rule.server_id")
         assert_not_none(rule.created_by, "rule.created_by")
-        # TODO Validate if group/command exists.
         if rule.command is not None:
             if not self.__registry.command_exists(rule.command, rule.group):
-                raise ValueError("Invalid command.")
+                raise InvalidCommandError(rule.command, rule.group, None)
         elif rule.group is not None:
             if not self.__registry.group_exists(rule.group):
-                raise ValueError("Invalid group.")
+                raise InvalidCommandError(rule.command, rule.group, None)
         #rule.id = await self.__repository.add_or_update(rule)
         return rule.id

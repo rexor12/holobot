@@ -1,55 +1,56 @@
-from .sdk.commands import CommandDescriptor, CommandRegistryInterface
-from holobot.sdk.caching import ConcurrentCache
+from holobot.discord.sdk.commands import CommandInterface, CommandRegistryInterface
 from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.utils import assert_not_none
-from typing import Optional
+from typing import Any, Dict, Optional, Tuple
+
+DEFAULT_GROUP_NAME = "__DEFAULT_GROUP__"
+DEFAULT_SUBGROUP_NAME = "__DEFAULT_SUBGROUP__"
 
 @injectable(CommandRegistryInterface)
 class CommandRegistry(CommandRegistryInterface):
-    # As usual for class variables in this project, this is a hack
-    # needed because of discord.py, to register commands using a
-    # decorator. A proper solution would be to make each command an
-    # injectable and they would register themselves through an
-    # instance of this class. This is, however, not possible because
-    # discord.py uses black magic to register the decorated commands.
-    global_registry: ConcurrentCache[str, CommandDescriptor] = ConcurrentCache()
-
     def __init__(self, services: ServiceCollectionInterface) -> None:
         super().__init__()
         self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "CommandRegistry")
-        self.__registry: ConcurrentCache[str, CommandDescriptor] = ConcurrentCache()
-        # Without the hack above, this would be a good place to register the commands.
+        # group -> sub-group -> command
+        self.__registry: Dict[str, Dict[str, Dict[str, CommandInterface]]] = {}
+        self.__commands: Tuple[CommandInterface, ...] = services.get_all(CommandInterface)
+        self.__register_commands(self.__commands)
     
-    @staticmethod
-    async def register_global(command: CommandDescriptor) -> None:
-        assert_not_none(command, "command")
-        await CommandRegistry.global_registry.add_or_update_sync(
-            CommandRegistry.__get_key_for(command),
-            lambda key: command,
-            lambda key, previous: command
-        )
+    def command_exists(self, command_name: str, group_name: Optional[str] = None, subgroup_name: Optional[str] = None) -> bool:
+        assert_not_none(command_name, "command_name")
+        group_name = group_name or DEFAULT_GROUP_NAME
+        if (group := self.__registry.get(group_name, None)) is None:
+            return False
 
-    async def register(self, command: CommandDescriptor) -> None:
-        assert_not_none(command, "command")
-        await self.__registry.add_or_update_sync(
-            CommandRegistry.__get_key_for(command),
-            lambda key: command,
-            lambda key, previous: command
-        )
-        self.__log.debug(f"Registered command. {{ Group = {command.group}, SubGroup = {command.sub_group}, Name = {command.name} }}")
+        subgroup_name = subgroup_name or DEFAULT_SUBGROUP_NAME
+        if (subgroup := group.get(subgroup_name, None)) is None:
+            return False
+        
+        return command_name in subgroup.keys()
     
-    async def command_exists(self, name: str, group: Optional[str] = None, sub_group: Optional[str] = None) -> bool:
-        return await self.__registry.contains_key(CommandRegistry.__get_key(name, group, sub_group))
+    def group_exists(self, group_name: str) -> bool:
+        assert_not_none(group_name, "group_name")
+        return group_name in self.__registry.keys()
     
-    async def group_exists(self, group: str) -> bool:
-        return await self.__registry.contains_key(CommandRegistry.__get_key(None, group, None))
+    def get_commands(self) -> Dict[str, Dict[str, Tuple[str, ...]]]:
+        result: Dict[str, Dict[str, Tuple[str, ...]]] = {}
+        for group_name, subgroups in self.__registry.items():
+            result[group_name] = group = {}
+            for subgroup_name, commands in subgroups.items():
+                print(f"[CommandRegistry] {group_name}, {subgroup_name}, {len(commands.keys())}")
+                group[subgroup_name] = tuple([command_name for command_name in commands.keys()])
+        return result
     
-    @staticmethod
-    def __get_key_for(command: CommandDescriptor) -> str:
-        return CommandRegistry.__get_key(command.name, command.group, command.sub_group)
-    
-    @staticmethod
-    def __get_key(name: Optional[str], group: Optional[str], sub_group: Optional[str]) -> str:
-        return f"{group}-{sub_group}-{name}"
+    def __register_commands(self, commands: Tuple[CommandInterface, ...]) -> None:
+        for command in commands:
+            self.__log.debug(f"Registering command... {{ Group = {command.group_name}, SubGroup = {command.subgroup_name}, Name = {command.name} }}")
+            group_name = command.group_name or DEFAULT_GROUP_NAME
+            if (group := self.__registry.get(group_name, None)) is None:
+                self.__registry[group_name] = group = {}
+            subgroup_name = command.subgroup_name or DEFAULT_SUBGROUP_NAME
+            if (subgroup := group.get(subgroup_name, None)) is None:
+                group[subgroup_name] = subgroup = {}
+            subgroup[command.name] = command
+            self.__log.debug(f"Registered command. {{ Group = {command.group_name}, SubGroup = {command.subgroup_name}, Name = {command.name} }}")

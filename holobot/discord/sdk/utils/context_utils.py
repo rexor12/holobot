@@ -1,7 +1,7 @@
 from discord.embeds import Embed
 from discord.ext.commands import Context
-from discord.ext.commands.converter import EmojiConverter
-from discord.ext.commands.errors import EmojiNotFound
+from discord.ext.commands.converter import EmojiConverter, PartialEmojiConverter
+from discord.ext.commands.errors import EmojiNotFound, PartialEmojiConversionFailure
 from discord.guild import Guild
 from discord.message import Message
 from discord.partial_emoji import PartialEmoji
@@ -15,6 +15,7 @@ import re
 
 mention_regex = re.compile(r"^<@!?(?P<id>\d+)>$")
 
+partial_emoji_converter = PartialEmojiConverter()
 emoji_converter = EmojiConverter()
 
 def find_member(context: Union[Context, SlashContext], name_or_mention: str) -> Optional[User]:
@@ -47,6 +48,11 @@ def find_member_by_id(context: Union[Context, SlashContext], user_id: str) -> Op
     return guild.get_member(int(user_id))
 
 async def find_emoji(context: Union[Context, SlashContext], name_or_mention: str) -> Optional[PartialEmoji]:
+    try:
+        return await partial_emoji_converter.convert(context, name_or_mention)
+    except PartialEmojiConversionFailure:
+        pass
+    
     try:
         return await emoji_converter.convert(context, name_or_mention)
     except EmojiNotFound:

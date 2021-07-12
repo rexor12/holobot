@@ -3,7 +3,6 @@ from asyncpg.pool import Pool, PoolAcquireContext
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.migration import MigrationInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
 from holobot.sdk.logging import LogInterface
@@ -16,10 +15,10 @@ import ssl
 @injectable(StartableInterface)
 @injectable(DatabaseManagerInterface)
 class DatabaseManager(DatabaseManagerInterface, StartableInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface):
-        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__migrations: Tuple[MigrationInterface, ...] = service_collection.get_all(MigrationInterface)
-        self.__log = service_collection.get(LogInterface).with_name("Framework", "DatabaseManager")
+    def __init__(self, configurator: ConfiguratorInterface, migrations: Tuple[MigrationInterface, ...], log: LogInterface):
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__migrations: Tuple[MigrationInterface, ...] = migrations
+        self.__log = log.with_name("Framework", "DatabaseManager")
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
     
     async def stop(self):

@@ -10,13 +10,13 @@ class ServiceDiscovery:
     @staticmethod
     def register_services_by_module(package_name: str, service_collection: ServiceCollection) -> None:
         provider = SimpleServiceProvider()
-        for metadata in ServiceDiscovery.__get_exports_iteratively(package_name):
+        for metadata in ServiceDiscovery.get_exports(package_name):
             provider.register(metadata.contract_type, metadata.export_type)
             #print(f"[ServiceDiscovery] Registered service. {{ ContractType = {metadata.contract_type}, ExportType = {metadata.export_type} }}")
         service_collection.add_provider(provider)
     
     @staticmethod
-    def __get_exports_iteratively(module_name: str) -> Tuple[ExportMetadata, ...]:
+    def get_exports(module_name: str) -> Tuple[ExportMetadata, ...]:
         metadatas: List[ExportMetadata] = []
         module_names: List[str] = [module_name]
         while len(module_names) > 0:
@@ -31,6 +31,9 @@ class ServiceDiscovery:
             #print(f"[ServiceDiscovery] Walking path... {{ Path = {path} }}")
             for loader, name, is_package in pkgutil.walk_packages(path):
                 if not is_package:
+                    continue
+                # TODO Temporary. Remove this before merge.
+                if name == "discord" or name == "extensions":
                     continue
                 #print(f"[ServiceDiscovery] Found additional package. {{ Name = {name}, Parent = {module_name} }}")
                 module_names.append(f"{module_name}.{name}")

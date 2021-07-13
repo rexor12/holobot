@@ -1,5 +1,4 @@
 from asyncpg.connection import Connection
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database.migration import MigrationBase, MigrationInterface
 from holobot.sdk.database.migration.models import MigrationPlan
@@ -8,7 +7,7 @@ TABLE_NAME = "todo_lists"
 
 @injectable(MigrationInterface)
 class TodoListsMigration(MigrationBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self) -> None:
         super().__init__(TABLE_NAME, {
             0: MigrationPlan(0, 1, self.__initialize_table)
         }, {})

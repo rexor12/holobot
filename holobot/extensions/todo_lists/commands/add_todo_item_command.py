@@ -7,16 +7,15 @@ from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 
 @injectable(CommandInterface)
 class AddTodoItemCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "add")
-        self.__log: LogInterface = services.get(LogInterface).with_name("TodoLists", "AddTodoItemCommand")
-        self.__todo_item_manager: TodoItemManagerInterface = services.get(TodoItemManagerInterface)
+    def __init__(self, log: LogInterface, todo_item_manager: TodoItemManagerInterface) -> None:
+        super().__init__("add")
+        self.__log: LogInterface = log.with_name("TodoLists", "AddTodoItemCommand")
+        self.__todo_item_manager: TodoItemManagerInterface = todo_item_manager
         self.group_name = "todo"
         self.description = "Adds a new item to your to-do list."
         self.options = [

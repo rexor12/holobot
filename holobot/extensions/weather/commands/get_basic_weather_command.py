@@ -8,14 +8,13 @@ from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
 class GetBasicWeatherCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "basic")
-        self.__weather_client: WeatherClientInterface = services.get(WeatherClientInterface)
+    def __init__(self, weather_client: WeatherClientInterface) -> None:
+        super().__init__("basic")
+        self.__weather_client: WeatherClientInterface = weather_client
         self.group_name = "weather"
         self.description = "Displays the current temperature in a city."
         self.options = [

@@ -3,15 +3,14 @@ from ..enums import DayOfWeek
 from ..models import Reminder
 from asyncpg.connection import Connection
 from datetime import datetime
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database import DatabaseManagerInterface
 from typing import Tuple, Optional
 
 @injectable(ReminderRepositoryInterface)
 class ReminderRepository(ReminderRepositoryInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
-        self.__database_manager: DatabaseManagerInterface = service_collection.get(DatabaseManagerInterface)
+    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
+        self.__database_manager: DatabaseManagerInterface = database_manager
         
     async def count(self, user_id: str) -> int:
         async with self.__database_manager.acquire_connection() as connection:

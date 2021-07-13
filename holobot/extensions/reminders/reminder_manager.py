@@ -5,18 +5,16 @@ from .repositories import ReminderRepositoryInterface
 from datetime import datetime, timedelta
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Tuple
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
+    def __init__(self, log: LogInterface, reminder_repository: ReminderRepositoryInterface, configurator: ConfiguratorInterface) -> None:
         super().__init__()
-        self.__log: LogInterface = service_collection.get(LogInterface).with_name("Reminders", "ReminderManager")
-        self.__reminder_repository: ReminderRepositoryInterface = service_collection.get(ReminderRepositoryInterface)
-        configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
+        self.__log: LogInterface = log.with_name("Reminders", "ReminderManager")
+        self.__reminder_repository: ReminderRepositoryInterface = reminder_repository
         self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
         self.__message_length_min: int = configurator.get("Reminders", "MessageLengthMin", 10)
         self.__message_length_max: int = configurator.get("Reminders", "MessageLengthMax", 120)

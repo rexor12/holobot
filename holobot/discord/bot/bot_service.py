@@ -9,6 +9,7 @@ from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -34,12 +35,14 @@ class BotService(BotServiceInterface):
         configurator: ConfiguratorInterface,
         extension_providers: Tuple[ExtensionProviderInterface, ...],
         log: LogInterface,
-        commands: Tuple[CommandInterface, ...]) -> None:
+        commands: Tuple[CommandInterface, ...],
+        debugger: DebuggerInterface) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
         self.__log: LogInterface = log.with_name("Discord", "BotService")
         self.__commands: Tuple[CommandInterface, ...] = commands
+        self.__debugger: DebuggerInterface = debugger
         self.__bot: Bot = self.__initialize_bot()
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
@@ -89,7 +92,7 @@ class BotService(BotServiceInterface):
         if not command.group_name:
             return self.__slash.add_slash_command(
                 command.execute,
-                command.name,
+                command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}",
                 command.description,
                 list(await command.get_allowed_guild_ids()),
                 command.options

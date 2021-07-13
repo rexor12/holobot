@@ -6,18 +6,17 @@ from holobot.discord.components import DynamicPager
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.integration import MessagingInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Union
 
 @injectable(CommandInterface)
 class ViewTodoItemsCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "view")
-        self.__log: LogInterface = services.get(LogInterface).with_name("TodoLists", "ViewTodoItemsCommand")
-        self.__messaging: MessagingInterface = services.get(MessagingInterface)
-        self.__todo_item_manager: TodoItemManagerInterface = services.get(TodoItemManagerInterface)
+    def __init__(self, log: LogInterface, messaging: MessagingInterface, todo_item_manager: TodoItemManagerInterface) -> None:
+        super().__init__("view")
+        self.__log: LogInterface = log.with_name("TodoLists", "ViewTodoItemsCommand")
+        self.__messaging: MessagingInterface = messaging
+        self.__todo_item_manager: TodoItemManagerInterface = todo_item_manager
         self.group_name = "todo"
         self.description = "Displays all your to-do items."
     

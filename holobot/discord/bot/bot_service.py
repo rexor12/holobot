@@ -10,7 +10,6 @@ from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Tuple, Union
@@ -31,14 +30,18 @@ intents = Intents(
 
 @injectable(BotServiceInterface)
 class BotService(BotServiceInterface):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self,
+        configurator: ConfiguratorInterface,
+        extension_providers: Tuple[ExtensionProviderInterface, ...],
+        log: LogInterface,
+        commands: Tuple[CommandInterface, ...]) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
-        self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = services.get_all(ExtensionProviderInterface)
-        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "BotService")
-        self.__commands: Tuple[CommandInterface, ...] = services.get_all(CommandInterface)
-        self.__bot: Bot = self.__initialize_bot(services)
-        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True)
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
+        self.__log: LogInterface = log.with_name("Discord", "BotService")
+        self.__commands: Tuple[CommandInterface, ...] = commands
+        self.__bot: Bot = self.__initialize_bot()
+        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
         Messaging.bot = self.__bot
@@ -102,9 +105,9 @@ class BotService(BotServiceInterface):
             options=command.options
         )
 
-    def __initialize_bot(self, services: ServiceCollectionInterface) -> Bot:
+    def __initialize_bot(self) -> Bot:
         bot = Bot(
-            services,
+            self.__log,
             # TODO Guild-specific custom prefix.
             command_prefix = DEFAULT_BOT_PREFIX if not self.__configurator.get("General", "IsDebug", False) else DEBUG_MODE_BOT_PREFIX,
             case_insensitive = True,

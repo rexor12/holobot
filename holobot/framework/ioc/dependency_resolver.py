@@ -10,7 +10,7 @@ TService = TypeVar("TService")
 
 class DependencyResolver:
 	def __init__(self, exports: Tuple[ExportMetadata, ...]) -> None:
-		self.__log = logging.Logger("DependencyResolver")
+		self.__log = logging.getLogger("DependencyResolver")
 		self.__intf_to_impl_map: Dict[Type[Any], Set[Type[Any]]] = {}
 		self.__impl_to_intf_map: Dict[Type[Any], Set[Type[Any]]] = {}
 		self.__instances_by_intf: Dict[Type[Any], List[Any]] = {}
@@ -18,11 +18,14 @@ class DependencyResolver:
 	
 	def resolve(self, type: Type[TService]) -> TService:
 		dependency_graph = self.__build_dependeny_graph_for(type)
+		instance = None
 		for service_type in TopologicalSorter.sort(dependency_graph, type):
 			self.__log.debug(f"Resolving service... {{ Type = {service_type.__name__} }}")
-			self.__resolve_service(service_type)
+			instance = self.__resolve_service(service_type)
 			self.__log.debug(f"Resolved service. {{ Type = {service_type.__name__} }}")
-		return self.__create_instance(type)
+		if not isinstance(instance, type):
+			raise ValueError("Unexpected instance. This is likely an error in the algorithm.")
+		return instance
 
 	# Idea from: https://github.com/agronholm/typeguard
 	@staticmethod

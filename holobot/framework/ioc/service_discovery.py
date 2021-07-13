@@ -23,7 +23,7 @@ class ServiceDiscovery:
                 if not is_package:
                     continue
                 # TODO Temporary. Remove this before merge.
-                if name == "discord" or name == "extensions":
+                if name == "extensions":
                     continue
                 #print(f"[ServiceDiscovery] Found additional package. {{ Name = {name}, Parent = {module_name} }}")
                 module_names.append(f"{module_name}.{name}")

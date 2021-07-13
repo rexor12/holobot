@@ -59,6 +59,28 @@ class Graph(Generic[TNode]):
             raise ArgumentError("node", "The given node is already part of the graph.")
         self.__nodes.add(node)
     
+    def try_add_node(self, node: TNode) -> bool:
+        """Tries to add a new node to the graph.
+
+        If the node is already added, it won't be added again
+        and contrary to ``add_node`` no exception is thrown.
+
+        Parameters
+        ----------
+        node : ``TNode``
+            The node to be added.
+        
+        Returns
+        -------
+        ``bool``
+            True, if the node has been added; false, if it's already present.
+        """
+
+        if node in self.__nodes:
+            return False
+        self.__nodes.add(node)
+        return True
+    
     def add_edge(self, source: TNode, target: TNode) -> None:
         """Adds an edge to the graph.
 

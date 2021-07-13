@@ -10,6 +10,9 @@ import tzlocal
 class ConsoleLog(LogBase):
     """A logger that formats and writes messages to the console."""
 
+    def __init__(self) -> None:
+        super().__init__()
+
     def _on_write(self, logger: LogInterface, level: LogLevel, message: str, error: Optional[Exception]) -> None:
         current_time = datetime.now(tzlocal.get_localzone())
         formatted_name = logger.name if logger.name is not None else ""

@@ -1,10 +1,8 @@
-from .ioc import ServiceCollection, ServiceDiscovery
 from holobot.framework.lifecycle import LifecycleManagerInterface
 from holobot.sdk import KernelInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.integration import IntegrationInterface
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.utils import when_all
@@ -12,17 +10,6 @@ from typing import Tuple
 
 import asyncio
 
-class Startup:
-    # This is __main__.
-    def __init__(self) -> None:
-        event_loop = asyncio.get_event_loop()
-        service_collection = ServiceCollection()
-        # The idea here is to register the services for each extension independently,
-        # however, today it doesn't make sense as they're still in the same package.
-        # Therefore, for now we just register everything from the entire package.
-        exports = ServiceDiscovery.get_exports("holobot")
-
-@injectable(KernelInterface)
 class Kernel(KernelInterface):
     def __init__(self,
         log: LogInterface,

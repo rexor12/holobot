@@ -3,7 +3,6 @@ from discord import Reaction as DiscordReaction
 from discord import User
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.integration.models import Reaction
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Callable, Optional
@@ -19,9 +18,9 @@ class Messaging(MessagingInterface):
     # This could possibly be avoided if discord.py supported IoC.
     bot: Optional[Bot] = None
 
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self, log: LogInterface) -> None:
         super().__init__()
-        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "Messaging")
+        self.__log: LogInterface = log.with_name("Discord", "Messaging")
     
     async def send_dm(self, user_id: str, message: str) -> None:
         if Messaging.bot is None:

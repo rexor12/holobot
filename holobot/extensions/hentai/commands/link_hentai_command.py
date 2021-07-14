@@ -3,7 +3,6 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_choice, create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import reply
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import try_parse_int
 
@@ -16,8 +15,8 @@ ehentai_regex = re.compile(r"^(?:\d+)\/(?:[a-z0-9]{10})$")
 
 @injectable(CommandInterface)
 class LinkHentaiCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "link")
+    def __init__(self) -> None:
+        super().__init__("link")
         self.group_name = "hentai"
         self.description = "Gives you a link to a title on a specific site."
         self.options = [

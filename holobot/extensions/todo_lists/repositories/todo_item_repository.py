@@ -2,15 +2,14 @@ from .todo_item_repository_interface import TodoItemRepositoryInterface
 from ..models import TodoItem
 from asyncpg.connection import Connection
 from holobot.sdk.database import DatabaseManagerInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional, Tuple
 
 @injectable(TodoItemRepositoryInterface)
 class TodoItemRepository(TodoItemRepositoryInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
+    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
         super().__init__()
-        self.__database_manager: DatabaseManagerInterface = service_collection.get(DatabaseManagerInterface)
+        self.__database_manager: DatabaseManagerInterface = database_manager
         
     async def count(self, user_id: str) -> int:
         async with self.__database_manager.acquire_connection() as connection:

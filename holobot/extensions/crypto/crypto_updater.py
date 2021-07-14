@@ -6,7 +6,6 @@ from asyncio.tasks import Task
 from datetime import datetime
 from decimal import Decimal
 from holobot.sdk.configs import ConfiguratorInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
 from holobot.sdk.logging import LogInterface
@@ -34,11 +33,15 @@ async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception)
 
 @injectable(StartableInterface)
 class CryptoUpdater(StartableInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface):
-        self.__http_client_pool: HttpClientPoolInterface = service_collection.get(HttpClientPoolInterface)
-        self.__crypto_repository: CryptoRepositoryInterface = service_collection.get(CryptoRepositoryInterface)
-        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__log = service_collection.get(LogInterface).with_name("Crypto", "CryptoUpdater")
+    def __init__(self,
+        http_client_pool: HttpClientPoolInterface,
+        crypto_repository: CryptoRepositoryInterface,
+        configurator: ConfiguratorInterface,
+        log: LogInterface):
+        self.__http_client_pool: HttpClientPoolInterface = http_client_pool
+        self.__crypto_repository: CryptoRepositoryInterface = crypto_repository
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__log: LogInterface = log.with_name("Crypto", "CryptoUpdater")
         self.__background_loop: Optional[AsyncLoop] = None
         self.__background_task: Optional[Task] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(

@@ -1,14 +1,13 @@
 from asyncpg.connection import Connection
 from holobot.sdk.database.migration import MigrationBase, MigrationInterface
 from holobot.sdk.database.migration.models import MigrationPlan
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 
 TABLE_NAME = "crypto_alerts"
 
 @injectable(MigrationInterface)
 class AlertMigration(MigrationBase):
-    def __init__(self, service_collection: ServiceCollectionInterface) -> None:
+    def __init__(self) -> None:
         super().__init__(TABLE_NAME, {
             0: MigrationPlan(0, 1, self.__initialize_table),
             1: MigrationPlan(1, 2, self.__upgrade_1)

@@ -4,7 +4,6 @@ from .exceptions import SearchQuotaExhaustedError
 from .models import SearchResult
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.network import HttpClientPoolInterface
@@ -22,11 +21,11 @@ class GoogleClient(GoogleClientInterface):
         SearchType.IMAGE: "IMAGE"
     }
 
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self, configurator: ConfiguratorInterface, http_client_pool: HttpClientPoolInterface, log: LogInterface) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
-        self.__http_client_pool: HttpClientPoolInterface = services.get(HttpClientPoolInterface)
-        self.__log: LogInterface = services.get(LogInterface).with_name("Google", "GoogleClient")
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__http_client_pool: HttpClientPoolInterface = http_client_pool
+        self.__log: LogInterface = log.with_name("Google", "GoogleClient")
         self.__api_key: str = self.__configurator.get("Google", GCS_API_KEY, "")
         self.__engine_id: str = self.__configurator.get("Google", GCS_ENGINE_ID, "")
 

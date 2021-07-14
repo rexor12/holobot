@@ -4,18 +4,17 @@ from .repositories import TodoItemRepositoryInterface
 from .todo_item_manager_interface import TodoItemManagerInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Tuple
 
 @injectable(TodoItemManagerInterface)
 class TodoItemManager(TodoItemManagerInterface):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self, configurator: ConfiguratorInterface, log: LogInterface, todo_item_repository: TodoItemRepositoryInterface) -> None:
         super().__init__()
-        self.__configurator = services.get(ConfiguratorInterface)
-        self.__log = services.get(LogInterface).with_name("TodoLists", "TodoItemManager")
-        self.__todo_item_repository: TodoItemRepositoryInterface = services.get(TodoItemRepositoryInterface)
+        self.__configurator = configurator
+        self.__log = log.with_name("TodoLists", "TodoItemManager")
+        self.__todo_item_repository: TodoItemRepositoryInterface = todo_item_repository
         self.__todo_items_per_user_max: int = self.__configurator.get("TodoLists", "TodoItemsPerUserMax", 5)
         self.__message_length_min: int = self.__configurator.get("TodoLists", "MessageLengthMin", 10)
         self.__message_length_max: int = self.__configurator.get("TodoLists", "MessageLengthMax", 192)

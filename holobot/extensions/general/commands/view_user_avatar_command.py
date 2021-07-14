@@ -4,14 +4,13 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import find_member, reply
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
 @injectable(CommandInterface)
 class ViewUserAvatarCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "avatar")
+    def __init__(self) -> None:
+        super().__init__("avatar")
         self.description = "Displays a user's avatar."
         self.options = [
             create_option("user", "The name or mention of the user. By default, it's yourself.", SlashCommandOptionType.STRING, False)

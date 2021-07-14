@@ -20,23 +20,23 @@ class DependencyResolver:
 		dependency_graph = self.__build_dependeny_graph_for(type)
 		instance = None
 		for service_type in TopologicalSorter.sort(dependency_graph, type):
-			self.__log.debug(f"Resolving service... {{ Type = {service_type.__name__} }}")
+			self.__log.debug(f"Resolving service... {{ Type = {service_type} }}")
 			instance = self.__resolve_service(service_type)
-			self.__log.debug(f"Resolved service. {{ Type = {service_type.__name__} }}")
+			self.__log.debug(f"Resolved service. {{ Type = {service_type} }}")
 		if not isinstance(instance, type):
-			raise ValueError("Unexpected instance. This is likely an error in the algorithm.")
+			raise TypeError("Unexpected instance. This is likely an error in the algorithm.")
 		return instance
 
-	# Idea from: https://github.com/agronholm/typeguard
 	@staticmethod
 	def __unpack_dependent_intf(type: Type[Any]) -> Tuple[Type[Any], bool]:
-		print(f"Unpacking interface... {{ Type = {type} }}")
+		# The dependency must be either a specific interface (single instance dependency)
+		# or a tuple of a single specific interface (multiple instance dependency).
 		if (origin := getattr(type, "__origin__", None)) is not None:
 			if origin != tuple:
-				raise ValueError(f"Expected a tuple, but got {origin.__name__}.")
+				raise TypeError(f"Expected a tuple, but got {origin}.")
 			args = get_args(type)
 			if len(args) != 2 or args[-1] != Ellipsis:
-				raise ValueError("Expected a tuple with two arguments, the second being an ellipsis.")
+				raise TypeError("Expected a tuple with two arguments, the second being an ellipsis.")
 			return (args[0], True)
 		return (type, False)
 	
@@ -56,30 +56,34 @@ class DependencyResolver:
 				# This type's dependency chain has already been mapped.
 				continue
 
-			self.__log.debug(f"Gathering dependent interfaces... {{ Dependee = {dependee_impl.__name__} }}")
+			self.__log.debug(f"Gathering dependent interfaces... {{ Dependee = {dependee_impl} }}")
 			for dependent_intf, is_multi in self.__get_dependent_intfs(dependee_impl):
-				self.__log.debug(f"Found dependent interface. {{ Dependee = {dependee_impl.__name__}, Dependent = {dependent_intf.__name__}, IsMulti = {is_multi} }}")
+				self.__log.debug(f"Found dependent interface. {{ Dependee = {dependee_impl}, Dependent = {dependent_intf}, IsMulti = {is_multi} }}")
 				if len(dependent_impls := self.__intf_to_impl_map.get(dependent_intf, [])) == 0 and not is_multi:
-					raise ValueError(f"Cannot satisfy dependency. {{ Dependee = {dependee_impl.__name__}, Dependent = {dependent_intf.__name__} }}")
+					raise TypeError(f"Cannot satisfy dependency. {{ Dependee = {dependee_impl}, Dependent = {dependent_intf} }}")
 
+				# Mark each implementation as a dependency. At this point,
+				# it is possible only one of them will be needed by
+				# this specific type. But we'll make sure all are initialized
+				# as they may be needed later.
 				for dependent_impl in dependent_impls:
 					dependency_graph.try_add_node(dependee_impl)
 					dependency_graph.add_edge(dependee_impl, dependent_impl)
 					resolvable_impls.append(dependent_impl)
-					self.__log.debug(f"Identified dependent implementation. {{ Dependee = {dependee_impl.__name__}, Dependent = {dependent_impl.__name__} }}")
+					self.__log.debug(f"Identified dependent implementation. {{ Dependee = {dependee_impl}, Dependent = {dependent_impl} }}")
 
 		return dependency_graph
 
 	def __get_dependent_intfs(self, service_type: Type[Any]) -> Generator[Tuple[Type[Any], bool], None, None]:
 		constructor = getattr(service_type, "__init__", None)
 		if not constructor or not callable(constructor):
-			raise ValueError("Invalid constructor.")
+			raise TypeError("Invalid constructor.")
 		signature = inspect.signature(constructor)
 		for name, descriptor in signature.parameters.items():
 			if name in ("self", "args", "kwargs"):
 				continue
 			if descriptor.annotation == inspect.Parameter.empty:
-				raise ValueError("Missing annotation.")
+				raise TypeError(f"The initializer of '{service_type}' is missing annotations.")
 			yield DependencyResolver.__unpack_dependent_intf(descriptor.annotation)
 
 	def __resolve_service(self, service_type: Type[TService]) -> TService:
@@ -108,6 +112,6 @@ class DependencyResolver:
 				dependent_impls.append(tuple(instances))
 			elif len(instances) > 0:
 				dependent_impls.append(instances[0])
-			else: raise ValueError(f"Cannot satisfy dependency of '{service_type}' on '{dependent_intf}'.")
+			else: raise TypeError(f"Cannot satisfy dependency of '{service_type}' on '{dependent_intf}'.")
 		
 		return service_type(*dependent_impls)

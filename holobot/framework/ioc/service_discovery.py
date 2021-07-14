@@ -22,9 +22,6 @@ class ServiceDiscovery:
             for loader, name, is_package in pkgutil.walk_packages(path):
                 if not is_package:
                     continue
-                # TODO Temporary. Remove this before merge.
-                if name == "extensions":
-                    continue
                 #print(f"[ServiceDiscovery] Found additional package. {{ Name = {name}, Parent = {module_name} }}")
                 module_names.append(f"{module_name}.{name}")
         

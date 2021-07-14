@@ -4,7 +4,6 @@ from asyncpg.connection import Connection
 from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.reactive import ListenerInterface
@@ -12,11 +11,15 @@ from typing import List, Optional, Tuple
 
 @injectable(CryptoRepositoryInterface)
 class CryptoRepository(CryptoRepositoryInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface):
-        self.__configurator: ConfiguratorInterface = service_collection.get(ConfiguratorInterface)
-        self.__database_manager: DatabaseManagerInterface = service_collection.get(DatabaseManagerInterface)
-        self.__log = service_collection.get(LogInterface).with_name("Crypto", "CryptoRepository")
-        self.__listeners: Tuple[ListenerInterface[SymbolUpdateEvent], ...] = service_collection.get_all(ListenerInterface[SymbolUpdateEvent])
+    def __init__(self,
+        configurator: ConfiguratorInterface,
+        database_manager: DatabaseManagerInterface,
+        log: LogInterface,
+        listeners: Tuple[ListenerInterface[SymbolUpdateEvent], ...]):
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__database_manager: DatabaseManagerInterface = database_manager
+        self.__log: LogInterface = log.with_name("Crypto", "CryptoRepository")
+        self.__listeners: Tuple[ListenerInterface[SymbolUpdateEvent], ...] = listeners
         self.__cache: ConcurrentCache[str, Optional[PriceData]] = ConcurrentCache()
 
     async def get_price(self, symbol: str) -> Optional[PriceData]:

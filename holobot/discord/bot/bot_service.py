@@ -89,10 +89,11 @@ class BotService(BotServiceInterface):
         await user.send(message)
 
     async def __add_slash_command(self, command: CommandInterface) -> Union[CommandObject, SubcommandObject]:
+        command_name = command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}"
         if not command.group_name:
             return self.__slash.add_slash_command(
                 command.execute,
-                command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}",
+                command_name,
                 command.description,
                 list(await command.get_allowed_guild_ids()),
                 command.options
@@ -102,7 +103,7 @@ class BotService(BotServiceInterface):
             command.execute,
             command.group_name,
             command.subgroup_name,
-            command.name,
+            command_name,
             command.description,
             guild_ids=list(await command.get_allowed_guild_ids()),
             options=command.options

@@ -1,6 +1,5 @@
 from .lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.sdk.exceptions import AggregateError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
 from holobot.sdk.logging import LogInterface
@@ -8,9 +7,9 @@ from typing import Tuple
 
 @injectable(LifecycleManagerInterface)
 class LifecycleManager(LifecycleManagerInterface):
-    def __init__(self, service_collection: ServiceCollectionInterface):
-        self.__startables: Tuple[StartableInterface, ...] = service_collection.get_all(StartableInterface)
-        self.__log = service_collection.get(LogInterface).with_name("Framework", "LifecycleManager")
+    def __init__(self, startables: Tuple[StartableInterface, ...], log: LogInterface):
+        self.__startables: Tuple[StartableInterface, ...] = startables
+        self.__log = log.with_name("Framework", "LifecycleManager")
     
     async def start_all(self):
         errors = []

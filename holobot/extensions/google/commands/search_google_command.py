@@ -7,7 +7,6 @@ from discord_slash.utils.manage_commands import create_choice, create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.network.exceptions import HttpStatusError
@@ -15,10 +14,10 @@ from typing import Optional
 
 @injectable(CommandInterface)
 class SearchGoogleCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "google")
-        self.__google_client = services.get(GoogleClientInterface)
-        self.__log = services.get(LogInterface).with_name("Google", "SearchGoogleCommand")
+    def __init__(self, google_client: GoogleClientInterface, log: LogInterface) -> None:
+        super().__init__("google")
+        self.__google_client = google_client
+        self.__log = log.with_name("Google", "SearchGoogleCommand")
         self.description = "Searches Google with a specific query."
         self.options = [
             create_option("query", "The keywords to search for.", SlashCommandOptionType.STRING, True),

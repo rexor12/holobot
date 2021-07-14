@@ -1,6 +1,4 @@
-from .service_collection import ServiceCollection
 from holobot.sdk.ioc.models import ExportMetadata
-from holobot.sdk.ioc.providers import SimpleServiceProvider
 from types import ModuleType
 from typing import List, Tuple
 
@@ -8,15 +6,7 @@ import importlib, inspect, pkgutil
 
 class ServiceDiscovery:
     @staticmethod
-    def register_services_by_module(package_name: str, service_collection: ServiceCollection) -> None:
-        provider = SimpleServiceProvider()
-        for metadata in ServiceDiscovery.__get_exports_iteratively(package_name):
-            provider.register(metadata.contract_type, metadata.export_type)
-            #print(f"[ServiceDiscovery] Registered service. {{ ContractType = {metadata.contract_type}, ExportType = {metadata.export_type} }}")
-        service_collection.add_provider(provider)
-    
-    @staticmethod
-    def __get_exports_iteratively(module_name: str) -> Tuple[ExportMetadata, ...]:
+    def get_exports(module_name: str) -> Tuple[ExportMetadata, ...]:
         metadatas: List[ExportMetadata] = []
         module_names: List[str] = [module_name]
         while len(module_names) > 0:

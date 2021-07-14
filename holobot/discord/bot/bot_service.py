@@ -9,8 +9,8 @@ from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Tuple, Union
@@ -31,14 +31,20 @@ intents = Intents(
 
 @injectable(BotServiceInterface)
 class BotService(BotServiceInterface):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self,
+        configurator: ConfiguratorInterface,
+        extension_providers: Tuple[ExtensionProviderInterface, ...],
+        log: LogInterface,
+        commands: Tuple[CommandInterface, ...],
+        debugger: DebuggerInterface) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
-        self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = services.get_all(ExtensionProviderInterface)
-        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "BotService")
-        self.__commands: Tuple[CommandInterface, ...] = services.get_all(CommandInterface)
-        self.__bot: Bot = self.__initialize_bot(services)
-        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True)
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
+        self.__log: LogInterface = log.with_name("Discord", "BotService")
+        self.__commands: Tuple[CommandInterface, ...] = commands
+        self.__debugger: DebuggerInterface = debugger
+        self.__bot: Bot = self.__initialize_bot()
+        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
         Messaging.bot = self.__bot
@@ -83,10 +89,11 @@ class BotService(BotServiceInterface):
         await user.send(message)
 
     async def __add_slash_command(self, command: CommandInterface) -> Union[CommandObject, SubcommandObject]:
+        command_name = command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}"
         if not command.group_name:
             return self.__slash.add_slash_command(
                 command.execute,
-                command.name,
+                command_name,
                 command.description,
                 list(await command.get_allowed_guild_ids()),
                 command.options
@@ -96,15 +103,15 @@ class BotService(BotServiceInterface):
             command.execute,
             command.group_name,
             command.subgroup_name,
-            command.name,
+            command_name,
             command.description,
             guild_ids=list(await command.get_allowed_guild_ids()),
             options=command.options
         )
 
-    def __initialize_bot(self, services: ServiceCollectionInterface) -> Bot:
+    def __initialize_bot(self) -> Bot:
         bot = Bot(
-            services,
+            self.__log,
             # TODO Guild-specific custom prefix.
             command_prefix = DEFAULT_BOT_PREFIX if not self.__configurator.get("General", "IsDebug", False) else DEBUG_MODE_BOT_PREFIX,
             case_insensitive = True,

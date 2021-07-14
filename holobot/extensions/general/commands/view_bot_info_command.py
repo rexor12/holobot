@@ -3,7 +3,6 @@ from discord.embeds import Embed
 from discord_slash.context import SlashContext
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import reply
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import EnvironmentInterface
 
@@ -11,9 +10,9 @@ import tzlocal
 
 @injectable(CommandInterface)
 class ViewBotInfoCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "info")
-        self.__environment = services.get(EnvironmentInterface)
+    def __init__(self, environment: EnvironmentInterface) -> None:
+        super().__init__("info")
+        self.__environment = environment
         self.description = "Displays some information about the bot."
 
     async def execute(self, context: SlashContext) -> None:

@@ -5,16 +5,15 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import get_author_id, reply
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 
 @injectable(CommandInterface)
 class RemoveReminderCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "remove")
-        self.__log: LogInterface = services.get(LogInterface).with_name("Reminders", "RemoveReminderCommand")
-        self.__reminder_manager: ReminderManagerInterface = services.get(ReminderManagerInterface)
+    def __init__(self, log: LogInterface, reminder_manager: ReminderManagerInterface) -> None:
+        super().__init__("remove")
+        self.__log: LogInterface = log.with_name("Reminders", "RemoveReminderCommand")
+        self.__reminder_manager: ReminderManagerInterface = reminder_manager
         self.group_name = "reminder"
         self.description = "Removes a reminder."
         self.options = [

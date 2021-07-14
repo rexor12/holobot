@@ -1,15 +1,14 @@
 from .bot import BotServiceInterface
 from holobot.sdk.integration import IntegrationInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 
 @injectable(IntegrationInterface)
 class Integration(IntegrationInterface):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self, bot: BotServiceInterface, log: LogInterface) -> None:
         super().__init__()
-        self.__bot: BotServiceInterface = services.get(BotServiceInterface)
-        self.__log: LogInterface = services.get(LogInterface).with_name("Discord", "Integration")
+        self.__bot: BotServiceInterface = bot
+        self.__log: LogInterface = log.with_name("Discord", "Integration")
 
     async def start(self) -> None:
         self.__log.debug("Starting Discord integration...")

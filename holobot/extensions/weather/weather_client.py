@@ -3,7 +3,6 @@ from .models import WeatherData
 from .weather_client_interface import WeatherClientInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.network import HttpClientPoolInterface
@@ -19,11 +18,11 @@ CONDITION_IMAGE_BASE_URL_PARAMETER = "ConditionImageBaseUrl"
 
 @injectable(WeatherClientInterface)
 class WeatherClient(WeatherClientInterface):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self, configurator: ConfiguratorInterface, http_client_pool: HttpClientPoolInterface, log: LogInterface) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = services.get(ConfiguratorInterface)
-        self.__http_client_pool: HttpClientPoolInterface = services.get(HttpClientPoolInterface)
-        self.__log: LogInterface = services.get(LogInterface).with_name("Weather", "WeatherClient")
+        self.__configurator: ConfiguratorInterface = configurator
+        self.__http_client_pool: HttpClientPoolInterface = http_client_pool
+        self.__log: LogInterface = log.with_name("Weather", "WeatherClient")
         self.__api_gateway: str = self.__configurator.get(CONFIG_SECTION, API_GATEWAY_PARAMETER, "")
         self.__api_key: str = self.__configurator.get(CONFIG_SECTION, API_KEY_PARAMETER, "")
         self.__condition_image_base_url: str = self.__configurator.get(CONFIG_SECTION, CONDITION_IMAGE_BASE_URL_PARAMETER, "")

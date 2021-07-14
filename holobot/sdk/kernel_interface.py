@@ -1,2 +1,3 @@
 class KernelInterface:
-    pass
+    def run(self):
+        raise NotImplementedError

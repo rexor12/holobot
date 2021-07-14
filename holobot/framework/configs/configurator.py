@@ -1,5 +1,4 @@
 from holobot.sdk.configs import ConfiguratorInterface, TValue
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.system import EnvironmentInterface
@@ -12,11 +11,9 @@ CONFIG_FILE_NAME = "config.json"
 
 @injectable(ConfiguratorInterface)
 class Configurator(ConfiguratorInterface):
-    def __init__(self, services: ServiceCollectionInterface):
-        self.__configs = Configurator.__load_config(services.get(EnvironmentInterface))
-        services.get(LogInterface).with_name(
-            "Framework", "Configurator"
-        ).info(f"Loaded configuration. {{ SectionCount = {len(self.__configs)} }}")
+    def __init__(self, environment: EnvironmentInterface, log: LogInterface) -> None:
+        self.__configs = Configurator.__load_config(environment)
+        log.with_name("Framework", "Configurator").info(f"Loaded configuration. {{ SectionCount = {len(self.__configs)} }}")
 
     def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
         # TODO Temporary change to support Heroku's way of configuration.

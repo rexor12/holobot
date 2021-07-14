@@ -1,2 +1,2 @@
-from .service_collection import ServiceCollection
+from .dependency_resolver import DependencyResolver
 from .service_discovery import ServiceDiscovery

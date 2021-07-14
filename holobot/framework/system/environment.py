@@ -1,4 +1,3 @@
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import EnvironmentInterface
 from holobot.sdk.system.models import Version
@@ -12,9 +11,6 @@ class Environment(EnvironmentInterface):
     # NOTE: This version number is automatically updated on build by the script assign_version.yml.
     __version = Version(2, 0, 0, 201)
 
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__()
-    
     @property
     def root_path(self) -> str:
         return ROOT_PATH

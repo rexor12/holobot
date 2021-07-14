@@ -1,5 +1,6 @@
+from holobot.sdk.network.resilience.exceptions.circuit_broken_error import CircuitBrokenError
 from .. import WeatherClientInterface
-from ..exceptions import QueryQuotaExhaustedError
+from ..exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
 from ..models import WeatherData
 from discord.embeds import Embed
 from discord_slash.context import SlashContext
@@ -28,12 +29,16 @@ class GetBasicWeatherCommand(CommandBase):
                 await reply(context, "No information is available right now. Please, try again later.")
                 return
             await reply(context, GetBasicWeatherCommand.__create_embed(weather_data))
+        except InvalidLocationError:
+            await reply(context, "The location you requested cannot be found. Did you make a typo?")
+        except OpenWeatherError as error:
+            await reply(context, f"An OpenWeather internal error has occurred (code: {error.error_code}). Please, try again later or contact your server administrator.")
         except InvalidOperationError:
             await reply(context, "OpenWeather isn't configured. Please, contact your server administrator.")
-            return
         except QueryQuotaExhaustedError:
             await reply(context, "The daily quota has been used up for the bot. Please, try again later or contact your server administrator.")
-            return
+        except CircuitBrokenError:
+            await reply(context, "I couldn't communicate with OpenWeather. Please, wait a few minutes and try again.")
     
     @staticmethod
     def __create_embed(weather_data: WeatherData) -> Embed:

@@ -7,7 +7,6 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_choice, create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import reply
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
@@ -17,9 +16,9 @@ channel_regex = re.compile(r"^<#(?P<id>\d+)>$")
 
 @injectable(CommandInterface)
 class SetCommandRuleCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "setrule")
-        self.__command_rule_manager: CommandRuleManagerInterface = services.get(CommandRuleManagerInterface)
+    def __init__(self, rule_manager: CommandRuleManagerInterface) -> None:
+        super().__init__("setrule")
+        self.__command_rule_manager: CommandRuleManagerInterface = rule_manager
         self.group_name = "admin"
         self.subgroup_name = "commands"
         self.description = "Adds a new or modifies an existing rule for one or more commands."

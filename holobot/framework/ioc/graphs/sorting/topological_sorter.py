@@ -22,7 +22,7 @@ class TopologicalSorter:
         if node in visited_nodes:
             return
         if node in currently_visiting:
-            raise CyclicGraphError("A directed acyclic graph (DAG) is expected.")
+            raise CyclicGraphError(currently_visiting, "A directed acyclic graph (DAG) is expected.")
         
         currently_visiting.add(node)
         for out_node in set(edge.target for edge in graph.get_out_edges(node)):

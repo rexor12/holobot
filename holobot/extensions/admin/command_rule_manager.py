@@ -3,16 +3,15 @@ from .command_rule_repository_interface import CommandRuleRepositoryInterface
 from .exceptions import InvalidCommandError
 from .models import CommandRule
 from holobot.discord.sdk.commands import CommandRegistryInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.exception_utils import assert_not_none
 
 @injectable(CommandRuleManagerInterface)
 class CommandRuleManager(CommandRuleManagerInterface):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
+    def __init__(self, command_registry: CommandRegistryInterface) -> None:
         super().__init__()
         #self.__repository: CommandRuleRepositoryInterface = services.get(CommandRuleRepositoryInterface)
-        self.__registry: CommandRegistryInterface = services.get(CommandRegistryInterface)
+        self.__registry: CommandRegistryInterface = command_registry
         
     async def set_rule(self, rule: CommandRule) -> int:
         assert_not_none(rule.server_id, "rule.server_id")

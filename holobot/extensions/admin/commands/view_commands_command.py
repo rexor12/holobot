@@ -7,7 +7,6 @@ from holobot.discord.components import DynamicPager
 from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandRegistryInterface
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.integration import MessagingInterface
-from holobot.sdk.ioc import ServiceCollectionInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Dict, Generator, List, Optional, Tuple, Union
@@ -18,11 +17,11 @@ channel_regex = re.compile(r"^<#(?P<id>\d+)>$")
 
 @injectable(CommandInterface)
 class ViewCommandsCommand(CommandBase):
-    def __init__(self, services: ServiceCollectionInterface) -> None:
-        super().__init__(services, "view")
-        self.__command_registry: CommandRegistryInterface = services.get(CommandRegistryInterface)
-        self.__log: LogInterface = services.get(LogInterface)
-        self.__messaging: MessagingInterface = services.get(MessagingInterface)
+    def __init__(self, command_registry: CommandRegistryInterface, log: LogInterface, messaging: MessagingInterface) -> None:
+        super().__init__("view")
+        self.__command_registry: CommandRegistryInterface = command_registry
+        self.__log: LogInterface = log.with_name("Admin", "ViewCommandsCommand")
+        self.__messaging: MessagingInterface = messaging
         self.group_name = "admin"
         self.subgroup_name = "commands"
         self.description = "Lists the commands available for this server."

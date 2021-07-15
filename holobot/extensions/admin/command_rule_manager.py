@@ -1,8 +1,8 @@
+from .command_registry_interface import CommandRegistryInterface
 from .command_rule_manager_interface import CommandRuleManagerInterface
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
 from .exceptions import InvalidCommandError
 from .models import CommandRule
-from holobot.discord.sdk.commands import CommandRegistryInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.exception_utils import assert_not_none
 

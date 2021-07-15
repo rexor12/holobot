@@ -1,10 +1,11 @@
+from .. import CommandRegistryInterface
 from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandRegistryInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -24,7 +25,7 @@ class ViewCommandsCommand(CommandBase):
         self.__messaging: MessagingInterface = messaging
         self.group_name = "admin"
         self.subgroup_name = "commands"
-        self.description = "Lists the commands available for this server."
+        self.description = "Lists the commands with settings capabilities."
         self.options = [
             create_option("group", "The name of the command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
             create_option("subgroup", "The name of the command sub-group, such as \"commands\" under \"admin\".", SlashCommandOptionType.STRING, False)

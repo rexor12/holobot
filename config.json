@@ -61,5 +61,72 @@
             "ApiGatewayBaseUrl": "https://api.openweathermap.org/data/2.5/weather",
             "ConditionImageBaseUrl": "https://openweathermap.org/img/wn/"
         }
+    },
+    "Admin": {
+        "parameters": {
+            "CommandGroups": {
+                "": {
+                    "CanDisable": true,
+                    "Commands": {
+                        "google": {}
+                    }
+                },
+                "admin": {
+                    "CanDisable": false,
+                    "Subgroups": {
+                        "commands": {
+                            "CanDisable": true,
+                            "Commands": {
+                                "setrule": {},
+                                "view": {}
+                            }
+                        }
+                    },
+                    "Commands": {}
+                },
+                "crypto": {
+                    "CanDisable": true,
+                    "Subgroups": {
+                        "alarm": {
+                            "Commands": {
+                                "remove": {},
+                                "removeall": {},
+                                "set": {},
+                                "view": {}
+                            }
+                        }
+                    },
+                    "Commands": {
+                        "price": {}
+                    }
+                },
+                "hentai": {
+                    "CanDisable": true,
+                    "Commands": {
+                        "link": {}
+                    }
+                },
+                "reminder": {
+                    "Commands": {
+                        "remove": {},
+                        "set": {},
+                        "view": {}
+                    }
+                },
+                "todo": {
+                    "Commands": {
+                        "add": {},
+                        "removeall": {},
+                        "remove": {},
+                        "view": {}
+                    }
+                },
+                "weather": {
+                    "Commands": {
+                        "basic": {}
+                    }
+                }
+            }
+        }
     }
 }

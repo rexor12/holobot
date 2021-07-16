@@ -1,5 +1,6 @@
 from .log_interface import LogInterface
 from .enums import LogLevel
+from ..configs import ConfiguratorInterface
 from threading import Lock
 from typing import Dict, Optional
 
@@ -32,12 +33,12 @@ class LogBase(LogInterface):
     An abstract base class for loggers that implements child logger management.
     """
 
-    def __init__(self, name: Optional[str] = None) -> None:
+    def __init__(self, configurator: ConfiguratorInterface, name: Optional[str] = None) -> None:
         super().__init__()
         self.__lock: Lock = Lock()
         self.__children: Dict[str, ChildLog] = {}
         self.name = name
-        self.log_level = LogLevel.INFORMATION
+        self.log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
     
     def set_global_log_level(self, log_level: LogLevel):
         self.log_level = log_level

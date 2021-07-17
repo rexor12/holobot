@@ -1,4 +1,4 @@
-from .exceptions import QueryQuotaExhaustedError
+from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
 from .models import WeatherData
 from .weather_client_interface import WeatherClientInterface
 from holobot.sdk.configs import ConfiguratorInterface
@@ -8,6 +8,9 @@ from holobot.sdk.logging import LogInterface
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
+from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from json import dumps
+from typing import Any, Dict
 
 CONFIG_SECTION = "OpenWeather"
 API_GATEWAY_PARAMETER = "ApiGatewayBaseUrl"
@@ -30,10 +33,10 @@ class WeatherClient(WeatherClientInterface):
         # TODO Caching with configurable time based expiry.
         #self.__cache: ConcurrentCache[str, Optional[int]] = ConcurrentCache()
     
-    async def get_weather_data(self, city_name: str) -> WeatherData:
+    async def get_weather_data(self, location: str) -> WeatherData:
         if not self.__api_key:
             raise InvalidOperationError("OpenWeather isn't configured.")
-        if not city_name:
+        if not location:
             raise ValueError("The city name must be specified.")
         
         try:
@@ -42,7 +45,7 @@ class WeatherClient(WeatherClientInterface):
                 self.__api_gateway,
                 {
                     "appid": self.__api_key,
-                    "q": city_name,
+                    "q": location,
                     "units": "metric"
                 })
         except TooManyRequestsError:
@@ -50,10 +53,14 @@ class WeatherClient(WeatherClientInterface):
         except HttpStatusError as error:
             self.__log.error("An HTTP error has occurred during an OpenWeather request.", error)
             raise
+        except CircuitBrokenError:
+            raise
         except Exception as error:
             self.__log.error(f"An unexpected error has occurred during an OpenWeather request. ({type(error)})", error)
             raise
         
+        self.__assert_result_code(location, response)
+
         weather_data = WeatherData.from_json(response)
         self.__set_condition_image(weather_data)
         return weather_data
@@ -72,6 +79,20 @@ class WeatherClient(WeatherClientInterface):
             and isinstance(error.retry_after, int)):
             return error.retry_after
         return circuit_breaker.recovery_timeout
+    
+    def __assert_result_code(self, location: str, response: Dict[str, Any]) -> None:
+        result_code = response.get("cod", None)
+        if result_code is None:
+            self.__log.trace(dumps(response))
+            self.__log.error(f"Received a response with no result code. The response has been traced. {{ Location = {location} }}")
+            raise OpenWeatherError("N/A", location)
+        result_code = str(result_code)
+        if result_code == "404":
+            raise InvalidLocationError(location)
+        if result_code != "200":
+            self.__log.trace(dumps(response))
+            self.__log.warning(f"Received a response with an unexpected non-success code. {{ Code = {result_code}, Location = {location} }}")
+            raise OpenWeatherError(result_code, location)
     
     def __set_condition_image(self, weather_data: WeatherData) -> None:
         if (self.__condition_image_base_url is None

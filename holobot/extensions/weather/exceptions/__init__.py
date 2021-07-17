@@ -1,1 +1,3 @@
+from .invalid_location_error import InvalidLocationError
+from .open_weather_error import OpenWeatherError
 from .query_quota_exhausted_error import QueryQuotaExhaustedError

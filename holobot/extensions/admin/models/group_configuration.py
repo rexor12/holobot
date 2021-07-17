@@ -42,9 +42,7 @@ class GroupConfiguration:
         self.__commands = value
 
     @staticmethod
-    def from_json(json: Dict[str, Any]) -> 'GroupConfiguration':
-        if (name := json.get("Name", None)) is None:
-            raise ValueError("The group must have a name.")
+    def from_json(name: str, json: Dict[str, Any]) -> 'GroupConfiguration':
         config = GroupConfiguration(name)
         config.can_disable = json.get("CanDisable", True)
         for key, value in json.get("Subgroups", {}).items():

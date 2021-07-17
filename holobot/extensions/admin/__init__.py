@@ -2,4 +2,5 @@ from .command_registry import CommandRegistry
 from .command_registry_interface import CommandRegistryInterface
 from .command_rule_manager import CommandRuleManager
 from .command_rule_manager_interface import CommandRuleManagerInterface
+from .command_rule_repository import CommandRuleRepository
 from .command_rule_repository_interface import CommandRuleRepositoryInterface

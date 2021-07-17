@@ -6,11 +6,11 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.discord.sdk.utils import reply
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Dict, Generator, List, Optional, Tuple, Union
+from typing import Dict, Generator, Optional, Tuple, Union
 
 import re
 
@@ -60,40 +60,28 @@ class ViewCommandsCommand(CommandBase):
             
             embed = Embed(
                 title="Commands",
-                description="The list of all available commands.",
+                description="The list commands with settings capabilities.",
                 color=0xeb7d00
             )
 
             for index in range(start_offset, start_offset + page_size):
                 command = flattened_commands[index]
                 embed.add_field(
-                    name="",
-                    value=f"/{command[0]} {command[1]} {command[2]}"
+                    name=f"Command #{(index + 1)}",
+                    value=(
+                        f"> Group: {command[0]}\n"
+                        f"> Subgroup: {command[1]}\n"
+                        f"> Name: {command[2]}"
+                    ),
+                    inline=False
                 )
+            return embed
         
         await DynamicPager(self.__messaging, self.__log, context, create_filtered_embed)
     
     @staticmethod
-    def __flatten_commands(descriptors: Dict[str, Dict[str, Tuple[str, ...]]]):
-        for group_name, subgroups in descriptors:
-            for subgroup_name, commands in subgroups:
+    def __flatten_commands(descriptors: Dict[str, Dict[str, Tuple[str, ...]]]) -> Generator[Tuple[str, str, str], None, None]:
+        for group_name, subgroups in descriptors.items():
+            for subgroup_name, commands in subgroups.items():
                 for command_name in commands:
                     yield (group_name, subgroup_name, command_name)
-
-    async def __create_page_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
-        if len(self.__commands) == 0:
-            return None
-        
-        embed = Embed(
-            title="Commands",
-            description="The list of all available commands.",
-            color=0xeb7d00
-        )
-        
-        # for item in items:
-        #     embed.add_field(
-        #         name=f"#{item.id}",
-        #         value=item.message,
-        #         inline=False
-        #     )
-        return embed

@@ -1,5 +1,5 @@
 from .command_registry_interface import CommandRegistryInterface
-from .models import GroupConfiguration
+from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -14,8 +14,7 @@ class CommandRegistry(CommandRegistryInterface):
         super().__init__()
         self.__log: LogInterface = log.with_name("Admin", "CommandRegistry")
         # group -> sub-group -> name
-        self.__registry: Dict[str, GroupConfiguration] = {}
-        self.__register_commands(configurator)
+        self.__registry: Dict[str, GroupConfiguration] = self.__parse_command_configs(configurator)
     
     def command_exists(self, command_name: str, group_name: Optional[str] = None, subgroup_name: Optional[str] = None) -> bool:
         assert_not_none(command_name, "command_name")
@@ -44,8 +43,30 @@ class CommandRegistry(CommandRegistryInterface):
                 group[subgroup_name] = tuple([command_name for command_name in subgroup_config.commands.keys()])
         return result
     
-    def __register_commands(self, configurator: ConfiguratorInterface) -> None:
-        for group_json in configurator.get("Admin", "CommandGroups", {}):
-            group = GroupConfiguration.from_json(group_json)
-            self.__registry[group.name] = group
+    def get_group(self, group_name: str) -> Optional[GroupConfiguration]:
+        return self.__registry.get(group_name, None)
+    
+    def get_subgroup(self, group_name: str, subgroup_name: str) -> Optional[SubgroupConfiguration]:
+        if not (group := self.__registry.get(group_name, None)):
+            return None
+        return group.subgroups.get(subgroup_name, None)
+    
+    def get_command(self, command_name: str, group_name: Optional[str] = None, subgroup_name: Optional[str] = None) -> Optional[CommandConfiguration]:
+        group_name = group_name or DEFAULT_GROUP_NAME
+        if not (group := self.__registry.get(group_name, None)):
+            return None
+        if not subgroup_name:
+            return group.commands.get(command_name, None)
+        if not (subgroup := group.subgroups.get(subgroup_name, None)):
+            return None
+        return subgroup.commands.get(command_name, None)
+    
+    def __parse_command_configs(self, configurator: ConfiguratorInterface) -> Dict[str, GroupConfiguration]:
+        configs: Dict[str, GroupConfiguration] = {}
+        self.__log.debug("Parsing command group configurations...")
+        for name, group_json in configurator.get("Admin", "CommandGroups", {}).items():
+            group = GroupConfiguration.from_json(name, group_json)
+            configs[group.name] = group
             self.__log.debug(f"Registered command group configuration. {{ Group = {group.name} }}")
+        self.__log.debug("Command group parsed.")
+        return configs

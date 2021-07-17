@@ -36,5 +36,5 @@ class SubgroupConfiguration:
         config = SubgroupConfiguration(name)
         config.can_disable = json.get("CanDisable", can_disable_parent)
         for key, value in json.get("Commands", {}).items():
-            config.commands[key] = CommandConfiguration.from_json(key, value)
+            config.commands[key] = CommandConfiguration.from_json(key, config.can_disable, value)
         return config

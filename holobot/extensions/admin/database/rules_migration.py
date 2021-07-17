@@ -20,7 +20,7 @@ class RulesMigration(MigrationBase):
             " created_at TIMESTAMP DEFAULT NOW(),"
             " created_by VARCHAR(20) NOT NULL,"
             " server_id VARCHAR(20) NOT NULL,"
-            " state BOOLEAN DEFAULT FALSE,"
+            " state SMALLINT DEFAULT 0,"
             " command_group VARCHAR(25) DEFAULT NULL,"
             " command VARCHAR(25) DEFAULT NULL,"
             " channel_id VARCHAR(20) DEFAULT NULL"

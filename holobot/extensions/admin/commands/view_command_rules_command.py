@@ -1,4 +1,4 @@
-from .. import CommandRegistryInterface
+from .. import CommandRuleManagerInterface
 from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext
@@ -13,20 +13,19 @@ from holobot.sdk.logging import LogInterface
 from typing import Dict, Generator, Optional, Tuple, Union
 
 @injectable(CommandInterface)
-class ViewCommandsCommand(CommandBase):
-    def __init__(self, command_registry: CommandRegistryInterface, log: LogInterface, messaging: MessagingInterface) -> None:
-        super().__init__("view")
-        self.__command_registry: CommandRegistryInterface = command_registry
-        self.__log: LogInterface = log.with_name("Admin", "ViewCommandsCommand")
+class ViewCommandRulesCommand(CommandBase):
+    def __init__(self, command_manager: CommandRuleManagerInterface, log: LogInterface, messaging: MessagingInterface) -> None:
+        super().__init__("viewrules")
+        self.__command_manager: CommandRuleManagerInterface = command_manager
+        self.__log: LogInterface = log.with_name("Admin", "ViewCommandRulesCommand")
         self.__messaging: MessagingInterface = messaging
         self.group_name = "admin"
         self.subgroup_name = "commands"
-        self.description = "Lists the commands with settings capabilities."
+        self.description = "Lists the rules set on this server."
         self.options = [
             create_option("group", "The name of the command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
             create_option("subgroup", "The name of the command sub-group, such as \"commands\" under \"admin\".", SlashCommandOptionType.STRING, False)
         ]
-        self.__commands: Dict[str, Dict[str, Tuple[str, ...]]] = self.__command_registry.get_commands()
         
     async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> None:
         if not group and subgroup:
@@ -56,7 +55,7 @@ class ViewCommandsCommand(CommandBase):
             
             embed = Embed(
                 title="Commands",
-                description="The list of commands with settings capabilities.",
+                description="The list commands with settings capabilities.",
                 color=0xeb7d00
             )
 

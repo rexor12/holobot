@@ -1,4 +1,5 @@
 from .iquery_part_builder import IQueryPartBuilder
+from .limit_builder import LimitBuilder
 from .returning_builder import ReturningBuilder
 from .enums import Connector, Equality
 from typing import Any, List, Optional, Tuple
@@ -15,6 +16,9 @@ class WhereBuilder(IQueryPartBuilder):
     def or_field(self, column_name: str, operation: Equality, value: Optional[Any]) -> 'WhereBuilder':
         self.__fields.append((Connector.OR, column_name, operation, value))
         return self
+    
+    def limit(self) -> LimitBuilder:
+        return LimitBuilder(self)
     
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)

@@ -3,6 +3,7 @@ from typing import Any, List, Tuple
 
 class ReturningBuilder(IQueryPartBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:
+        super().__init__()
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.__columns: List[str] = []
     

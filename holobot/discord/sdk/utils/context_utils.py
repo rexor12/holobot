@@ -67,7 +67,6 @@ def get_author_id(context: Union[Context, SlashContext]) -> str:
     else: return str(context.author.id)
 
 async def reply(context: Union[Context, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
-    content = content.strip()
     if isinstance(context, SlashContext):
         if isinstance(content, str):
             return await context.send(content)

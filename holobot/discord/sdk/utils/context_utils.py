@@ -19,6 +19,7 @@ partial_emoji_converter = PartialEmojiConverter()
 emoji_converter = EmojiConverter()
 
 def find_member(context: Union[Context, SlashContext], name_or_mention: str) -> Optional[User]:
+    name_or_mention = name_or_mention.strip()
     guild = context.guild
     # An attempt to fix type hints for the messy discord.py.
     if not guild or not isinstance(guild, Guild):
@@ -40,6 +41,7 @@ def find_member(context: Union[Context, SlashContext], name_or_mention: str) -> 
     return best_match[0] if best_match is not None else None
 
 def find_member_by_id(context: Union[Context, SlashContext], user_id: str) -> Optional[User]:
+    user_id = user_id.strip()
     guild = context.guild
     # An attempt to fix type hints for the messy discord.py.
     if not guild or not isinstance(guild, Guild):
@@ -48,6 +50,7 @@ def find_member_by_id(context: Union[Context, SlashContext], user_id: str) -> Op
     return guild.get_member(int(user_id))
 
 async def find_emoji(context: Union[Context, SlashContext], name_or_mention: str) -> Optional[PartialEmoji]:
+    name_or_mention = name_or_mention.strip()
     try:
         return await partial_emoji_converter.convert(context, name_or_mention)
     except PartialEmojiConversionFailure:
@@ -64,6 +67,7 @@ def get_author_id(context: Union[Context, SlashContext]) -> str:
     else: return str(context.author.id)
 
 async def reply(context: Union[Context, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
+    content = content.strip()
     if isinstance(context, SlashContext):
         if isinstance(content, str):
             return await context.send(content)

@@ -1,6 +1,5 @@
 from .iquery_part_builder import IQueryPartBuilder
 from .where_builder import WhereBuilder
-from .enums import Equality
 from typing import Any, List, Optional, Tuple
 
 class SelectBuilder(IQueryPartBuilder):
@@ -25,8 +24,8 @@ class SelectBuilder(IQueryPartBuilder):
         self.__table_name = table_name
         return self
 
-    def where(self, column_name: str, operation: Equality, value: Optional[Any]) -> WhereBuilder:
-        return WhereBuilder(self, column_name, operation, value)
+    def where(self) -> WhereBuilder:
+        return WhereBuilder(self)
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if len(self.__columns) == 0:

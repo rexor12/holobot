@@ -11,10 +11,10 @@
             "processId": "${command:pickProcess}"
         },
         {
-            "name": "Python: Current File",
+            "name": "Python: __main__",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "__main__.py",
             "console": "integratedTerminal"
         }
     ]

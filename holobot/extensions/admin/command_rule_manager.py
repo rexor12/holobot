@@ -5,6 +5,7 @@ from .exceptions import InvalidCommandError
 from .models import CommandRule
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.exception_utils import assert_not_none
+from typing import Optional, Tuple
 
 @injectable(CommandRuleManagerInterface)
 class CommandRuleManager(CommandRuleManagerInterface):
@@ -12,6 +13,10 @@ class CommandRuleManager(CommandRuleManagerInterface):
         super().__init__()
         self.__repository: CommandRuleRepositoryInterface = rule_repository
         self.__registry: CommandRegistryInterface = command_registry
+        
+    async def get_rules_by_server(self, server_id: str, start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
+        assert_not_none(server_id, "server_id")
+        return await self.__repository.get_many(server_id, start_offset, page_size)
         
     async def set_rule(self, rule: CommandRule) -> int:
         assert_not_none(rule.server_id, "rule.server_id")
@@ -26,3 +31,6 @@ class CommandRuleManager(CommandRuleManagerInterface):
         
         rule.id = await self.__repository.add_or_update(rule)
         return rule.id
+    
+    async def can_execute(self, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
+        raise NotImplementedError

@@ -5,8 +5,11 @@ class CommandRuleRepositoryInterface:
     async def get(self, id: int) -> Optional[CommandRule]:
         raise NotImplementedError
     
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
+    async def get_many(self, server_id: str, start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
         raise NotImplementedError
     
     async def add_or_update(self, rule: CommandRule) -> int:
+        raise NotImplementedError
+    
+    async def get_relevant(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: Optional[str]) -> Tuple[CommandRule, ...]:
         raise NotImplementedError

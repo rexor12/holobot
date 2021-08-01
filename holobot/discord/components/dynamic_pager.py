@@ -1,6 +1,6 @@
 from asyncio.exceptions import TimeoutError
 from discord.embeds import Embed
-from discord.errors import HTTPException
+from discord.errors import NotFound
 from discord.ext.commands.context import Context
 from discord.message import Message
 from discord_slash.context import SlashContext
@@ -94,10 +94,8 @@ class DynamicPager(Awaitable[None]):
             except TimeoutError:
                 await message.delete()
                 break
-            except HTTPException as error:
-                # 10008 means the message cannot be found. It was probably deleted by someone.
-                if error.code != 10008:
-                    raise
+            except NotFound: # The message was probably deleted by someone.
+                pass
         self.__log.trace(f"Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
     async def __send_initial_page(self) -> Optional[Union[Message, SlashMessage]]:

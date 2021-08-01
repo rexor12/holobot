@@ -1,4 +1,5 @@
 from .. import CommandRuleManagerInterface
+from ..enums import RuleState
 from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext
@@ -10,7 +11,7 @@ from holobot.discord.sdk.utils import reply
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Dict, Generator, Optional, Tuple, Union
+from typing import Optional, Union
 
 @injectable(CommandInterface)
 class ViewCommandRulesCommand(CommandBase):
@@ -32,51 +33,29 @@ class ViewCommandRulesCommand(CommandBase):
             await reply(context, "You can specify a subgroup if and only if you specify a group, too.")
             return
         
-        filtered_commands = self.__commands
-        has_commands = len(filtered_commands) > 0
-        if group:
-            filtered_commands = { group: self.__commands.get(group, {}) }
-            has_commands = len(filtered_commands[group]) > 0
-            if subgroup:
-                filtered_commands = { subgroup: filtered_commands.get(subgroup, {}) }
-                has_commands = len(filtered_commands[group][subgroup]) > 0
-        if not has_commands:
-            await reply(context, "There are no commands matching your query.")
-            return
-        
-        flattened_commands = tuple(ViewCommandsCommand.__flatten_commands(filtered_commands))
         async def create_filtered_embed(context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
             start_offset = page * page_size
-            if start_offset >= len(flattened_commands):
+            rules = await self.__command_manager.get_rules_by_server(str(context.guild.id), start_offset, page_size)
+            if len(rules) == 0:
                 return None
-            
-            if start_offset + page_size > len(flattened_commands):
-                page_size = len(flattened_commands) - start_offset
-            
+
             embed = Embed(
-                title="Commands",
-                description="The list commands with settings capabilities.",
+                title="Command rules",
+                description="The list of command rules set on this server.",
                 color=0xeb7d00
             )
 
-            for index in range(start_offset, start_offset + page_size):
-                command = flattened_commands[index]
+            for rule in rules:
+                rule_state = "forbidden" if rule.state == RuleState.FORBID else "allowed"
                 embed.add_field(
-                    name=f"Command #{(index + 1)}",
+                    name=f"Rule #{rule.id}",
                     value=(
-                        f"> Group: {command[0]}\n"
-                        f"> Subgroup: {command[1]}\n"
-                        f"> Name: {command[2]}"
+                        f"> Group: {rule.group}\n"
+                        f"> Command: {rule.command}\n"
+                        f"> State: {rule_state}"
                     ),
                     inline=False
                 )
             return embed
         
         await DynamicPager(self.__messaging, self.__log, context, create_filtered_embed)
-    
-    @staticmethod
-    def __flatten_commands(descriptors: Dict[str, Dict[str, Tuple[str, ...]]]) -> Generator[Tuple[str, str, str], None, None]:
-        for group_name, subgroups in descriptors.items():
-            for subgroup_name, commands in subgroups.items():
-                for command_name in commands:
-                    yield (group_name, subgroup_name, command_name)

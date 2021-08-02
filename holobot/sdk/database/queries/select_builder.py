@@ -29,7 +29,7 @@ class SelectBuilder(IQueryPartBuilder):
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if len(self.__columns) == 0:
-            raise ValueError("The RETURNING clause must have at least one field.")
+            raise ValueError("At least one column must be specified.")
         
         sql = ["SELECT", ", ".join(self.__columns)]
         if self.__table_name is not None:

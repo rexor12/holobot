@@ -1,4 +1,5 @@
 from .compiled_query import CompiledQuery
+from .delete_builder import DeleteBuilder
 from .insert_builder import InsertBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder

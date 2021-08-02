@@ -1,6 +1,7 @@
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from .limit_builder import LimitBuilder
+from .returning_builder import ReturningBuilder
 from .where_builder import IWhereBuilder
 from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 from .enums import Connector, Equality
@@ -24,6 +25,9 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     
     def limit(self) -> LimitBuilder:
         return LimitBuilder(self)
+
+    def returning(self) -> ReturningBuilder:
+        return ReturningBuilder(self)
 
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())

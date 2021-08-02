@@ -12,7 +12,6 @@ class WhereBuilder(IWhereBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.constraint = EmptyConstraintBuilder()
-        #self.constraint = ColumnConstraintBuilder(column_name, equality, value)
     
     def field(self, column_name: str, equality: Equality, value: Optional[Any]) -> WhereConstraintBuilder:
         self.constraint = ColumnConstraintBuilder(column_name, equality, value)

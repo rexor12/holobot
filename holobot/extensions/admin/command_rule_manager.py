@@ -34,6 +34,9 @@ class CommandRuleManager(CommandRuleManagerInterface):
         rule.id = await self.__repository.add_or_update(rule)
         return rule.id
     
+    async def remove_rule(self, rule_id: int) -> None:
+        await self.__repository.delete_by_id(rule_id)
+    
     async def can_execute(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")

@@ -6,7 +6,7 @@ class CompiledQuery:
         self.__query: str = query
         self.__arguments: Tuple[Any, ...] = arguments
     
-    async def execute(self, connection: Connection):
+    async def execute(self, connection: Connection) -> None:
         print(self.__query)
         await connection.execute(self.__query, *self.__arguments)
     

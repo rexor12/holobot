@@ -1,3 +1,4 @@
+from .remove_command_rule_command import RemoveCommandRuleCommand
 from .set_command_rule_command import SetCommandRuleCommand
 from .test_command_command import TestCommandCommand
 from .view_command_rules_command import ViewCommandRulesCommand

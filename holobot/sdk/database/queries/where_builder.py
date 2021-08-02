@@ -1,3 +1,4 @@
+from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
@@ -26,6 +27,9 @@ class WhereBuilder(IWhereBuilder):
     
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if isinstance(self.constraint, EmptyConstraintBuilder):

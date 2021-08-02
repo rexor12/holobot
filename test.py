@@ -7,12 +7,10 @@ query, params = Query.select().columns(
     "rule_id", "group_id", "command_id"
 ).from_table("command_rules").where().expression(
     and_expression(
-        and_expression(
-            column_expression("server_id", Equality.EQUAL, "1234567890123"),
-            or_expression(
-                column_expression("channel_id", Equality.EQUAL, None),
-                column_expression("channel_id", Equality.EQUAL, "999909123183")
-            )
+        column_expression("server_id", Equality.EQUAL, "1234567890123"),
+        or_expression(
+            column_expression("channel_id", Equality.EQUAL, None),
+            column_expression("channel_id", Equality.EQUAL, "999909123183")
         ),
         or_expression(
             and_expression(

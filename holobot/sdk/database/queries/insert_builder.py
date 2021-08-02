@@ -1,3 +1,4 @@
+from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from .returning_builder import ReturningBuilder
 from typing import Any, Dict, Optional, Tuple
@@ -15,7 +16,7 @@ class InsertBuilder(IQueryPartBuilder):
     def fields(self) -> Dict[str, Optional[Any]]:
         return self._fields
 
-    def table(self, table_name: str) -> 'InsertBuilder':
+    def in_table(self, table_name: str) -> 'InsertBuilder':
         self._table_name = table_name
         return self
 
@@ -25,6 +26,9 @@ class InsertBuilder(IQueryPartBuilder):
     
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if len(self._fields) == 0:

@@ -1,4 +1,6 @@
+from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
+from .limit_builder import LimitBuilder
 from .where_builder import IWhereBuilder
 from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 from .enums import Connector, Equality
@@ -19,6 +21,12 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     
     def or_expression(self, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
         return self.__append_constraint(Connector.OR, constraint)
+    
+    def limit(self) -> LimitBuilder:
+        return LimitBuilder(self)
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         return self.__where_builder.build()

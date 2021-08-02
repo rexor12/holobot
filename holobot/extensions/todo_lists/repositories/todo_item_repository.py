@@ -2,6 +2,8 @@ from .todo_item_repository_interface import TodoItemRepositoryInterface
 from ..models import TodoItem
 from asyncpg.connection import Connection
 from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database.queries import Query
+from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional, Tuple
 
@@ -22,28 +24,33 @@ class TodoItemRepository(TodoItemRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                record = await connection.fetchrow((
-                    "SELECT id, user_id, created_at, message FROM todo_lists WHERE id = $1"
-                ), todo_id)
+                record = await Query.select().columns(
+                    "id", "user_id", "created_at", "message"
+                ).from_table("todo_lists").where().field(
+                    "id", Equality.EQUAL, todo_id
+                ).compile().fetchrow(connection)
                 return TodoItemRepository.__parse_todo_item(record) if record is not None else None
     
     async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[TodoItem, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await connection.fetch((
-                    "SELECT id, user_id, created_at, message FROM todo_lists WHERE user_id = $1 LIMIT $3 OFFSET $2"
-                ), user_id, start_offset, page_size)
+                records = await Query.select().columns(
+                    "id", "user_id", "created_at", "message"
+                ).from_table("todo_lists").where().field(
+                    "user_id", Equality.EQUAL, user_id
+                ).limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
                 return tuple([TodoItemRepository.__parse_todo_item(record) for record in records])
     
     async def store(self, todo_item: TodoItem) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await connection.execute((
-                    "INSERT INTO todo_lists (user_id, message)"
-                    " VALUES ($1, $2)"
-                ), todo_item.user_id, todo_item.message)
+                await Query.insert().in_table("todo_lists").field(
+                    "user_id", todo_item.user_id
+                ).field(
+                    "message", todo_item.message
+                ).compile().execute(connection)
     
     async def delete_by_user(self, user_id: str, todo_id: int) -> int:
         async with self.__database_manager.acquire_connection() as connection:

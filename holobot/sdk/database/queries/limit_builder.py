@@ -1,3 +1,4 @@
+from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from typing import Any, Optional, Tuple
 
@@ -15,6 +16,9 @@ class LimitBuilder(IQueryPartBuilder):
     def start_index(self, start_index: int) -> 'LimitBuilder':
         self.__start_index = start_index
         return self
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if self.__start_index is None and self.__max_count is None:

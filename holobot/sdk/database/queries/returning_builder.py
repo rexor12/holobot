@@ -1,3 +1,4 @@
+from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from typing import Any, List, Tuple
 
@@ -13,6 +14,9 @@ class ReturningBuilder(IQueryPartBuilder):
         
         self.__columns.append(column_name)
         return self
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if len(self.__columns) == 0:

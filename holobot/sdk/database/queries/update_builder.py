@@ -1,7 +1,6 @@
 from .iquery_part_builder import IQueryPartBuilder
 from .returning_builder import ReturningBuilder
 from .where_builder import WhereBuilder
-from .enums import Equality
 from typing import Any, Dict, Optional, Tuple
 
 class UpdateBuilder(IQueryPartBuilder):
@@ -25,8 +24,8 @@ class UpdateBuilder(IQueryPartBuilder):
         self._fields[column_name] = value
         return self
 
-    def where(self, column_name: str, operation: Equality, value: Optional[Any]) -> WhereBuilder:
-        return WhereBuilder(self, column_name, operation, value)
+    def where(self) -> WhereBuilder:
+        return WhereBuilder(self)
     
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)

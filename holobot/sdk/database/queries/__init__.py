@@ -1,3 +1,4 @@
+from .compiled_query import CompiledQuery
 from .insert_builder import InsertBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder

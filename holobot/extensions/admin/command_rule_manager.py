@@ -1,6 +1,7 @@
 from .command_registry_interface import CommandRegistryInterface
 from .command_rule_manager_interface import CommandRuleManagerInterface
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
+from .enums import RuleState
 from .exceptions import InvalidCommandError
 from .models import CommandRule
 from holobot.sdk.ioc.decorators import injectable
@@ -16,6 +17,7 @@ class CommandRuleManager(CommandRuleManagerInterface):
         
     async def get_rules_by_server(self, server_id: str, start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
         assert_not_none(server_id, "server_id")
+
         return await self.__repository.get_many(server_id, start_offset, page_size)
         
     async def set_rule(self, rule: CommandRule) -> int:
@@ -32,5 +34,14 @@ class CommandRuleManager(CommandRuleManagerInterface):
         rule.id = await self.__repository.add_or_update(rule)
         return rule.id
     
-    async def can_execute(self, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
-        raise NotImplementedError
+    async def can_execute(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+        assert_not_none(command, "command")
+
+        command_config = self.__registry.get_command(command, group, subgroup)
+        if not command_config or not command_config.can_disable:
+            return True
+
+        rules = sorted(await self.__repository.get_relevant(server_id, channel_id, group, subgroup, command), reverse=True)
+        return len(rules) == 0 or rules[0].state == RuleState.ALLOW

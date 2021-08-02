@@ -82,6 +82,36 @@ class CommandRule:
     def channel_id(self, value: Optional[str]) -> None:
         self.__channel_id = value
     
+    @property
+    def is_global_rule(self) -> bool:
+        return not self.group and not self.command
+
+    def __lt__(self, other: 'CommandRule') -> bool:
+        # Global rules come first, non-channels first.
+        if self.is_global_rule and not other.is_global_rule:
+            return True
+        if not self.is_global_rule and other.is_global_rule:
+            return False
+        if self.is_global_rule and other.is_global_rule:
+            return not self.channel_id
+        
+        # Group rules come next, non-channels first.
+        if not self.command and not other.command:
+            if self.group and not other.group:
+                return False
+            if not self.group and other.group:
+                return True
+            if not self.group and not other.group:
+                return not self.channel_id
+        
+        # Command rules come next, non-channels first.
+        if not self.command and other.command:
+            return True
+        if self.command and not other.command:
+            return False
+        #if self.command and other.command:
+        return not self.channel_id
+    
     def textify(self) -> str:
         text_bits = []
         if self.group is not None or self.command is not None:
@@ -93,7 +123,7 @@ class CommandRule:
                     text_bits.append(" ")
                 text_bits.append(self.command)
             text_bits.append("_ is ")
-        else: text_bits.append("all commands are ")
+        else: text_bits.append("All commands are ")
         text_bits.append(rule_to_text_map.get(self.state, None) or self.state.__str__())
         if self.channel_id is not None:
             text_bits.append(f" in <#{self.channel_id}>")

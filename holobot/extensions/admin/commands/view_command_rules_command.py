@@ -49,11 +49,7 @@ class ViewCommandRulesCommand(CommandBase):
                 rule_state = "forbidden" if rule.state == RuleState.FORBID else "allowed"
                 embed.add_field(
                     name=f"Rule #{rule.id}",
-                    value=(
-                        f"> Group: {rule.group}\n"
-                        f"> Command: {rule.command}\n"
-                        f"> State: {rule_state}"
-                    ),
+                    value=rule.textify(),
                     inline=False
                 )
             return embed

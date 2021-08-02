@@ -25,6 +25,6 @@ class TestCommandCommand(CommandBase):
             await reply(context, "Command rules can be defined in servers only.")
             return
 
-        can_execute = await self.__command_rule_manager.can_execute(group, None, command)
+        can_execute = await self.__command_rule_manager.can_execute(str(context.guild.id), str(context.channel_id), group, None, command)
         disabled_text = " NOT" if not can_execute else ""
         await reply(context, f"The command CAN{disabled_text} be executed in this channel.")

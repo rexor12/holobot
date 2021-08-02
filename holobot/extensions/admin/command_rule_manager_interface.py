@@ -8,5 +8,5 @@ class CommandRuleManagerInterface:
     async def set_rule(self, rule: CommandRule) -> int:
         raise NotImplementedError
     
-    async def can_execute(self, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
+    async def can_execute(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
         raise NotImplementedError

@@ -1,5 +1,4 @@
 from .. import CommandRuleManagerInterface
-from ..enums import RuleState
 from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext

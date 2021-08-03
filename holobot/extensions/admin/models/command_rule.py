@@ -20,6 +20,7 @@ class CommandRule:
         self.server_id = ""
         self.state = RuleState.ALLOW
         self.group = None
+        self.subgroup = None
         self.command = None
         self.channel_id = None
 
@@ -72,6 +73,14 @@ class CommandRule:
         self.__group = value
     
     @property
+    def subgroup(self) -> Optional[str]:
+        return self.__subgroup
+    
+    @subgroup.setter
+    def subgroup(self, value: Optional[str]) -> None:
+        self.__subgroup = value
+    
+    @property
     def command(self) -> Optional[str]:
         return self.__command
     
@@ -86,36 +95,9 @@ class CommandRule:
     @channel_id.setter
     def channel_id(self, value: Optional[str]) -> None:
         self.__channel_id = value
-    
-    @property
-    def is_global_rule(self) -> bool:
-        return not self.group and not self.command
 
-    # TODO Refactor this.
     def __lt__(self, other: 'CommandRule') -> bool:
-        # Global rules come first, non-channels first.
-        if self.is_global_rule and not other.is_global_rule:
-            return True
-        if not self.is_global_rule and other.is_global_rule:
-            return False
-        if self.is_global_rule and other.is_global_rule:
-            return not self.channel_id
-        
-        # Group rules come next, non-channels first.
-        if not self.command and not other.command:
-            if self.group and not other.group:
-                return False
-            if not self.group and other.group:
-                return True
-            if not self.group and not other.group:
-                return not self.channel_id
-        
-        # Command rules come next, non-channels first.
-        if not self.command and other.command:
-            return True
-        if self.command and not other.command:
-            return False
-        return not self.channel_id
+        return self.__get_weight() < other.__get_weight()
     
     def textify(self) -> str:
         text_bits = [rule_to_emoji_map.get(self.state, None) or "", " "]
@@ -123,6 +105,8 @@ class CommandRule:
             text_bits.append("`/")
             if self.group is not None:
                 text_bits.append(self.group)
+                if self.subgroup is not None:
+                    text_bits.append(f" {self.subgroup}")
             if self.command is not None:
                 if self.group is not None:
                     text_bits.append(" ")
@@ -135,3 +119,6 @@ class CommandRule:
         else: text_bits.append(" everywhere")
         text_bits.append(".")
         return ''.join(text_bits)
+
+    def __get_weight(self) -> int:
+        return 1000 * int(bool(self.group)) + 100 * int(bool(self.subgroup)) + 10 * int(bool(self.command)) + int(bool(self.channel_id))

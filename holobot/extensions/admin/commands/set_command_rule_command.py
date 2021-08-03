@@ -24,20 +24,24 @@ class SetCommandRuleCommand(CommandBase):
                 create_choice("Forbid", "Forbid")
             ]),
             create_option("group", "An entire command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
+            create_option("subgroup", "An entire subgroup, such as \"commands\".", SlashCommandOptionType.STRING, False),
             create_option("command", "A command inside a command group, such as \"roll\".", SlashCommandOptionType.STRING, False),
             create_option("channel", "The link of the applicable channel.", SlashCommandOptionType.STRING, False)
         ]
         
-    async def execute(self, context: SlashContext, state: str, group: Optional[str] = None, command: Optional[str] = None, channel: Optional[str] = None) -> None:
+    async def execute(self, context: SlashContext, state: str, group: Optional[str] = None, subgroup: Optional[str] = None, command: Optional[str] = None, channel: Optional[str] = None) -> None:
         if context.guild is None:
             await reply(context, "Command rules can be defined in servers only.")
             return
-        channel_id = get_channel_id(context, channel)
+        channel_id = None
+        if channel is not None:
+            channel_id = get_channel_id(context, channel)
         rule = CommandRule()
         rule.created_by = str(context.author_id)
         rule.server_id = str(context.guild.id)
         rule.state = RuleState.parse(state)
         rule.group = group
+        rule.subgroup = subgroup
         rule.command = command
         rule.channel_id = channel_id
         try:

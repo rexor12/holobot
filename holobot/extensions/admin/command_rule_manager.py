@@ -15,21 +15,28 @@ class CommandRuleManager(CommandRuleManagerInterface):
         self.__repository: CommandRuleRepositoryInterface = rule_repository
         self.__registry: CommandRegistryInterface = command_registry
         
-    async def get_rules_by_server(self, server_id: str, start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
+    async def get_rules_by_server(self, server_id: str, start_offset: int, page_size: int, group: Optional[str] = None, subgroup: Optional[str] = None) -> Tuple[CommandRule, ...]:
         assert_not_none(server_id, "server_id")
+        if group is not None:
+            assert_not_none(subgroup, "subgroup")
 
-        return await self.__repository.get_many(server_id, start_offset, page_size)
+        return await self.__repository.get_many(server_id, group, subgroup, start_offset, page_size)
         
     async def set_rule(self, rule: CommandRule) -> int:
         assert_not_none(rule.server_id, "rule.server_id")
         assert_not_none(rule.created_by, "rule.created_by")
 
         if rule.command is not None:
-            if not (command := self.__registry.get_command(rule.command, rule.group)) or not command.can_disable:
-                raise InvalidCommandError(rule.command, rule.group, None)
+            if not (command := self.__registry.get_command(rule.command, rule.group, rule.subgroup)) or not command.can_disable:
+                raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
+        elif rule.subgroup is not None:
+            if (rule.group is None
+                or not (subgroup := self.__registry.get_subgroup(rule.group, rule.subgroup))
+                or not subgroup.can_disable):
+                raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
         elif rule.group is not None:
             if not (group := self.__registry.get_group(rule.group)) or not group.can_disable:
-                raise InvalidCommandError(rule.command, rule.group, None)
+                raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
         
         rule.id = await self.__repository.add_or_update(rule)
         return rule.id

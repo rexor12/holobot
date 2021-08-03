@@ -33,6 +33,8 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 ).and_field(
                     "command_group", Equality.EQUAL, rule.group
                 ).and_field(
+                    "command_subgroup", Equality.EQUAL, rule.subgroup
+                ).and_field(
                     "command", Equality.EQUAL, rule.command
                 ).and_field(
                     "channel_id", Equality.EQUAL, rule.channel_id
@@ -51,6 +53,8 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 ).field(
                     "command_group", rule.group
                 ).field(
+                    "command_subgroup", rule.subgroup
+                ).field(
                     "command", rule.command
                 ).field(
                     "channel_id", rule.channel_id
@@ -64,29 +68,69 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
             connection: Connection
             async with connection.transaction():
                 record = await Query.select().columns(
-                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command", "channel_id"
+                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command_subgroup", "command", "channel_id"
                 ).from_table(TABLE_NAME).where().field(
                     "id", Equality.EQUAL, id
                 ).compile().fetchrow(connection)
                 return CommandRuleRepository.__record_to_entity(record) if record is not None else None
     
-    async def get_many(self, server_id: str, start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
+    async def get_many(self, server_id: str, group: Optional[str], subgroup: Optional[str], start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await Query.select().columns(
-                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command", "channel_id"
+                query = Query.select().columns(
+                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command_subgroup", "command", "channel_id"
                 ).from_table(TABLE_NAME).where().field(
                     "server_id", Equality.EQUAL, server_id
-                ).limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
+                )
+                if group is not None:
+                    query = query.and_field("command_group", Equality.EQUAL, group)
+                    if subgroup is not None:
+                        query = query.and_field("command_subgroup", Equality.EQUAL, subgroup)
+                records = await query.limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
                 return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
     
     async def get_relevant(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: Optional[str]) -> Tuple[CommandRule, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
+                filters = []
+                if group is not None:
+                    filters.append(
+                        and_expression(
+                            column_expression("command_group", Equality.EQUAL, group),
+                            column_expression("command_subgroup", Equality.EQUAL, None),
+                            column_expression("command", Equality.EQUAL, None)
+                        )
+                    )
+                if subgroup is not None:
+                    filters.append(
+                        and_expression(
+                            column_expression("command_group", Equality.EQUAL, group),
+                            column_expression("command_subgroup", Equality.EQUAL, subgroup),
+                            column_expression("command", Equality.EQUAL, None)
+                        )
+                    )
+                if command is not None:
+                    filters.append(
+                        and_expression(
+                            column_expression("command_group", Equality.EQUAL, group),
+                            column_expression("command_subgroup", Equality.EQUAL, subgroup),
+                            column_expression("command", Equality.EQUAL, command)
+                        )
+                    )
+                filter_expression = and_expression(
+                    column_expression("command_group", Equality.EQUAL, None),
+                    column_expression("command_subgroup", Equality.EQUAL, None),
+                    column_expression("command", Equality.EQUAL, None)
+                )
+                if len(filters) > 0:
+                    filter_expression = or_expression(
+                        filter_expression,
+                        *filters
+                    )
                 records = await Query.select().columns(
-                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command", "channel_id"
+                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command_subgroup", "command", "channel_id"
                 ).from_table(TABLE_NAME).where().expression(
                     and_expression(
                         column_expression("server_id", Equality.EQUAL, server_id),
@@ -94,19 +138,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                             column_expression("channel_id", Equality.EQUAL, None),
                             column_expression("channel_id", Equality.EQUAL, channel_id)
                         ),
-                        or_expression(
-                            and_expression(
-                                column_expression("command_group", Equality.EQUAL, None),
-                                column_expression("command", Equality.EQUAL, None)
-                            ),
-                            and_expression(
-                                column_expression("command_group", Equality.EQUAL, group),
-                                or_expression(
-                                    column_expression("command", Equality.EQUAL, None),
-                                    column_expression("command", Equality.EQUAL, command)
-                                )
-                            )
-                        )
+                        filter_expression
                     )
                 ).compile().fetch(connection)
                 return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
@@ -126,6 +158,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         entity.server_id = record["server_id"]
         entity.state = RuleState(record["state"])
         entity.group = record["command_group"]
+        entity.subgroup = record["command_subgroup"]
         entity.command = record["command"]
         entity.channel_id = record["channel_id"]
         return entity

@@ -7,6 +7,11 @@ rule_to_text_map: Dict[RuleState, str] = {
     RuleState.FORBID: "forbidden"
 }
 
+rule_to_emoji_map: Dict[RuleState, str] = {
+    RuleState.ALLOW: ":white_check_mark:",
+    RuleState.FORBID: ":no_entry:"
+}
+
 class CommandRule:
     def __init__(self) -> None:
         self.id = -1
@@ -86,6 +91,7 @@ class CommandRule:
     def is_global_rule(self) -> bool:
         return not self.group and not self.command
 
+    # TODO Refactor this.
     def __lt__(self, other: 'CommandRule') -> bool:
         # Global rules come first, non-channels first.
         if self.is_global_rule and not other.is_global_rule:
@@ -109,20 +115,19 @@ class CommandRule:
             return True
         if self.command and not other.command:
             return False
-        #if self.command and other.command:
         return not self.channel_id
     
     def textify(self) -> str:
-        text_bits = []
+        text_bits = [rule_to_emoji_map.get(self.state, None) or "", " "]
         if self.group is not None or self.command is not None:
-            text_bits.append("_/")
+            text_bits.append("`/")
             if self.group is not None:
                 text_bits.append(self.group)
             if self.command is not None:
                 if self.group is not None:
                     text_bits.append(" ")
                 text_bits.append(self.command)
-            text_bits.append("_ is ")
+            text_bits.append("` is ")
         else: text_bits.append("All commands are ")
         text_bits.append(rule_to_text_map.get(self.state, None) or self.state.__str__())
         if self.channel_id is not None:

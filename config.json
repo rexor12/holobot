@@ -66,26 +66,33 @@
         "parameters": {
             "CommandGroups": {
                 "": {
-                    "CanDisable": false,
+                    "CanDisable": true,
                     "Commands": {
-                        "google": {}
+                        "avatar": {},
+                        "emoji": {},
+                        "google": {},
+                        "info": {
+                            "CanDisable": false
+                        },
+                        "roll": {}
                     }
                 },
                 "admin": {
                     "CanDisable": false,
                     "Subgroups": {
                         "commands": {
-                            "CanDisable": true,
                             "Commands": {
+                                "removerule": {},
                                 "setrule": {},
-                                "view": {}
+                                "test": {},
+                                "view": {},
+                                "viewrules": {}
                             }
                         }
                     },
                     "Commands": {}
                 },
                 "crypto": {
-                    "CanDisable": true,
                     "Subgroups": {
                         "alarm": {
                             "Commands": {
@@ -101,7 +108,6 @@
                     }
                 },
                 "hentai": {
-                    "CanDisable": true,
                     "Commands": {
                         "link": {}
                     }

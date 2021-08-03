@@ -46,7 +46,6 @@ class CommandRuleManager(CommandRuleManagerInterface):
         if not command_config or not command_config.can_disable:
             return True
 
-        rules = sorted(await self.__repository.get_relevant(server_id, channel_id, group, subgroup, command), reverse=True)
-        for rule in rules:
-            print(rule.textify())
-        return len(rules) == 0 or rules[0].state == RuleState.ALLOW
+        rules = await self.__repository.get_relevant(server_id, channel_id, group, subgroup, command)
+        sorted_rules = sorted(rules, reverse=True)
+        return len(sorted_rules) == 0 or sorted_rules[0].state == RuleState.ALLOW

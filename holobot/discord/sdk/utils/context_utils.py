@@ -14,6 +14,7 @@ from typing import List, Optional, Tuple, Union
 import re
 
 mention_regex = re.compile(r"^<@!?(?P<id>\d+)>$")
+channel_regex = re.compile(r"^<#(?P<id>\d+)>$")
 
 partial_emoji_converter = PartialEmojiConverter()
 emoji_converter = EmojiConverter()
@@ -65,6 +66,11 @@ def get_author_id(context: Union[Context, SlashContext]) -> str:
     if isinstance(context, SlashContext):
         return str(context.author.id)
     else: return str(context.author.id)
+
+def get_channel_id(context: Union[Context, SlashContext], mention: Optional[str] = None) -> str:
+    if mention is None or (channel_match := channel_regex.match(mention)) is None:
+        return str(context.channel.id)
+    return channel_match.group("id")
 
 async def reply(context: Union[Context, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
     if isinstance(context, SlashContext):

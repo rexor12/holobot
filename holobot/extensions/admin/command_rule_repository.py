@@ -10,6 +10,8 @@ from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from typing import Any, Dict, Optional, Tuple
 
+TABLE_NAME = "admin_rules"
+
 @injectable(CommandRuleRepositoryInterface)
 class CommandRuleRepository(CommandRuleRepositoryInterface):
     def __init__(self, database_manager: DatabaseManagerInterface) -> None:
@@ -20,7 +22,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                id: Optional[int] = await Query.update().table("admin_rules").field(
+                id: Optional[int] = await Query.update().table(TABLE_NAME).field(
                     "created_at", rule.created_at
                 ).field(
                     "created_by", rule.created_by
@@ -38,7 +40,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 if id is not None:
                     return id
                 
-                id = await Query.insert().in_table("admin_rules").field(
+                id = await Query.insert().in_table(TABLE_NAME).field(
                     "created_at", rule.created_at
                 ).field(
                     "created_by", rule.created_by
@@ -63,7 +65,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
             async with connection.transaction():
                 record = await Query.select().columns(
                     "id", "created_at", "created_by", "server_id", "state", "command_group", "command", "channel_id"
-                ).from_table("admin_rules").where().field(
+                ).from_table(TABLE_NAME).where().field(
                     "id", Equality.EQUAL, id
                 ).compile().fetchrow(connection)
                 return CommandRuleRepository.__record_to_entity(record) if record is not None else None
@@ -74,7 +76,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
             async with connection.transaction():
                 records = await Query.select().columns(
                     "id", "created_at", "created_by", "server_id", "state", "command_group", "command", "channel_id"
-                ).from_table("admin_rules").where().field(
+                ).from_table(TABLE_NAME).where().field(
                     "server_id", Equality.EQUAL, server_id
                 ).limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
                 return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
@@ -85,7 +87,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
             async with connection.transaction():
                 records = await Query.select().columns(
                     "id", "created_at", "created_by", "server_id", "state", "command_group", "command", "channel_id"
-                ).from_table("admin_rules").where().expression(
+                ).from_table(TABLE_NAME).where().expression(
                     and_expression(
                         column_expression("server_id", Equality.EQUAL, server_id),
                         or_expression(
@@ -113,7 +115,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table("admin_rules").where().field("id", Equality.EQUAL, rule_id).compile().execute(connection)
+                await Query.delete().from_table(TABLE_NAME).where().field("id", Equality.EQUAL, rule_id).compile().execute(connection)
 
     @staticmethod
     def __record_to_entity(record: Dict[str, Any]) -> CommandRule:

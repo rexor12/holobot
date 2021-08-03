@@ -13,7 +13,6 @@ class CommandRegistry(CommandRegistryInterface):
     def __init__(self, configurator: ConfiguratorInterface, log: LogInterface) -> None:
         super().__init__()
         self.__log: LogInterface = log.with_name("Admin", "CommandRegistry")
-        # group -> sub-group -> name
         self.__registry: Dict[str, GroupConfiguration] = self.__parse_command_configs(configurator)
     
     def command_exists(self, command_name: str, group_name: Optional[str] = None, subgroup_name: Optional[str] = None) -> bool:

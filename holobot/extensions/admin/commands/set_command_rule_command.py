@@ -6,13 +6,9 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_choice, create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import reply
+from holobot.discord.sdk.utils import get_channel_id, reply
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
-
-import re
-
-channel_regex = re.compile(r"^<#(?P<id>\d+)>$")
 
 @injectable(CommandInterface)
 class SetCommandRuleCommand(CommandBase):
@@ -36,12 +32,7 @@ class SetCommandRuleCommand(CommandBase):
         if context.guild is None:
             await reply(context, "Command rules can be defined in servers only.")
             return
-        channel_id: Optional[str] = None
-        if channel is not None:
-            if (channel_match := channel_regex.match(channel)) is None:
-                await reply(context, "Invalid channel. Did you link it properly?")
-                return
-            channel_id = channel_match.group("id")
+        channel_id = get_channel_id(context, channel)
         rule = CommandRule()
         rule.created_by = str(context.author_id)
         rule.server_id = str(context.guild.id)

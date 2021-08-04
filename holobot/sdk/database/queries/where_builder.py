@@ -4,8 +4,8 @@ from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
-from .constraints import ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder
-from .enums import Equality
+from .constraints import ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
+from .enums import Connector, Equality
 from typing import Any, Optional, Tuple
 
 class WhereBuilder(IWhereBuilder):
@@ -15,6 +15,19 @@ class WhereBuilder(IWhereBuilder):
     
     def field(self, column_name: str, equality: Equality, value: Optional[Any]) -> WhereConstraintBuilder:
         self.constraint = ColumnConstraintBuilder(column_name, equality, value)
+        return WhereConstraintBuilder(self)
+    
+    def fields(self,
+        connector: Connector,
+        field1: Tuple[str, Equality, Optional[Any]],
+        field2: Tuple[str, Equality, Optional[Any]],
+        *fields: Tuple[str, Equality, Optional[Any]]) -> 'WhereConstraintBuilder':
+        self.constraint = LogicalConstraintBuilder(
+            connector,
+            ColumnConstraintBuilder(field1[0], field1[1], field1[2]),
+            ColumnConstraintBuilder(field2[0], field2[1], field2[2]),
+            *[ColumnConstraintBuilder(field[0], field[1], field[2]) for field in fields]
+        )
         return WhereConstraintBuilder(self)
     
     def expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:

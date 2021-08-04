@@ -36,6 +36,7 @@ class WhereConstraintBuilder(IQueryPartBuilder):
         return self.__where_builder.build()
     
     def __append_constraint(self, connector: Connector, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
+        # TODO Optimize this to avoid wrapping when the connectors are identical; append instead.
         self.__where_builder.constraint = LogicalConstraintBuilder(
             connector,
             self.__where_builder.constraint,

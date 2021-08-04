@@ -6,7 +6,7 @@ from asyncpg.connection import Connection
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import column_expression, and_expression, or_expression
-from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.ioc.decorators import injectable
 from typing import Any, Dict, Optional, Tuple
 
@@ -22,42 +22,30 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                id: Optional[int] = await Query.update().table(TABLE_NAME).field(
-                    "created_at", rule.created_at
-                ).field(
-                    "created_by", rule.created_by
-                ).field(
-                    "state", rule.state
-                ).where().field(
-                    "server_id", Equality.EQUAL, rule.server_id
-                ).and_field(
-                    "command_group", Equality.EQUAL, rule.group
-                ).and_field(
-                    "command_subgroup", Equality.EQUAL, rule.subgroup
-                ).and_field(
-                    "command", Equality.EQUAL, rule.command
-                ).and_field(
-                    "channel_id", Equality.EQUAL, rule.channel_id
-                ).compile().fetchval(connection)
+                id: Optional[int] = await Query.update().table(TABLE_NAME).fields(
+                    ("created_at", rule.created_at),
+                    ("created_by", rule.created_by),
+                    ("state", rule.state)
+                ).where().fields(
+                    Connector.AND,
+                    ("server_id", Equality.EQUAL, rule.server_id),
+                    ("command_group", Equality.EQUAL, rule.group),
+                    ("command_subgroup", Equality.EQUAL, rule.subgroup),
+                    ("command", Equality.EQUAL, rule.command),
+                    ("channel_id", Equality.EQUAL, rule.channel_id)
+                ).returning().column("id").compile().fetchval(connection)
                 if id is not None:
                     return id
                 
-                id = await Query.insert().in_table(TABLE_NAME).field(
-                    "created_at", rule.created_at
-                ).field(
-                    "created_by", rule.created_by
-                ).field(
-                    "server_id", rule.server_id
-                ).field(
-                    "state", rule.state
-                ).field(
-                    "command_group", rule.group
-                ).field(
-                    "command_subgroup", rule.subgroup
-                ).field(
-                    "command", rule.command
-                ).field(
-                    "channel_id", rule.channel_id
+                id = await Query.insert().in_table(TABLE_NAME).fields(
+                    ("created_at", rule.created_at),
+                    ("created_by", rule.created_by),
+                    ("server_id", rule.server_id),
+                    ("state", rule.state),
+                    ("command_group", rule.group),
+                    ("command_subgroup", rule.subgroup),
+                    ("command", rule.command),
+                    ("channel_id", rule.channel_id)
                 ).returning().column("id").compile().fetchval(connection)
                 if id is None:
                     raise ValueError("Unexpected error while creating a new rule.")

@@ -5,23 +5,29 @@ from typing import Any, Dict, Optional, Tuple
 
 class UpdateBuilder(IQueryPartBuilder):
     def __init__(self) -> None:
-        self._table_name: str = ""
-        self._fields: Dict[str, Optional[Any]] = {}
+        self.__table_name: str = ""
+        self.__fields: Dict[str, Optional[Any]] = {}
 
     @property
     def table_name(self) -> str:
-        return self._table_name
+        return self.__table_name
 
     @property
-    def fields(self) -> Dict[str, Optional[Any]]:
-        return self._fields
+    def set_fields(self) -> Dict[str, Optional[Any]]:
+        return self.__fields
 
     def table(self, table_name: str) -> 'UpdateBuilder':
-        self._table_name = table_name
+        self.__table_name = table_name
         return self
 
     def field(self, column_name: str, value: Optional[Any]) -> 'UpdateBuilder':
-        self._fields[column_name] = value
+        self.__fields[column_name] = value
+        return self
+    
+    def fields(self, field: Tuple[str, Optional[Any]], *fields: Tuple[str, Optional[Any]]) -> 'UpdateBuilder':
+        self.__fields[field[0]] = field[1]
+        for f in fields:
+            self.__fields[f[0]] = f[1]
         return self
 
     def where(self) -> WhereBuilder:
@@ -31,13 +37,13 @@ class UpdateBuilder(IQueryPartBuilder):
         return ReturningBuilder(self)
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
-        if len(self._fields) == 0:
+        if len(self.__fields) == 0:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        sql = ["UPDATE", self._table_name, "SET ("]
+        sql = ["UPDATE", self.__table_name, "SET ("]
         columns = []
         arguments = []
-        for column, value in self._fields.items():
+        for column, value in self.__fields.items():
             columns.append(column)
             arguments.append(value)
         sql.append(", ".join(columns))

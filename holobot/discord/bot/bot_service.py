@@ -75,11 +75,11 @@ class BotService(BotServiceInterface):
         self.__log.info(f"Successfully registered commands. {{ Count = {len(self.__commands)} }}")
         
         self.__bot_task = asyncio.get_event_loop().create_task(self.__bot.start(discord_token))
-    
+
     async def stop(self) -> None:
         if self.__bot_task is None:
             return
-        
+
         await self.__bot.close()
         await self.__bot_task
         self.__bot_task = None
@@ -100,7 +100,7 @@ class BotService(BotServiceInterface):
                 list(await command.get_allowed_guild_ids()),
                 command.options
             )
-        
+
         return self.__slash.add_subcommand(
             lambda context, **kwargs: self.__execute_command(command, context, **kwargs),
             command.group_name,
@@ -110,7 +110,7 @@ class BotService(BotServiceInterface):
             guild_ids=list(await command.get_allowed_guild_ids()),
             options=command.options
         )
-    
+
     async def __execute_command(self, __command: CommandInterface, context: SlashContext, **kwargs: Any) -> None:
         self.__log.trace(f"Executing command... {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
         for rule in self.__command_execution_rules:
@@ -135,7 +135,7 @@ class BotService(BotServiceInterface):
         bot.add_listener(self.__on_slash_command_error, "on_slash_command_error")
 
         return bot
-	
+
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
         self.__log.error((
             "An error has occurred while processing a slash command. "

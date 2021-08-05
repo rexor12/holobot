@@ -1,3 +1,4 @@
+from discord import Permissions
 from discord_slash import SlashContext
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -41,6 +42,14 @@ class CommandInterface:
     @options.setter
     def options(self, value: List[Dict[str, Any]]) -> None:
         self.__options = value
+    
+    @property
+    def required_permissions(self) -> Permissions:
+        return self.__required_permissions
+    
+    @required_permissions.setter
+    def required_permissions(self, value: Permissions) -> None:
+        self.__required_permissions = value
 
     # It would be nice to pass a kind of parameter collection object
     # as an argument here instead of **kwargs, but it would be a

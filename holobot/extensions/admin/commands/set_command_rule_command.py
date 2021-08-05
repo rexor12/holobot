@@ -6,7 +6,7 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_choice, create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import get_channel_id, reply
+from holobot.discord.sdk.utils import get_channel_id, has_channel_permission, reply
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
@@ -33,6 +33,11 @@ class SetCommandRuleCommand(CommandBase):
         if context.guild is None:
             await reply(context, "Command rules can be defined in servers only.")
             return
+
+        if not has_channel_permission(context, context.author, lambda permissions: permissions.administrator):
+            await reply(context, "You don't have the required permissions to use this command.")
+            return
+
         channel_id = None
         if channel is not None:
             channel_id = get_channel_id(context, channel)

@@ -10,6 +10,11 @@ class CommandExecutionRule(CommandExecutionRuleInterface):
         self.__rule_manager: CommandRuleManagerInterface = command_rule_manager
 
     async def should_halt(self, command: CommandInterface, context: SlashContext) -> bool:
+        return (await self.__is_command_disabled(command, context)
+                or True
+               )
+    
+    async def __is_command_disabled(self, command: CommandInterface, context: SlashContext) -> bool:
         return not await self.__rule_manager.can_execute(
             str(context.guild_id),
             str(context.channel_id),

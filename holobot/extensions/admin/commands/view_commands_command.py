@@ -6,7 +6,7 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import reply
+from holobot.discord.sdk.utils import has_channel_permission, reply
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -32,7 +32,11 @@ class ViewCommandsCommand(CommandBase):
         if not group and subgroup:
             await reply(context, "You can specify a subgroup if and only if you specify a group, too.")
             return
-        
+
+        if not has_channel_permission(context, context.author, lambda permissions: permissions.administrator):
+            await reply(context, "You don't have the required permissions to use this command.")
+            return
+
         filtered_commands = self.__commands
         has_commands = len(filtered_commands) > 0
         if group:

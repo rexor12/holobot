@@ -3,7 +3,7 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import get_channel_id, reply
+from holobot.discord.sdk.utils import get_channel_id, has_channel_permission, reply
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
@@ -30,6 +30,10 @@ class TestCommandCommand(CommandBase):
         
         if not self.__command_registry.command_exists(command, group, subgroup):
             await reply(context, "The command you specified doesn't exist. Did you make a typo?")
+            return
+        
+        if not has_channel_permission(context, context.author, lambda permissions: permissions.administrator):
+            await reply(context, "You don't have the required permissions to use this command.")
             return
 
         channel_id = get_channel_id(context, channel)

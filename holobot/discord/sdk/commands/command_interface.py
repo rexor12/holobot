@@ -1,4 +1,4 @@
-from discord import Permissions
+from ..enums import Permission
 from discord_slash import SlashContext
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -44,11 +44,11 @@ class CommandInterface:
         self.__options = value
     
     @property
-    def required_permissions(self) -> Permissions:
+    def required_permissions(self) -> Permission:
         return self.__required_permissions
     
     @required_permissions.setter
-    def required_permissions(self, value: Permissions) -> None:
+    def required_permissions(self, value: Permission) -> None:
         self.__required_permissions = value
 
     # It would be nice to pass a kind of parameter collection object

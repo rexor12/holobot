@@ -6,7 +6,8 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_choice, create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
-from holobot.discord.sdk.utils import get_channel_id, has_channel_permission, reply
+from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.utils import get_channel_id, reply
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
@@ -28,14 +29,11 @@ class SetCommandRuleCommand(CommandBase):
             create_option("command", "A command inside a command group, such as \"roll\".", SlashCommandOptionType.STRING, False),
             create_option("channel", "The link of the applicable channel.", SlashCommandOptionType.STRING, False)
         ]
+        self.required_permissions = Permission.ADMINISTRATOR
         
     async def execute(self, context: SlashContext, state: str, group: Optional[str] = None, subgroup: Optional[str] = None, command: Optional[str] = None, channel: Optional[str] = None) -> None:
         if context.guild is None:
             await reply(context, "Command rules can be defined in servers only.")
-            return
-
-        if not has_channel_permission(context, context.author, lambda permissions: permissions.administrator):
-            await reply(context, "You don't have the required permissions to use this command.")
             return
 
         channel_id = None

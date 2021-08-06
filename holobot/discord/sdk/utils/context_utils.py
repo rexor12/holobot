@@ -1,5 +1,6 @@
-from discord.abc import GuildChannel
-from discord.channel import DMChannel
+from .permission_utils import has_permissions
+from ..enums import Permission
+from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext.commands import Context
 from discord.ext.commands.converter import EmojiConverter, PartialEmojiConverter
@@ -13,7 +14,7 @@ from discord.user import User
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashMessage
 from holobot.sdk.utils import first_or_default
-from typing import Callable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import re
 
@@ -76,14 +77,14 @@ def get_channel_id(context: Union[Context, SlashContext], mention: Optional[str]
         return str(context.channel.id)
     return channel_match.group("id")
 
-def has_channel_permission(context: Union[Context, SlashContext], user: Union[User, Member], predicate: Callable[[Permissions], bool]) -> bool:
+def has_channel_permission(context: Union[Context, SlashContext], user: Union[User, Member], permissions: Permission) -> bool:
     channel = context.channel
-    if channel is None:
+    if channel is None or not isinstance(channel, TextChannel):
         return False
-    permissions = Permissions()
-    if isinstance(channel, (GuildChannel, DMChannel)):
-        permissions = channel.permissions_for(user)
-    return predicate(permissions)
+    user_permissions = channel.permissions_for(user)
+    if not isinstance(user_permissions, Permissions):
+        return False
+    return has_permissions(user_permissions, permissions)
 
 async def reply(context: Union[Context, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
     if isinstance(context, SlashContext):

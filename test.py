@@ -1,3 +1,6 @@
+from discord.permissions import Permissions
+from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.utils import has_permissions
 from holobot.sdk.database.queries.constraints.logical_constraint_builder import and_expression, or_expression
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import column_expression, and_expression, or_expression
@@ -30,3 +33,8 @@ query, params = Query.select().columns(
 
 print(query)
 print(params)
+
+print("admin in all:", has_permissions(Permissions.all(), Permission.ADMINISTRATOR))
+print("admin & channels in all: ", has_permissions(Permissions.all(), Permission.ADMINISTRATOR | Permission.MANAGE_CHANNELS))
+print("admin & channels in none: ", has_permissions(Permissions.none(), Permission.ADMINISTRATOR | Permission.MANAGE_CHANNELS))
+print("admin & channels in roles: ", has_permissions(Permissions(Permissions.manage_roles.flag), Permission.ADMINISTRATOR | Permission.MANAGE_CHANNELS))

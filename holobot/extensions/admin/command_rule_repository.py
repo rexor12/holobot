@@ -75,7 +75,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                     query = query.and_field("command_group", Equality.EQUAL, group)
                     if subgroup is not None:
                         query = query.and_field("command_subgroup", Equality.EQUAL, subgroup)
-                records = await query.limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
+                records = await query.order_by().column("id").limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
                 return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
     
     async def get_relevant(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: Optional[str]) -> Tuple[CommandRule, ...]:

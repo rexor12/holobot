@@ -36,7 +36,7 @@ class ViewCommandRulesCommand(CommandBase):
         
         async def create_filtered_embed(context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
             start_offset = page * page_size
-            rules = await self.__command_manager.get_rules_by_server(str(context.guild.id), start_offset, page_size)
+            rules = await self.__command_manager.get_rules_by_server(str(context.guild.id), start_offset, page_size, group, subgroup)
             if len(rules) == 0:
                 return None
 

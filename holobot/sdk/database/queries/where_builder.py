@@ -2,6 +2,7 @@ from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
+from .order_by_builder import OrderByBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
 from .constraints import ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
@@ -33,6 +34,9 @@ class WhereBuilder(IWhereBuilder):
     def expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:
        self.constraint = constraint
        return WhereConstraintBuilder(self)
+    
+    def order_by(self) -> OrderByBuilder:
+        return OrderByBuilder(self)
     
     def limit(self) -> LimitBuilder:
         return LimitBuilder(self)

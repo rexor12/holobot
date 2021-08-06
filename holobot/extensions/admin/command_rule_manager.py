@@ -17,8 +17,8 @@ class CommandRuleManager(CommandRuleManagerInterface):
         
     async def get_rules_by_server(self, server_id: str, start_offset: int, page_size: int, group: Optional[str] = None, subgroup: Optional[str] = None) -> Tuple[CommandRule, ...]:
         assert_not_none(server_id, "server_id")
-        if group is not None:
-            assert_not_none(subgroup, "subgroup")
+        if subgroup is not None:
+            assert_not_none(group, "group")
 
         return await self.__repository.get_many(server_id, group, subgroup, start_offset, page_size)
         

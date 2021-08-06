@@ -4,6 +4,7 @@ from .insert_builder import InsertBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
+from .order_by_builder import OrderByBuilder
 from .query import Query
 from .returning_builder import ReturningBuilder
 from .select_builder import SelectBuilder

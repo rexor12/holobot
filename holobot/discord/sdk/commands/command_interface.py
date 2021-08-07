@@ -1,3 +1,4 @@
+from ..enums import Permission
 from discord_slash import SlashContext
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -19,11 +20,11 @@ class CommandInterface:
         self.__subgroup_name = value
         
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str:
         return self.__name
     
     @name.setter
-    def name(self, value: Optional[str]) -> None:
+    def name(self, value: str) -> None:
         self.__name = value
         
     @property
@@ -41,6 +42,14 @@ class CommandInterface:
     @options.setter
     def options(self, value: List[Dict[str, Any]]) -> None:
         self.__options = value
+    
+    @property
+    def required_permissions(self) -> Permission:
+        return self.__required_permissions
+    
+    @required_permissions.setter
+    def required_permissions(self, value: Permission) -> None:
+        self.__required_permissions = value
 
     # It would be nice to pass a kind of parameter collection object
     # as an argument here instead of **kwargs, but it would be a

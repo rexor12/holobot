@@ -19,4 +19,4 @@ class RollNumberCommand(CommandBase):
     async def execute(self, context: SlashContext, max: int, min: int = 1) -> None:
         if max < min:
             (min, max) = (max, min)
-        await reply(context, f"You rolled {randint(min, max)}")
+        await reply(context, f"You rolled {randint(min, max)}.")

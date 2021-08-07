@@ -61,5 +61,79 @@
             "ApiGatewayBaseUrl": "https://api.openweathermap.org/data/2.5/weather",
             "ConditionImageBaseUrl": "https://openweathermap.org/img/wn/"
         }
+    },
+    "Admin": {
+        "parameters": {
+            "CommandGroups": {
+                "": {
+                    "CanDisable": true,
+                    "Commands": {
+                        "avatar": {},
+                        "emoji": {},
+                        "google": {},
+                        "info": {
+                            "CanDisable": false
+                        },
+                        "roll": {}
+                    }
+                },
+                "admin": {
+                    "CanDisable": false,
+                    "Subgroups": {
+                        "commands": {
+                            "Commands": {
+                                "help": {},
+                                "removerule": {},
+                                "setrule": {},
+                                "test": {},
+                                "view": {},
+                                "viewrules": {}
+                            }
+                        }
+                    },
+                    "Commands": {}
+                },
+                "crypto": {
+                    "Subgroups": {
+                        "alarm": {
+                            "Commands": {
+                                "remove": {},
+                                "removeall": {},
+                                "set": {},
+                                "view": {}
+                            }
+                        }
+                    },
+                    "Commands": {
+                        "price": {}
+                    }
+                },
+                "hentai": {
+                    "Commands": {
+                        "link": {}
+                    }
+                },
+                "reminder": {
+                    "Commands": {
+                        "remove": {},
+                        "set": {},
+                        "view": {}
+                    }
+                },
+                "todo": {
+                    "Commands": {
+                        "add": {},
+                        "removeall": {},
+                        "remove": {},
+                        "view": {}
+                    }
+                },
+                "weather": {
+                    "Commands": {
+                        "basic": {}
+                    }
+                }
+            }
+        }
     }
 }

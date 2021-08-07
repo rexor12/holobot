@@ -10,3 +10,6 @@ class ArgumentError(Exception):
     @argument_name.setter
     def argument_name(self, value: str) -> None:
         self.__argument_name = value
+    
+    def __str__(self) -> str:
+        return f"{super().__str__()}\nArgument name: {self.argument_name}"

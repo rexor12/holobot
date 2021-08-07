@@ -1,11 +1,9 @@
 from holobot.framework.lifecycle import LifecycleManagerInterface
 from holobot.sdk import KernelInterface
-from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.integration import IntegrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.utils import when_all
 from typing import Tuple
 
@@ -15,14 +13,12 @@ import asyncio
 class Kernel(KernelInterface):
     def __init__(self,
         log: LogInterface,
-        configurator: ConfiguratorInterface,
         database_manager: DatabaseManagerInterface,
         lifecycle_manager: LifecycleManagerInterface,
         integrations: Tuple[IntegrationInterface, ...]) -> None:
         super().__init__()
         self.__event_loop = asyncio.get_event_loop()
         self.__log = log.with_name("Framework", "Kernel")
-        self.__log.set_global_log_level(LogLevel.parse(configurator.get("General", "LogLevel", "Information")))
         self.__database_manager = database_manager
         self.__lifecycle_manager = lifecycle_manager
         self.__integrations = integrations

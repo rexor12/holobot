@@ -1,4 +1,5 @@
 from datetime import datetime
+from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogBase, LogInterface
 from holobot.sdk.logging.enums import LogLevel
@@ -10,8 +11,8 @@ import tzlocal
 class ConsoleLog(LogBase):
     """A logger that formats and writes messages to the console."""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, configurator: ConfiguratorInterface) -> None:
+        super().__init__(configurator)
 
     def _on_write(self, logger: LogInterface, level: LogLevel, message: str, error: Optional[Exception]) -> None:
         current_time = datetime.now(tzlocal.get_localzone())

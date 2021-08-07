@@ -40,14 +40,22 @@ class UpdateBuilder(IQueryPartBuilder):
         if len(self.__fields) == 0:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        sql = ["UPDATE", self.__table_name, "SET ("]
+        sql = ["UPDATE", self.__table_name, "SET"]
         columns = []
         arguments = []
-        for column, value in self.__fields.items():
-            columns.append(column)
+        if len(self.__fields) > 1:
+            sql.append("(")
+            for column, value in self.__fields.items():
+                columns.append(column)
+                arguments.append(value)
+            sql.append(", ".join(columns))
+            sql.append(") = (")
+            sql.append(", ".join([f"${index}" for index in range(1, len(arguments) + 1)]))
+            sql.append(")")
+        else:
+            column, value = next(iter(self.__fields.items()))
+            sql.append(column)
+            sql.append("=")
+            sql.append("$1")
             arguments.append(value)
-        sql.append(", ".join(columns))
-        sql.append(") = (")
-        sql.append(", ".join([f"${index}" for index in range(1, len(arguments) + 1)]))
-        sql.append(")")
         return (" ".join(sql), tuple(arguments))

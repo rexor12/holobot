@@ -59,6 +59,7 @@ class ReminderProcessor(StartableInterface):
                     reminder.last_trigger = datetime.utcnow()
                     reminder.recalculate_next_trigger()
                     await self.__reminder_repository.update_next_trigger(reminder.id, reminder.next_trigger)
+                    self.__log.trace(f"Processed reminder. {{ ReminderId = {reminder.id}, NextTrigger = {reminder.next_trigger} }}")
                 else:
                     await self.__reminder_repository.delete(reminder.id)
                 processed_reminders += 1

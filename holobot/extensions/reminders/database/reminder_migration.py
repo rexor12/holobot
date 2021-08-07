@@ -9,8 +9,15 @@ TABLE_NAME = "reminders"
 class ReminderMigration(MigrationBase):
     def __init__(self) -> None:
         super().__init__(TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
+            0: MigrationPlan(0, 1, self.__initialize_table),
+            1: MigrationPlan(1, 2, self.__upgrade_to_v2)
         }, {})
+    
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
+        await connection.execute((
+            "ALTER TABLE reminders"
+            " ADD COLUMN base_trigger TIMESTAMP NOT NULL"
+        ))
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute("DROP TABLE IF EXISTS reminders")

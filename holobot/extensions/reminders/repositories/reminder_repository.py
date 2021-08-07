@@ -25,7 +25,7 @@ class ReminderRepository(ReminderRepositoryInterface):
             async with connection.transaction():
                 result = await connection.fetchrow((
                     "SELECT id, user_id, created_at, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
+                    " frequency_time, day_of_week, until_date, base_trigger, last_trigger, next_trigger"
                     " FROM reminders WHERE id = $1"
                 ), id)
                 if result is None:
@@ -38,7 +38,7 @@ class ReminderRepository(ReminderRepositoryInterface):
             async with connection.transaction():
                 records = await connection.fetch((
                     "SELECT id, user_id, created_at, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
+                    " frequency_time, day_of_week, until_date, base_trigger, last_trigger, next_trigger"
                     " FROM reminders WHERE user_id = $1 LIMIT $3 OFFSET $2"
                 ), user_id, start_offset, page_size)
                 return tuple([ReminderRepository.__parse_reminder(record) for record in records])
@@ -49,7 +49,7 @@ class ReminderRepository(ReminderRepositoryInterface):
             async with connection.transaction():
                 records = await connection.fetch((
                     "SELECT id, user_id, created_at, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
+                    " frequency_time, day_of_week, until_date, base_trigger, last_trigger, next_trigger"
                     " FROM reminders WHERE next_trigger <= (NOW() AT TIME ZONE 'utc')"
                 ))
                 return tuple([ReminderRepository.__parse_reminder(record) for record in records])
@@ -60,11 +60,11 @@ class ReminderRepository(ReminderRepositoryInterface):
             async with connection.transaction():
                 await connection.execute((
                     "INSERT INTO reminders (user_id, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger)"
-                    " VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+                    " frequency_time, day_of_week, until_date, base_trigger, last_trigger, next_trigger)"
+                    " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
                 ), reminder.user_id, reminder.message, reminder.is_repeating,
                 reminder.frequency_time, reminder.day_of_week,
-                reminder.until_date, reminder.last_trigger, reminder.next_trigger)
+                reminder.until_date, reminder.base_trigger, reminder.last_trigger, reminder.next_trigger)
     
     async def update_next_trigger(self, reminder_id: int, next_trigger: datetime) -> None:
         async with self.__database_manager.acquire_connection() as connection:
@@ -100,6 +100,7 @@ class ReminderRepository(ReminderRepositoryInterface):
         reminder.frequency_time = record["frequency_time"]
         reminder.day_of_week = DayOfWeek(record["day_of_week"])
         reminder.until_date = record["until_date"]
+        reminder.base_trigger = record["base_trigger"]
         reminder.last_trigger = record["last_trigger"]
         reminder.next_trigger = record["next_trigger"]
         return reminder

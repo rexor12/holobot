@@ -16,3 +16,6 @@ class CommandRuleRepositoryInterface:
     
     async def delete_by_id(self, rule_id: int) -> None:
         raise NotImplementedError
+    
+    async def delete_by_server(self, server_id: str) -> None:
+        raise NotImplementedError

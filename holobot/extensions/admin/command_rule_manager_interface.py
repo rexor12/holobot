@@ -11,5 +11,8 @@ class CommandRuleManagerInterface:
     async def remove_rule(self, rule_id: int) -> None:
         raise NotImplementedError
     
+    async def remove_rules_by_server(self, server_id: str) -> None:
+        raise NotImplementedError
+    
     async def can_execute(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: str) -> bool:
         raise NotImplementedError

@@ -82,6 +82,7 @@
                     "Subgroups": {
                         "commands": {
                             "Commands": {
+                                "help": {},
                                 "removerule": {},
                                 "setrule": {},
                                 "test": {},

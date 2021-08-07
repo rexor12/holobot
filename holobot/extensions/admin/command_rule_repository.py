@@ -1,4 +1,3 @@
-from holobot.sdk.database.queries.constraints.logical_constraint_builder import or_expression
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
 from .enums.rule_state import RuleState
 from .models import CommandRule
@@ -136,6 +135,12 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
             connection: Connection
             async with connection.transaction():
                 await Query.delete().from_table(TABLE_NAME).where().field("id", Equality.EQUAL, rule_id).compile().execute(connection)
+    
+    async def delete_by_server(self, server_id: str) -> None:
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                await Query.delete().from_table(TABLE_NAME).where().field("server_id", Equality.EQUAL, server_id).compile().execute(connection)
 
     @staticmethod
     def __record_to_entity(record: Dict[str, Any]) -> CommandRule:

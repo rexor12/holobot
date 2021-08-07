@@ -92,10 +92,12 @@ class DynamicPager(Awaitable[None]):
                 await message.edit(embed=embed)
                 self.__log.trace(f"Page changed. {{ UserId = {self.__context.author.id}, Page = {self.current_page} }}")
             except TimeoutError:
-                await message.delete()
+                await self.__delete_message(message)
                 break
-            except NotFound: # The message was probably deleted by someone.
-                pass
+            except NotFound:
+                self.__log.trace(f"Tried to edit non-existent message. {{ MessageId = {message.id} }}")
+            except Exception as error:
+                self.__log.warning(f"Unexpected exception. {{ Type = {type(error)}, Message = {error} }}")
         self.__log.trace(f"Pager destroyed. {{ UserId = {self.__context.author.id} }}")
     
     async def __send_initial_page(self) -> Optional[Union[Message, SlashMessage]]:
@@ -113,3 +115,11 @@ class DynamicPager(Awaitable[None]):
         return (reaction.owner_id == get_author_id(self.__context)
                 and reaction.message_id == str(message.id)
                 and reaction.emoji_id in (self.reaction_previous, self.reaction_next))
+    
+    async def __delete_message(self, message: Union[Message, SlashMessage]) -> None:
+        try:
+            await message.delete()
+        except NotFound:
+                self.__log.trace(f"Tried to delete a non-existent message. {{ MessageId = {message.id} }}")
+        except Exception as error:
+            self.__log.warning(f"Failed to delete a message. {{ Type = {type(error)}, Message = {error} }}")

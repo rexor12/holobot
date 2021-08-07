@@ -68,6 +68,7 @@
                 "": {
                     "CanDisable": true,
                     "Commands": {
+                        "8ball": {},
                         "avatar": {},
                         "emoji": {},
                         "google": {},

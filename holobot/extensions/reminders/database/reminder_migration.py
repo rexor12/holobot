@@ -16,7 +16,7 @@ class ReminderMigration(MigrationBase):
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute((
             "ALTER TABLE reminders"
-            " ADD COLUMN base_trigger TIMESTAMP NOT NULL"
+            " ADD COLUMN base_trigger TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')"
         ))
 
     async def __initialize_table(self, connection: Connection) -> None:

@@ -10,7 +10,9 @@
     "Google": {
         "parameters": {
             "GoogleSearchApiKey": "",
-            "GoogleSearchEngineId": ""
+            "GoogleSearchEngineId": "",
+            "CircuitBreakerFailureThreshold": 1,
+            "CircuitBreakerRecoveryTime": 300
         }
     },
     "Development": {

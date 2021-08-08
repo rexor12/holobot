@@ -5,7 +5,11 @@ from asyncpg.connection import Connection
 from datetime import datetime
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database.queries import Query
+from holobot.sdk.database.queries.enums import Equality
 from typing import Tuple, Optional
+
+TABLE_NAME = "reminders"
 
 @injectable(ReminderRepositoryInterface)
 class ReminderRepository(ReminderRepositoryInterface):
@@ -16,18 +20,19 @@ class ReminderRepository(ReminderRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                result: Optional[int] = await connection.fetchval("SELECT COUNT(*) FROM reminders WHERE user_id = $1", user_id)
+                result: Optional[int] = await Query.select().column("COUNT(*)").from_table(TABLE_NAME).where().field(
+                    "user_id", Equality.EQUAL, user_id
+                ).compile().fetchval(connection)
                 return result or 0
 
     async def get(self, id: int) -> Optional[Reminder]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                result = await connection.fetchrow((
-                    "SELECT id, user_id, created_at, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
-                    " FROM reminders WHERE id = $1"
-                ), id)
+                result = await Query.select().columns(
+                    "id", "user_id", "created_at", "message", "is_repeating", "frequency_time",
+                    "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
+                ).from_table(TABLE_NAME).where().field("id", Equality.EQUAL, id).compile().fetchrow(connection)
                 if result is None:
                     return None
                 return ReminderRepository.__parse_reminder(result)
@@ -36,47 +41,57 @@ class ReminderRepository(ReminderRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await connection.fetch((
-                    "SELECT id, user_id, created_at, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
-                    " FROM reminders WHERE user_id = $1 LIMIT $3 OFFSET $2"
-                ), user_id, start_offset, page_size)
+                records = await Query.select().columns(
+                    "id", "user_id", "created_at", "message", "is_repeating", "frequency_time",
+                    "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
+                ).from_table(TABLE_NAME).where().field(
+                    "user_id", Equality.EQUAL, user_id
+                ).limit().max_count(page_size).start_index(start_offset).compile().fetch(connection)
                 return tuple([ReminderRepository.__parse_reminder(record) for record in records])
 
     async def get_triggerable(self) -> Tuple[Reminder, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await connection.fetch((
-                    "SELECT id, user_id, created_at, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger"
-                    " FROM reminders WHERE next_trigger <= (NOW() AT TIME ZONE 'utc')"
-                ))
+                records = await Query.select().columns(
+                    "id", "user_id", "created_at", "message", "is_repeating", "frequency_time",
+                    "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
+                ).from_table(TABLE_NAME).where().field(
+                    "next_trigger", Equality.LESS | Equality.EQUAL, "(NOW() AT TIME ZONE 'utc')", True
+                ).compile().fetch(connection)
                 return tuple([ReminderRepository.__parse_reminder(record) for record in records])
 
     async def store(self, reminder: Reminder) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await connection.execute((
-                    "INSERT INTO reminders (user_id, message, is_repeating,"
-                    " frequency_time, day_of_week, until_date, last_trigger, next_trigger)"
-                    " VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
-                ), reminder.user_id, reminder.message, reminder.is_repeating,
-                reminder.frequency_time, reminder.day_of_week,
-                reminder.until_date, reminder.last_trigger, reminder.next_trigger)
+                await Query.insert().in_table(TABLE_NAME).fields(
+                    ("user_id", reminder.user_id),
+                    ("message", reminder.message),
+                    ("is_repeating", reminder.is_repeating),
+                    ("frequency_time", reminder.frequency_time),
+                    ("day_of_week", reminder.day_of_week),
+                    ("until_date", reminder.until_date),
+                    ("base_trigger", reminder.base_trigger),
+                    ("last_trigger", reminder.last_trigger),
+                    ("next_trigger", reminder.next_trigger)
+                ).compile().execute(connection)
     
     async def update_next_trigger(self, reminder_id: int, next_trigger: datetime) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await connection.execute("UPDATE reminders SET next_trigger = $2 WHERE id = $1", reminder_id, next_trigger)
+                await Query.update().table(TABLE_NAME).field(
+                    "next_trigger", next_trigger
+                ).where().field("id", Equality.EQUAL, reminder_id).compile().execute(connection)
 
     async def delete(self, reminder_id: int) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await connection.execute("DELETE FROM reminders WHERE id = $1", reminder_id)
+                await Query.delete().from_table(TABLE_NAME).where().field(
+                    "id", Equality.EQUAL, reminder_id
+                ).compile().execute(connection)
     
     async def delete_by_user(self, user_id: str, reminder_id: int) -> int:
         async with self.__database_manager.acquire_connection() as connection:
@@ -100,6 +115,7 @@ class ReminderRepository(ReminderRepositoryInterface):
         reminder.frequency_time = record["frequency_time"]
         reminder.day_of_week = DayOfWeek(record["day_of_week"])
         reminder.until_date = record["until_date"]
+        reminder.base_trigger = record["base_trigger"]
         reminder.last_trigger = record["last_trigger"]
         reminder.next_trigger = record["next_trigger"]
         return reminder

@@ -39,7 +39,7 @@ class ReminderManager(ReminderManagerInterface):
         else:
             raise ArgumentError("occurrence", "Either the frequency or the specific time of the occurrence must be specified.")
 
-        self.__log.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger}, LastTrigger = {reminder.last_trigger} }}")
+        self.__log.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger}, BaseTrigger = {reminder.base_trigger}, IsRepeating = {reminder.is_repeating} }}")
         return reminder
     
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:
@@ -64,7 +64,7 @@ class ReminderManager(ReminderManagerInterface):
         reminder.message = message
         reminder.is_repeating = True
         reminder.frequency_time = frequency_time
-        reminder.last_trigger = self.__calculate_recurring_last_trigger(frequency_time, at_time)
+        reminder.base_trigger = self.__calculate_recurring_base_trigger(frequency_time, at_time)
         reminder.recalculate_next_trigger()
         await self.__reminder_repository.store(reminder)
         return reminder
@@ -77,13 +77,13 @@ class ReminderManager(ReminderManagerInterface):
         await self.__reminder_repository.store(reminder)
         return reminder
     
-    def __calculate_recurring_last_trigger(self, frequency_time: timedelta, at_time: Optional[timedelta]):
+    def __calculate_recurring_base_trigger(self, frequency_time: timedelta, at_time: Optional[timedelta]):
         current_time = datetime.utcnow()
         if at_time is None:
             return current_time
         
-        last_trigger = datetime(current_time.year, current_time.month, current_time.day) + at_time
-        return last_trigger - frequency_time if last_trigger > current_time else last_trigger
+        base_trigger = datetime(current_time.year, current_time.month, current_time.day) + at_time
+        return base_trigger - frequency_time if base_trigger > current_time else base_trigger
     
     def __calculate_single_trigger_at(self, at_time: timedelta) -> datetime:
         # TODO Make this aware of the user's locale. We can't expect random people to deal with UTC.

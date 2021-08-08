@@ -4,16 +4,18 @@ from typing import Optional
 
 class Reminder:
     def __init__(self) -> None:
+        now = datetime.utcnow()
         self.id = 0
         self.user_id = ""
         self.message = ""
-        self.created_at = datetime.utcnow()
+        self.created_at = now
         self.is_repeating = False
         self.frequency_time = timedelta()
         self.day_of_week = DayOfWeek.SUNDAY
         self.until_date = None
-        self.last_trigger = datetime.utcnow()
-        self.next_trigger = datetime.utcnow()
+        self.base_trigger = now
+        self.last_trigger = now
+        self.next_trigger = now
 
     @property
     def id(self) -> int:
@@ -80,6 +82,14 @@ class Reminder:
         self.__until_date = value
     
     @property
+    def base_trigger(self) -> datetime:
+        return self.__base_trigger
+
+    @base_trigger.setter
+    def base_trigger(self, value: datetime) -> None:
+        self.__base_trigger = value
+    
+    @property
     def last_trigger(self) -> datetime:
         return self.__last_trigger
 
@@ -110,5 +120,8 @@ class Reminder:
         if not self.is_repeating:
             raise ValueError("A non-recurring reminder cannot have a new trigger date-time.")
         current_time = datetime.utcnow()
-        trigger_time = self.last_trigger + self.frequency_time
-        self.next_trigger = trigger_time if trigger_time > current_time else current_time
+        repeat_count = int((current_time - self.base_trigger) / self.frequency_time)
+        trigger_time = self.base_trigger + (repeat_count + 1) * self.frequency_time
+        if trigger_time > self.last_trigger + self.frequency_time:
+            self.next_trigger = current_time
+        else: self.next_trigger = trigger_time

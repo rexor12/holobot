@@ -138,5 +138,11 @@
                 }
             }
         }
+    },
+    "Moderation": {
+        "parameters": {
+            "ReasonLengthMin": 10,
+            "ReasonLengthMax": 192
+        }
     }
 }

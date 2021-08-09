@@ -1,0 +1,2 @@
+class ModerationLog:
+    pass

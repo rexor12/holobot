@@ -18,9 +18,9 @@ class UsersMigration(MigrationBase):
             f"CREATE TABLE {TABLE_NAME} ("
             " id SERIAL PRIMARY KEY,"
             " created_at TIMESTAMP DEFAULT NOW(),"
-            " created_by VARCHAR(20) NOT NULL,"
             " server_id VARCHAR(20) NOT NULL,"
             " user_id VARCHAR(20) NOT NULL,"
-            " permissions INTEGER DEFAULT 0"
+            " permissions INTEGER DEFAULT 0,"
+            " UNIQUE(server_id, user_id)"
             " )"
         ))

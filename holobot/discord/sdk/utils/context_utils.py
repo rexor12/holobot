@@ -86,6 +86,11 @@ def has_channel_permission(context: Union[Context, SlashContext], user: Union[Us
         return False
     return has_permissions(user_permissions, permissions)
 
+def get_user_id(mention: str) -> Optional[str]:
+    if (match := mention_regex.match(mention)) is None:
+        return None
+    return match.group("id")
+
 async def reply(context: Union[Context, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
     if isinstance(context, SlashContext):
         if isinstance(content, str):

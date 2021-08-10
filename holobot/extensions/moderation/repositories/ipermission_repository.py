@@ -6,3 +6,6 @@ class IPermissionRepository:
     
     async def remove_user_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> None:
         raise NotImplementedError
+    
+    async def get_user_permissions(self, server_id: str, user_id: str) -> ModeratorPermission:
+        raise NotImplementedError

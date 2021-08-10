@@ -51,3 +51,19 @@ class PermissionRepository(IPermissionRepository):
                     ("server_id", Equality.EQUAL, server_id),
                     ("user_id", Equality.EQUAL, user_id)
                 ).compile().execute(connection)
+    
+    async def get_user_permissions(self, server_id: str, user_id: str) -> ModeratorPermission:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                permissions = await Query.select().from_table(TABLE_NAME).column(
+                    "permissions"
+                ).where().fields(
+                    Connector.AND,
+                    ("server_id", Equality.EQUAL, server_id),
+                    ("user_id", Equality.EQUAL, user_id)
+                ).compile().fetchval(connection)
+                return ModeratorPermission(permissions) if permissions is not None else ModeratorPermission.NONE

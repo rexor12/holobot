@@ -113,10 +113,11 @@ class BotService(BotServiceInterface):
 
     async def __execute_command(self, __command: CommandInterface, context: SlashContext, **kwargs: Any) -> None:
         self.__log.trace(f"Executing command... {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
+        await context.defer()
         for rule in self.__command_execution_rules:
             if await rule.should_halt(__command, context):
                 self.__log.debug(f"Command has been halted. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
-                await reply(context, "You may not use that command here.")
+                await reply(context, "You're not allowed to use this command here.")
                 return
 
         await __command.execute(context, **kwargs)

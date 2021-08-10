@@ -34,4 +34,4 @@ class RemoveModeratorPermissionCommand(ModerationCommandBase):
             return
         typed_permission = ModeratorPermission(permission)
         await self.__permission_manager.remove_permissions(str(context.guild_id), user_id, typed_permission)
-        await reply(context, f"{user} has been assigned the permission '{typed_permission.textify()}''.")
+        await reply(context, f"{user} has had the permission to '{typed_permission.textify()}' _revoked_.")

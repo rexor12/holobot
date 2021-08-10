@@ -8,8 +8,8 @@ class ModerationCommandBase(CommandBase):
     
     @property
     def required_moderator_permissions(self) -> ModeratorPermission:
-        return self.__modp
+        return self.__required_moderator_permissions
     
     @required_moderator_permissions.setter
     def required_moderator_permissions(self, value: ModeratorPermission) -> None:
-        self.__modp = value
+        self.__required_moderator_permissions = value

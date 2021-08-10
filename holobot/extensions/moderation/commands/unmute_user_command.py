@@ -1,10 +1,7 @@
-from discord.abc import GuildChannel
 from .moderation_command_base import ModerationCommandBase
 from ..enums import ModeratorPermission
 from discord.errors import Forbidden
-from discord.guild import Guild
 from discord.member import Member
-from discord.role import Role
 from discord.utils import get
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
@@ -12,7 +9,6 @@ from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_user_id, reply
 from holobot.sdk.ioc.decorators import injectable
-from typing import List, Optional
 
 @injectable(CommandInterface)
 class UnmuteUserCommand(ModerationCommandBase):
@@ -46,5 +42,14 @@ class UnmuteUserCommand(ModerationCommandBase):
             await reply(context, "I cannot find a 'Muted' role, hence I cannot unmute the user. Have they been muted by a different bot?")
             return
         
-        await member.remove_roles(muted_role)
+        try:
+            await member.remove_roles(muted_role)
+        except Forbidden:
+            await reply(context, (
+                "I cannot remove the 'Muted' role.\n"
+                "Have you given me user management permissions?\n"
+                "Do they have a higher ranking role?"
+            ))
+            return
+
         await reply(context, f"{member.mention} has been unmuted.")

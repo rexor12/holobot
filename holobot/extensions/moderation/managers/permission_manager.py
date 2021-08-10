@@ -4,6 +4,8 @@ from ..repositories import IPermissionRepository
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 
+# TODO Strip permissions when a user is kicked/banned or leaves the server.
+# Transform discord.py events into listener events?
 @injectable(IPermissionManager)
 class PermissionManager(IPermissionManager):
     def __init__(self, repository: IPermissionRepository) -> None:

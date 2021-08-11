@@ -21,7 +21,7 @@ class BanUserCommand(ModerationCommandBase):
             create_option("reason", "The reason of the punishment.", SlashCommandOptionType.STRING, True),
             create_option("days", "If specified, the previous N days' messages are also removed.", SlashCommandOptionType.INTEGER, False)
         ]
-        self.required_moderator_permissions = ModeratorPermission.BAN
+        self.required_moderator_permissions = ModeratorPermission.BAN_USERS
     
     async def execute(self, context: SlashContext, user: str, reason: str, days: Optional[int] = None) -> None:
         if (user_id := get_user_id(user)) is None:

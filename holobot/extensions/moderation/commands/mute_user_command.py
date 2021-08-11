@@ -1,4 +1,5 @@
 from .moderation_command_base import ModerationCommandBase
+from ..constants import MUTED_ROLE_NAME
 from ..enums import ModeratorPermission
 from discord.abc import GuildChannel
 from discord.errors import Forbidden
@@ -25,7 +26,7 @@ class MuteUserCommand(ModerationCommandBase):
             create_option("reason", "The reason of the punishment.", SlashCommandOptionType.STRING, True),
             create_option("duration", "The duration after which to lift the mute. Eg. 1h or 30m.", SlashCommandOptionType.STRING, False)
         ]
-        self.required_moderator_permissions = ModeratorPermission.MUTE
+        self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
     
     async def execute(self, context: SlashContext, user: str, reason: str, duration: Optional[str] = None) -> None:
         # TODO Auto unmute after the duration.
@@ -63,11 +64,11 @@ class MuteUserCommand(ModerationCommandBase):
         await reply(context, f"{member.mention} has been muted. Reason: {reason}")
     
     async def __get_or_create_muted_role(self, context: SlashContext, guild: Guild, roles: List[Role]) -> Role:
-        role = get(roles, name="Muted")
+        role = get(roles, name=MUTED_ROLE_NAME)
         if role is not None:
             return role
 
-        role = await guild.create_role(name="Muted", reason="Used for muting people in text channels.")
+        role = await guild.create_role(name=MUTED_ROLE_NAME, reason="Used for muting people in text channels.")
         for channel in guild.channels:
             channel: GuildChannel
             await channel.set_permissions(role, send_messages=False)

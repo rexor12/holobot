@@ -19,9 +19,10 @@ class AddModeratorPermissionCommand(ModerationCommandBase):
         self.options = [
             create_option("user", "The mention of the user to modify.", SlashCommandOptionType.STRING, True),
             create_option("permission", "The permission to assign.", SlashCommandOptionType.INTEGER, True, [
-                create_choice(ModeratorPermission.MUTE, "Mute users"),
-                create_choice(ModeratorPermission.KICK, "Kick users"),
-                create_choice(ModeratorPermission.BAN, "Ban users"),
+                create_choice(ModeratorPermission.WARN_USERS, "Warn users"),
+                create_choice(ModeratorPermission.MUTE_USERS, "Mute users"),
+                create_choice(ModeratorPermission.KICK_USERS, "Kick users"),
+                create_choice(ModeratorPermission.BAN_USERS, "Ban users"),
                 create_choice(ModeratorPermission.VIEW_LOGS, "View logs")
             ])
         ]

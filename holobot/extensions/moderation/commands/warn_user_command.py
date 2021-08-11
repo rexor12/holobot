@@ -1,9 +1,7 @@
 from .moderation_command_base import ModerationCommandBase
-from ..constants import MUTED_ROLE_NAME
 from ..enums import ModeratorPermission
-from discord.errors import Forbidden
+from ..managers import IWarnManager
 from discord.member import Member
-from discord.utils import get
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
@@ -12,17 +10,20 @@ from holobot.discord.sdk.utils import get_user_id, reply
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
-class UnmuteUserCommand(ModerationCommandBase):
-    def __init__(self) -> None:
-        super().__init__("unmute")
+class WarnUserCommand(ModerationCommandBase):
+    def __init__(self, warn_manager: IWarnManager) -> None:
+        super().__init__("warn")
         self.group_name = "moderation"
-        self.description = "Removes the muting from a user."
+        self.description = "Warns a user, giving them one warn strike."
         self.options = [
-            create_option("user", "The mention of the user to mute.", SlashCommandOptionType.STRING, True)
+            create_option("user", "The mention of the user to warn.", SlashCommandOptionType.STRING, True),
+            create_option("reason", "The reason of the punishment.", SlashCommandOptionType.STRING, True)
         ]
-        self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
+        self.required_moderator_permissions = ModeratorPermission.WARN_USERS
+        self.__warn_manager: IWarnManager = warn_manager
     
-    async def execute(self, context: SlashContext, user: str) -> None:
+    async def execute(self, context: SlashContext, user: str, reason: str) -> None:
+        # TODO Reason length validation + trim.
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return
@@ -38,19 +39,5 @@ class UnmuteUserCommand(ModerationCommandBase):
             await reply(context, "I'm sorry, but something went wrong internally. Please, try again later or contact your server administrator.")
             return
         
-        muted_role = get(context.guild.roles, name=MUTED_ROLE_NAME)
-        if muted_role is None:
-            await reply(context, "I cannot find a 'Muted' role, hence I cannot unmute the user. Have they been muted by a different bot?")
-            return
-        
-        try:
-            await member.remove_roles(muted_role)
-        except Forbidden:
-            await reply(context, (
-                "I cannot remove the 'Muted' role.\n"
-                "Have you given me user management permissions?\n"
-                "Do they have a higher ranking role?"
-            ))
-            return
-
-        await reply(context, f"{member.mention} has been unmuted.")
+        await self.__warn_manager.warn_user(str(context.guild_id), user_id, reason, str(context.author_id))
+        await reply(context, f"{member.mention} has been warned. Reason: {reason}")

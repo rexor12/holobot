@@ -15,7 +15,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Any, Optional, Tuple, Union
 
-import asyncio
+import asyncio, time
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"
@@ -113,6 +113,7 @@ class BotService(BotServiceInterface):
 
     async def __execute_command(self, __command: CommandInterface, context: SlashContext, **kwargs: Any) -> None:
         self.__log.trace(f"Executing command... {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
+        start_time = time.perf_counter()
         await context.defer()
         for rule in self.__command_execution_rules:
             if await rule.should_halt(__command, context):
@@ -121,7 +122,8 @@ class BotService(BotServiceInterface):
                 return
 
         await __command.execute(context, **kwargs)
-        self.__log.debug(f"Executed command. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
+        elapsed_time = int((time.perf_counter() - start_time) * 1000)
+        self.__log.debug(f"Executed command. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id}, Elapsed = {elapsed_time} }}")
 
     def __initialize_bot(self) -> Bot:
         bot = Bot(

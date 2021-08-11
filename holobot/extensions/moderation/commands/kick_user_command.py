@@ -19,7 +19,7 @@ class KickUserCommand(ModerationCommandBase):
             create_option("user", "The mention of the user to kick.", SlashCommandOptionType.STRING, True),
             create_option("reason", "The reason of the punishment.", SlashCommandOptionType.STRING, True)
         ]
-        self.required_moderator_permissions = ModeratorPermission.MUTE
+        self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
     
     async def execute(self, context: SlashContext, user: str, reason: str) -> None:
         if (user_id := get_user_id(user)) is None:

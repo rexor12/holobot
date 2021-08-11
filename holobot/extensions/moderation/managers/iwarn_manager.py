@@ -3,7 +3,10 @@ from datetime import timedelta
 from typing import Tuple
 
 class IWarnManager:
-    async def get_warns(self, server_id: str, user_id: str, start_offset: int, page_size: int) -> Tuple[WarnStrike, ...]:
+    async def get_warns(self, server_id: str, user_id: str, page_index: int, page_size: int) -> Tuple[WarnStrike, ...]:
+        raise NotImplementedError
+    
+    async def warn_user(self, server_id: str, user_id: str, reason: str, warner_id: str) -> WarnStrike:
         raise NotImplementedError
     
     async def clear_warns_for_user(self, server_id: str, user_id: str) -> None:

@@ -4,7 +4,7 @@ from holobot.discord.sdk.commands import CommandBase
 class ModerationCommandBase(CommandBase):
     def __init__(self, name: str) -> None:
         super().__init__(name)
-        self.required_moderator_permissions = ModeratorPermission.NONE
+        self.required_moderator_permissions = ModeratorPermission.NONE_USERS
     
     @property
     def required_moderator_permissions(self) -> ModeratorPermission:

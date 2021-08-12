@@ -1,4 +1,5 @@
 from .moderation_command_base import ModerationCommandBase
+from .. import IConfigProvider
 from ..constants import MUTED_ROLE_NAME
 from ..enums import ModeratorPermission
 from discord.abc import GuildChannel
@@ -17,7 +18,7 @@ from typing import List, Optional
 
 @injectable(CommandInterface)
 class MuteUserCommand(ModerationCommandBase):
-    def __init__(self) -> None:
+    def __init__(self, config_provider: IConfigProvider) -> None:
         super().__init__("mute")
         self.group_name = "moderation"
         self.description = "Mutes a user."
@@ -27,14 +28,20 @@ class MuteUserCommand(ModerationCommandBase):
             create_option("duration", "The duration after which to lift the mute. Eg. 1h or 30m.", SlashCommandOptionType.STRING, False)
         ]
         self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
+        self.__config_provider: IConfigProvider = config_provider
     
     async def execute(self, context: SlashContext, user: str, reason: str, duration: Optional[str] = None) -> None:
         # TODO Auto unmute after the duration.
+        reason = reason.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return
         if context.guild is None:
             await reply(context, "You may use this command in a server only.")
+            return
+        reason_length_range = self.__config_provider.get_reason_length_range()
+        if not len(reason) in reason_length_range:
+            await reply(context, f"The reason parameter's length must be between {reason_length_range.lower_bound} and {reason_length_range.upper_bound}.")
             return
 
         member = context.guild.get_member(int(user_id))

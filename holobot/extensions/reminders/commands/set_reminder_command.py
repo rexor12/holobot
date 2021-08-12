@@ -1,12 +1,12 @@
 from .. import ReminderManagerInterface
 from ..exceptions import InvalidReminderConfigError, TooManyRemindersError
 from ..models import ReminderConfig
-from ..parsing import parse_interval
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface

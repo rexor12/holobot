@@ -142,7 +142,9 @@
     "Moderation": {
         "parameters": {
             "ReasonLengthMin": 10,
-            "ReasonLengthMax": 192
+            "ReasonLengthMax": 192,
+            "DecayThresholdSecondsMin": 1800,
+            "DecayThresholdSecondsMax": 2592000
         }
     }
 }

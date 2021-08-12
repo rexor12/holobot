@@ -6,6 +6,7 @@ from .kick_user_command import KickUserCommand
 from .moderation_command_base import ModerationCommandBase
 from .mute_user_command import MuteUserCommand
 from .remove_moderator_permission_command import RemoveModeratorPermissionCommand
+from .set_warn_decay_command import SetWarnDecayCommand
 from .unmute_user_command import UnmuteUserCommand
 from .view_logs_command import ViewLogsCommand
 from .view_warn_strikes_command import ViewWarnStrikesCommand

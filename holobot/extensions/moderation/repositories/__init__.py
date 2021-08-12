@@ -1,4 +1,6 @@
 from .ipermission_repository import IPermissionRepository
 from .iwarn_repository import IWarnRepository
+from .iwarn_settings_repository import IWarnSettingsRepository
 from .permission_repository import PermissionRepository
 from .warn_repository import WarnRepository
+from .warn_settings_repository import WarnSettingsRepository

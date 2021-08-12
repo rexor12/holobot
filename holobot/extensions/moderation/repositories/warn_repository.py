@@ -34,7 +34,7 @@ class WarnRepository(IWarnRepository):
                 ).limit().start_index(start_offset).max_count(max_count).compile().fetch(connection)
                 return tuple([WarnRepository.__map_to_model(record) for record in records])
 
-    async def add_warn(self, warn_strike: WarnStrike) -> int:
+    async def add_warn(self, warn_strike: WarnStrike, decay_threshold: Optional[timedelta] = None) -> int:
         assert_not_none(warn_strike, "warn_strike")
         assert_not_none(warn_strike.server_id, "warn_strike.server_id")
         assert_not_none(warn_strike.user_id, "warn_strike.user_id")
@@ -42,10 +42,14 @@ class WarnRepository(IWarnRepository):
         assert_not_none(warn_strike.warner_id, "warn_strike.warner_id")
         if warn_strike.id != -1:
             raise ArgumentError("warn_strike", "This warn strike has been added already.")
+        # Sanitization because this argument is used as a raw value.
+        if decay_threshold is not None and not isinstance(decay_threshold, timedelta):
+            raise ArgumentError("decay_threshold", f"Expected timedelta but got {type(decay_threshold)}.")
 
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
+                await self.__clear_warns_older_than(connection, decay_threshold)
                 id: Optional[int] = await Query.insert().in_table(TABLE_NAME).fields(
                     ("server_id", warn_strike.server_id),
                     ("user_id", warn_strike.user_id),
@@ -79,17 +83,23 @@ class WarnRepository(IWarnRepository):
                     ("user_id", Equality.EQUAL, user_id)
                 ).compile().execute(connection)
     
-    async def clear_warns_older_than(self, elapsed: timedelta) -> None:
+    async def clear_warns_older_than(self, threshold: timedelta) -> None:
         # Sanitization because this argument is used as a raw value.
-        if not isinstance(elapsed, timedelta):
-            raise ArgumentError("elapsed", f"Expected timedelta but got {type(elapsed)}.")
+        if not isinstance(threshold, timedelta):
+            raise ArgumentError("threshold", f"Expected timedelta but got {type(threshold)}.")
 
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().field(
-                    "created_at", Equality.LESS, f"created_at + interval '{int(elapsed.total_seconds())} seconds'", True
-                ).compile().execute(connection)
+                await self.__clear_warns_older_than(connection, threshold)
+    
+    async def __clear_warns_older_than(self, connection: Connection, threshold: Optional[timedelta]) -> None:
+        if threshold is None:
+            return
+
+        await Query.delete().from_table(TABLE_NAME).where().field(
+            "created_at", Equality.LESS, f"created_at + interval '{int(threshold.total_seconds())} seconds'", True
+        ).compile().execute(connection)
     
     @staticmethod
     def __map_to_model(record) -> WarnStrike:

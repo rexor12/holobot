@@ -1,4 +1,5 @@
 from .moderation_command_base import ModerationCommandBase
+from .. import IConfigProvider
 from ..enums import ModeratorPermission
 from ..managers import IWarnManager
 from discord.member import Member
@@ -11,7 +12,7 @@ from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
 class WarnUserCommand(ModerationCommandBase):
-    def __init__(self, warn_manager: IWarnManager) -> None:
+    def __init__(self, config_provider: IConfigProvider, warn_manager: IWarnManager) -> None:
         super().__init__("warn")
         self.group_name = "moderation"
         self.description = "Warns a user, giving them one warn strike."
@@ -21,14 +22,19 @@ class WarnUserCommand(ModerationCommandBase):
         ]
         self.required_moderator_permissions = ModeratorPermission.WARN_USERS
         self.__warn_manager: IWarnManager = warn_manager
+        self.__config_provider: IConfigProvider = config_provider
     
     async def execute(self, context: SlashContext, user: str, reason: str) -> None:
-        # TODO Reason length validation + trim.
+        reason = reason.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return
         if context.guild is None:
             await reply(context, "You may use this command in a server only.")
+            return
+        reason_length_range = self.__config_provider.get_reason_length_range()
+        if not len(reason) in reason_length_range:
+            await reply(context, f"The reason parameter's length must be between {reason_length_range.lower_bound} and {reason_length_range.upper_bound}.")
             return
 
         member = context.guild.get_member(int(user_id))

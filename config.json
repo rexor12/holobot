@@ -143,8 +143,10 @@
         "parameters": {
             "ReasonLengthMin": 10,
             "ReasonLengthMax": 192,
-            "DecayThresholdSecondsMin": 1800,
-            "DecayThresholdSecondsMax": 2592000
+            "DecayThresholdMin": 1800,
+            "DecayThresholdMax": 2592000,
+            "WarnCleanupInterval": 3600,
+            "WarnCleanupDelay": 60
         }
     }
 }

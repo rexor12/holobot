@@ -8,12 +8,13 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_user_id, reply
+from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
 @injectable(CommandInterface)
 class BanUserCommand(ModerationCommandBase):
-    def __init__(self, config_provider: IConfigProvider) -> None:
+    def __init__(self, config_provider: IConfigProvider, messaging: MessagingInterface) -> None:
         super().__init__("ban")
         self.group_name = "moderation"
         self.description = "Bans a user from the server. The user cannot rejoin until the ban is lifted."
@@ -24,6 +25,7 @@ class BanUserCommand(ModerationCommandBase):
         ]
         self.required_moderator_permissions = ModeratorPermission.BAN_USERS
         self.__config_provider: IConfigProvider = config_provider
+        self.__messaging: MessagingInterface = messaging
     
     async def execute(self, context: SlashContext, user: str, reason: str, days: Optional[int] = None) -> None:
         reason = reason.strip()
@@ -61,3 +63,4 @@ class BanUserCommand(ModerationCommandBase):
             return
 
         await reply(context, f"{member.mention} has been banned. Reason: {reason}")
+        await self.__messaging.send_dm(user_id, f"You have been banned from {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")

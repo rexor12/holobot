@@ -20,6 +20,12 @@ class ConfigProvider(IConfigProvider):
 
     def get_decay_threshold_range(self) -> Range[timedelta]:
         return Range(
-            timedelta(seconds=self.__configurator.get(SECTION_NAME, "DecayThresholdSecondsMin", 1800)),
-            timedelta(seconds=self.__configurator.get(SECTION_NAME, "DecayThresholdSecondsMax", 2592000))
+            timedelta(seconds=self.__configurator.get(SECTION_NAME, "DecayThresholdMin", 1800)),
+            timedelta(seconds=self.__configurator.get(SECTION_NAME, "DecayThresholdMax", 2592000))
         )
+
+    def get_warn_cleanup_interval(self) -> timedelta:
+        return timedelta(seconds=self.__configurator.get(SECTION_NAME, "WarnCleanupInterval", 3600))
+
+    def get_warn_cleanup_delay(self) -> timedelta:
+        return timedelta(seconds=self.__configurator.get(SECTION_NAME, "WarnCleanupDelay", 60))

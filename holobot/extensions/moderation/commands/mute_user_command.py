@@ -13,12 +13,13 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_user_id, reply
+from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from typing import List, Optional
 
 @injectable(CommandInterface)
 class MuteUserCommand(ModerationCommandBase):
-    def __init__(self, config_provider: IConfigProvider) -> None:
+    def __init__(self, config_provider: IConfigProvider, messaging: MessagingInterface) -> None:
         super().__init__("mute")
         self.group_name = "moderation"
         self.description = "Mutes a user."
@@ -29,6 +30,7 @@ class MuteUserCommand(ModerationCommandBase):
         ]
         self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
         self.__config_provider: IConfigProvider = config_provider
+        self.__messaging: MessagingInterface = messaging
     
     async def execute(self, context: SlashContext, user: str, reason: str, duration: Optional[str] = None) -> None:
         # TODO Auto unmute after the duration.
@@ -53,7 +55,7 @@ class MuteUserCommand(ModerationCommandBase):
             return
         
         try:
-            muted_role = await self.__get_or_create_muted_role(context, context.guild, context.guild.roles)
+            muted_role = await self.__get_or_create_muted_role(context.guild, context.guild.roles)
         except Forbidden:
             await reply(context, "I cannot assign/create a 'Muted' role. Have you given me role management permissions?")
             return
@@ -69,8 +71,9 @@ class MuteUserCommand(ModerationCommandBase):
             return
 
         await reply(context, f"{member.mention} has been muted. Reason: {reason}")
+        await self.__messaging.send_dm(user_id, f"You have been muted in {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")
     
-    async def __get_or_create_muted_role(self, context: SlashContext, guild: Guild, roles: List[Role]) -> Role:
+    async def __get_or_create_muted_role(self, guild: Guild, roles: List[Role]) -> Role:
         role = get(roles, name=MUTED_ROLE_NAME)
         if role is not None:
             return role

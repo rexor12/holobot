@@ -5,12 +5,15 @@ from datetime import timedelta
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
+from holobot.sdk.database.statuses import CommandComplete
+from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 from typing import Optional, Tuple
 
 TABLE_NAME = "moderation_warns"
+SETTINGS_TABLE_NAME = "moderation_warn_settings"
 
 @injectable(IWarnRepository)
 class WarnRepository(IWarnRepository):
@@ -60,45 +63,51 @@ class WarnRepository(IWarnRepository):
                     raise ValueError("Unexpected error while creating a new warn.")
                 return id
     
-    async def clear_warns_by_server(self, server_id: str) -> None:
+    async def clear_warns_by_server(self, server_id: str) -> int:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().field(
+                status: CommandComplete[DeleteCommandTag] = await Query.delete().from_table(TABLE_NAME).where().field(
                     "server_id", Equality.EQUAL, server_id
                 ).compile().execute(connection)
+                return status.command_tag.rows
     
-    async def clear_warns_by_user(self, server_id: str, user_id: str) -> None:
+    async def clear_warns_by_user(self, server_id: str, user_id: str) -> int:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().fields(
+                status: CommandComplete[DeleteCommandTag] = await Query.delete().from_table(TABLE_NAME).where().fields(
                     Connector.AND,
                     ("server_id", Equality.EQUAL, server_id),
                     ("user_id", Equality.EQUAL, user_id)
                 ).compile().execute(connection)
+                return status.command_tag.rows
     
-    async def clear_warns_older_than(self, threshold: timedelta) -> None:
-        # Sanitization because this argument is used as a raw value.
-        if not isinstance(threshold, timedelta):
-            raise ArgumentError("threshold", f"Expected timedelta but got {type(threshold)}.")
-
+    async def clear_expired_warns(self) -> int:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await self.__clear_warns_older_than(connection, threshold)
+                status = await connection.execute(
+                    (
+                        f"DELETE FROM {TABLE_NAME} AS t1"
+                        f" USING {SETTINGS_TABLE_NAME} AS t2"
+                        " WHERE t1.server_id = t2.server_id AND t1.created_at < (NOW() at time zone 'utc') + t2.decay_threshold"
+                    )
+                )
+                status_tag: CommandComplete[DeleteCommandTag] = CommandComplete.parse(status)
+                return status_tag.command_tag.rows
     
     async def __clear_warns_older_than(self, connection: Connection, threshold: Optional[timedelta]) -> None:
         if threshold is None:
             return
 
         await Query.delete().from_table(TABLE_NAME).where().field(
-            "created_at", Equality.LESS, f"created_at + interval '{int(threshold.total_seconds())} seconds'", True
+            "created_at", Equality.LESS, f"(NOW() at time zone 'utc') - interval '{int(threshold.total_seconds())} seconds'", True
         ).compile().execute(connection)
     
     @staticmethod

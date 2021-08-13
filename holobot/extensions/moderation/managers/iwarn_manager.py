@@ -9,10 +9,10 @@ class IWarnManager:
     async def warn_user(self, server_id: str, user_id: str, reason: str, warner_id: str) -> WarnStrike:
         raise NotImplementedError
     
-    async def clear_warns_for_user(self, server_id: str, user_id: str) -> None:
+    async def clear_warns_for_user(self, server_id: str, user_id: str) -> int:
         raise NotImplementedError
     
-    async def clear_warns_for_server(self, server_id: str) -> None:
+    async def clear_warns_for_server(self, server_id: str) -> int:
         raise NotImplementedError
     
     async def enable_auto_mute(self, server_id: str, warn_count: int, duration: timedelta) -> None:

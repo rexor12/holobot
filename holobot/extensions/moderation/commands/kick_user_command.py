@@ -8,11 +8,12 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_user_id, reply
+from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
 class KickUserCommand(ModerationCommandBase):
-    def __init__(self, config_provider: IConfigProvider) -> None:
+    def __init__(self, config_provider: IConfigProvider, messaging: MessagingInterface) -> None:
         super().__init__("kick")
         self.group_name = "moderation"
         self.description = "Kicks a user from the server. The user can rejoin with an invitation."
@@ -22,6 +23,7 @@ class KickUserCommand(ModerationCommandBase):
         ]
         self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
         self.__config_provider: IConfigProvider = config_provider
+        self.__messaging: MessagingInterface = messaging
     
     async def execute(self, context: SlashContext, user: str, reason: str) -> None:
         reason = reason.strip()
@@ -55,3 +57,4 @@ class KickUserCommand(ModerationCommandBase):
             return
 
         await reply(context, f"{member.mention} has been kicked. Reason: {reason}")
+        await self.__messaging.send_dm(user_id, f"You have been kicked from {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")

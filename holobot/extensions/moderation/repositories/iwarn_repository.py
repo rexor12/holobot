@@ -9,11 +9,11 @@ class IWarnRepository:
     async def add_warn(self, warn_strike: WarnStrike, decay_threshold: Optional[timedelta] = None) -> int:
         raise NotImplementedError
     
-    async def clear_warns_by_server(self, server_id: str) -> None:
+    async def clear_warns_by_server(self, server_id: str) -> int:
         raise NotImplementedError
     
-    async def clear_warns_by_user(self, server_id: str, user_id: str) -> None:
+    async def clear_warns_by_user(self, server_id: str, user_id: str) -> int:
         raise NotImplementedError
     
-    async def clear_warns_older_than(self, threshold: timedelta) -> None:
+    async def clear_expired_warns(self) -> int:
         raise NotImplementedError

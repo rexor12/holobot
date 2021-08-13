@@ -7,3 +7,9 @@ class IConfigProvider:
 
     def get_decay_threshold_range(self) -> Range[timedelta]:
         raise NotImplementedError
+
+    def get_warn_cleanup_interval(self) -> timedelta:
+        raise NotImplementedError
+
+    def get_warn_cleanup_delay(self) -> timedelta:
+        raise NotImplementedError

@@ -44,16 +44,16 @@ class WarnManager(IWarnManager):
         warn_strike.id = await self.__warn_repository.add_warn(warn_strike, decay_threshold)
         return warn_strike
     
-    async def clear_warns_for_user(self, server_id: str, user_id: str) -> None:
+    async def clear_warns_for_user(self, server_id: str, user_id: str) -> int:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        await self.__warn_repository.clear_warns_by_user(server_id, user_id)
+        return await self.__warn_repository.clear_warns_by_user(server_id, user_id)
     
-    async def clear_warns_for_server(self, server_id: str) -> None:
+    async def clear_warns_for_server(self, server_id: str) -> int:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_repository.clear_warns_by_server(server_id)
+        return await self.__warn_repository.clear_warns_by_server(server_id)
     
     async def enable_auto_mute(self, server_id: str, warn_count: int, duration: timedelta) -> None:
         assert_not_none(server_id, "server_id")

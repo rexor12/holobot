@@ -56,5 +56,5 @@ class KickUserCommand(ModerationCommandBase):
             ))
             return
 
-        await reply(context, f"{member.mention} has been kicked. Reason: {reason}")
         await self.__messaging.send_dm(user_id, f"You have been kicked from {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")
+        await reply(context, f"{member.mention} has been kicked. Reason: {reason}")

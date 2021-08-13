@@ -70,8 +70,8 @@ class MuteUserCommand(ModerationCommandBase):
             ))
             return
 
-        await reply(context, f"{member.mention} has been muted. Reason: {reason}")
         await self.__messaging.send_dm(user_id, f"You have been muted in {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")
+        await reply(context, f"{member.mention} has been muted. Reason: {reason}")
     
     async def __get_or_create_muted_role(self, guild: Guild, roles: List[Role]) -> Role:
         role = get(roles, name=MUTED_ROLE_NAME)

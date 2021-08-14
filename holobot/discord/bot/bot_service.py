@@ -1,21 +1,22 @@
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
+from .. import ICommandProcessor
 from ..messaging import Messaging
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.model import CommandObject, SubcommandObject
 from holobot.discord.sdk import ExtensionProviderInterface
-from holobot.discord.sdk.commands import CommandInterface, CommandExecutionRuleInterface
+from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Any, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
-import asyncio, time
+import asyncio
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"
@@ -35,15 +36,15 @@ class BotService(BotServiceInterface):
         configurator: ConfiguratorInterface,
         extension_providers: Tuple[ExtensionProviderInterface, ...],
         log: LogInterface,
+        command_processor: ICommandProcessor,
         commands: Tuple[CommandInterface, ...],
-        command_execution_rules: Tuple[CommandExecutionRuleInterface, ...],
         debugger: DebuggerInterface) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
         self.__log: LogInterface = log.with_name("Discord", "BotService")
+        self.__command_processor: ICommandProcessor = command_processor
         self.__commands: Tuple[CommandInterface, ...] = commands
-        self.__command_execution_rules: Tuple[CommandExecutionRuleInterface, ...] = command_execution_rules
         self.__debugger: DebuggerInterface = debugger
         self.__bot: Bot = self.__initialize_bot()
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
@@ -94,7 +95,7 @@ class BotService(BotServiceInterface):
         command_name = command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}"
         if not command.group_name:
             return self.__slash.add_slash_command(
-                lambda context, **kwargs: self.__execute_command(command, context, **kwargs),
+                lambda context, **kwargs: self.__command_processor.process(command, context, **kwargs),
                 command_name,
                 command.description,
                 list(await command.get_allowed_guild_ids()),
@@ -102,7 +103,7 @@ class BotService(BotServiceInterface):
             )
 
         return self.__slash.add_subcommand(
-            lambda context, **kwargs: self.__execute_command(command, context, **kwargs),
+            lambda context, **kwargs: self.__command_processor.process(command, context, **kwargs),
             command.group_name,
             command.subgroup_name,
             command_name,
@@ -110,20 +111,6 @@ class BotService(BotServiceInterface):
             guild_ids=list(await command.get_allowed_guild_ids()),
             options=command.options
         )
-
-    async def __execute_command(self, __command: CommandInterface, context: SlashContext, **kwargs: Any) -> None:
-        self.__log.trace(f"Executing command... {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
-        start_time = time.perf_counter()
-        await context.defer()
-        for rule in self.__command_execution_rules:
-            if await rule.should_halt(__command, context):
-                self.__log.debug(f"Command has been halted. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
-                await reply(context, "You're not allowed to use this command here.")
-                return
-
-        await __command.execute(context, **kwargs)
-        elapsed_time = int((time.perf_counter() - start_time) * 1000)
-        self.__log.debug(f"Executed command. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id}, Elapsed = {elapsed_time} }}")
 
     def __initialize_bot(self) -> Bot:
         bot = Bot(

@@ -73,9 +73,16 @@ def get_author_id(context: Union[Context, SlashContext]) -> str:
     else: return str(context.author.id)
 
 def get_channel_id(context: Union[Context, SlashContext], mention: Optional[str] = None) -> str:
-    if mention is None or (channel_match := channel_regex.match(mention)) is None:
+    if mention and (channel_id := get_channel_id_from_mention(mention)):
+        return channel_id
+    if mention is None or (id := get_channel_id_from_mention(mention)) is None:
         return str(context.channel.id)
-    return channel_match.group("id")
+    return id
+
+def get_channel_id_from_mention(mention: str) -> Optional[str]:
+    if (match := channel_regex.match(mention)) is None:
+        return None
+    return match.group("id")
 
 def has_channel_permission(context: Union[Context, SlashContext], user: Union[User, Member], permissions: Permission) -> bool:
     channel = context.channel

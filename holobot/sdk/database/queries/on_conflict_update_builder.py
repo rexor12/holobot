@@ -45,7 +45,7 @@ class OnConflictUpdateBuilder(IQueryPartBuilder):
             sql.append(", ".join(columns))
             sql.append(") = (")
             is_first_value = True
-            index = 0
+            index = 1
             for value, is_raw_value in self.__fields.values():
                 if not is_first_value:
                     sql.append(", ")

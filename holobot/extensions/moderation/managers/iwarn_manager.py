@@ -1,6 +1,6 @@
 from ..models import WarnStrike
 from datetime import timedelta
-from typing import Tuple
+from typing import Optional, Tuple
 
 class IWarnManager:
     async def get_warns(self, server_id: str, user_id: str, page_index: int, page_size: int) -> Tuple[WarnStrike, ...]:
@@ -33,5 +33,5 @@ class IWarnManager:
     async def disable_auto_ban(self, server_id: str) -> None:
         raise NotImplementedError
     
-    async def set_warn_decay(self, server_id: str, decay_time: timedelta) -> None:
+    async def set_warn_decay(self, server_id: str, decay_time: Optional[timedelta]) -> None:
         raise NotImplementedError

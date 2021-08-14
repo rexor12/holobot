@@ -5,7 +5,7 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.integration import MessagingInterface
@@ -30,10 +30,10 @@ class ViewCommandsCommand(CommandBase):
         self.required_permissions = Permission.ADMINISTRATOR
         self.__commands: Dict[str, Dict[str, Tuple[str, ...]]] = self.__command_registry.get_commands()
         
-    async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> None:
+    async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
         if not group and subgroup:
             await reply(context, "You can specify a subgroup if and only if you specify a group, too.")
-            return
+            return CommandResponse()
 
         filtered_commands = self.__commands
         has_commands = len(filtered_commands) > 0
@@ -45,7 +45,7 @@ class ViewCommandsCommand(CommandBase):
                 has_commands = len(filtered_commands[group][subgroup]) > 0
         if not has_commands:
             await reply(context, "There are no commands matching your query.")
-            return
+            return CommandResponse()
         
         flattened_commands = tuple(ViewCommandsCommand.__flatten_commands(filtered_commands))
         async def create_filtered_embed(context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
@@ -76,6 +76,7 @@ class ViewCommandsCommand(CommandBase):
             return embed
         
         await DynamicPager(self.__messaging, self.__log, context, create_filtered_embed)
+        return CommandResponse()
     
     @staticmethod
     def __flatten_commands(descriptors: Dict[str, Dict[str, Tuple[str, ...]]]) -> Generator[Tuple[str, str, str], None, None]:

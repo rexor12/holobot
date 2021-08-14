@@ -1,6 +1,6 @@
 from .icommand_processor import ICommandProcessor
 from discord_slash import SlashContext
-from holobot.discord.sdk.commands import CommandExecutionRuleInterface, CommandInterface
+from holobot.discord.sdk.commands import CommandExecutionRuleInterface, CommandInterface, CommandResponse
 from holobot.discord.sdk.events import CommandExecutedEvent
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
@@ -31,20 +31,21 @@ class CommandProcessor(ICommandProcessor):
                 await reply(context, "You're not allowed to use this command here.")
                 return
 
-        await __command.execute(context, **kwargs)
-        await self.__on_command_executed(__command, context)
+        response = await __command.execute(context, **kwargs)
+        await self.__on_command_executed(__command, context, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
         self.__log.debug(f"Executed command. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id}, Elapsed = {elapsed_time} }}")
 
-    async def __on_command_executed(self, __command: CommandInterface, context: SlashContext) -> None:
+    async def __on_command_executed(self, command: CommandInterface, context: SlashContext, response: CommandResponse) -> None:
         event = CommandExecutedEvent(
-            command_type=type(__command),
+            command_type=type(command),
             server_id=str(context.guild_id),
             user_id=str(context.author_id),
-            command=__command.name,
-            group=__command.group_name,
-            subgroup=__command.subgroup_name
+            command=command.name,
+            group=command.group_name,
+            subgroup=command.subgroup_name,
+            response=response
         )
         for handler in self.__command_executed_event_handlers:
             await handler.on_event(event)

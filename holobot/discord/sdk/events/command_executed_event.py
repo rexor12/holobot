@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from ..commands import CommandResponse
+from dataclasses import dataclass, field
 from holobot.sdk.reactive.models import EventBase
 from typing import Any, Optional, Type
 
@@ -10,3 +11,4 @@ class CommandExecutedEvent(EventBase):
     command: str = ""
     group: Optional[str] = None
     subgroup: Optional[str] = None
+    response: CommandResponse = field(default_factory=lambda: CommandResponse())

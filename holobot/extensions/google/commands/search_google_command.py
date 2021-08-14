@@ -4,7 +4,7 @@ from ..exceptions import SearchQuotaExhaustedError
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_choice, create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
@@ -27,13 +27,13 @@ class SearchGoogleCommand(CommandBase):
             ])
         ]
     
-    async def execute(self, context: SlashContext, query: str, type: Optional[str] = None):
+    async def execute(self, context: SlashContext, query: str, type: Optional[str] = None) -> CommandResponse:
         search_type = SearchType.IMAGE if type == "image" else SearchType.TEXT
         try:
             results = await self.__google_client.search(search_type, query)
             if len(results) == 0:
                 await reply(context, "There are no good results for your query. Please, try something else in a bit.")
-                return
+                return CommandResponse()
             link = results[0].link
             if not link:
                 await reply(context, "An unexpected Google error has occurred. Please, try again later.")
@@ -45,3 +45,4 @@ class SearchGoogleCommand(CommandBase):
         except HttpStatusError as error:
             self.__log.error("An error has occurred during a Google search HTTP request.", error)
             await reply(context, "An unexpected Google error has occurred. Please, try again later.")
+        return CommandResponse()

@@ -4,7 +4,7 @@ from discord.embeds import Embed
 from discord.ext.commands import Context
 from discord_slash import SlashContext
 from holobot.discord.components import DynamicPager
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -22,8 +22,9 @@ class ViewAlarmsCommand(CommandBase):
         self.subgroup_name = "alarm"
         self.description = "Displays your currently set alarms."
 
-    async def execute(self, context: SlashContext) -> None:
+    async def execute(self, context: SlashContext) -> CommandResponse:
         await DynamicPager(self.__messaging, self.__log, context, self.__create_alert_embed)
+        return CommandResponse()
 
     async def __create_alert_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size

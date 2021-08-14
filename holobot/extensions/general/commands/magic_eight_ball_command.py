@@ -1,7 +1,7 @@
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
 from random import Random
@@ -39,6 +39,7 @@ class MagicEightBallCommand(CommandBase):
             "Who knows..."
         )
 
-    async def execute(self, context: SlashContext, question: str) -> None:
+    async def execute(self, context: SlashContext, question: str) -> CommandResponse:
         seed = question.strip().strip("?.!-+").lower().__hash__()
         await reply(context, Random(seed).choice(self.__answers))
+        return CommandResponse()

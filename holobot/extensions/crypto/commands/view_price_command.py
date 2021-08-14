@@ -4,7 +4,7 @@ from discord.embeds import Embed
 from discord_slash import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
 
@@ -19,16 +19,16 @@ class ViewPriceCommand(CommandBase):
             create_option("symbol", "The symbol, such as BTCEUR.", SlashCommandOptionType.STRING, True)
         ]
 
-    async def execute(self, context: SlashContext, symbol: str) -> None:
+    async def execute(self, context: SlashContext, symbol: str) -> CommandResponse:
         symbol = symbol.upper()
         if not is_valid_symbol(symbol):
             await reply(context, "The symbol you specified isn't in the accepted format.")
-            return
+            return CommandResponse()
         
         price_data = await self.__crypto_repository.get_price(symbol)
         if not price_data:
             await reply(context, "I couldn't find that symbol. Did you make a typo?")
-            return
+            return CommandResponse()
         
         embed = Embed(
             title=f"Crypto: {symbol}",
@@ -46,3 +46,4 @@ class ViewPriceCommand(CommandBase):
             text=f"Powered by Binance"
         )
         await reply(context, embed)
+        return CommandResponse()

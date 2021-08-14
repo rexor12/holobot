@@ -1,6 +1,6 @@
 from .. import AlertManagerInterface
 from discord_slash import SlashContext
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.ioc.decorators import injectable
 
@@ -13,6 +13,7 @@ class RemoveAllAlarmsCommand(CommandBase):
         self.subgroup_name = "alarm"
         self.description = "Removes ALL of your alarms."
 
-    async def execute(self, context: SlashContext) -> None:
+    async def execute(self, context: SlashContext) -> CommandResponse:
         await self.__alert_manager.remove_all(get_author_id(context))
         await reply(context, "All of your alarms have been removed.")
+        return CommandResponse()

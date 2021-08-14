@@ -3,7 +3,7 @@ from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext
 from holobot.discord.components import DynamicPager
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -20,8 +20,9 @@ class ViewTodoItemsCommand(CommandBase):
         self.group_name = "todo"
         self.description = "Displays all your to-do items."
     
-    async def execute(self, context: SlashContext):
+    async def execute(self, context: SlashContext) -> CommandResponse:
         await DynamicPager(self.__messaging, self.__log, context, self.__create_todo_list_embed)
+        return CommandResponse()
 
     async def __create_todo_list_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size

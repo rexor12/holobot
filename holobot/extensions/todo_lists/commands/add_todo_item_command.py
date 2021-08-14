@@ -4,7 +4,7 @@ from ..models import TodoItem
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id, reply
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
@@ -22,7 +22,7 @@ class AddTodoItemCommand(CommandBase):
             create_option("description", "The description of the to-do item.", SlashCommandOptionType.STRING, True)
         ]
     
-    async def execute(self, context: SlashContext, description: str):
+    async def execute(self, context: SlashContext, description: str) -> CommandResponse:
         todo_item = TodoItem()
         todo_item.user_id = get_author_id(context)
         todo_item.message = description
@@ -33,3 +33,4 @@ class AddTodoItemCommand(CommandBase):
             await reply(context, f"Your message's length has to be between {error.lower_bound} and {error.upper_bound}.")
         except TooManyTodoItemsError:
             await reply(context, "You have reached the maximum number of to-do items. Please, remove at least one to be able to add this new one.")
+        return CommandResponse()

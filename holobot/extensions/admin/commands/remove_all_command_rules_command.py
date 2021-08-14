@@ -2,7 +2,7 @@ from .. import CommandRuleManagerInterface
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
@@ -20,9 +20,10 @@ class RemoveAllCommandRulesCommand(CommandBase):
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext, confirmation: str) -> None:
+    async def execute(self, context: SlashContext, confirmation: str) -> CommandResponse:
         if confirmation != "confirm":
             await reply(context, "No rules have been removed. You must confirm your intention correctly.")
-            return
+            return CommandResponse()
         await self.__command_rule_manager.remove_rules_by_server(str(context.guild_id))
         await reply(context, "ALL rules specified for this server have been removed.")
+        return CommandResponse()

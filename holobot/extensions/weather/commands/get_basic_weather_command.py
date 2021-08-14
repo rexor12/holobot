@@ -6,7 +6,7 @@ from discord.embeds import Embed
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
@@ -22,12 +22,12 @@ class GetBasicWeatherCommand(CommandBase):
             create_option("city", "The name of the city", SlashCommandOptionType.STRING, True)
         ]
     
-    async def execute(self, context: SlashContext, city: str) -> None:
+    async def execute(self, context: SlashContext, city: str) -> CommandResponse:
         try:
             weather_data = await self.__weather_client.get_weather_data(city)
             if weather_data.temperature is None:
                 await reply(context, "No information is available right now. Please, try again later.")
-                return
+                return CommandResponse()
             await reply(context, GetBasicWeatherCommand.__create_embed(weather_data))
         except InvalidLocationError:
             await reply(context, "The location you requested cannot be found. Did you make a typo?")
@@ -39,6 +39,7 @@ class GetBasicWeatherCommand(CommandBase):
             await reply(context, "The daily quota has been used up for the bot. Please, try again later or contact your server administrator.")
         except CircuitBrokenError:
             await reply(context, "I couldn't communicate with OpenWeather. Please, wait a few minutes and try again.")
+        return CommandResponse()
     
     @staticmethod
     def __create_embed(weather_data: WeatherData) -> Embed:

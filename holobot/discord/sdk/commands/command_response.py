@@ -1,0 +1,2 @@
+class CommandResponse:
+    pass

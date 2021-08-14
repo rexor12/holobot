@@ -4,20 +4,20 @@ from discord.embeds import Embed
 from discord.ext.commands import Context
 from discord_slash import SlashContext
 from holobot.discord.components import DynamicPager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Union
 
 @injectable(CommandInterface)
 class ViewAlarmsCommand(CommandBase):
-    def __init__(self, alert_manager: AlertManagerInterface, log: LogInterface, messaging: MessagingInterface) -> None:
+    def __init__(self, alert_manager: AlertManagerInterface, log: LogInterface, messaging: IMessaging) -> None:
         super().__init__("view")
         self.__alert_manager: AlertManagerInterface = alert_manager
         self.__log: LogInterface = log.with_name("Crypto", "ViewAlarmsCommand")
-        self.__messaging: MessagingInterface = messaging
+        self.__messaging: IMessaging = messaging
         self.group_name = "crypto"
         self.subgroup_name = "alarm"
         self.description = "Displays your currently set alarms."

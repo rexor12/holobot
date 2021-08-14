@@ -116,6 +116,36 @@
                         "link": {}
                     }
                 },
+                "moderation": {
+                    "Subgroups": {
+                        "permissions": {
+                            "Commands": {
+                                "add": {},
+                                "remove": {}
+                            }
+                        },
+                        "logs": {
+                            "Commands": {
+                                "clearchannel": {},
+                                "setchannel": {}
+                            }
+                        },
+                        "warns": {
+                            "Commands": {
+                                "cleardecay": {},
+                                "setdecay": {},
+                                "view": {}
+                            }
+                        }
+                    },
+                    "Commands": {
+                        "ban": {},
+                        "kick": {},
+                        "mute": {},
+                        "unmute": {},
+                        "warn": {}
+                    }
+                },
                 "reminder": {
                     "Commands": {
                         "remove": {},

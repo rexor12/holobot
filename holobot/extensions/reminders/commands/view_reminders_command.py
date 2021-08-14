@@ -3,19 +3,19 @@ from discord.embeds import Embed
 from discord.ext.commands.context import Context
 from discord_slash.context import SlashContext
 from holobot.discord.components import DynamicPager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Union
 
 @injectable(CommandInterface)
 class ViewRemindersCommand(CommandBase):
-    def __init__(self, log: LogInterface, messaging: MessagingInterface, reminder_manager: ReminderManagerInterface) -> None:
+    def __init__(self, log: LogInterface, messaging: IMessaging, reminder_manager: ReminderManagerInterface) -> None:
         super().__init__("view")
         self.__log: LogInterface = log.with_name("Reminders", "ViewRemindersCommand")
-        self.__messaging: MessagingInterface = messaging
+        self.__messaging: IMessaging = messaging
         self.__reminder_manager: ReminderManagerInterface = reminder_manager
         self.group_name = "reminder"
         self.description = "Displays your reminders."

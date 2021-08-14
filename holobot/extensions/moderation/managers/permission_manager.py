@@ -16,7 +16,7 @@ class PermissionManager(IPermissionManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        if permissions == ModeratorPermission.NONE_USERS:
+        if permissions == ModeratorPermission.NONE:
             return
 
         await self.__repository.add_user_permissions(server_id, user_id, permissions)
@@ -25,7 +25,7 @@ class PermissionManager(IPermissionManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        if permissions == ModeratorPermission.NONE_USERS:
+        if permissions == ModeratorPermission.NONE:
             return
 
         await self.__repository.remove_user_permissions(server_id, user_id, permissions)
@@ -34,7 +34,7 @@ class PermissionManager(IPermissionManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        if permissions == ModeratorPermission.NONE_USERS:
+        if permissions == ModeratorPermission.NONE:
             return True
         
         owned_permissions = await self.__repository.get_user_permissions(server_id, user_id)

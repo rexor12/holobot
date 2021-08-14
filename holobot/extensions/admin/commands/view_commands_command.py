@@ -5,21 +5,21 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import reply
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Dict, Generator, Optional, Tuple, Union
 
 @injectable(CommandInterface)
 class ViewCommandsCommand(CommandBase):
-    def __init__(self, command_registry: CommandRegistryInterface, log: LogInterface, messaging: MessagingInterface) -> None:
+    def __init__(self, command_registry: CommandRegistryInterface, log: LogInterface, messaging: IMessaging) -> None:
         super().__init__("view")
         self.__command_registry: CommandRegistryInterface = command_registry
         self.__log: LogInterface = log.with_name("Admin", "ViewCommandsCommand")
-        self.__messaging: MessagingInterface = messaging
+        self.__messaging: IMessaging = messaging
         self.group_name = "admin"
         self.subgroup_name = "commands"
         self.description = "Lists the commands with settings capabilities."

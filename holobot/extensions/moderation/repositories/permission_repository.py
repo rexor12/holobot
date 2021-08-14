@@ -66,4 +66,4 @@ class PermissionRepository(IPermissionRepository):
                     ("server_id", Equality.EQUAL, server_id),
                     ("user_id", Equality.EQUAL, user_id)
                 ).compile().fetchval(connection)
-                return ModeratorPermission(permissions) if permissions is not None else ModeratorPermission.NONE_USERS
+                return ModeratorPermission(permissions) if permissions is not None else ModeratorPermission.NONE

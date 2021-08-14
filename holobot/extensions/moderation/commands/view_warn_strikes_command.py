@@ -7,16 +7,16 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.utils import get_user_id, reply
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional
 
 @injectable(CommandInterface)
 class ViewWarnStrikesCommand(ModerationCommandBase):
-    def __init__(self, log: LogInterface, messaging: MessagingInterface, warn_manager: IWarnManager) -> None:
+    def __init__(self, log: LogInterface, messaging: IMessaging, warn_manager: IWarnManager) -> None:
         super().__init__("view")
         self.group_name = "moderation"
         self.subgroup_name = "warns"
@@ -26,7 +26,7 @@ class ViewWarnStrikesCommand(ModerationCommandBase):
         ]
         self.required_moderator_permissions = ModeratorPermission.WARN_USERS
         self.__log: LogInterface = log.with_name("Moderation", "ViewWarnStrikesCommand")
-        self.__messaging: MessagingInterface = messaging
+        self.__messaging: IMessaging = messaging
         self.__warn_manager: IWarnManager = warn_manager
     
     async def execute(self, context: SlashContext, user: str) -> None:
@@ -44,7 +44,7 @@ class ViewWarnStrikesCommand(ModerationCommandBase):
         if not isinstance(member, Member):
             await reply(context, "I'm sorry, but something went wrong internally. Please, try again later or contact your server administrator.")
             return
-        
+
         await DynamicPager(self.__messaging, self.__log, context,
             lambda _, page_index, page_size: self.__create_embed(str(context.guild_id), user_id, page_index, page_size))
 

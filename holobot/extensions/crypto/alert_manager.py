@@ -3,8 +3,8 @@ from .enums import FrequencyType, PriceDirection
 from .models import Alert, SymbolUpdateEvent
 from asyncpg.connection import Connection
 from decimal import Decimal
+from holobot.discord.sdk import IMessaging
 from holobot.sdk.database import DatabaseManagerInterface
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.reactive import ListenerInterface
@@ -13,7 +13,7 @@ from typing import List
 @injectable(AlertManagerInterface)
 @injectable(ListenerInterface[SymbolUpdateEvent])
 class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
-    def __init__(self, database_manager: DatabaseManagerInterface, messaging: MessagingInterface, log: LogInterface):
+    def __init__(self, database_manager: DatabaseManagerInterface, messaging: IMessaging, log: LogInterface):
         self.__database_manager = database_manager
         self.__messaging = messaging
         self.__log = log.with_name("Crypto", "AlertManager")

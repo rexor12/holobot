@@ -1,9 +1,10 @@
 from .moderation_command_base import ModerationCommandBase
+from .responses import LogChannelToggledResponse
 from ..managers import ILogManager
 from discord_slash import SlashCommandOptionType
 from discord_slash.context import SlashContext
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandInterface
+from holobot.discord.sdk.commands import CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import get_channel_id_from_mention, reply
 from holobot.sdk.ioc.decorators import injectable
@@ -21,11 +22,16 @@ class SetLogChannelCommand(ModerationCommandBase):
         self.required_permissions = Permission.ADMINISTRATOR
         self.__log_manager: ILogManager = log_manager
     
-    async def execute(self, context: SlashContext, channel: str) -> None:
+    async def execute(self, context: SlashContext, channel: str) -> CommandResponse:
         channel_id = get_channel_id_from_mention(channel)
         if not channel_id:
             await reply(context, "You must mention a channel correctly.")
-            return
+            return CommandResponse()
 
         await self.__log_manager.set_log_channel(str(context.guild_id), channel_id)
-        await reply(context, f"Moderation actions will be logged in {channel}.")
+        await reply(context, f"Moderation actions will be logged in {channel}. Make sure I have the required permissions to send messages there.")
+        return LogChannelToggledResponse(
+            author_id=str(context.author_id),
+            is_enabled=True,
+            channel_id=channel_id
+        )

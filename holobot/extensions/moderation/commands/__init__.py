@@ -2,7 +2,6 @@ from .add_moderator_permission_command import AddModeratorPermissionCommand
 from .ban_user_command import BanUserCommand
 from .clear_log_channel_command import ClearLogChannelCommand
 from .clear_warn_decay_command import ClearWarnDecayCommand
-from .enable_auto_log_command import EnableAutoLogCommand
 from .kick_user_command import KickUserCommand
 from .moderation_command_base import ModerationCommandBase
 from .mute_user_command import MuteUserCommand

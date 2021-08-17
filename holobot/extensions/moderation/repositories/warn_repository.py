@@ -15,11 +15,26 @@ from typing import Optional, Tuple
 TABLE_NAME = "moderation_warns"
 SETTINGS_TABLE_NAME = "moderation_warn_settings"
 
+# TODO Exclude expired warns from getters.
 @injectable(IWarnRepository)
 class WarnRepository(IWarnRepository):
     def __init__(self, database_manager: DatabaseManagerInterface) -> None:
         super().__init__()
         self.__database_manager: DatabaseManagerInterface = database_manager
+
+    async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                count: Optional[int] = await Query.select().count().from_table(TABLE_NAME).where().fields(
+                    Connector.AND,
+                    ("server_id", Equality.EQUAL, server_id),
+                    ("user_id", Equality.EQUAL, user_id)
+                ).compile().fetchval(connection)
+                return count if count is not None else 0
 
     async def get_warns_by_user(self, server_id: str, user_id: str, start_offset: int, max_count: int) -> Tuple[WarnStrike, ...]:
         assert_not_none(server_id, "server_id")
@@ -96,7 +111,7 @@ class WarnRepository(IWarnRepository):
                     (
                         f"DELETE FROM {TABLE_NAME} AS t1"
                         f" USING {SETTINGS_TABLE_NAME} AS t2"
-                        " WHERE t1.server_id = t2.server_id AND t1.created_at < (NOW() at time zone 'utc') + t2.decay_threshold"
+                        " WHERE t1.server_id = t2.server_id AND t1.created_at < (NOW() at time zone 'utc') - t2.decay_threshold"
                     )
                 )
                 status_tag: CommandComplete[DeleteCommandTag] = CommandComplete.parse(status)

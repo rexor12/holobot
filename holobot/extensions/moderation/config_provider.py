@@ -29,3 +29,9 @@ class ConfigProvider(IConfigProvider):
 
     def get_warn_cleanup_delay(self) -> timedelta:
         return timedelta(seconds=self.__configurator.get(SECTION_NAME, "WarnCleanupDelay", 60))
+
+    def get_mute_duration_range(self) -> Range[timedelta]:
+        return Range(
+            timedelta(seconds=self.__configurator.get(SECTION_NAME, "MuteDurationMin", 60)),
+            timedelta(seconds=self.__configurator.get(SECTION_NAME, "MuteDurationMax", 2592000))
+        )

@@ -13,3 +13,6 @@ class IConfigProvider:
 
     def get_warn_cleanup_delay(self) -> timedelta:
         raise NotImplementedError
+
+    def get_mute_duration_range(self) -> Range[timedelta]:
+        raise NotImplementedError

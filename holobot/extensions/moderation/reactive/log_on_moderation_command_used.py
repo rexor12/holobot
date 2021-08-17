@@ -30,7 +30,7 @@ class LogOnModerationCommandUsed(ListenerInterface[CommandExecutedEvent]):
         if not log_channel:
             return
 
-        self.__log.trace(f"A moderation command has been used. {{ Name = {event.command}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
+        self.__log.trace(f"A loggable moderation command has been used. {{ Name = {event.command}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
         await self.__messaging.send_guild_message(log_channel, event_message)
     
     @staticmethod
@@ -43,9 +43,9 @@ class LogOnModerationCommandUsed(ListenerInterface[CommandExecutedEvent]):
         if isinstance(response, UserUnmutedResponse):
             return f":loud_sound: <@{response.author_id}> has unmuted <@{response.user_id}>."
         if isinstance(response, UserBannedResponse):
-            return f":no_entry_sign: <@{response.author_id}> has banned <@{response.user_id}> with the reason '{response.reason}'."
+            return f":no_entry: <@{response.author_id}> has banned <@{response.user_id}> with the reason '{response.reason}'."
         if isinstance(response, UserKickedResponse):
-            return f"<@{response.author_id}> has kicked <@{response.user_id}> with the reason '{response.reason}'."
+            return f":x: <@{response.author_id}> has kicked <@{response.user_id}> with the reason '{response.reason}'."
         if isinstance(response, ModeratorPermissionsChangedResponse):
             if response.is_addition:
                 return f":shield: <@{response.author_id}> has granted <@{response.user_id}> the permission to {response.permission.textify()}."

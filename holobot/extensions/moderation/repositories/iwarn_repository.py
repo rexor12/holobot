@@ -3,6 +3,9 @@ from datetime import timedelta
 from typing import Optional, Tuple
 
 class IWarnRepository:
+    async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
+        raise NotImplementedError
+
     async def get_warns_by_user(self, server_id: str, user_id: str, start_offset: int, max_count: int) -> Tuple[WarnStrike, ...]:
         raise NotImplementedError
 

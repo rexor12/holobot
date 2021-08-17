@@ -19,6 +19,10 @@ class WarnsSettingsMigration(MigrationBase):
             " id SERIAL PRIMARY KEY,"
             " modified_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'),"
             " server_id VARCHAR(20) UNIQUE NOT NULL,"
-            " decay_threshold INTERVAL NOT NULL"
+            " decay_threshold INTERVAL DEFAULT NULL,"
+            " auto_mute_after INTEGER NOT NULL DEFAULT 0,"
+            " auto_mute_duration INTERVAL DEFAULT NULL,"
+            " auto_kick_after INTEGER NOT NULL DEFAULT 0,"
+            " auto_ban_after INTEGER NOT NULL DEFAULT 0"
             " )"
         ))

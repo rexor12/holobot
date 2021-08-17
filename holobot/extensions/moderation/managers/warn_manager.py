@@ -55,35 +55,43 @@ class WarnManager(IWarnManager):
 
         return await self.__warn_repository.clear_warns_by_server(server_id)
     
-    async def enable_auto_mute(self, server_id: str, warn_count: int, duration: timedelta) -> None:
+    async def enable_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")
 
-        raise NotImplementedError
+        if duration is not None:
+            duration_range = self.__config_provider.get_mute_duration_range()
+            if not duration in duration_range:
+                raise ArgumentOutOfRangeError(
+                    "duration",
+                    str(duration_range.lower_bound),
+                    str(duration_range.upper_bound)
+                )
+        await self.__warn_settings_repository.set_auto_mute(server_id, warn_count, duration)
     
     async def disable_auto_mute(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        raise NotImplementedError
+        await self.__warn_settings_repository.set_auto_mute(server_id, None, None)
     
     async def enable_auto_kick(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
 
-        raise NotImplementedError
+        await self.__warn_settings_repository.set_auto_kick(server_id, warn_count)
     
     async def disable_auto_kick(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        raise NotImplementedError
+        await self.__warn_settings_repository.set_auto_kick(server_id, None)
     
     async def enable_auto_ban(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
 
-        raise NotImplementedError
+        await self.__warn_settings_repository.set_auto_ban(server_id, warn_count)
     
     async def disable_auto_ban(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        raise NotImplementedError
+        await self.__warn_settings_repository.set_auto_ban(server_id, None)
     
     async def set_warn_decay(self, server_id: str, decay_time: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")

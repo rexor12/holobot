@@ -2,19 +2,18 @@ from .moderation_command_base import ModerationCommandBase
 from .responses import UserKickedResponse
 from .. import IConfigProvider
 from ..enums import ModeratorPermission
-from discord.errors import Forbidden
-from discord.member import Member
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk import IMessaging
+from holobot.discord.sdk import IMessaging, IUserManager
 from holobot.discord.sdk.commands import CommandInterface, CommandResponse
+from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
 from holobot.discord.sdk.utils import get_user_id, reply
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
 class KickUserCommand(ModerationCommandBase):
-    def __init__(self, config_provider: IConfigProvider, messaging: IMessaging) -> None:
+    def __init__(self, config_provider: IConfigProvider, messaging: IMessaging, user_manager: IUserManager) -> None:
         super().__init__("kick")
         self.group_name = "moderation"
         self.description = "Kicks a user from the server. The user can rejoin with an invitation."
@@ -25,8 +24,10 @@ class KickUserCommand(ModerationCommandBase):
         self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
         self.__config_provider: IConfigProvider = config_provider
         self.__messaging: IMessaging = messaging
+        self.__user_manager: IUserManager = user_manager
     
     async def execute(self, context: SlashContext, user: str, reason: str) -> CommandResponse:
+        user = user.strip()
         reason = reason.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
@@ -39,26 +40,21 @@ class KickUserCommand(ModerationCommandBase):
             await reply(context, f"The reason parameter's length must be between {reason_length_range.lower_bound} and {reason_length_range.upper_bound}.")
             return CommandResponse()
 
-        member = context.guild.get_member(int(user_id))
-        if member is None:
+        try:
+            await self.__user_manager.kick_user(str(context.guild_id), user_id, reason)
+        except UserNotFoundError:
             await reply(context, "The user you mentioned cannot be found.")
             return CommandResponse()
-        if not isinstance(member, Member):
-            await reply(context, "I'm sorry, but something went wrong internally. Please, try again later or contact your server administrator.")
-            return CommandResponse()
-        
-        try:
-            await member.kick(reason=reason)
-        except Forbidden:
+        except ForbiddenError:
             await reply(context, (
                 "I cannot kick the user.\n"
                 "Have you given me user management permissions?\n"
-                "Do they have a higher ranking role?"
+                "Do they have a role ranking higher than mine?"
             ))
             return CommandResponse()
 
         await self.__messaging.send_dm(user_id, f"You have been kicked from {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")
-        await reply(context, f"{member.mention} has been kicked. Reason: {reason}")
+        await reply(context, f"<@{user_id}> has been kicked. Reason: {reason}")
         return UserKickedResponse(
             author_id=str(context.author_id),
             user_id=user_id,

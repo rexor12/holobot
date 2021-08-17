@@ -29,7 +29,7 @@ class Messaging(IMessaging):
         if not (user := Messaging.bot.get_user_by_id(int(user_id))):
             self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
-        self.__log.trace(f"Sending DM... {{ UserId = {user_id}, Message = {message} }}")
+        self.__log.trace(f"Sending DM... {{ UserId = {user_id} }}")
         await user.send(message)
 
     async def wait_for_reaction(self, filter: Optional[Callable[[Reaction], bool]] = None, timeout: int = 60) -> Reaction:

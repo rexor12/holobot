@@ -2,13 +2,14 @@ from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 from .. import ICommandProcessor
 from ..messaging import Messaging
+from ..user_manager import UserManager
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.model import CommandObject, SubcommandObject
 from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
-from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.discord.sdk.utils import get_author_id
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
@@ -51,6 +52,7 @@ class BotService(BotServiceInterface):
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
         Messaging.bot = self.__bot
+        UserManager.bot = self.__bot
 
     async def start(self) -> None:
         if self.__bot_task is not None:

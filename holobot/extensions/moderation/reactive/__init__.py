@@ -1,1 +1,2 @@
 from .log_on_moderation_command_used import LogOnModerationCommandUsed
+from .punish_on_enough_warns_accumulated import PunishOnEnoughWarnsAccumulated

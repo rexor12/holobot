@@ -25,7 +25,7 @@ class SetWarnDecayCommand(ModerationCommandBase):
         self.__warn_manager: IWarnManager = warn_manager
     
     async def execute(self, context: SlashContext, duration: str) -> CommandResponse:
-        decay_threshold = parse_interval(duration)
+        decay_threshold = parse_interval(duration.strip())
         try:
             await self.__warn_manager.set_warn_decay(str(context.guild_id), decay_threshold)
             await reply(context, "The warn decay time has been set.")

@@ -9,8 +9,9 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.commands import CommandInterface, CommandResponse
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
 from holobot.discord.sdk.utils import get_user_id, reply
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.chrono import parse_interval
 from typing import Optional
 
 @injectable(CommandInterface)
@@ -29,11 +30,9 @@ class MuteUserCommand(ModerationCommandBase):
         self.__mute_manager: IMuteManager = mute_manager
     
     async def execute(self, context: SlashContext, user: str, reason: str, duration: Optional[str] = None) -> CommandResponse:
-        # TODO Auto unmute after the duration.
-        # TODO Duration range check.
         user = user.strip()
         reason = reason.strip()
-        duration = duration.strip() if duration is not None else None
+        mute_duration = parse_interval(duration.strip()) if duration is not None else None
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return CommandResponse()
@@ -42,9 +41,12 @@ class MuteUserCommand(ModerationCommandBase):
             return CommandResponse()
 
         try:
-            await self.__mute_manager.mute_user(str(context.guild_id), user_id, reason, None)
+            await self.__mute_manager.mute_user(str(context.guild_id), user_id, reason, mute_duration)
         except ArgumentOutOfRangeError as error:
-            await reply(context, f"The reason parameter's length must be between {error.lower_bound} and {error.upper_bound}.")
+            if error.argument_name == "reason":
+                await reply(context, f"The reason parameter's length must be between {error.lower_bound} and {error.upper_bound}.")
+            elif error.argument_name == "duration":
+                await reply(context, f"The duration parameter's value must be between {error.lower_bound} and {error.upper_bound}.")
             return CommandResponse()
         except UserNotFoundError:
             await reply(context, "The user you mentioned cannot be found.")
@@ -63,5 +65,5 @@ class MuteUserCommand(ModerationCommandBase):
             author_id=str(context.author_id),
             user_id=user_id,
             reason=reason,
-            duration=None # TODO Add duration.
+            duration=mute_duration
         )

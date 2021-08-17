@@ -23,7 +23,7 @@ class SetLogChannelCommand(ModerationCommandBase):
         self.__log_manager: ILogManager = log_manager
     
     async def execute(self, context: SlashContext, channel: str) -> CommandResponse:
-        channel_id = get_channel_id_from_mention(channel)
+        channel_id = get_channel_id_from_mention(channel.strip())
         if not channel_id:
             await reply(context, "You must mention a channel correctly.")
             return CommandResponse()

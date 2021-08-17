@@ -30,6 +30,7 @@ class RemoveModeratorPermissionCommand(ModerationCommandBase):
         self.__permission_manager: IPermissionManager = permission_manager
     
     async def execute(self, context: SlashContext, user: str, permission: int) -> CommandResponse:
+        user = user.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return CommandResponse()

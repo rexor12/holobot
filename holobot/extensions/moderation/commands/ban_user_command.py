@@ -29,6 +29,7 @@ class BanUserCommand(ModerationCommandBase):
         self.__user_manager: IUserManager = user_manager
     
     async def execute(self, context: SlashContext, user: str, reason: str, days: Optional[int] = None) -> CommandResponse:
+        user = user.strip()
         reason = reason.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")

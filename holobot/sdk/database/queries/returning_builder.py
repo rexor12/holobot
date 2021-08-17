@@ -14,6 +14,13 @@ class ReturningBuilder(IQueryPartBuilder):
         
         self.__columns.append(column_name)
         return self
+    
+    def columns(self, column_name: str, *column_names: str) -> 'ReturningBuilder':
+        columns = [column_name, *column_names]
+        for column in columns:
+            if column not in self.__columns:
+                self.__columns.append(column)
+        return self
 
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())

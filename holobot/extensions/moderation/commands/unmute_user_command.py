@@ -23,6 +23,7 @@ class UnmuteUserCommand(ModerationCommandBase):
         self.__mute_manager: IMuteManager = mute_manager
     
     async def execute(self, context: SlashContext, user: str) -> CommandResponse:
+        user = user.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return CommandResponse()

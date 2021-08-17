@@ -178,7 +178,9 @@
             "WarnCleanupInterval": 3600,
             "WarnCleanupDelay": 60,
             "MuteDurationMin": 60,
-            "MuteDurationMax": 2592000
+            "MuteDurationMax": 2592000,
+            "MuteCleanupInterval": 60,
+            "MuteCleanupDelay": 60
         }
     }
 }

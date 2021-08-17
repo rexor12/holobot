@@ -30,6 +30,7 @@ class ViewWarnStrikesCommand(ModerationCommandBase):
         self.__warn_manager: IWarnManager = warn_manager
     
     async def execute(self, context: SlashContext, user: str) -> None:
+        user = user.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
             return

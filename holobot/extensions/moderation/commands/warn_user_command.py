@@ -28,6 +28,7 @@ class WarnUserCommand(ModerationCommandBase):
         self.__config_provider: IConfigProvider = config_provider
     
     async def execute(self, context: SlashContext, user: str, reason: str) -> CommandResponse:
+        user = user.strip()
         reason = reason.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")

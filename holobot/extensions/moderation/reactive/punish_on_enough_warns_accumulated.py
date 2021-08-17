@@ -69,7 +69,7 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
 
         if warn_settings.auto_mute_after > 0 and warn_count >= warn_settings.auto_mute_after:
             is_success = await self.__try_execute_punishment(lambda: self.__mute_manager.mute_user(server_id, user_id, self.__get_reason(warn_count), warn_settings.auto_mute_duration))
-            return (True, "mute", "mute")
+            return (True, "muted", "mute")
 
         return (False, "", "")
     

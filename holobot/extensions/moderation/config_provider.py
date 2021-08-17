@@ -35,3 +35,9 @@ class ConfigProvider(IConfigProvider):
             timedelta(seconds=self.__configurator.get(SECTION_NAME, "MuteDurationMin", 60)),
             timedelta(seconds=self.__configurator.get(SECTION_NAME, "MuteDurationMax", 2592000))
         )
+
+    def get_mute_cleanup_interval(self) -> timedelta:
+        return timedelta(seconds=self.__configurator.get(SECTION_NAME, "MuteCleanupInterval", 60))
+
+    def get_mute_cleanup_delay(self) -> timedelta:
+        return timedelta(seconds=self.__configurator.get(SECTION_NAME, "MuteCleanupDelay", 60))

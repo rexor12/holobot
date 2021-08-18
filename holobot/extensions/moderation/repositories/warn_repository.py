@@ -29,11 +29,14 @@ class WarnRepository(IWarnRepository):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                count: Optional[int] = await Query.select().count().from_table(TABLE_NAME).where().fields(
-                    Connector.AND,
-                    ("server_id", Equality.EQUAL, server_id),
-                    ("user_id", Equality.EQUAL, user_id)
-                ).compile().fetchval(connection)
+                count: Optional[int] = await connection.fetchval(
+                    (
+                        f"SELECT COUNT(*) FROM {TABLE_NAME} AS t1"
+                        f" INNER JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
+                        " WHERE t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold"
+                        " AND t1.server_id = $1 AND t1.user_id = $2"
+                    ), server_id, user_id
+                )
                 return count if count is not None else 0
 
     async def get_warns_by_user(self, server_id: str, user_id: str, start_offset: int, max_count: int) -> Tuple[WarnStrike, ...]:
@@ -43,13 +46,15 @@ class WarnRepository(IWarnRepository):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await Query.select().from_table(TABLE_NAME).columns(
-                    "id, created_at, server_id, user_id, reason, warner_id"
-                ).where().fields(
-                    Connector.AND,
-                    ("server_id", Equality.EQUAL, server_id),
-                    ("user_id", Equality.EQUAL, user_id)
-                ).limit().start_index(start_offset).max_count(max_count).compile().fetch(connection)
+                records = await connection.fetch(
+                    (
+                        f"SELECT t1.id, t1.created_at, t1.server_id, t1.user_id, t1.reason, t1.warner_id FROM {TABLE_NAME} AS t1"
+                        f" INNER JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
+                        " WHERE t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold"
+                        " AND t1.server_id = $1 AND t1.user_id = $2"
+                        " LIMIT $3 OFFSET $4"
+                    ), server_id, user_id, max_count, start_offset
+                )
                 return tuple([WarnRepository.__map_to_model(record) for record in records])
 
     async def add_warn(self, warn_strike: WarnStrike, decay_threshold: Optional[timedelta] = None) -> int:

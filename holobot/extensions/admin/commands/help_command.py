@@ -1,5 +1,5 @@
 from discord_slash.context import SlashContext
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
@@ -13,7 +13,7 @@ class HelpCommand(CommandBase):
         self.description = "A brief explanation of how the rules are applied to the commands."
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext) -> None:
+    async def execute(self, context: SlashContext) -> CommandResponse:
         await reply(context, (
             "Rules are logically separated by the following types:\n"
             "- **Global rules**: These rules apply to every command, regardless of group, sub-group or name.\n"
@@ -27,3 +27,4 @@ class HelpCommand(CommandBase):
             "1. :no_entry: Forbid the execution of all commands in every channel.\n"
             "2. :white_check_mark: Allow the execution of all commands in a specific channel."
         ))
+        return CommandResponse()

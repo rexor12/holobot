@@ -5,9 +5,9 @@ from discord.ext.commands.context import Context
 from discord.message import Message
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashMessage
+from holobot.discord.sdk import IMessaging
+from holobot.discord.sdk.models import Reaction
 from holobot.discord.sdk.utils import find_member_by_id, get_author_id, reply
-from holobot.sdk.integration import MessagingInterface
-from holobot.sdk.integration.models import Reaction
 from holobot.sdk.logging import LogInterface
 from typing import Awaitable, Callable, Optional, Union
 
@@ -20,7 +20,7 @@ DEFAULT_REACTION_NEXT: str = "▶️"
 # TODO The dynamic pager component should be in the SDK for extensions.
 class DynamicPager(Awaitable[None]):
     def __init__(self,
-        messaging: MessagingInterface,
+        messaging: IMessaging,
         log: LogInterface,
         context: Union[Context, SlashContext],
         embed_factory: Callable[[Union[Context, SlashContext], int, int], Awaitable[Optional[Embed]]]):

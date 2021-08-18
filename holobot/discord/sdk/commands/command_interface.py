@@ -1,3 +1,4 @@
+from .command_response import CommandResponse
 from ..enums import Permission
 from discord_slash import SlashContext
 from typing import Any, Dict, List, Optional, Tuple
@@ -56,7 +57,7 @@ class CommandInterface:
     # huge effort to integrate with discord.py / discord_slash.
     # Therefore, we'll abuse Python to just replace the "execute"
     # function with a new one the user defines and use that for the bot.
-    async def execute(self, context: SlashContext, **kwargs) -> None:
+    async def execute(self, context: SlashContext, **kwargs) -> CommandResponse:
         raise NotImplementedError
     
     async def is_allowed_for_guild(self, guild_id: int) -> bool:

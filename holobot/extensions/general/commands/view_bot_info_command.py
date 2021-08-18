@@ -1,7 +1,7 @@
 from datetime import datetime
 from discord.embeds import Embed
 from discord_slash.context import SlashContext
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import EnvironmentInterface
@@ -15,7 +15,7 @@ class ViewBotInfoCommand(CommandBase):
         self.__environment = environment
         self.description = "Displays some information about the bot."
 
-    async def execute(self, context: SlashContext) -> None:
+    async def execute(self, context: SlashContext) -> CommandResponse:
         current_time = datetime.now(tzlocal.get_localzone())
         embed = Embed(
             title="Bot information", description="Basic information about the bot.", color=0xeb7d00
@@ -33,3 +33,4 @@ class ViewBotInfoCommand(CommandBase):
             name="Repository", value="https://github.com/rexor12/holobot"
         ).set_footer(text="Brought to you by rexor12")
         await reply(context, embed)
+        return CommandResponse()

@@ -2,7 +2,7 @@ from .. import CommandRegistryInterface, CommandRuleManagerInterface
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import get_channel_id, reply
 from holobot.sdk.ioc.decorators import injectable
@@ -25,16 +25,17 @@ class TestCommandCommand(CommandBase):
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext, command: str, group: Optional[str] = None, subgroup: Optional[str] = None, channel: Optional[str] = None) -> None:
+    async def execute(self, context: SlashContext, command: str, group: Optional[str] = None, subgroup: Optional[str] = None, channel: Optional[str] = None) -> CommandResponse:
         if context.guild is None:
             await reply(context, "Command rules can be defined in servers only.")
-            return
+            return CommandResponse()
         
         if not self.__command_registry.command_exists(command, group, subgroup):
             await reply(context, "The command you specified doesn't exist. Did you make a typo?")
-            return
+            return CommandResponse()
 
         channel_id = get_channel_id(context, channel)
         can_execute = await self.__command_rule_manager.can_execute(str(context.guild.id), channel_id, group, subgroup, command)
         disabled_text = " NOT" if not can_execute else ""
         await reply(context, f"The command CAN{disabled_text} be executed in <#{channel_id}>.")
+        return CommandResponse()

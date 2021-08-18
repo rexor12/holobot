@@ -1,8 +1,8 @@
 from .repositories import ReminderRepositoryInterface
 from asyncio.tasks import Task
 from datetime import datetime
+from holobot.discord.sdk import IMessaging
 from holobot.sdk.configs import ConfiguratorInterface
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
 from holobot.sdk.logging import LogInterface
@@ -18,12 +18,12 @@ DEFAULT_DELAY: int = 30
 class ReminderProcessor(StartableInterface):
     def __init__(self,
         configurator: ConfiguratorInterface,
-        messaging: MessagingInterface,
+        messaging: IMessaging,
         log: LogInterface,
         reminder_repository: ReminderRepositoryInterface) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
-        self.__messaging: MessagingInterface = messaging
+        self.__messaging: IMessaging = messaging
         self.__log: LogInterface = log.with_name("Reminders", "ReminderProcessor")
         self.__reminder_repository: ReminderRepositoryInterface = reminder_repository
         self.__background_loop: Optional[AsyncLoop] = None

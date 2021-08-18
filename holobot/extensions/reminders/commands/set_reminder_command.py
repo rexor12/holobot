@@ -1,12 +1,12 @@
 from .. import ReminderManagerInterface
 from ..exceptions import InvalidReminderConfigError, TooManyRemindersError
 from ..models import ReminderConfig
-from ..parsing import parse_interval
 from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -27,7 +27,7 @@ class SetReminderCommand(CommandBase):
             create_option("every_interval", "Repeat in intervals. Eg. 1h30m, 01:30 or day/week.", SlashCommandOptionType.STRING, False)
         ]
 
-    async def execute(self, context: SlashContext, message: str, in_time: Optional[str] = None, at_time: Optional[str] = None, every_interval: Optional[str] = None) -> None:
+    async def execute(self, context: SlashContext, message: str, in_time: Optional[str] = None, at_time: Optional[str] = None, every_interval: Optional[str] = None) -> CommandResponse:
         reminder_config = ReminderConfig()
         if in_time is not None and len(in_time) > 0:
             reminder_config.in_time = parse_interval(in_time)
@@ -52,3 +52,4 @@ class SetReminderCommand(CommandBase):
             await reply(context, f"The parameters '{error.param1}' and '{error.param2}' cannot be used together.")
         except TooManyRemindersError:
             await reply(context, "You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
+        return CommandResponse()

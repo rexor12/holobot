@@ -1,14 +1,16 @@
 from .bot import Bot
-from discord import Reaction as DiscordReaction
-from discord import User
-from holobot.sdk.integration import MessagingInterface
-from holobot.sdk.integration.models import Reaction
+from discord import Reaction as DiscordReaction, User
+from discord.abc import GuildChannel, Messageable, PrivateChannel
+from discord.errors import Forbidden
+from holobot.discord.sdk import IMessaging
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
+from holobot.discord.sdk.models import Reaction
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
-@injectable(MessagingInterface)
-class Messaging(MessagingInterface):
+@injectable(IMessaging)
+class Messaging(IMessaging):
     # NOTE: This is a hack, because we have a circular dependency here.
     # Messages can be sent through an instance of Bot only, but
     # in our particular case, Bot uses cogs which use services
@@ -29,16 +31,37 @@ class Messaging(MessagingInterface):
         if not (user := Messaging.bot.get_user_by_id(int(user_id))):
             self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
-        await user.send(message)
+        self.__log.trace(f"Sending DM... {{ UserId = {user_id} }}")
+        try:
+            await user.send(message)
+        except Forbidden:
+            raise ForbiddenError()
 
     async def wait_for_reaction(self, filter: Optional[Callable[[Reaction], bool]] = None, timeout: int = 60) -> Reaction:
         if Messaging.bot is None:
             self.__log.error(f"Bot isn't initialized. {{ Operation = AwaitReaction }}")
             # TODO Specific exception. Also, handle it.
             raise ValueError("Messaging isn't initialized yet.")
+
         discord_filter = Messaging.__create_reaction_filter(filter)
         reaction, user = await Messaging.bot.wait_for("reaction_add", check=discord_filter, timeout=timeout)
         return Reaction(str(reaction.emoji), str(user.id))
+
+    async def send_guild_message(self, channel_id: str, message: str) -> None:
+        if Messaging.bot is None:
+            self.__log.error(f"Bot isn't initialized. {{ Operation = SendGuildMessage }}")
+            # TODO Specific exception. Also, handle it.
+            raise ValueError("Messaging isn't initialized yet.")
+
+        channel: Optional[Union[GuildChannel, PrivateChannel]] = Messaging.bot.get_channel(int(channel_id))
+        if channel is None or not isinstance(channel, Messageable):
+            self.__log.trace(f"Tried to send a guild message to a non-messageable channel. {{ ChannelId = {channel_id}, ChannelType = {type(channel)} }}")
+            raise ChannelNotFoundError(channel_id)
+
+        try:
+            await channel.send(message)
+        except Forbidden:
+            raise ForbiddenError()
     
     @staticmethod
     def __create_reaction_filter(user_filter: Optional[Callable[[Reaction], bool]]) -> Callable[[DiscordReaction, User], bool]:

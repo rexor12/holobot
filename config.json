@@ -116,6 +116,46 @@
                         "link": {}
                     }
                 },
+                "moderation": {
+                    "Subgroups": {
+                        "auto": {
+                            "Commands": {
+                                "disableban": {},
+                                "disablekick": {},
+                                "disablemute": {},
+                                "setban": {},
+                                "setkick": {},
+                                "setmute": {}
+                            }
+                        },
+                        "permissions": {
+                            "Commands": {
+                                "add": {},
+                                "remove": {}
+                            }
+                        },
+                        "logs": {
+                            "Commands": {
+                                "clearchannel": {},
+                                "setchannel": {}
+                            }
+                        },
+                        "warns": {
+                            "Commands": {
+                                "disabledecay": {},
+                                "setdecay": {},
+                                "view": {}
+                            }
+                        }
+                    },
+                    "Commands": {
+                        "ban": {},
+                        "kick": {},
+                        "mute": {},
+                        "unmute": {},
+                        "warn": {}
+                    }
+                },
                 "reminder": {
                     "Commands": {
                         "remove": {},
@@ -137,6 +177,20 @@
                     }
                 }
             }
+        }
+    },
+    "Moderation": {
+        "parameters": {
+            "ReasonLengthMin": 10,
+            "ReasonLengthMax": 192,
+            "DecayThresholdMin": 1800,
+            "DecayThresholdMax": 2592000,
+            "WarnCleanupInterval": 3600,
+            "WarnCleanupDelay": 60,
+            "MuteDurationMin": 60,
+            "MuteDurationMax": 2592000,
+            "MuteCleanupInterval": 60,
+            "MuteCleanupDelay": 60
         }
     }
 }

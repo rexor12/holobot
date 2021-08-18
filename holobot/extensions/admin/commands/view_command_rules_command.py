@@ -5,21 +5,21 @@ from discord_slash.context import SlashContext
 from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
-from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk import IMessaging
+from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import reply
-from holobot.sdk.integration import MessagingInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Union
 
 @injectable(CommandInterface)
 class ViewCommandRulesCommand(CommandBase):
-    def __init__(self, command_manager: CommandRuleManagerInterface, log: LogInterface, messaging: MessagingInterface) -> None:
+    def __init__(self, command_manager: CommandRuleManagerInterface, log: LogInterface, messaging: IMessaging) -> None:
         super().__init__("viewrules")
         self.__command_manager: CommandRuleManagerInterface = command_manager
         self.__log: LogInterface = log.with_name("Admin", "ViewCommandRulesCommand")
-        self.__messaging: MessagingInterface = messaging
+        self.__messaging: IMessaging = messaging
         self.group_name = "admin"
         self.subgroup_name = "commands"
         self.description = "Lists the rules set on this server."
@@ -29,10 +29,10 @@ class ViewCommandRulesCommand(CommandBase):
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> None:
+    async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
         if not group and subgroup:
             await reply(context, "You can specify a subgroup if and only if you specify a group, too.")
-            return
+            return CommandResponse()
         
         async def create_filtered_embed(context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
             start_offset = page * page_size
@@ -55,3 +55,4 @@ class ViewCommandRulesCommand(CommandBase):
             return embed
         
         await DynamicPager(self.__messaging, self.__log, context, create_filtered_embed)
+        return CommandResponse()

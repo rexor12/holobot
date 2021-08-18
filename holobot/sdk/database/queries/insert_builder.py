@@ -1,5 +1,6 @@
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
+from .on_conflict_builder import OnConflictBuilder
 from .returning_builder import ReturningBuilder
 from typing import Any, Dict, Optional, Tuple
 
@@ -29,6 +30,9 @@ class InsertBuilder(IQueryPartBuilder):
         for f in fields:
             self.__fields[f[0]] = f[1]
         return self
+    
+    def on_conflict(self, column: str, *columns: str) -> OnConflictBuilder:
+        return OnConflictBuilder(self, column, *columns)
     
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)

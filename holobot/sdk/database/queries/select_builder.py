@@ -7,6 +7,7 @@ class SelectBuilder(IQueryPartBuilder):
         super().__init__()
         self.__columns: List[str] = []
         self.__table_name: Optional[str] = None
+        self.__is_count_select: bool = False
     
     def column(self, column_name: str) -> 'SelectBuilder':
         if column_name in self.__columns:
@@ -20,6 +21,10 @@ class SelectBuilder(IQueryPartBuilder):
             self.column(column_name)
         return self
     
+    def count(self) -> 'SelectBuilder':
+        self.__is_count_select = True
+        return self
+    
     def from_table(self, table_name: str) -> 'SelectBuilder':
         self.__table_name = table_name
         return self
@@ -28,10 +33,15 @@ class SelectBuilder(IQueryPartBuilder):
         return WhereBuilder(self)
 
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
-        if len(self.__columns) == 0:
+        if len(self.__columns) == 0 and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
         
-        sql = ["SELECT", ", ".join(self.__columns)]
+        sql = ["SELECT"]
+
+        if self.__is_count_select:
+            sql.append("COUNT(*)")
+        else: sql.append(", ".join(self.__columns))
+
         if self.__table_name is not None:
             sql.append("FROM")
             sql.append(self.__table_name)

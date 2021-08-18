@@ -15,7 +15,6 @@ from typing import Optional, Tuple
 TABLE_NAME = "moderation_warns"
 SETTINGS_TABLE_NAME = "moderation_warn_settings"
 
-# TODO Exclude expired warns from getters.
 @injectable(IWarnRepository)
 class WarnRepository(IWarnRepository):
     def __init__(self, database_manager: DatabaseManagerInterface) -> None:

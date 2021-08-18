@@ -1,7 +1,9 @@
 from .bot import Bot
 from discord import Reaction as DiscordReaction, User
 from discord.abc import GuildChannel, Messageable, PrivateChannel
+from discord.errors import Forbidden
 from holobot.discord.sdk import IMessaging
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.sdk.models import Reaction
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -30,7 +32,10 @@ class Messaging(IMessaging):
             self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         self.__log.trace(f"Sending DM... {{ UserId = {user_id} }}")
-        await user.send(message)
+        try:
+            await user.send(message)
+        except Forbidden:
+            raise ForbiddenError()
 
     async def wait_for_reaction(self, filter: Optional[Callable[[Reaction], bool]] = None, timeout: int = 60) -> Reaction:
         if Messaging.bot is None:
@@ -51,9 +56,12 @@ class Messaging(IMessaging):
         channel: Optional[Union[GuildChannel, PrivateChannel]] = Messaging.bot.get_channel(int(channel_id))
         if channel is None or not isinstance(channel, Messageable):
             self.__log.trace(f"Tried to send a guild message to a non-messageable channel. {{ ChannelId = {channel_id}, ChannelType = {type(channel)} }}")
-            return # TODO Raise an error.
+            raise ChannelNotFoundError(channel_id)
 
-        await channel.send(message)
+        try:
+            await channel.send(message)
+        except Forbidden:
+            raise ForbiddenError()
     
     @staticmethod
     def __create_reaction_filter(user_filter: Optional[Callable[[Reaction], bool]]) -> Callable[[DiscordReaction, User], bool]:

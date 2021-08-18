@@ -53,7 +53,11 @@ class KickUserCommand(ModerationCommandBase):
             ))
             return CommandResponse()
 
-        await self.__messaging.send_dm(user_id, f"You have been kicked from {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")
+        try:
+            await self.__messaging.send_dm(user_id, f"You have been kicked from {context.guild.name} by {context.author.name} with the reason '{reason}'. I'm sorry this happened to you.")
+        except ForbiddenError:
+            pass
+
         await reply(context, f"<@{user_id}> has been kicked. Reason: {reason}")
         return UserKickedResponse(
             author_id=str(context.author_id),

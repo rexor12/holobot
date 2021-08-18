@@ -8,7 +8,7 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.components import DynamicPager
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.commands import CommandInterface
+from holobot.discord.sdk.commands import CommandInterface, CommandResponse
 from holobot.discord.sdk.utils import get_user_id, reply
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -29,25 +29,26 @@ class ViewWarnStrikesCommand(ModerationCommandBase):
         self.__messaging: IMessaging = messaging
         self.__warn_manager: IWarnManager = warn_manager
     
-    async def execute(self, context: SlashContext, user: str) -> None:
+    async def execute(self, context: SlashContext, user: str) -> CommandResponse:
         user = user.strip()
         if (user_id := get_user_id(user)) is None:
             await reply(context, "You must mention a user correctly.")
-            return
+            return CommandResponse()
         if context.guild is None:
             await reply(context, "You may use this command in a server only.")
-            return
+            return CommandResponse()
 
         member = context.guild.get_member(int(user_id))
         if member is None:
             await reply(context, "The user you mentioned cannot be found.")
-            return
+            return CommandResponse()
         if not isinstance(member, Member):
             await reply(context, "I'm sorry, but something went wrong internally. Please, try again later or contact your server administrator.")
-            return
+            return CommandResponse()
 
         await DynamicPager(self.__messaging, self.__log, context,
             lambda _, page_index, page_size: self.__create_embed(str(context.guild_id), user_id, page_index, page_size))
+        return CommandResponse()
 
     async def __create_embed(self, server_id: str, user_id: Optional[str], page_index: int, page_size: int) -> Optional[Embed]:
         if user_id is None:

@@ -9,6 +9,7 @@ from discord_slash.model import SlashCommandOptionType
 from discord_slash.utils.manage_commands import create_option
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.commands import CommandInterface, CommandResponse
+from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.discord.sdk.utils import get_user_id, reply
 from holobot.sdk.ioc.decorators import injectable
 
@@ -50,7 +51,12 @@ class WarnUserCommand(ModerationCommandBase):
             return CommandResponse()
         
         await self.__warn_manager.warn_user(str(context.guild_id), user_id, reason, str(context.author_id))
-        await self.__messaging.send_dm(user_id, f"You have been warned in {context.guild.name} by {context.author.name} with the reason '{reason}'. Maybe you should behave yourself.")
+
+        try:
+            await self.__messaging.send_dm(user_id, f"You have been warned in {context.guild.name} by {context.author.name} with the reason '{reason}'. Maybe you should behave yourself.")
+        except ForbiddenError:
+            pass
+
         await reply(context, f"{member.mention} has been warned. Reason: {reason}")
         return UserWarnedResponse(
             author_id=str(context.author_id),

@@ -118,6 +118,16 @@
                 },
                 "moderation": {
                     "Subgroups": {
+                        "auto": {
+                            "Commands": {
+                                "disableban": {},
+                                "disablekick": {},
+                                "disablemute": {},
+                                "setban": {},
+                                "setkick": {},
+                                "setmute": {}
+                            }
+                        },
                         "permissions": {
                             "Commands": {
                                 "add": {},
@@ -132,7 +142,7 @@
                         },
                         "warns": {
                             "Commands": {
-                                "cleardecay": {},
+                                "disabledecay": {},
                                 "setdecay": {},
                                 "view": {}
                             }

@@ -15,11 +15,11 @@ class IWarnSettingsRepository:
     async def get_warn_settings(self, server_id: str) -> WarnSettings:
         raise NotImplementedError
 
-    async def set_auto_mute(self, server_id: str, warn_count: Optional[int], duration: Optional[timedelta]) -> None:
+    async def set_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
         raise NotImplementedError
 
-    async def set_auto_kick(self, server_id: str, warn_count: Optional[int]) -> None:
+    async def set_auto_kick(self, server_id: str, warn_count: int) -> None:
         raise NotImplementedError
 
-    async def set_auto_ban(self, server_id: str, warn_count: Optional[int]) -> None:
+    async def set_auto_ban(self, server_id: str, warn_count: int) -> None:
         raise NotImplementedError

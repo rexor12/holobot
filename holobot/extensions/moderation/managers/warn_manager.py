@@ -8,6 +8,9 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 from typing import Optional, Tuple
 
+MIN_WARN_COUNT: int = 1
+MAX_WARN_COUNT: int = 20
+
 @injectable(IWarnManager)
 class WarnManager(IWarnManager):
     def __init__(self,
@@ -58,6 +61,9 @@ class WarnManager(IWarnManager):
     async def enable_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")
 
+        if warn_count < 1 or warn_count > MAX_WARN_COUNT:
+            raise ArgumentOutOfRangeError("warn_count", "1", str(MAX_WARN_COUNT))
+
         if duration is not None:
             duration_range = self.__config_provider.get_mute_duration_range()
             if not duration in duration_range:
@@ -71,27 +77,33 @@ class WarnManager(IWarnManager):
     async def disable_auto_mute(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_settings_repository.set_auto_mute(server_id, None, None)
+        await self.__warn_settings_repository.set_auto_mute(server_id, 0, None)
     
     async def enable_auto_kick(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
+
+        if warn_count < 1 or warn_count > MAX_WARN_COUNT:
+            raise ArgumentOutOfRangeError("warn_count", "1", str(MAX_WARN_COUNT))
 
         await self.__warn_settings_repository.set_auto_kick(server_id, warn_count)
     
     async def disable_auto_kick(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_settings_repository.set_auto_kick(server_id, None)
+        await self.__warn_settings_repository.set_auto_kick(server_id, 0)
     
     async def enable_auto_ban(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
+
+        if warn_count < 1 or warn_count > MAX_WARN_COUNT:
+            raise ArgumentOutOfRangeError("warn_count", "1", str(MAX_WARN_COUNT))
 
         await self.__warn_settings_repository.set_auto_ban(server_id, warn_count)
     
     async def disable_auto_ban(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_settings_repository.set_auto_ban(server_id, None)
+        await self.__warn_settings_repository.set_auto_ban(server_id, 0)
     
     async def set_warn_decay(self, server_id: str, decay_time: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")

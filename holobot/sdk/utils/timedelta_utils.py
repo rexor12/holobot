@@ -10,10 +10,10 @@ def textify_timedelta(value: Optional[timedelta]) -> str:
     minutes, seconds = divmod(remainder, 60)
 
     format_parts = []
-    __add_non_default(format_parts, days, "days")
-    __add_non_default(format_parts, hours, "hours")
-    __add_non_default(format_parts, minutes, "minutes")
-    __add_non_default(format_parts, seconds, "seconds")
+    __add_non_default(format_parts, days, "day(s)")
+    __add_non_default(format_parts, hours, "hour(s)")
+    __add_non_default(format_parts, minutes, "minute(s)")
+    __add_non_default(format_parts, seconds, "second(s)")
     return " ".join(format_parts)
 
 def __add_non_default(list: List[str], value: float, text: str) -> None:

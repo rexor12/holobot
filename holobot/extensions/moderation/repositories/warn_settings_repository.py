@@ -75,7 +75,7 @@ class WarnSettingsRepository(IWarnSettingsRepository):
                     auto_ban_after=record["auto_ban_after"]
                 )
 
-    async def set_auto_mute(self, server_id: str, warn_count: Optional[int], duration: Optional[timedelta]) -> None:
+    async def set_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:
@@ -93,7 +93,7 @@ class WarnSettingsRepository(IWarnSettingsRepository):
                     "modified_at", "(NOW() AT TIME ZONE 'utc')", True
                 ).compile().execute(connection)
 
-    async def set_auto_kick(self, server_id: str, warn_count: Optional[int]) -> None:
+    async def set_auto_kick(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:
@@ -108,7 +108,7 @@ class WarnSettingsRepository(IWarnSettingsRepository):
                     "modified_at", "(NOW() AT TIME ZONE 'utc')", True
                 ).compile().execute(connection)
 
-    async def set_auto_ban(self, server_id: str, warn_count: Optional[int]) -> None:
+    async def set_auto_ban(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:

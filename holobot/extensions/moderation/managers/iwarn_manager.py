@@ -15,7 +15,7 @@ class IWarnManager:
     async def clear_warns_for_server(self, server_id: str) -> int:
         raise NotImplementedError
     
-    async def enable_auto_mute(self, server_id: str, warn_count: int, duration: timedelta) -> None:
+    async def enable_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
         raise NotImplementedError
     
     async def disable_auto_mute(self, server_id: str) -> None:

@@ -11,7 +11,7 @@ from discord.message import Message
 from discord.partial_emoji import PartialEmoji
 from discord.permissions import Permissions
 from discord.user import User
-from discord_slash.context import SlashContext
+from discord_slash.context import MenuContext, SlashContext
 from discord_slash.model import SlashMessage
 from holobot.sdk.utils import first_or_default
 from typing import List, Optional, Tuple, Union
@@ -84,7 +84,7 @@ def get_channel_id_from_mention(mention: str) -> Optional[str]:
         return None
     return match.group("id")
 
-def has_channel_permission(context: Union[Context, SlashContext], user: Union[User, Member], permissions: Permission) -> bool:
+def has_channel_permission(context: Union[Context, MenuContext, SlashContext], user: Union[User, Member], permissions: Permission) -> bool:
     channel = context.channel
     if channel is None or not isinstance(channel, TextChannel):
         return False
@@ -98,8 +98,8 @@ def get_user_id(mention: str) -> Optional[str]:
         return None
     return match.group("id")
 
-async def reply(context: Union[Context, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
-    if isinstance(context, SlashContext):
+async def reply(context: Union[Context, MenuContext, SlashContext], content: Union[str, Embed]) -> Union[Message, SlashMessage]:
+    if isinstance(context, (MenuContext, SlashContext)):
         if isinstance(content, str):
             return await context.send(content)
         else: return await context.send(embed=content)

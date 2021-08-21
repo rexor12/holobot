@@ -1,5 +1,5 @@
-discord.py[voice] # Discord bot framework.
-asyncpg # Used for working with PostgreSQL databases.
-pytz # Used for working with timezones.
-tzlocal # Used for determining the current system timezone.
-discord-py-slash-command # Unofficial extension for discord.py to support slash commands.
+discord.py[voice]==1.7.3            # Discord bot framework.
+asyncpg==0.24.0                     # Used for working with PostgreSQL databases.
+pytz==2021.1                        # Used for working with timezones.
+tzlocal==3.0                        # Used for determining the current system timezone.
+discord-py-slash-command==3.0.1a    # Unofficial extension for discord.py to support slash commands.

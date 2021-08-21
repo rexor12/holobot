@@ -1,0 +1,2 @@
+class MenuItemResponse:
+    pass

@@ -1,6 +1,7 @@
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 from .. import ICommandProcessor
+from ..context_menus import IMenuItemRegistry
 from ..messaging import Messaging
 from ..user_manager import UserManager
 from asyncio.tasks import Task
@@ -39,7 +40,8 @@ class BotService(BotServiceInterface):
         log: LogInterface,
         command_processor: ICommandProcessor,
         commands: Tuple[CommandInterface, ...],
-        debugger: DebuggerInterface) -> None:
+        debugger: DebuggerInterface,
+        context_menu_item_registry: IMenuItemRegistry) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
@@ -47,6 +49,7 @@ class BotService(BotServiceInterface):
         self.__command_processor: ICommandProcessor = command_processor
         self.__commands: Tuple[CommandInterface, ...] = commands
         self.__debugger: DebuggerInterface = debugger
+        self.__context_menu_item_registry: IMenuItemRegistry = context_menu_item_registry
         self.__bot: Bot = self.__initialize_bot()
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
@@ -76,6 +79,8 @@ class BotService(BotServiceInterface):
             await self.__add_slash_command(command)
             self.__log.debug(f"Registered command. {{ Group = {command.group_name}, SubGroup = {command.subgroup_name}, Name = {command.name} }}")
         self.__log.info(f"Successfully registered commands. {{ Count = {len(self.__commands)} }}")
+
+        self.__context_menu_item_registry.register_menu_items(self.__slash)
         
         self.__bot_task = asyncio.get_event_loop().create_task(self.__bot.start(discord_token))
 

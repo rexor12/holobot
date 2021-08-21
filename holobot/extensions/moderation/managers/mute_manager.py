@@ -27,7 +27,7 @@ class MuteManager(IMuteManager):
         self.__mutes_repository: IMutesRepository = mutes_repository
         self.__user_manager: IUserManager = user_manager
 
-    async def mute_user(self, server_id: str, user_id: str, reason: str, duration: Optional[timedelta]) -> None:
+    async def mute_user(self, server_id: str, user_id: str, reason: str, duration: Optional[timedelta] = None) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         assert_not_none(reason, "reason")

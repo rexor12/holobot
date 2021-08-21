@@ -1,1 +1,1 @@
-from .command_execution_rule import CommandExecutionRule
+from .halt_disabled_commands_rule import HaltDisabledCommandsRule

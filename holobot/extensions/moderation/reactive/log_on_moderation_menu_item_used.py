@@ -1,6 +1,7 @@
 from ..context_menus import ModerationMenuItemBase
 from ..context_menus.responses import (
-    UserBannedResponse, UserKickedResponse, UserMutedResponse, UserUnmutedResponse
+    UserBannedResponse, UserKickedResponse, UserMutedResponse,
+    UserUnmutedResponse, UserWarnedResponse
 )
 from ..managers import ILogManager
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
@@ -35,14 +36,14 @@ class LogOnModerationMenuItemUsed(ListenerInterface[MenuItemExecutedEvent]):
     @staticmethod
     def __create_event_message(event: MenuItemExecutedEvent) -> Optional[str]:
         response = event.response
-        # if isinstance(response, UserWarnedResponse):
-        #     return f":warning: <@{response.author_id}> has warned <@{response.user_id}> with the reason '{response.reason}'."
+        if isinstance(response, UserWarnedResponse):
+            return f":warning: <@{response.author_id}> has warned <@{response.user_id}> via a context menu item."
         if isinstance(response, UserMutedResponse):
             return f":mute: <@{response.author_id}> has muted <@{response.user_id}> via a context menu item for an unspecified duration."
         if isinstance(response, UserUnmutedResponse):
             return f":loud_sound: <@{response.author_id}> has unmuted <@{response.user_id}>."
         if isinstance(response, UserBannedResponse):
-            return f":no_entry: <@{response.author_id}> has banned <@{response.user_id}> with no reason via a context menu item."
+            return f":no_entry: <@{response.author_id}> has banned <@{response.user_id}> via a context menu item."
         if isinstance(response, UserKickedResponse):
             return f":x: <@{response.author_id}> has kicked <@{response.user_id}> via a context menu item."
         return None

@@ -3,3 +3,4 @@ from .kick_user_menu_item import KickUserMenuItem
 from .moderation_menu_item_base import ModerationMenuItemBase
 from .mute_user_menu_item import MuteUserMenuItem
 from .unmute_user_menu_item import UnmuteUserMenuItem
+from .warn_user_menu_item import WarnUserMenuItem

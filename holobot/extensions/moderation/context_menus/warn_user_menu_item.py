@@ -39,7 +39,7 @@ class WarnUserMenuItem(ModerationMenuItemBase):
         await self.__warn_manager.warn_user(str(context.guild_id), str(user_id), "Issued via menu item", str(context.author_id))
 
         try:
-            await self.__messaging.send_dm(str(user_id), f"You have been warned in {context.guild.name} by {context.author.name}. Maybe you should behave yourself.")
+            await self.__messaging.send_private_message(str(user_id), f"You have been warned in {context.guild.name} by {context.author.name}. Maybe you should behave yourself.")
         except ForbiddenError:
             pass
 

@@ -1,9 +1,8 @@
+from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
-from .. import ICommandProcessor
+from ..commands import ICommandProcessor
 from ..context_menus import IMenuItemRegistry
-from ..messaging import Messaging
-from ..user_manager import UserManager
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
@@ -54,8 +53,7 @@ class BotService(BotServiceInterface):
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
-        Messaging.bot = self.__bot
-        UserManager.bot = self.__bot
+        BotAccessor._bot = self.__bot
 
     async def start(self) -> None:
         if self.__bot_task is not None:

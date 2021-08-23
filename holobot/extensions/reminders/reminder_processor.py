@@ -53,7 +53,7 @@ class ReminderProcessor(StartableInterface):
         try:
             reminders = await self.__reminder_repository.get_triggerable()
             for reminder in reminders:
-                await self.__messaging.send_dm(reminder.user_id, f"Your reminder: {reminder.message}")
+                await self.__messaging.send_private_message(reminder.user_id, f"Your reminder: {reminder.message}")
 
                 if reminder.is_repeating:
                     reminder.last_trigger = datetime.utcnow()

@@ -40,7 +40,7 @@ class BanUserMenuItem(ModerationMenuItemBase):
             return MenuItemResponse()
 
         try:
-            await self.__messaging.send_dm(str(user_id), f"You have been banned from {context.guild.name} by {context.author.name}. I'm sorry this happened to you.")
+            await self.__messaging.send_private_message(str(user_id), f"You have been banned from {context.guild.name} by {context.author.name}. I'm sorry this happened to you.")
         except ForbiddenError:
             pass
 

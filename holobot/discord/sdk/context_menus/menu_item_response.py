@@ -1,2 +1,0 @@
-class MenuItemResponse:
-    pass

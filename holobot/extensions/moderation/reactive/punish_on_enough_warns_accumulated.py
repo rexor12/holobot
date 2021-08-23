@@ -53,7 +53,7 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
         if not log_channel:
             return
 
-        await self.__messaging.send_guild_message(
+        await self.__messaging.send_channel_message(
             log_channel,
             f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes."
         )

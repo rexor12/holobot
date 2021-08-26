@@ -6,7 +6,8 @@ def remote_to_local(discord_embed: DiscordEmbed) -> Embed:
         title=discord_embed.title,
         description=discord_embed.description,
         color=discord_embed.colour,
-        thumbnail_url=discord_embed.thumbnail.url
+        thumbnail_url=discord_embed.thumbnail.url,
+        image_url=discord_embed.image.url
     )
 
     for field in discord_embed.fields:
@@ -36,6 +37,8 @@ def local_to_remote(embed: Embed) -> DiscordEmbed:
 
     if embed.thumbnail_url:
         discord_embed.set_thumbnail(url=embed.thumbnail_url)
+    elif embed.image_url:
+        discord_embed.set_image(url=embed.image_url)
 
     for field in embed.fields:
         discord_embed.add_field(

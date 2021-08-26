@@ -7,3 +7,4 @@ class InteractionContext:
 
     request_id: UUID = field(default_factory=lambda: uuid4())
     author_id: str = ""
+    author_name: str = ""

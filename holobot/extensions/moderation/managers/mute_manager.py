@@ -4,11 +4,6 @@ from ..constants import MUTED_ROLE_NAME
 from ..exceptions import RoleNotFoundError
 from ..repositories import IMutesRepository
 from datetime import datetime, timedelta
-from discord.abc import GuildChannel
-from discord.guild import Guild
-from discord.errors import Forbidden
-from discord.role import Role
-from discord.utils import get
 from holobot.discord.sdk import IUserManager
 from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
@@ -47,16 +42,16 @@ class MuteManager(IMuteManager):
 
         member = self.__user_manager.get_guild_member(server_id, user_id)
         guild = self.__user_manager.get_guild(server_id)
-        
+
         try:
             muted_role = await self.__get_or_create_muted_role(guild, guild.roles)
             await member.add_roles(muted_role)
         except Forbidden:
             raise ForbiddenError()
-        
+
         if duration is not None:
             await self.__mutes_repository.upsert_mute(server_id, user_id, datetime.utcnow() + duration)
-    
+
     async def unmute_user(self, server_id: str, user_id: str, clear_auto_unmute: bool = True) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -66,7 +61,7 @@ class MuteManager(IMuteManager):
         muted_role = get(guild.roles, name=MUTED_ROLE_NAME)
         if not muted_role:
             raise RoleNotFoundError(MUTED_ROLE_NAME)
-        
+
         try:
             await member.remove_roles(muted_role)
         except Forbidden:

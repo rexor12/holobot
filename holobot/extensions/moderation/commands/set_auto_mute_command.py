@@ -2,12 +2,11 @@ from typing import Optional
 from .moderation_command_base import ModerationCommandBase
 from .responses import AutoMuteToggledResponse
 from ..managers import IWarnManager
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandInterface
+from holobot.discord.sdk.commands.enums import OptionType
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import reply
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
@@ -20,26 +19,29 @@ class SetAutoMuteCommand(ModerationCommandBase):
         self.subgroup_name = "auto"
         self.description = "Enables automatic muting of people with warn strikes."
         self.options = [
-            create_option("warn_count", "The number of warns after which a user is automatically muted.", SlashCommandOptionType.INTEGER, True),
-            create_option("duration", "The duration after which the user is automatically unmuted. Eg. 1d, 1h or 30m.", SlashCommandOptionType.STRING, False)
+            Option("warn_count", "The number of warns after which a user is automatically muted.", OptionType.INTEGER,),
+            Option("duration", "The duration after which the user is automatically unmuted. Eg. 1d, 1h or 30m.", is_mandatory=False)
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         self.__warn_manager: IWarnManager = warn_manager
     
-    async def execute(self, context: SlashContext, warn_count: int, duration: Optional[str] = None) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, warn_count: int, duration: Optional[str] = None) -> CommandResponse:
         mute_duration = parse_interval(duration.strip()) if duration is not None else None
         try:
-            await self.__warn_manager.enable_auto_mute(str(context.guild_id), warn_count, mute_duration)
-            await reply(context, "Auto mute has been configured.")
+            await self.__warn_manager.enable_auto_mute(context.server_id, warn_count, mute_duration)
         except ArgumentOutOfRangeError as error:
             if error.argument_name == "duration":
-                await reply(context, f"The duration must be between {error.lower_bound} and {error.upper_bound}.")
-            elif error.argument_name == "warn_count":
-                await reply(context, f"The warn count must be between {error.lower_bound} and {error.upper_bound}.")
-            return CommandResponse()
+                return CommandResponse(
+                    action=ReplyAction(content=f"The duration must be between {error.lower_bound} and {error.upper_bound}.")
+                )
+            return CommandResponse(
+                action=ReplyAction(content=f"The warn count must be between {error.lower_bound} and {error.upper_bound}.")
+            )
+
         return AutoMuteToggledResponse(
             author_id=str(context.author_id),
             is_enabled=True,
             warn_count=warn_count,
-            duration=mute_duration
+            duration=mute_duration,
+            action=ReplyAction(content="Auto mute has been configured.")
         )

@@ -1,12 +1,11 @@
 from .moderation_command_base import ModerationCommandBase
 from .responses import LogChannelToggledResponse
 from ..managers import ILogManager
-from discord_slash import SlashCommandOptionType
-from discord_slash.context import SlashContext
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import get_channel_id_from_mention, reply
+from holobot.discord.sdk.utils import get_channel_id
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
@@ -17,21 +16,22 @@ class SetLogChannelCommand(ModerationCommandBase):
         self.subgroup_name = "logs"
         self.description = "Sets the channel in which moderation actions are logged."
         self.options = [
-            create_option("channel", "The mention of the channel to publish moderation logs in.", SlashCommandOptionType.STRING, True)
+            Option("channel", "The mention of the channel to publish moderation logs in.")
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         self.__log_manager: ILogManager = log_manager
     
-    async def execute(self, context: SlashContext, channel: str) -> CommandResponse:
-        channel_id = get_channel_id_from_mention(channel.strip())
+    async def execute(self, context: ServerChatInteractionContext, channel: str) -> CommandResponse:
+        channel_id = get_channel_id(channel.strip())
         if not channel_id:
-            await reply(context, "You must mention a channel correctly.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="You must mention a channel correctly.")
+            )
 
-        await self.__log_manager.set_log_channel(str(context.guild_id), channel_id)
-        await reply(context, f"Moderation actions will be logged in {channel}. Make sure I have the required permissions to send messages there.")
+        await self.__log_manager.set_log_channel(context.server_id, channel_id)
         return LogChannelToggledResponse(
             author_id=str(context.author_id),
             is_enabled=True,
-            channel_id=channel_id
+            channel_id=channel_id,
+            action=ReplyAction(content=f"Moderation actions will be logged in {channel}. Make sure I have the required permissions to send messages there.")
         )

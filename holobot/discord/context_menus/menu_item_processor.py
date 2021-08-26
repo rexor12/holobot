@@ -53,7 +53,9 @@ class MenuItemProcessor(IMenuItemProcessor):
     def __transform_context(context: MenuContext) -> ServerUserInteractionContext:
         return ServerUserInteractionContext(
             author_id=str(context.author_id),
+            author_name=context.author.name,
             server_id=str(context.guild_id),
+            server_name=context.guild.name,
             channel_id=str(context.channel_id),
             target_user_id=str(context.target_author.id)
         )

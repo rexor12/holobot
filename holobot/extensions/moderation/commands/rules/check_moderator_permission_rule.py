@@ -1,5 +1,5 @@
-from discord_slash import SlashContext
 from holobot.discord.sdk.commands import CommandInterface, CommandExecutionRuleInterface
+from holobot.discord.sdk.commands.models import ServerChatInteractionContext
 from holobot.extensions.moderation.commands import ModerationCommandBase
 from holobot.extensions.moderation.managers import IPermissionManager
 from holobot.sdk.ioc.decorators import injectable
@@ -10,12 +10,12 @@ class CheckModeratorPermissionRule(CommandExecutionRuleInterface):
         super().__init__()
         self.__permission_manager: IPermissionManager = permission_manager
 
-    async def should_halt(self, command: CommandInterface, context: SlashContext) -> bool:
+    async def should_halt(self, command: CommandInterface, context: ServerChatInteractionContext) -> bool:
         if not isinstance(command, ModerationCommandBase):
             return False
 
         return not await self.__permission_manager.has_permissions(
-            str(context.guild_id),
-            str(context.author_id),
+            context.server_id,
+            context.author_id,
             command.required_moderator_permissions
         )

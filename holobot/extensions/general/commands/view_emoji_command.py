@@ -1,22 +1,25 @@
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import find_emoji, reply
+from holobot.discord.sdk import IEmojiDataProvider
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
 class ViewEmojiCommand(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, emoji_data_provider: IEmojiDataProvider) -> None:
         super().__init__("emoji")
+        self.__emoji_data_provider: IEmojiDataProvider = emoji_data_provider
         self.description = "Displays an emoji in a larger size."
         self.options = [
-            create_option("name", "The name of or the emoji itself.", SlashCommandOptionType.STRING, True)
+            Option("name", "The name of or the emoji itself.")
         ]
 
-    async def execute(self, context: SlashContext, name: str) -> CommandResponse:
-        if (emoji := await find_emoji(context, name)) is None:
-            await reply(context, "The specified emoji cannot be found. Did you make a typo?")
-            return CommandResponse()
-        await reply(context, str(emoji.url))
-        return CommandResponse()
+    async def execute(self, context: ServerChatInteractionContext, name: str) -> CommandResponse:
+        if (emoji := await self.__emoji_data_provider.find_emoji(context, name.strip())) is None:
+            return CommandResponse(
+                action=ReplyAction(content="The specified emoji cannot be found. Did you make a typo?")
+            )
+
+        return CommandResponse(
+            action=ReplyAction(content=emoji.url)
+        )

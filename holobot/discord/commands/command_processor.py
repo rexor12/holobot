@@ -53,6 +53,7 @@ class CommandProcessor(ICommandProcessor):
     def __transform_context(context: SlashContext) -> ServerChatInteractionContext:
         return ServerChatInteractionContext(
             author_id=str(context.author_id),
+            author_name=context.author.name,
             server_id=str(context.guild_id),
             channel_id=str(context.channel_id)
         )

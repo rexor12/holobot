@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from holobot.discord.sdk.commands import CommandResponse
+from holobot.discord.sdk.commands.models import CommandResponse
 from typing import Optional
 
 @dataclass

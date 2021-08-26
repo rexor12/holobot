@@ -1,12 +1,10 @@
 from .. import AlertManagerInterface
 from ..enums import PriceDirection
-from discord.embeds import Embed
-from discord.ext.commands import Context
-from discord_slash import SlashContext
-from holobot.discord.components import DynamicPager
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import get_author_id
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, ServerChatInteractionContext
+from holobot.discord.sdk.components import Pager
+from holobot.discord.sdk.models import Embed, EmbedField
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from typing import Optional, Union
@@ -22,26 +20,25 @@ class ViewAlarmsCommand(CommandBase):
         self.subgroup_name = "alarm"
         self.description = "Displays your currently set alarms."
 
-    async def execute(self, context: SlashContext) -> CommandResponse:
-        await DynamicPager(self.__messaging, self.__log, context, self.__create_alert_embed)
+    async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
+        await Pager(self.__messaging, self.__log, context, self.__create_alert_embed)
         return CommandResponse()
 
-    async def __create_alert_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
+    async def __create_alert_embed(self, context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
-        alerts = await self.__alert_manager.get_many(get_author_id(context), start_offset, page_size)
+        alerts = await self.__alert_manager.get_many(context.author_id, start_offset, page_size)
         if len(alerts) == 0:
             return None
         
         embed = Embed(
             title="Crypto alarms",
-            description=f"Cryptocurrency alarms of {context.author.mention}.",
-            color=0xeb7d00
+            description=f"Cryptocurrency alarms of <@{context.author_id}>."
         )
         for alert in alerts:
             arrow = "🔼" if alert.direction == PriceDirection.ABOVE else "🔽"
-            embed.add_field(
+            embed.fields.append(EmbedField(
                 name=alert.symbol,
                 value=f"{arrow} {alert.price:,.8f}",
-                inline=False
-            )
+                is_inline=False
+            ))
         return embed

@@ -9,5 +9,6 @@ class Embed:
     description: str = ""
     color: int = 0xEB7D00
     thumbnail_url: Optional[str] = None
+    image_url: Optional[str] = None
     fields: List[EmbedField] = field(default_factory=lambda: [])
     footer: Optional[EmbedFooter] = None

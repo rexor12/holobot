@@ -51,6 +51,13 @@ class MemberDataProvider(IMemberDataProvider):
 
         return MemberDataProvider.__member_to_basic_data(best_match[0])
 
+    def is_member(self, server_id: str, user_id: str) -> bool:
+        guild: Optional[Guild] = BotAccessor.get_bot().get_guild(int(server_id))
+        if not guild:
+            raise ServerNotFoundError(server_id)
+
+        return first_or_default(guild.members, lambda member: member.id == user_id) is not None
+
     def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
         channel: Optional[Union[GuildChannel, PrivateChannel]] = BotAccessor.get_bot().get_channel(int(channel_id))
         if channel is None:

@@ -7,4 +7,4 @@ from typing import Union
 class ReplyAction(ActionBase):
     """An action that replies to a request with a message."""
 
-    content: Union[str, Embed] = ""
+    content: Union[str, Embed]

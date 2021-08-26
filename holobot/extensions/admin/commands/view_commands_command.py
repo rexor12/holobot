@@ -1,17 +1,14 @@
 from .. import CommandRegistryInterface
-from discord.embeds import Embed
-from discord.ext.commands.context import Context
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.components import DynamicPager
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
+from holobot.discord.sdk.components import Pager
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import reply
+from holobot.discord.sdk.models import Embed, EmbedField
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Dict, Generator, Optional, Tuple, Union
+from typing import Dict, Generator, Optional, Tuple
 
 @injectable(CommandInterface)
 class ViewCommandsCommand(CommandBase):
@@ -24,16 +21,17 @@ class ViewCommandsCommand(CommandBase):
         self.subgroup_name = "commands"
         self.description = "Lists the commands with settings capabilities."
         self.options = [
-            create_option("group", "The name of the command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
-            create_option("subgroup", "The name of the command sub-group, such as \"commands\" under \"admin\".", SlashCommandOptionType.STRING, False)
+            Option("group", "The name of the command group, such as \"admin\".", is_mandatory=False),
+            Option("subgroup", "The name of the command sub-group, such as \"commands\" under \"admin\".", is_mandatory=False)
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         self.__commands: Dict[str, Dict[str, Tuple[str, ...]]] = self.__command_registry.get_commands()
         
-    async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
         if not group and subgroup:
-            await reply(context, "You can specify a subgroup if and only if you specify a group, too.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="You can specify a subgroup if and only if you specify a group, too.")
+            )
 
         filtered_commands = self.__commands
         has_commands = len(filtered_commands) > 0
@@ -44,11 +42,12 @@ class ViewCommandsCommand(CommandBase):
                 filtered_commands = { subgroup: filtered_commands.get(subgroup, {}) }
                 has_commands = len(filtered_commands[group][subgroup]) > 0
         if not has_commands:
-            await reply(context, "There are no commands matching your query.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="There are no commands matching your query.")
+            )
         
         flattened_commands = tuple(ViewCommandsCommand.__flatten_commands(filtered_commands))
-        async def create_filtered_embed(context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
+        async def create_filtered_embed(context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
             start_offset = page * page_size
             if start_offset >= len(flattened_commands):
                 return None
@@ -64,18 +63,18 @@ class ViewCommandsCommand(CommandBase):
 
             for index in range(start_offset, start_offset + page_size):
                 command = flattened_commands[index]
-                embed.add_field(
+                embed.fields.append(EmbedField(
                     name=f"Command #{(index + 1)}",
                     value=(
                         f"> Group: {command[0]}\n"
                         f"> Subgroup: {command[1]}\n"
                         f"> Name: {command[2]}"
                     ),
-                    inline=False
-                )
+                    is_inline=False
+                ))
             return embed
         
-        await DynamicPager(self.__messaging, self.__log, context, create_filtered_embed)
+        await Pager(self.__messaging, self.__log, context, create_filtered_embed)
         return CommandResponse()
     
     @staticmethod

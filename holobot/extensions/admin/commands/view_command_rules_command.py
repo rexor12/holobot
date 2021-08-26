@@ -1,17 +1,14 @@
 from .. import CommandRuleManagerInterface
-from discord.embeds import Embed
-from discord.ext.commands.context import Context
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.components import DynamicPager
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
+from holobot.discord.sdk.components import Pager
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import reply
+from holobot.discord.sdk.models import Embed, EmbedField
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional, Union
+from typing import Optional
 
 @injectable(CommandInterface)
 class ViewCommandRulesCommand(CommandBase):
@@ -24,35 +21,33 @@ class ViewCommandRulesCommand(CommandBase):
         self.subgroup_name = "commands"
         self.description = "Lists the rules set on this server."
         self.options = [
-            create_option("group", "The name of the command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
-            create_option("subgroup", "The name of the command sub-group, such as \"commands\" under \"admin\".", SlashCommandOptionType.STRING, False)
+            Option("group", "The name of the command group, such as \"admin\".", is_mandatory=False),
+            Option("subgroup", "The name of the command sub-group, such as \"commands\" under \"admin\".", is_mandatory=False)
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
         if not group and subgroup:
-            await reply(context, "You can specify a subgroup if and only if you specify a group, too.")
-            return CommandResponse()
-        
-        async def create_filtered_embed(context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
+            return CommandResponse(
+                action=ReplyAction(content="You can specify a subgroup if and only if you specify a group, too.")
+            )
+
+        async def create_filtered_embed(context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
             start_offset = page * page_size
-            rules = await self.__command_manager.get_rules_by_server(str(context.guild.id), start_offset, page_size, group, subgroup)
+            rules = await self.__command_manager.get_rules_by_server(context.server_id, start_offset, page_size, group, subgroup)
             if len(rules) == 0:
                 return None
 
-            embed = Embed(
+            return Embed(
                 title="Command rules",
                 description="The list of command rules set on this server.",
-                color=0xeb7d00
-            )
-
-            for rule in rules:
-                embed.add_field(
+                color=0xeb7d00,
+                fields=[EmbedField(
                     name=f"Rule #{rule.id}",
                     value=rule.textify(),
-                    inline=False
-                )
-            return embed
-        
-        await DynamicPager(self.__messaging, self.__log, context, create_filtered_embed)
+                    is_inline=False
+                ) for rule in rules]
+            )
+
+        await Pager(self.__messaging, self.__log, context, create_filtered_embed)
         return CommandResponse()

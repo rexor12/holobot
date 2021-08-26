@@ -1,10 +1,9 @@
 from .. import CommandRuleManagerInterface
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.enums import OptionType
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import reply
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
@@ -16,11 +15,12 @@ class RemoveCommandRuleCommand(CommandBase):
         self.subgroup_name = "commands"
         self.description = "Removes the specified command rule."
         self.options = [
-            create_option("identifier", "The identifier of the rule.", SlashCommandOptionType.INTEGER, True)
+            Option("identifier", "The identifier of the rule.", OptionType.INTEGER)
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext, identifier: int) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, identifier: int) -> CommandResponse:
         await self.__command_rule_manager.remove_rule(identifier)
-        await reply(context, "The rule has been removed.")
-        return CommandResponse()
+        return CommandResponse(
+            action=ReplyAction(content="The rule has been removed.")
+        )

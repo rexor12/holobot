@@ -1,4 +1,4 @@
-from .models import CommandResponse, ServerChatInteractionContext
+from .models import CommandResponse, Option, ServerChatInteractionContext
 from ..enums import Permission
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -36,11 +36,11 @@ class CommandInterface:
         self.__description = value
     
     @property
-    def options(self) -> List[Dict[str, Any]]:
+    def options(self) -> List[Option]:
         return self.__options
     
     @options.setter
-    def options(self, value: List[Dict[str, Any]]) -> None:
+    def options(self, value: List[Option]) -> None:
         self.__options = value
     
     @property

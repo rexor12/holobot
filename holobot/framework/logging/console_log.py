@@ -5,7 +5,7 @@ from holobot.sdk.logging import LogBase, LogInterface
 from holobot.sdk.logging.enums import LogLevel
 from typing import Optional
 
-import tzlocal
+import traceback, tzlocal
 
 @injectable(LogInterface)
 class ConsoleLog(LogBase):
@@ -19,5 +19,6 @@ class ConsoleLog(LogBase):
         formatted_name = logger.name if logger.name is not None else ""
         formatted_message = f"{level.name}\t{formatted_name}\t{current_time:%Y%m%dT%H%M%S%z}\t{message}"
         if error is not None:
-            formatted_message += f"\n{error}"
+            error_data = "".join(traceback.TracebackException.from_exception(error).format())
+            formatted_message += f"\n{error_data}"
         print(formatted_message)

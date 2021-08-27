@@ -1,7 +1,7 @@
-from holobot.discord.sdk import IEmojiDataProvider
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
+from holobot.discord.sdk.data_providers import IEmojiDataProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)

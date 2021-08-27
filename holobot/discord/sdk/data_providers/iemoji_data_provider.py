@@ -1,4 +1,4 @@
-from .models import Emoji, InteractionContext
+from ..models import Emoji, InteractionContext
 from typing import Optional
 
 class IEmojiDataProvider:

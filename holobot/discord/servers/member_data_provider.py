@@ -9,7 +9,7 @@ from holobot.discord.sdk.exceptions import ChannelNotFoundError, ServerNotFoundE
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import first_or_default
+from holobot.sdk.utils import assert_not_none, first_or_default
 from typing import Dict, List, Optional, Tuple, Union
 
 permission_map: Dict[Permission, int] = {
@@ -21,7 +21,32 @@ permission_map: Dict[Permission, int] = {
     Permission.MANAGE_EMOJIS_AND_STICKERS: Permissions.manage_emojis.flag,
     Permission.VIEW_AUDIT_LOG: Permissions.view_audit_log.flag,
     Permission.MANAGE_WEBHOOKS: Permissions.manage_webhooks.flag,
-    Permission.MANAGE_SERVER: Permissions.manage_guild.flag
+    Permission.MANAGE_SERVER: Permissions.manage_guild.flag,
+    Permission.CREATE_INSTANT_INVITE: Permissions.create_instant_invite.flag,
+    Permission.KICK_MEMBERS: Permissions.kick_members.flag,
+    Permission.BAN_MEMBERS: Permissions.ban_members.flag,
+    Permission.ADD_REACTIONS: Permissions.add_reactions.flag,
+    Permission.PRIORITY_SPEAKER: Permissions.priority_speaker.flag,
+    Permission.STREAM: Permissions.stream.flag,
+    Permission.SEND_MESSAGES: Permissions.send_messages.flag,
+    Permission.SEND_TTS_MESSAGES: Permissions.send_tts_messages.flag,
+    Permission.MANAGE_MESSAGES: Permissions.manage_messages.flag,
+    Permission.EMBED_LINKS: Permissions.embed_links.flag,
+    Permission.ATTACH_FILES: Permissions.attach_files.flag,
+    Permission.READ_MESSAGE_HISTORY: Permissions.read_message_history.flag,
+    Permission.MENTION_EVERYONE: Permissions.mention_everyone.flag,
+    Permission.USE_EXTERNAL_EMOJIS: Permissions.external_emojis.flag,
+    Permission.VIEW_SERVER_INSIGHTS: Permissions.view_guild_insights.flag,
+    Permission.JOIN_VOICE_CHANNEL: Permissions.connect.flag,
+    Permission.SPEAK_IN_VOICE_CHANNEL: Permissions.speak.flag,
+    Permission.MUTE_MEMBERS: Permissions.mute_members.flag,
+    Permission.DEAFEN_MEMBERS: Permissions.deafen_members.flag,
+    Permission.MOVE_MEMBERS: Permissions.move_members.flag,
+    Permission.USE_VOICE_ACTIVATION: Permissions.use_voice_activation.flag,
+    Permission.CHANGE_OWN_NICKNAME: Permissions.change_nickname.flag,
+    Permission.MANAGE_NICKNAMES: Permissions.manage_nicknames.flag,
+    Permission.USE_SLASH_COMMANDS: Permissions.use_slash_commands.flag,
+    Permission.REQUEST_TO_SPEAK: Permissions.request_to_speak.flag
 }
 
 discord_permission_map: Dict[int, Permission] = { value: key for key, value in permission_map.items() }
@@ -29,10 +54,16 @@ discord_permission_map: Dict[int, Permission] = { value: key for key, value in p
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):
     def get_basic_data_by_id(self, server_id: str, user_id: str) -> MemberData:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+
         user = get_guild_member(server_id, user_id)
         return MemberDataProvider.__member_to_basic_data(user)
 
     def get_basic_data_by_name(self, server_id: str, name: str) -> MemberData:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(name, "name")
+
         guild: Optional[Guild] = BotAccessor.get_bot().get_guild(int(server_id))
         if not guild:
             raise ServerNotFoundError(server_id)
@@ -52,13 +83,20 @@ class MemberDataProvider(IMemberDataProvider):
         return MemberDataProvider.__member_to_basic_data(best_match[0])
 
     def is_member(self, server_id: str, user_id: str) -> bool:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+
         guild: Optional[Guild] = BotAccessor.get_bot().get_guild(int(server_id))
         if not guild:
             raise ServerNotFoundError(server_id)
 
-        return first_or_default(guild.members, lambda member: member.id == user_id) is not None
+        return first_or_default(guild.members, lambda member: str(member.id) == user_id) is not None
 
     def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+        assert_not_none(user_id, "user_id")
+
         channel: Optional[Union[GuildChannel, PrivateChannel]] = BotAccessor.get_bot().get_channel(int(channel_id))
         if channel is None:
             raise ChannelNotFoundError(channel_id)

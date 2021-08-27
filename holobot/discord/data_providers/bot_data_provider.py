@@ -1,5 +1,5 @@
-from .bot import BotAccessor
-from holobot.discord.sdk import IBotDataProvider
+from ..bot import BotAccessor
+from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IBotDataProvider)

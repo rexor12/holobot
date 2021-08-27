@@ -1,8 +1,8 @@
 from datetime import datetime
-from holobot.discord.sdk import IBotDataProvider
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.commands.models import CommandResponse, ServerChatInteractionContext
+from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import EnvironmentInterface

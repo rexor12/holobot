@@ -2,12 +2,13 @@ from .moderation_command_base import ModerationCommandBase
 from .responses import UserBannedResponse
 from .. import IConfigProvider
 from ..enums import ModeratorPermission
-from holobot.discord.sdk import IMessaging, IUserManager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.commands.enums import OptionType
 from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.discord.sdk.utils import get_user_id
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional

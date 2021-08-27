@@ -4,8 +4,8 @@ from ..constants import MUTED_ROLE_NAME
 from ..exceptions import RoleNotFoundError
 from ..repositories import IMutesRepository
 from datetime import datetime, timedelta
-from holobot.discord.sdk import IUserManager
-from holobot.discord.sdk.exceptions import ForbiddenError
+from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.servers.managers import IChannelManager, IRoleManager, IUserManager
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, textify_timedelta
@@ -14,12 +14,16 @@ from typing import List, Optional
 @injectable(IMuteManager)
 class MuteManager(IMuteManager):
     def __init__(self,
+        channel_manager: IChannelManager,
         config_provider: IConfigProvider,
         mutes_repository: IMutesRepository,
+        role_manager: IRoleManager,
         user_manager: IUserManager) -> None:
         super().__init__()
+        self.__channel_manager: IChannelManager = channel_manager
         self.__config_provider: IConfigProvider = config_provider
         self.__mutes_repository: IMutesRepository = mutes_repository
+        self.__role_manager: IRoleManager = role_manager
         self.__user_manager: IUserManager = user_manager
 
     async def mute_user(self, server_id: str, user_id: str, reason: str, duration: Optional[timedelta] = None) -> None:
@@ -40,14 +44,12 @@ class MuteManager(IMuteManager):
                     textify_timedelta(duration_range.upper_bound)
                 )
 
-        member = self.__user_manager.get_guild_member(server_id, user_id)
-        guild = self.__user_manager.get_guild(server_id)
+        if not (muted_role := self.__role_manager.get_role(server_id, MUTED_ROLE_NAME)):
+            muted_role = await self.__role_manager.create_role(server_id, MUTED_ROLE_NAME, "Used for muting people in text channels.")
+            for channel in self.__channel_manager.get_channels(server_id):
+                await self.__channel_manager.set_role_permissions(server_id, channel.id, muted_role.id, (Permission.SEND_MESSAGES, False))
 
-        try:
-            muted_role = await self.__get_or_create_muted_role(guild, guild.roles)
-            await member.add_roles(muted_role)
-        except Forbidden:
-            raise ForbiddenError()
+        await self.__user_manager.assign_role(server_id, user_id, muted_role.id)
 
         if duration is not None:
             await self.__mutes_repository.upsert_mute(server_id, user_id, datetime.utcnow() + duration)
@@ -56,27 +58,10 @@ class MuteManager(IMuteManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        member = self.__user_manager.get_guild_member(server_id, user_id)
-        guild = self.__user_manager.get_guild(server_id)
-        muted_role = get(guild.roles, name=MUTED_ROLE_NAME)
-        if not muted_role:
+        if not (muted_role := self.__role_manager.get_role(server_id, MUTED_ROLE_NAME)):
             raise RoleNotFoundError(MUTED_ROLE_NAME)
 
-        try:
-            await member.remove_roles(muted_role)
-        except Forbidden:
-            raise ForbiddenError()
+        await self.__user_manager.remove_role(server_id, user_id, muted_role.id)
         
         if clear_auto_unmute:
             await self.__mutes_repository.delete_mute(server_id, user_id)
-    
-    async def __get_or_create_muted_role(self, guild: Guild, roles: List[Role]) -> Role:
-        role = get(roles, name=MUTED_ROLE_NAME)
-        if role is not None:
-            return role
-
-        role = await guild.create_role(name=MUTED_ROLE_NAME, reason="Used for muting people in text channels.")
-        for channel in guild.channels:
-            channel: GuildChannel
-            await channel.set_permissions(role, send_messages=False)
-        return role

@@ -1,9 +1,9 @@
-from .contexts import IContextManager
-from .transformers.emoji import remote_to_local
+from ..contexts import IContextManager
+from ..transformers.emoji import remote_to_local
 from discord.ext.commands.converter import EmojiConverter, PartialEmojiConverter
 from discord.ext.commands.errors import EmojiNotFound, PartialEmojiConversionFailure
 from discord.partial_emoji import PartialEmoji
-from holobot.discord.sdk import IEmojiDataProvider
+from holobot.discord.sdk.data_providers import IEmojiDataProvider
 from holobot.discord.sdk.models import Emoji, InteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional

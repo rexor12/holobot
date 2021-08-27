@@ -1,11 +1,12 @@
 from .moderation_menu_item_base import ModerationMenuItemBase
 from .responses import UserBannedResponse
 from ..enums import ModeratorPermission
-from holobot.discord.sdk import IMessaging, IUserManager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.context_menus import IMenuItem
 from holobot.discord.sdk.context_menus.models import MenuItemResponse, ServerUserInteractionContext
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IMenuItem)

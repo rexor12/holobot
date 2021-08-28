@@ -25,15 +25,17 @@ class WarnUserMenuItem(ModerationMenuItemBase):
                 action=ReplyAction(content="The user you mentioned cannot be found.")
             )
 
-        await self.__warn_manager.warn_user(context.server_id, context.target_user_id, "Issued via menu item", str(context.author_id))
+        await self.__warn_manager.warn_user(context.server_id, context.target_user_id, "Issued via menu item", context.author_id)
 
         try:
             await self.__messaging.send_private_message(context.target_user_id, f"You have been warned in {context.server_name} by {context.author_name}. Maybe you should behave yourself.")
         except ForbiddenError:
             pass
 
-        await reply(context, f"<@{context.target_user_id}> has been warned.")
         return UserWarnedResponse(
-            author_id=str(context.author_id),
-            user_id=context.target_user_id
+            author_id=context.author_id,
+            user_id=context.target_user_id,
+            action=ReplyAction(
+                content=f"<@{context.target_user_id}> has been warned."
+            )
         )

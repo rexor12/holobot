@@ -61,7 +61,7 @@ class KickUserCommand(ModerationCommandBase):
             pass
 
         return UserKickedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             reason=reason,
             action=ReplyAction(content=f"<@{user_id}> has been kicked. Reason: {reason}")

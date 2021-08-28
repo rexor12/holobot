@@ -1,5 +1,5 @@
 class IBotDataProvider:
-    def get_thumbnail_url(self) -> str:
+    def get_avatar_url(self) -> str:
         raise NotImplementedError
 
     def get_latency(self) -> float:

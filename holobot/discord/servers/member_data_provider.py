@@ -8,6 +8,7 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
+from holobot.discord.utils import get_guild_channel, get_guild
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
 from typing import Dict, List, Optional, Tuple, Union
@@ -64,10 +65,7 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(server_id, "server_id")
         assert_not_none(name, "name")
 
-        guild: Optional[Guild] = BotAccessor.get_bot().get_guild(int(server_id))
-        if not guild:
-            raise ServerNotFoundError(server_id)
-
+        guild = get_guild(server_id)
         relevant_members: List[Tuple[Member, int]] = []
         for member in guild.members:
             # An attempt to fix type hints for the messy discord.py.
@@ -86,10 +84,7 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        guild: Optional[Guild] = BotAccessor.get_bot().get_guild(int(server_id))
-        if not guild:
-            raise ServerNotFoundError(server_id)
-
+        guild = get_guild(server_id)
         return first_or_default(guild.members, lambda member: str(member.id) == user_id) is not None
 
     def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
@@ -97,13 +92,7 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(channel_id, "channel_id")
         assert_not_none(user_id, "user_id")
 
-        channel: Optional[Union[GuildChannel, PrivateChannel]] = BotAccessor.get_bot().get_channel(int(channel_id))
-        if channel is None:
-            raise ChannelNotFoundError(channel_id)
-
-        if not isinstance(channel, GuildChannel):
-            return Permission.NONE
-        
+        channel = get_guild_channel(server_id, channel_id)
         user = get_guild_member(server_id, user_id)
         permissions = channel.permissions_for(user)
         return MemberDataProvider.__transform_permissions(permissions)

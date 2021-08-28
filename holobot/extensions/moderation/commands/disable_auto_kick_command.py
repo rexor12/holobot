@@ -20,6 +20,6 @@ class DisableAutoKickCommand(ModerationCommandBase):
     async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
         await self.__warn_manager.disable_auto_kick(context.server_id)
         return AutoKickToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             action=ReplyAction(content="Users won't be kicked automatically anymore.")
         )

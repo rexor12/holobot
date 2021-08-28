@@ -68,7 +68,7 @@ class BanUserCommand(ModerationCommandBase):
             pass
 
         return UserBannedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             reason=reason,
             action=ReplyAction(content=f"<@{user_id}> has been banned. Reason: {reason}")

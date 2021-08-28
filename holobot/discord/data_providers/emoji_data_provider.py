@@ -18,7 +18,9 @@ class EmojiDataProvider(IEmojiDataProvider):
         self.__context_manager: IContextManager = context_manager
 
     async def find_emoji(self, context: InteractionContext, name_or_mention: str) -> Optional[Emoji]:
-        return EmojiDataProvider.__transform(await self.__find_emoji(context, name_or_mention))
+        if not (emoji := await self.__find_emoji(context, name_or_mention)):
+            return None
+        return remote_to_local(emoji)
 
     async def __find_emoji(self, context: InteractionContext, name_or_mention: str) -> Optional[PartialEmoji]:
         tracked_context = await self.__context_manager.get_context(context.request_id)
@@ -31,9 +33,3 @@ class EmojiDataProvider(IEmojiDataProvider):
             return await emoji_converter.convert(tracked_context.context, name_or_mention)
         except EmojiNotFound:
             return None
-
-    @staticmethod
-    def __transform(emoji: Optional[PartialEmoji]) -> Optional[Emoji]:
-        if not emoji:
-            return None
-        return remote_to_local(emoji)

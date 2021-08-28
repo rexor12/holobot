@@ -42,7 +42,7 @@ class UnmuteUserMenuItem(ModerationMenuItemBase):
             pass
 
         return UserUnmutedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=context.target_user_id,
             action=ReplyAction(
                 content=f"<@{context.target_user_id}> has been unmuted."

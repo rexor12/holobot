@@ -4,7 +4,7 @@ from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IBotDataProvider)
 class BotDataProvider(IBotDataProvider):
-    def get_thumbnail_url(self) -> str:
+    def get_avatar_url(self) -> str:
         return str(BotAccessor.get_bot().user.avatar_url)
 
     def get_latency(self) -> float:

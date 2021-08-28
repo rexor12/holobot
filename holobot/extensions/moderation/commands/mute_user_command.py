@@ -66,7 +66,7 @@ class MuteUserCommand(ModerationCommandBase):
             pass
 
         return UserMutedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             reason=reason,
             duration=mute_duration,

@@ -39,7 +39,7 @@ class SetAutoMuteCommand(ModerationCommandBase):
             )
 
         return AutoMuteToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             is_enabled=True,
             warn_count=warn_count,
             duration=mute_duration,

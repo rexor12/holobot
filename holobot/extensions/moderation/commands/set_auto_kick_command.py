@@ -31,7 +31,7 @@ class SetAutoKickCommand(ModerationCommandBase):
             )
 
         return AutoKickToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             is_enabled=True,
             warn_count=warn_count,
             action=ReplyAction(content="Auto kick has been configured.")

@@ -30,7 +30,7 @@ class SetLogChannelCommand(ModerationCommandBase):
 
         await self.__log_manager.set_log_channel(context.server_id, channel_id)
         return LogChannelToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             is_enabled=True,
             channel_id=channel_id,
             action=ReplyAction(content=f"Moderation actions will be logged in {channel}. Make sure I have the required permissions to send messages there.")

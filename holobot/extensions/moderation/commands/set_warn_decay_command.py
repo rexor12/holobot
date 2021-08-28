@@ -32,7 +32,7 @@ class SetWarnDecayCommand(ModerationCommandBase):
             )
 
         return WarnDecayToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             is_enabled=True,
             duration=decay_threshold,
             action=ReplyAction(content="The warn decay time has been set.")

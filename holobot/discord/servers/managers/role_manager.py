@@ -28,7 +28,7 @@ class RoleManager(IRoleManager):
         guild = RoleManager.__get_guild(server_id)
         role: Optional[DiscordRole] = get(guild.roles, name=role_name)
         if role:
-            raise RoleAlreadyExistsError(role_name)
+            raise RoleAlreadyExistsError(server_id, role_name)
 
         try:
             role = await guild.create_role(name=role_name, reason=description)

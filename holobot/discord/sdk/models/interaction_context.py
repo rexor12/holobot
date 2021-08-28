@@ -1,10 +1,10 @@
-from dataclasses import dataclass, field
-from uuid import UUID, uuid4
+from dataclasses import dataclass
+from uuid import UUID
 
 @dataclass
 class InteractionContext:
     """A base context for interactions."""
 
-    request_id: UUID = field(default_factory=lambda: uuid4())
-    author_id: str = ""
-    author_name: str = ""
+    request_id: UUID
+    author_id: str
+    author_name: str

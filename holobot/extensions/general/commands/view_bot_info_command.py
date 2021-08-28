@@ -23,7 +23,7 @@ class ViewBotInfoCommand(CommandBase):
             action=ReplyAction(Embed(
                 title="Bot information",
                 description="Basic information about the bot.",
-                thumbnail_url=self.__bot_data_provider.get_thumbnail_url(),
+                thumbnail_url=self.__bot_data_provider.get_avatar_url(),
                 fields=[
                     EmbedField("Version", self.__environment.version.__str__()),
                     EmbedField("Latency", f"{self.__bot_data_provider.get_latency():,.2f} ms"),

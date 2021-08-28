@@ -39,7 +39,7 @@ class RemoveModeratorPermissionCommand(ModerationCommandBase):
         typed_permission = ModeratorPermission(permission)
         await self.__permission_manager.remove_permissions(context.server_id, user_id, typed_permission)
         return ModeratorPermissionsChangedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             permission=typed_permission,
             is_addition=False,

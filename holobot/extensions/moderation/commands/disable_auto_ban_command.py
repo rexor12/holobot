@@ -20,6 +20,6 @@ class DisableAutoBanCommand(ModerationCommandBase):
     async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
         await self.__warn_manager.disable_auto_ban(context.server_id)
         return AutoBanToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             action=ReplyAction(content="Users won't be banned automatically anymore.")
         )

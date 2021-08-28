@@ -20,6 +20,6 @@ class ClearLogChannelCommand(ModerationCommandBase):
     async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
         await self.__log_manager.set_log_channel(context.server_id, None)
         return LogChannelToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             action=ReplyAction(content=f"Moderation actions won't be logged anymore.")
         )

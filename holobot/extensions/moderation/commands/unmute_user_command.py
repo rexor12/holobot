@@ -44,7 +44,7 @@ class UnmuteUserCommand(ModerationCommandBase):
             )
 
         return UserUnmutedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             action=ReplyAction(content=f"<@{user_id}> has been unmuted.")
         )

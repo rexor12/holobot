@@ -20,6 +20,6 @@ class DisableWarnDecayCommand(ModerationCommandBase):
     async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
         await self.__warn_manager.set_warn_decay(context.server_id, None)
         return WarnDecayToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             action=ReplyAction(content="Warn strikes won't be removed automatically anymore.")
         )

@@ -59,7 +59,7 @@ class WarnUserCommand(ModerationCommandBase):
             pass
 
         return UserWarnedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             reason=reason,
             action=ReplyAction(

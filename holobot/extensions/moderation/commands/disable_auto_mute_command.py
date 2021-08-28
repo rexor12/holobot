@@ -20,6 +20,6 @@ class DisableAutoMuteCommand(ModerationCommandBase):
     async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
         await self.__warn_manager.disable_auto_mute(context.server_id)
         return AutoMuteToggledResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             action=ReplyAction(content="Users won't be muted automatically anymore.")
         )

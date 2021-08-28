@@ -10,6 +10,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.reactive import ListenerInterface
 from typing import Any, Tuple
+from uuid import uuid4
 
 import time
 
@@ -52,6 +53,7 @@ class CommandProcessor(ICommandProcessor):
     @staticmethod
     def __transform_context(context: SlashContext) -> ServerChatInteractionContext:
         return ServerChatInteractionContext(
+            request_id=uuid4(),
             author_id=str(context.author_id),
             author_name=context.author.name,
             server_id=str(context.guild_id),

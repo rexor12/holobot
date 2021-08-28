@@ -1,6 +1,6 @@
-from .menu_item_response import MenuItemResponse
+from .models import MenuItemResponse
 from ..enums import Permission
-from discord_slash.context import MenuContext
+from ..models import InteractionContext
 from typing import Any
 
 class IMenuItem:
@@ -12,8 +12,22 @@ class IMenuItem:
     def required_permissions(self, value: Permission) -> None:
         self.__required_permissions = value
 
-    # Same design as commands.
-    async def execute(self, context: MenuContext, **kwargs) -> MenuItemResponse:
+    async def execute(self, context: InteractionContext, **kwargs: Any) -> MenuItemResponse:
+        """Executes the behavior associated to this context menu item.
+        
+        Parameters
+        ----------
+        context : ``InteractionContext``
+            The interaction context associated to the request.
+            The actual type may be a sub-class of this type.
+        
+        Returns
+        -------
+        ``MenuItemResponse``
+            The response from the execution of the request.
+            The actual type may be a sub-class of this type.
+        """
+
         raise NotImplementedError
 
     def __lt__(self, other: Any) -> bool:

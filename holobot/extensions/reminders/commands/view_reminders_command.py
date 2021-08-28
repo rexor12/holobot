@@ -1,14 +1,12 @@
 from .. import ReminderManagerInterface
-from discord.embeds import Embed
-from discord.ext.commands.context import Context
-from discord_slash.context import SlashContext
-from holobot.discord.components import DynamicPager
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import get_author_id
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, ServerChatInteractionContext
+from holobot.discord.sdk.components import Pager
+from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional, Union
+from typing import Optional
 
 @injectable(CommandInterface)
 class ViewRemindersCommand(CommandBase):
@@ -20,29 +18,30 @@ class ViewRemindersCommand(CommandBase):
         self.group_name = "reminder"
         self.description = "Displays your reminders."
 
-    async def execute(self, context: SlashContext) -> CommandResponse:
-        await DynamicPager(self.__messaging, self.__log, context, self.__create_reminder_embed)
+    async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
+        await Pager(self.__messaging, self.__log, context, self.__create_reminder_embed)
         return CommandResponse()
 
-    async def __create_reminder_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
+    async def __create_reminder_embed(self, context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
-        reminders = await self.__reminder_manager.get_by_user(get_author_id(context), start_offset, page_size)
+        reminders = await self.__reminder_manager.get_by_user(context.author_id, start_offset, page_size)
         if len(reminders) == 0:
             return None
         
         embed = Embed(
             title="Reminders",
-            description=f"Reminders of {context.author.mention}.",
-            color=0xeb7d00
-        ).set_footer(text="Use the reminder's number for removal.")
+            description=f"Reminders of {context.author_id}.",
+            footer=EmbedFooter("Use the reminder's number for removal.")
+        )
         for reminder in reminders:
-            embed.add_field(
+            embed.fields.append(EmbedField(
                 name=f"#{reminder.id}",
                 value=(
                     f"> Message: {reminder.message}\n"
                     f"> Next trigger: {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC\n"
                     f"> Repeats: {'yes' if reminder.is_repeating else 'no'}"
                 ),
-                inline=False
-            )
+                is_inline=False
+            ))
+
         return embed

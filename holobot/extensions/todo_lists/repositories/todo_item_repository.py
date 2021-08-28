@@ -61,7 +61,7 @@ class TodoItemRepository(TodoItemRepositoryInterface):
                     " (DELETE FROM todo_lists WHERE user_id = $1 AND id = $2 RETURNING *)"
                     " SELECT COUNT(*) AS deleted_count FROM deleted"
                 ), user_id, todo_id)
-                return record["deleted_count"]
+                return record["deleted_count"] if record is not None else 0
     
     async def delete_all(self, user_id: str) -> int:
         async with self.__database_manager.acquire_connection() as connection:
@@ -72,7 +72,7 @@ class TodoItemRepository(TodoItemRepositoryInterface):
                     " (DELETE FROM todo_lists WHERE user_id = $1 RETURNING *)"
                     " SELECT COUNT(*) AS deleted_count FROM deleted"
                 ), user_id)
-                return record["deleted_count"]
+                return record["deleted_count"] if record is not None else 0
     
     @staticmethod
     def __parse_todo_item(record) -> TodoItem:

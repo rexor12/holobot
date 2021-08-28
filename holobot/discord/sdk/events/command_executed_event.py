@@ -1,4 +1,4 @@
-from ..commands import CommandResponse
+from ..commands.models import CommandResponse
 from dataclasses import dataclass, field
 from holobot.sdk.reactive.models import EventBase
 from typing import Any, Optional, Type

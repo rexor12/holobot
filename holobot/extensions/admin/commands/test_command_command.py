@@ -1,10 +1,9 @@
 from .. import CommandRegistryInterface, CommandRuleManagerInterface
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import get_channel_id, reply
+from holobot.discord.sdk.utils import get_channel_id_or_default
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
@@ -18,24 +17,27 @@ class TestCommandCommand(CommandBase):
         self.subgroup_name = "commands"
         self.description = "Checks if a command can be used in the current or the specified channel."
         self.options = [
-            create_option("command", "The specific command, such as \"roll\".", SlashCommandOptionType.STRING, True),
-            create_option("group", "The command group, such as \"admin\".", SlashCommandOptionType.STRING, False),
-            create_option("subgroup", "The command subgroup, such as \"commands\".", SlashCommandOptionType.STRING, False),
-            create_option("channel", "The channel to test.", SlashCommandOptionType.STRING, False)
+            Option("command", "The specific command, such as \"roll\"."),
+            Option("group", "The command group, such as \"admin\".", is_mandatory=False),
+            Option("subgroup", "The command subgroup, such as \"commands\".", is_mandatory=False),
+            Option("channel", "The channel to test.", is_mandatory=False)
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         
-    async def execute(self, context: SlashContext, command: str, group: Optional[str] = None, subgroup: Optional[str] = None, channel: Optional[str] = None) -> CommandResponse:
-        if context.guild is None:
-            await reply(context, "Command rules can be defined in servers only.")
-            return CommandResponse()
+    async def execute(self, context: ServerChatInteractionContext, command: str, group: Optional[str] = None, subgroup: Optional[str] = None, channel: Optional[str] = None) -> CommandResponse:
+        if context.server_id is None:
+            return CommandResponse(
+                action=ReplyAction(content="Command rules can be defined in servers only.")
+            )
         
         if not self.__command_registry.command_exists(command, group, subgroup):
-            await reply(context, "The command you specified doesn't exist. Did you make a typo?")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="The command you specified doesn't exist. Did you make a typo?")
+            )
 
-        channel_id = get_channel_id(context, channel)
-        can_execute = await self.__command_rule_manager.can_execute(str(context.guild.id), channel_id, group, subgroup, command)
+        channel_id = get_channel_id_or_default(channel, context.channel_id) if channel is not None else context.channel_id
+        can_execute = await self.__command_rule_manager.can_execute(context.server_id, channel_id, group, subgroup, command)
         disabled_text = " NOT" if not can_execute else ""
-        await reply(context, f"The command CAN{disabled_text} be executed in <#{channel_id}>.")
-        return CommandResponse()
+        return CommandResponse(
+            action=ReplyAction(content=f"The command CAN{disabled_text} be executed in <#{channel_id}>.")
+        )

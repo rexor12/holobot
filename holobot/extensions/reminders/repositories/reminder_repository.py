@@ -102,7 +102,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     " (DELETE FROM reminders WHERE user_id = $1 AND id = $2 RETURNING *)"
                     " SELECT COUNT(*) AS deleted_count FROM deleted"
                 ), user_id, reminder_id)
-                return record["deleted_count"]
+                return record["deleted_count"] if record is not None else 0
     
     @staticmethod
     def __parse_reminder(record) -> Reminder:

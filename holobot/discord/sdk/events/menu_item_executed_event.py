@@ -1,4 +1,4 @@
-from ..context_menus import MenuItemResponse
+from ..context_menus.models import MenuItemResponse
 from dataclasses import dataclass, field
 from holobot.sdk.reactive.models import EventBase
 from typing import Any, Type

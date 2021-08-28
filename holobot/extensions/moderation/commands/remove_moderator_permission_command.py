@@ -2,12 +2,12 @@ from .moderation_command_base import ModerationCommandBase
 from .responses import ModeratorPermissionsChangedResponse
 from ..enums import ModeratorPermission
 from ..managers import IPermissionManager
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_choice, create_option
-from holobot.discord.sdk.commands import CommandInterface, CommandResponse
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandInterface
+from holobot.discord.sdk.commands.enums import OptionType
+from holobot.discord.sdk.commands.models import Choice, CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import get_user_id, reply
+from holobot.discord.sdk.utils import get_user_id
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(CommandInterface)
@@ -18,28 +18,30 @@ class RemoveModeratorPermissionCommand(ModerationCommandBase):
         self.subgroup_name = "permissions"
         self.description = "Removes a moderator permission to a user."
         self.options = [
-            create_option("user", "The mention of the user to modify.", SlashCommandOptionType.STRING, True),
-            create_option("permission", "The permission to remove.", SlashCommandOptionType.INTEGER, True, [
-                create_choice(ModeratorPermission.WARN_USERS, "Warn users"),
-                create_choice(ModeratorPermission.MUTE_USERS, "Mute users"),
-                create_choice(ModeratorPermission.KICK_USERS, "Kick users"),
-                create_choice(ModeratorPermission.BAN_USERS, "Ban users")
+            Option("user", "The mention of the user to modify."),
+            Option("permission", "The permission to remove.", OptionType.INTEGER, choices=[
+                Choice("Warn users", ModeratorPermission.WARN_USERS),
+                Choice("Mute users", ModeratorPermission.MUTE_USERS),
+                Choice("Kick users", ModeratorPermission.KICK_USERS),
+                Choice("Ban users", ModeratorPermission.BAN_USERS)
             ])
         ]
         self.required_permissions = Permission.ADMINISTRATOR
         self.__permission_manager: IPermissionManager = permission_manager
     
-    async def execute(self, context: SlashContext, user: str, permission: int) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, user: str, permission: int) -> CommandResponse:
         user = user.strip()
         if (user_id := get_user_id(user)) is None:
-            await reply(context, "You must mention a user correctly.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="You must mention a user correctly.")
+            )
+
         typed_permission = ModeratorPermission(permission)
-        await self.__permission_manager.remove_permissions(str(context.guild_id), user_id, typed_permission)
-        await reply(context, f"{user} has had the permission to '{typed_permission.textify()}' _revoked_.")
+        await self.__permission_manager.remove_permissions(context.server_id, user_id, typed_permission)
         return ModeratorPermissionsChangedResponse(
-            author_id=str(context.author_id),
+            author_id=context.author_id,
             user_id=user_id,
             permission=typed_permission,
-            is_addition=False
+            is_addition=False,
+            action=ReplyAction(content=f"{user} has had the permission to '{typed_permission.textify()}' _revoked_.")
         )

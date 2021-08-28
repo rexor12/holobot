@@ -3,11 +3,9 @@ from ..enums import FrequencyType, PriceDirection
 from ..repositories import CryptoRepositoryInterface
 from ..utils import is_valid_symbol
 from decimal import Decimal, InvalidOperation
-from discord_slash import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_choice, create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import Choice, CommandResponse, Option, ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 
 ALARM_MIN_PRICE = Decimal("0.00000001")
@@ -26,50 +24,59 @@ class SetAlarmCommand(CommandBase):
         self.subgroup_name = "alarm"
         self.description = "Sets an alarm for a change in a cryptocurrency's value."
         self.options = [
-            create_option("symbol", "The symbol, such as BTCEUR.", SlashCommandOptionType.STRING, True),
-            create_option("direction", "The direction of the price change.", SlashCommandOptionType.STRING, True, choices=[
-                create_choice("ABOVE", "increase to"),
-                create_choice("BELOW", "decreases to")
+            Option("symbol", "The symbol, such as BTCEUR.",),
+            Option("direction", "The direction of the price change.", choices=[
+                Choice("increase to", "ABOVE"),
+                Choice("decreases to", "BELOW")
             ]),
-            create_option("value", "The price to be reached.", SlashCommandOptionType.STRING, True),
-            create_option("frequency", "The frequency of alarms.", SlashCommandOptionType.INTEGER, True),
-            create_option("frequency_type", "The type of alarm frequency.", SlashCommandOptionType.STRING, True, choices=[
-                create_choice("DAYS", "days"),
-                create_choice("HOURS", "hours"),
-                create_choice("MINUTES", "minutes")
+            Option("value", "The price to be reached."),
+            Option("frequency", "The frequency of alarms."),
+            Option("frequency_type", "The type of alarm frequency.", choices=[
+                Choice("days", "DAYS"),
+                Choice("hours", "HOURS"),
+                Choice("minutes", "MINUTES")
             ])
         ]
 
-    async def execute(self, context: SlashContext, symbol: str, direction: str,
+    async def execute(self, context: ServerChatInteractionContext, symbol: str, direction: str,
         value: str, frequency_type: str, frequency: int) -> CommandResponse:
         symbol = symbol.upper()
         if not is_valid_symbol(symbol):
-            await reply(context, "The symbol you specified isn't in the accepted format.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="The symbol you specified isn't in the accepted format.")
+            )
         if (pdir := PriceDirection.parse(direction)) is None:
-            await reply(context, "The direction you specified isn't valid.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="The direction you specified isn't valid.")
+            )
         try:
             decimal_value = Decimal(value)
         except InvalidOperation:
-            await reply(context, "The value you specified isn't a valid decimal number.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="The value you specified isn't a valid decimal number.")
+            )
         if decimal_value < ALARM_MIN_PRICE:
-            await reply(context, f"The target price cannot be lower than {ALARM_MIN_PRICE}.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content=f"The target price cannot be lower than {ALARM_MIN_PRICE}.")
+            )
         if (ftype := FrequencyType.parse(frequency_type)) is None:
-            await reply(context, "The frequency type you specified isn't valid.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="The frequency type you specified isn't valid.")
+            )
         if frequency < 0:
-            await reply(context, "The frequency must be a positive number.")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="The frequency must be a positive number.")
+            )
         price_data = await self.__crypto_repository.get_price(symbol)
         if not price_data:
-            await reply(context, "I couldn't find that symbol. Did you make a typo?")
-            return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content="I couldn't find that symbol. Did you make a typo?")
+            )
         if decimal_value > price_data.price * ALARM_PRICE_UPPER_RATE or decimal_value < price_data.price * ALARM_PRICE_LOWER_RATE:
-            await reply(context, f"The target price cannot be more than x{ALARM_PRICE_UPPER_RATE} or x{ALARM_PRICE_LOWER_RATE} of the current price.")
-            return CommandResponse()
-        await self.__alert_manager.add(get_author_id(context), symbol, pdir, decimal_value, ftype, frequency)
-        await reply(context, "The alarm has been set.")
-        return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(content=f"The target price cannot be more than x{ALARM_PRICE_UPPER_RATE} or x{ALARM_PRICE_LOWER_RATE} of the current price.")
+            )
+        await self.__alert_manager.add(context.author_id, symbol, pdir, decimal_value, ftype, frequency)
+        return CommandResponse(
+            action=ReplyAction(content="The alarm has been set.")
+        )

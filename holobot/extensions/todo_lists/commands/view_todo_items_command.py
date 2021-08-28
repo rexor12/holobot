@@ -1,14 +1,12 @@
 from .. import TodoItemManagerInterface
-from discord.embeds import Embed
-from discord.ext.commands.context import Context
-from discord_slash.context import SlashContext
-from holobot.discord.components import DynamicPager
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import get_author_id
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.models import CommandResponse, ServerChatInteractionContext
+from holobot.discord.sdk.components import Pager
+from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional, Union
+from typing import Optional
 
 @injectable(CommandInterface)
 class ViewTodoItemsCommand(CommandBase):
@@ -20,25 +18,23 @@ class ViewTodoItemsCommand(CommandBase):
         self.group_name = "todo"
         self.description = "Displays all your to-do items."
     
-    async def execute(self, context: SlashContext) -> CommandResponse:
-        await DynamicPager(self.__messaging, self.__log, context, self.__create_todo_list_embed)
+    async def execute(self, context: ServerChatInteractionContext) -> CommandResponse:
+        await Pager(self.__messaging, self.__log, context, self.__create_todo_list_embed)
         return CommandResponse()
 
-    async def __create_todo_list_embed(self, context: Union[Context, SlashContext], page: int, page_size: int) -> Optional[Embed]:
+    async def __create_todo_list_embed(self, context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
         start_offset = page * page_size
-        items = await self.__todo_item_manager.get_by_user(get_author_id(context), start_offset, page_size)
+        items = await self.__todo_item_manager.get_by_user(context.author_id, start_offset, page_size)
         if len(items) == 0:
             return None
         
         embed = Embed(
             title="To-do list",
-            description=f"To-do items of {context.author.mention}.",
-            color=0xeb7d00
-        ).set_footer(text="Use the to-do item's number for removal.")
-        for item in items:
-            embed.add_field(
-                name=f"#{item.id}",
-                value=item.message,
-                inline=False
-            )
+            description=f"To-do items of <@{context.author_id}>.",
+            fields=[
+                EmbedField(f"#{item.id}", item.message, False) for item in items
+            ],
+            footer=EmbedFooter("Use the to-do item's number for removal.")
+        )
+
         return embed

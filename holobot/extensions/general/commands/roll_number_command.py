@@ -1,8 +1,7 @@
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import find_emoji, reply
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.enums import OptionType
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from random import randint
 
@@ -12,12 +11,13 @@ class RollNumberCommand(CommandBase):
         super().__init__("roll")
         self.description = "Generates a random integer between the specified bounds."
         self.options = [
-            create_option("max", "The upper bound.", SlashCommandOptionType.INTEGER, True),
-            create_option("min", "The lower bound. By default, it's 1.", SlashCommandOptionType.INTEGER, False)
+            Option("max", "The upper bound.", OptionType.INTEGER, True),
+            Option("min", "The lower bound. By default, it's 1.", OptionType.INTEGER, False)
         ]
 
-    async def execute(self, context: SlashContext, max: int, min: int = 1) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, max: int, min: int = 1) -> CommandResponse:
         if max < min:
             (min, max) = (max, min)
-        await reply(context, f"You rolled {randint(min, max)}.")
-        return CommandResponse()
+        return CommandResponse(
+            action=ReplyAction(content=f"You rolled {randint(min, max)}.")
+        )

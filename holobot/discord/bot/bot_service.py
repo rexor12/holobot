@@ -1,22 +1,23 @@
+from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
-from .. import ICommandProcessor
+from ..commands import ICommandProcessor
 from ..context_menus import IMenuItemRegistry
-from ..messaging import Messaging
-from ..user_manager import UserManager
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.model import CommandObject, SubcommandObject
+from discord_slash.utils.manage_commands import create_choice, create_option, SlashCommandOptionType
 from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
-from holobot.discord.sdk.utils import get_author_id
+from holobot.discord.sdk.commands.enums import OptionType
+from holobot.discord.sdk.commands.models import Option
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import asyncio
 
@@ -54,8 +55,7 @@ class BotService(BotServiceInterface):
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
-        Messaging.bot = self.__bot
-        UserManager.bot = self.__bot
+        BotAccessor._bot = self.__bot
 
     async def start(self) -> None:
         if self.__bot_task is not None:
@@ -97,6 +97,29 @@ class BotService(BotServiceInterface):
             self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
             return
         await user.send(message)
+    
+    @staticmethod
+    def __get_option_type(option_type: OptionType) -> SlashCommandOptionType:
+        if option_type == OptionType.BOOLEAN:
+            return SlashCommandOptionType.BOOLEAN
+        if option_type == OptionType.INTEGER:
+            return SlashCommandOptionType.INTEGER
+        if option_type == OptionType.FLOAT:
+            return SlashCommandOptionType.FLOAT
+        return SlashCommandOptionType.STRING
+
+    @staticmethod
+    def __transform_options(options: List[Option]) -> List[Dict[str, Any]]:
+        result = []
+        for option in options:
+            result.append(create_option(
+                option.name,
+                option.description,
+                BotService.__get_option_type(option.type),
+                option.is_mandatory,
+                [create_choice(choice.value, choice.name) for choice in option.choices]
+            ))
+        return result
 
     async def __add_slash_command(self, command: CommandInterface) -> Union[CommandObject, SubcommandObject]:
         command_name = command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}"
@@ -106,7 +129,7 @@ class BotService(BotServiceInterface):
                 command_name,
                 command.description,
                 list(await command.get_allowed_guild_ids()),
-                command.options
+                BotService.__transform_options(command.options)
             )
 
         return self.__slash.add_subcommand(
@@ -116,7 +139,7 @@ class BotService(BotServiceInterface):
             command_name,
             command.description,
             guild_ids=list(await command.get_allowed_guild_ids()),
-            options=command.options
+            options=BotService.__transform_options(command.options)
         )
 
     def __initialize_bot(self) -> Bot:
@@ -136,5 +159,5 @@ class BotService(BotServiceInterface):
     async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
         self.__log.error((
             "An error has occurred while processing a slash command. "
-            f"{{ Type = {type(exception).__name__}, UserId = {get_author_id(context)} }}"
+            f"{{ Type = {type(exception).__name__}, UserId = {context.author_id} }}"
             ), exception)

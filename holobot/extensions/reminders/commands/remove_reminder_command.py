@@ -1,10 +1,9 @@
 from .. import ReminderManagerInterface
 from ..exceptions import InvalidReminderError
-from discord_slash.context import SlashContext
-from discord_slash.model import SlashCommandOptionType
-from discord_slash.utils.manage_commands import create_option
-from holobot.discord.sdk.commands import CommandBase, CommandInterface, CommandResponse
-from holobot.discord.sdk.utils import get_author_id, reply
+from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.enums import OptionType
+from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 
@@ -17,15 +16,21 @@ class RemoveReminderCommand(CommandBase):
         self.group_name = "reminder"
         self.description = "Removes a reminder."
         self.options = [
-            create_option("id", "The identifier of the reminder.", SlashCommandOptionType.INTEGER, True)
+            Option("id", "The identifier of the reminder.", OptionType.INTEGER)
         ]
 
-    async def execute(self, context: SlashContext, id: int) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, id: int) -> CommandResponse:
         try:
-            user_id = get_author_id(context)
-            await self.__reminder_manager.delete_reminder(user_id, id)
-            await reply(context, "The reminder has been deleted.")
-            self.__log.debug(f"Deleted a reminder. {{ UserId = {user_id}, ReminderId = {id} }}")
+            await self.__reminder_manager.delete_reminder(context.author_id, id)
+            self.__log.debug(f"Deleted a reminder. {{ UserId = {context.author_id}, ReminderId = {id} }}")
+            return CommandResponse(
+                action=ReplyAction(
+                    content="The reminder has been deleted."
+                )
+            )
         except InvalidReminderError:
-            await reply(context, "That reminder doesn't exist or belong to you.")
-        return CommandResponse()
+            return CommandResponse(
+                action=ReplyAction(
+                    content="That reminder doesn't exist or belong to you."
+                )
+            )

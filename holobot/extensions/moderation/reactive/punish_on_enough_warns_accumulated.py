@@ -3,9 +3,10 @@ from ..commands.responses import UserWarnedResponse
 from ..managers import IMuteManager
 from ..models import WarnSettings
 from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSettingsRepository
-from holobot.discord.sdk import IMessaging, IUserManager
+from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.events import CommandExecutedEvent
 from holobot.discord.sdk.exceptions import ForbiddenError, ServerNotFoundError, UserNotFoundError
+from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.reactive import ListenerInterface
@@ -53,7 +54,7 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
         if not log_channel:
             return
 
-        await self.__messaging.send_guild_message(
+        await self.__messaging.send_channel_message(
             log_channel,
             f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes."
         )

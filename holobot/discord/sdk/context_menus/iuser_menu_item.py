@@ -1,4 +1,5 @@
 from .imenu_item import IMenuItem
+from .models import MenuItemResponse, ServerUserInteractionContext
 from typing import Any
 
 class IUserMenuItem(IMenuItem):
@@ -9,6 +10,9 @@ class IUserMenuItem(IMenuItem):
     @name.setter
     def name(self, value: str) -> None:
         self.__name = value
+
+    async def execute(self, context: ServerUserInteractionContext, **kwargs: Any) -> MenuItemResponse:
+        raise NotImplementedError
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, IUserMenuItem):

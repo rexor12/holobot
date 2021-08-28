@@ -34,5 +34,5 @@ class LogManager(ILogManager):
         if not log_channel:
             return False
 
-        await self.__messaging.send_guild_message(log_channel, message)
+        await self.__messaging.send_channel_message(log_channel, message)
         return True

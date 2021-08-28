@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from holobot.discord.sdk.commands import CommandResponse
+from holobot.discord.sdk.commands.models import CommandResponse
 
 @dataclass
 class UserBannedResponse(CommandResponse):

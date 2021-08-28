@@ -111,6 +111,6 @@ class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
     
     async def __try_notify(self, user_id: str, event: SymbolUpdateEvent):
         try:
-            await self.__messaging.send_dm(user_id, f"{event.symbol} price is {event.price:,.8f}.")
+            await self.__messaging.send_private_message(user_id, f"{event.symbol} price is {event.price:,.8f}.")
         except Exception as error:
             self.__log.error(f"Failed to notify a user. {{ UserId = {user_id} }}", error)

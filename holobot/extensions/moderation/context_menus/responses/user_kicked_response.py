@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from holobot.discord.sdk.context_menus import MenuItemResponse
+from holobot.discord.sdk.context_menus.models import MenuItemResponse
 
 @dataclass
 class UserKickedResponse(MenuItemResponse):

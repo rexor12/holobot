@@ -1,5 +1,5 @@
 from .imenu_item import IMenuItem
-from discord_slash.context import MenuContext
+from ..models import InteractionContext
 
 class IMenuItemExecutionRule:
     """Interface for a menu item execution rule.
@@ -7,7 +7,7 @@ class IMenuItemExecutionRule:
     A rule is responsible for determining if a menu item's execution should be interrupted.
     """
 
-    async def should_halt(self, menu_item: IMenuItem, context: MenuContext) -> bool:
+    async def should_halt(self, menu_item: IMenuItem, context: InteractionContext) -> bool:
         """Determines if a given menu item should not be executed in the given context.
 
         Parameters
@@ -15,8 +15,9 @@ class IMenuItemExecutionRule:
         menu_item : ``IMenuItem``
             The menu item to be validated.
 
-        context : ``MenuContext``
-            The current menu item context.
+        context : ``InteractionContext``
+            The interaction context associated to the request.
+            The actual type may be a sub-class of this type.
         
         Returns
         -------

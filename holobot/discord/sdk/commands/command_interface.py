@@ -1,6 +1,5 @@
-from .command_response import CommandResponse
+from .models import CommandResponse, Option, ServerChatInteractionContext
 from ..enums import Permission
-from discord_slash import SlashContext
 from typing import Any, Dict, List, Optional, Tuple
 
 class CommandInterface:
@@ -37,11 +36,11 @@ class CommandInterface:
         self.__description = value
     
     @property
-    def options(self) -> List[Dict[str, Any]]:
+    def options(self) -> List[Option]:
         return self.__options
     
     @options.setter
-    def options(self, value: List[Dict[str, Any]]) -> None:
+    def options(self, value: List[Option]) -> None:
         self.__options = value
     
     @property
@@ -52,12 +51,21 @@ class CommandInterface:
     def required_permissions(self, value: Permission) -> None:
         self.__required_permissions = value
 
-    # It would be nice to pass a kind of parameter collection object
-    # as an argument here instead of **kwargs, but it would be a
-    # huge effort to integrate with discord.py / discord_slash.
-    # Therefore, we'll abuse Python to just replace the "execute"
-    # function with a new one the user defines and use that for the bot.
-    async def execute(self, context: SlashContext, **kwargs) -> CommandResponse:
+    async def execute(self, context: ServerChatInteractionContext, **kwargs) -> CommandResponse:
+        """Executes the behavior associated to this command.
+        
+        Parameters
+        ----------
+        context : ``ServerChatInteractionContext``
+            The interaction context associated to the request.
+        
+        Returns
+        -------
+        ``CommandResponse``
+            The response from the execution of the request.
+            The actual type may be a sub-class of this type.
+        """
+
         raise NotImplementedError
     
     async def is_allowed_for_guild(self, guild_id: int) -> bool:

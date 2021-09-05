@@ -5,6 +5,7 @@ from ..utils import is_valid_symbol
 from decimal import Decimal, InvalidOperation
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
+from holobot.discord.sdk.commands.enums import OptionType
 from holobot.discord.sdk.commands.models import Choice, CommandResponse, Option, ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 
@@ -30,7 +31,7 @@ class SetAlarmCommand(CommandBase):
                 Choice("decreases to", "BELOW")
             ]),
             Option("value", "The price to be reached."),
-            Option("frequency", "The frequency of alarms."),
+            Option("frequency", "The frequency of alarms.", OptionType.INTEGER),
             Option("frequency_type", "The type of alarm frequency.", choices=[
                 Choice("days", "DAYS"),
                 Choice("hours", "HOURS"),
@@ -39,7 +40,7 @@ class SetAlarmCommand(CommandBase):
         ]
 
     async def execute(self, context: ServerChatInteractionContext, symbol: str, direction: str,
-        value: str, frequency_type: str, frequency: int) -> CommandResponse:
+        value: str, frequency: int, frequency_type: str) -> CommandResponse:
         symbol = symbol.upper()
         if not is_valid_symbol(symbol):
             return CommandResponse(

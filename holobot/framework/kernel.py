@@ -4,6 +4,7 @@ from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.integration import IntegrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from holobot.sdk.system import EnvironmentInterface
 from holobot.sdk.utils import when_all
 from typing import Tuple
 
@@ -14,17 +15,19 @@ class Kernel(KernelInterface):
     def __init__(self,
         log: LogInterface,
         database_manager: DatabaseManagerInterface,
-        lifecycle_manager: LifecycleManagerInterface,
-        integrations: Tuple[IntegrationInterface, ...]) -> None:
+        environment: EnvironmentInterface,
+        integrations: Tuple[IntegrationInterface, ...],
+        lifecycle_manager: LifecycleManagerInterface) -> None:
         super().__init__()
         self.__event_loop = asyncio.get_event_loop()
         self.__log = log.with_name("Framework", "Kernel")
         self.__database_manager = database_manager
-        self.__lifecycle_manager = lifecycle_manager
+        self.__environment = environment
         self.__integrations = integrations
+        self.__lifecycle_manager = lifecycle_manager
 
     def run(self):
-        self.__log.info("Starting application...")
+        self.__log.info(f"Starting application... {{ Version = {self.__environment.version} }}")
 
         self.__event_loop.run_until_complete(self.__database_manager.upgrade_all())
         self.__event_loop.run_until_complete(self.__lifecycle_manager.start_all())

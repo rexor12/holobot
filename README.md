@@ -27,7 +27,16 @@ Below are some of the technologies used by this project:
   
 # Installation
 
-While I would like to suggest to you to use the official installation of this bot, unfortunately I cannot, yet. Currently, it is not verified and is available to servers where I invite it only. This will hopefully change in the future.
+## Inviting the official instance to your server
+
+It is suggested to use the official instance of this bot which you can invite to your Discord server by using the following authorization link:
+https://discord.com/api/oauth2/authorize?client_id=791766309611634698&permissions=122707586134&scope=bot%20applications.commands
+
+Currently, the bot requires administrator permissions to work correctly, which will be changed in the future when proper permission handling is implemented. If you deny some of the permissions, some features may not work as expected.
+
+This instance of the bot is automatically deployed from the _main_ branch with new commits.
+
+## Hosting your own instance
 
 **Python 3.8 or higher is required.**
 

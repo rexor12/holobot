@@ -77,7 +77,8 @@
                         "info": {
                             "CanDisable": false
                         },
-                        "roll": {}
+                        "roll": {},
+                        "summon": {}
                     }
                 },
                 "admin": {

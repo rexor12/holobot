@@ -56,6 +56,7 @@ class CommandProcessor(ICommandProcessor):
             request_id=uuid4(),
             author_id=str(context.author_id),
             author_name=context.author.name,
+            author_nickname=context.author.nick,
             server_id=str(context.guild_id),
             channel_id=str(context.channel_id)
         )

@@ -39,14 +39,16 @@ class SummonUserCommand(CommandBase):
                 if not member:
                     return CommandResponse(action=ReplyAction(content="I can't find the user you specified. Did you make a typo?"))
                 user_id = member.user_id
+            if user_id == context.author_id:
+                return CommandResponse(action=ReplyAction(content="You can't summon yourself, silly."))
             
             channel_id = get_channel_id_or_default(channel, context.channel_id) if channel else context.channel_id
             if message:
                 message = message.strip()[:MESSAGE_LENGTH_MAX]
-                target_message = "<@{}> is summoning you to <#{}> with the message '{}'."
-            else: target_message = "<@{}> is summoning you to <#{}>."
+                target_message = "{} is summoning you to <#{}> with the message '{}'."
+            else: target_message = "{} is summoning you to <#{}>."
 
-            await self.__messaging.send_private_message(user_id, target_message.format(context.author_id, channel_id, message))
+            await self.__messaging.send_private_message(user_id, target_message.format(context.author_nickname or context.author_name, channel_id, message))
         except ForbiddenError:
             return CommandResponse(action=ReplyAction(content="I have no permission to send a DM to the specified user."))
         except UserNotFoundError:

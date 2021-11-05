@@ -77,7 +77,7 @@ class CryptoUpdater(StartableInterface):
             self.__log.error(f"Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except HttpStatusError as error:
             self.__log.error(f"Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n", error)
-        except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, TimeoutError, AsyncIoTimeoutError) as error:
+        except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, ConnectionResetError, TimeoutError, AsyncIoTimeoutError) as error:
             self.__log.error(f"Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
         except CircuitBrokenError:
             pass

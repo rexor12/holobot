@@ -164,6 +164,11 @@
                         "view": {}
                     }
                 },
+                "server": {
+                    "Commands": {
+                        "icon": {}
+                    }
+                },
                 "todo": {
                     "Commands": {
                         "add": {},

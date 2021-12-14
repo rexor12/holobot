@@ -54,7 +54,7 @@ class BotService(BotServiceInterface):
         self.__context_menu_item_registry: IMenuItemRegistry = context_menu_item_registry
         self.__component_interaction_processor: IComponentInteractionProcessor = component_interaction_processor
         self.__bot: Bot = self.__initialize_bot()
-        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=False, sync_on_cog_reload=False, delete_from_unused_guilds=True)
+        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
         BotAccessor._bot = self.__bot

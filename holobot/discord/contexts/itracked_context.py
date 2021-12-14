@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from discord import Message
 from discord.ext.commands import Context
-from discord_slash.context import MenuContext, SlashContext
+from discord_slash.context import ComponentContext, MenuContext, SlashContext
 from typing import Awaitable, Callable, Optional, Union
 from uuid import UUID
 
@@ -13,7 +13,7 @@ class ITrackedContext:
 
     @property
     @abstractmethod
-    def context(self) -> Union[Context, MenuContext, SlashContext]:
+    def context(self) -> Union[ComponentContext, Context, MenuContext, SlashContext]:
         raise NotImplementedError
 
     @abstractmethod

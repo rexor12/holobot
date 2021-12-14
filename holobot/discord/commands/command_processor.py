@@ -52,11 +52,14 @@ class CommandProcessor(ICommandProcessor):
 
     @staticmethod
     def __transform_context(context: SlashContext) -> ServerChatInteractionContext:
+        if context.guild_id is None:
+            raise NotImplementedError("Non-server specific commands are not supported.")
+
         return ServerChatInteractionContext(
             request_id=uuid4(),
             author_id=str(context.author_id),
-            author_name=context.author.name,
-            author_nickname=context.author.nick,
+            author_name=context.author.name, # type: ignore
+            author_nickname=context.author.nick, # type: ignore
             server_id=str(context.guild_id),
             channel_id=str(context.channel_id)
         )

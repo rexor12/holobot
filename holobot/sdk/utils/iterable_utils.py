@@ -11,6 +11,9 @@ def where(iterable: Iterable[T], predicate: Callable[[T], bool]) -> Generator[T,
         if predicate(item):
             yield item
 
+def has_any(iterable: Iterable[T], predicate: Callable[[T], bool]) -> bool:
+    return first_or_default(iterable, predicate) is not None
+
 def first_or_default(iterable: Iterable[T], predicate: Optional[Callable[[T], bool]] = None, default_value: Optional[T] = None) -> Optional[T]:
     if predicate is None:
         return next(iter(iterable), default_value)

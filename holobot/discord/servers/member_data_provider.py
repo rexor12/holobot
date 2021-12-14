@@ -123,9 +123,9 @@ class MemberDataProvider(IMemberDataProvider):
     @staticmethod
     def __member_to_basic_data(user: Member) -> MemberData:
         return MemberData(
-            user_id=str(user.id),
-            avatar_url=user.avatar_url,
-            name=user.name,
+            user_id=str(user.id), # type: ignore
+            avatar_url=user.avatar_url, # type: ignore
+            name=user.name, # type: ignore
             nick_name=user.nick
         )
 
@@ -161,4 +161,4 @@ class MemberDataProvider(IMemberDataProvider):
         relevance = MemberDataProvider.__match_with_relevance(pattern, user.display_name)
         if relevance > 0:
             return relevance + 1
-        return MemberDataProvider.__match_with_relevance(pattern, user.name)
+        return MemberDataProvider.__match_with_relevance(pattern, user.name) # type: ignore

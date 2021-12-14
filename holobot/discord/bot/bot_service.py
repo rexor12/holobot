@@ -2,11 +2,11 @@ from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 from ..commands import ICommandProcessor
+from ..components import IComponentInteractionProcessor
 from ..context_menus import IMenuItemRegistry
 from asyncio.tasks import Task
 from discord import Intents
 from discord_slash import SlashCommand, SlashContext
-from discord_slash.model import CommandObject, SubcommandObject
 from discord_slash.utils.manage_commands import create_choice, create_option, SlashCommandOptionType
 from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
@@ -17,7 +17,7 @@ from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import asyncio
 
@@ -42,7 +42,8 @@ class BotService(BotServiceInterface):
         command_processor: ICommandProcessor,
         commands: Tuple[CommandInterface, ...],
         debugger: DebuggerInterface,
-        context_menu_item_registry: IMenuItemRegistry) -> None:
+        context_menu_item_registry: IMenuItemRegistry,
+        component_interaction_processor: IComponentInteractionProcessor) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
@@ -51,6 +52,7 @@ class BotService(BotServiceInterface):
         self.__commands: Tuple[CommandInterface, ...] = commands
         self.__debugger: DebuggerInterface = debugger
         self.__context_menu_item_registry: IMenuItemRegistry = context_menu_item_registry
+        self.__component_interaction_processor: IComponentInteractionProcessor = component_interaction_processor
         self.__bot: Bot = self.__initialize_bot()
         self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
         self.__bot_task: Optional[Task] = None
@@ -76,7 +78,7 @@ class BotService(BotServiceInterface):
 
         self.__log.info("Registering commands...")
         for command in self.__commands:
-            await self.__add_slash_command(command)
+            await self.__register_command(command)
             self.__log.debug(f"Registered command. {{ Group = {command.group_name}, SubGroup = {command.subgroup_name}, Name = {command.name} }}")
         self.__log.info(f"Successfully registered commands. {{ Count = {len(self.__commands)} }}")
 
@@ -121,18 +123,29 @@ class BotService(BotServiceInterface):
             ))
         return result
 
-    async def __add_slash_command(self, command: CommandInterface) -> Union[CommandObject, SubcommandObject]:
+    async def __register_command(self, command: CommandInterface) -> None:
         command_name = command.name if not self.__debugger.is_debug_mode_enabled() else f"d{command.name}"
         if not command.group_name:
-            return self.__slash.add_slash_command(
-                lambda context, **kwargs: self.__command_processor.process(command, context, **kwargs),
-                command_name,
-                command.description,
-                list(await command.get_allowed_guild_ids()),
-                BotService.__transform_options(command.options)
-            )
+            await self.__add_slash_command(command, command_name)
+        else: await self.__add_slash_subcommand(command, command_name)
 
-        return self.__slash.add_subcommand(
+        for component in command.components:
+            # No type error here, the type hint is wrong in the library.
+            self.__slash.add_component_callback(
+                lambda context, __c=component: self.__component_interaction_processor.process(__c, context), # type: ignore
+                components=component.id)
+
+    async def __add_slash_command(self, command: CommandInterface, command_name: str) -> None:
+        self.__slash.add_slash_command(
+            lambda context, **kwargs: self.__command_processor.process(command, context, **kwargs),
+            command_name,
+            command.description,
+            list(await command.get_allowed_guild_ids()),
+            BotService.__transform_options(command.options)
+        )
+
+    async def __add_slash_subcommand(self, command: CommandInterface, command_name: str) -> None:
+        self.__slash.add_subcommand(
             lambda context, **kwargs: self.__command_processor.process(command, context, **kwargs),
             command.group_name,
             command.subgroup_name,

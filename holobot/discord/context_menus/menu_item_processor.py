@@ -55,12 +55,12 @@ class MenuItemProcessor(IMenuItemProcessor):
         return ServerUserInteractionContext(
             request_id=uuid4(),
             author_id=str(context.author_id),
-            author_name=context.author.name,
-            author_nickname=context.author.nick,
+            author_name=context.author.name, # type: ignore
+            author_nickname=context.author.nick, # type: ignore
             server_id=str(context.guild_id),
-            server_name=context.guild.name,
+            server_name=context.guild.name, # type: ignore
             channel_id=str(context.channel_id),
-            target_user_id=str(context.target_author.id)
+            target_user_id=str(context.target_author.id) # type: ignore
         )
 
     async def __on_menu_item_executed(self, menu_item: IMenuItem, context: MenuContext, response: MenuItemResponse) -> None:

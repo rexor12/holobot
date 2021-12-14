@@ -1,6 +1,7 @@
 from .models import CommandResponse, Option, ServerChatInteractionContext
+from ..components.models import ComponentRegistration
 from ..enums import Permission
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 class CommandInterface:
     @property
@@ -50,6 +51,14 @@ class CommandInterface:
     @required_permissions.setter
     def required_permissions(self, value: Permission) -> None:
         self.__required_permissions = value
+
+    @property
+    def components(self) -> List[ComponentRegistration]:
+        return self.__components
+
+    @components.setter
+    def components(self, value: List[ComponentRegistration]) -> None:
+        self.__components = value
 
     async def execute(self, context: ServerChatInteractionContext, **kwargs) -> CommandResponse:
         """Executes the behavior associated to this command.

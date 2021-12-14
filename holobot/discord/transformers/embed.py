@@ -3,18 +3,18 @@ from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 
 def remote_to_local(discord_embed: DiscordEmbed) -> Embed:
     embed = Embed(
-        title=discord_embed.title,
-        description=discord_embed.description,
-        color=discord_embed.colour,
-        thumbnail_url=discord_embed.thumbnail.url,
-        image_url=discord_embed.image.url
+        title=discord_embed.title, # type: ignore
+        description=discord_embed.description, # type: ignore
+        color=discord_embed.colour, # type: ignore
+        thumbnail_url=discord_embed.thumbnail.url, # type: ignore
+        image_url=discord_embed.image.url # type: ignore
     )
 
     for field in discord_embed.fields:
         embed.fields.append(EmbedField(
-            name=field.name,
-            value=field.value,
-            is_inline=field.inline
+            name=field.name, # type: ignore
+            value=field.value, # type: ignore
+            is_inline=field.inline # type: ignore
         ))
 
     footer = discord_embed.footer
@@ -22,8 +22,8 @@ def remote_to_local(discord_embed: DiscordEmbed) -> Embed:
         text = footer.text if footer.text is not EmptyEmbed else None
         icon_url = footer.icon_url if footer.icon_url is not EmptyEmbed else None
         embed.footer = EmbedFooter(
-            text=text,
-            icon_url=icon_url
+            text=text, # type: ignore
+            icon_url=icon_url # type: ignore
         )
 
     return embed

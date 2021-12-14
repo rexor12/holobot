@@ -69,6 +69,8 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
         pool = await asyncpg.create_pool(
             f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/{database_name}",
             ssl=ssl_object)
+        if not pool:
+            raise Exception("Failed to initialize the database connection pool.")
         self.__log.debug("Successfully initialized the connection pool.")
 
         async with pool.acquire() as connection:

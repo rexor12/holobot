@@ -10,6 +10,7 @@ class CommandBase(CommandInterface):
         self.name = name
         self.description = None
         self.options = []
+        self.components = []
         self.required_permissions = Permission.NONE
     
     async def is_allowed_for_guild(self, guild_id: str) -> bool:

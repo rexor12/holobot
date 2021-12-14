@@ -3,6 +3,6 @@ from holobot.discord.sdk.servers.models import ServerChannel
 
 def remote_to_local(entity: GuildChannel) -> ServerChannel:
     return ServerChannel(
-        id=str(entity.id),
-        name=entity.name
+        id=str(entity.id), # type: ignore
+        name=entity.name # type: ignore
     )

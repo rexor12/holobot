@@ -1,7 +1,7 @@
 from .itracked_context import ITrackedContext
 from discord import Message
 from discord.ext.commands import Context
-from discord_slash.context import MenuContext, SlashContext
+from discord_slash.context import ComponentContext, MenuContext, SlashContext
 from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.concurrency import Task
 from typing import Awaitable, Callable, Optional, Union
@@ -10,10 +10,10 @@ from uuid import UUID
 class TrackedContext(ITrackedContext):
     def __init__(self,
         request_id: UUID,
-        context: Union[Context, MenuContext, SlashContext]) -> None:
+        context: Union[ComponentContext, Context, MenuContext, SlashContext]) -> None:
         super().__init__()
         self.__request_id: UUID = request_id
-        self.__context: Union[Context, MenuContext, SlashContext] = context
+        self.__context: Union[ComponentContext, Context, MenuContext, SlashContext] = context
         self.__messages: ConcurrentCache[str, ConcurrentCache[str, Message]] = ConcurrentCache()
 
     @property
@@ -21,7 +21,7 @@ class TrackedContext(ITrackedContext):
         return self.__request_id
 
     @property
-    def context(self) -> Union[Context, MenuContext, SlashContext]:
+    def context(self) -> Union[ComponentContext, Context, MenuContext, SlashContext]:
         return self.__context
 
     @property

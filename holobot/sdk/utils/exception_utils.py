@@ -3,7 +3,7 @@ from ..math import ComparableProtocol
 from typing import TypeVar
 
 T = TypeVar("T")
-TComparable = TypeVar("TComparable", bound=ComparableProtocol)
+TComparable = TypeVar("TComparable", ComparableProtocol, int, float)
 
 def assert_not_none(obj: T, argument_name: str) -> T:
     if obj is None:

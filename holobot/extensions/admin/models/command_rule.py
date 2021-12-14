@@ -113,7 +113,7 @@ class CommandRule:
                 text_bits.append(self.command)
             text_bits.append("` is ")
         else: text_bits.append("All commands are ")
-        text_bits.append(rule_to_text_map.get(self.state, None) or self.state.__str__())
+        text_bits.append(rule_to_text_map.get(self.state, "") or self.state.__str__())
         if self.channel_id is not None:
             text_bits.append(f" in <#{self.channel_id}>")
         else: text_bits.append(" everywhere")

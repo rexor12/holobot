@@ -6,4 +6,5 @@ class ServerChatInteractionContext(InteractionContext):
     """A context for server-specific chat interactions."""
 
     server_id: str
+    server_name: str
     channel_id: str

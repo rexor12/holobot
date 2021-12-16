@@ -56,7 +56,7 @@ class KickUserCommand(ModerationCommandBase):
             )
 
         try:
-            await self.__messaging.send_private_message(user_id, f"You have been kicked from {context.server_id} by {context.author_id} with the reason '{reason}'. I'm sorry this happened to you.")
+            await self.__messaging.send_private_message(user_id, f"You have been kicked from {context.server_name} by {context.author_name} with the reason '{reason}'. I'm sorry this happened to you.")
         except ForbiddenError:
             pass
 

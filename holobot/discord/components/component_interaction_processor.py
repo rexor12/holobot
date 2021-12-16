@@ -51,5 +51,6 @@ class ComponentInteractionProcessor(IComponentInteractionProcessor):
             author_name=context.author.name, # type: ignore
             author_nickname=context.author.nick, # type: ignore
             server_id=str(context.guild_id),
+            server_name=context.guild.name, # type: ignore
             channel_id=str(context.channel_id)
         )

@@ -54,7 +54,7 @@ class WarnUserCommand(ModerationCommandBase):
         await self.__warn_manager.warn_user(context.server_id, user_id, reason, context.author_id)
 
         try:
-            await self.__messaging.send_private_message(user_id, f"You have been warned in {context.server_id} by {context.author_id} with the reason '{reason}'. Maybe you should behave yourself.")
+            await self.__messaging.send_private_message(user_id, f"You have been warned in {context.server_name} by {context.author_name} with the reason '{reason}'. Maybe you should behave yourself.")
         except ForbiddenError:
             pass
 

@@ -15,5 +15,6 @@ from .set_auto_mute_command import SetAutoMuteCommand
 from .set_log_channel_command import SetLogChannelCommand
 from .set_warn_decay_command import SetWarnDecayCommand
 from .unmute_user_command import UnmuteUserCommand
+from .view_warn_decay_command import ViewWarnDecayCommand
 from .view_warn_strikes_command import ViewWarnStrikesCommand
 from .warn_user_command import WarnUserCommand

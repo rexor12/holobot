@@ -32,6 +32,9 @@ class IWarnManager:
     
     async def disable_auto_ban(self, server_id: str) -> None:
         raise NotImplementedError
+
+    async def get_warn_decay(self, server_id: str) -> Optional[timedelta]:
+        raise NotImplementedError
     
     async def set_warn_decay(self, server_id: str, decay_time: Optional[timedelta]) -> None:
         raise NotImplementedError

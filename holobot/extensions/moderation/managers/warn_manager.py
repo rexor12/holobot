@@ -104,6 +104,11 @@ class WarnManager(IWarnManager):
         assert_not_none(server_id, "server_id")
 
         await self.__warn_settings_repository.set_auto_ban(server_id, 0)
+
+    async def get_warn_decay(self, server_id: str) -> Optional[timedelta]:
+        assert_not_none(server_id, "server_id")
+        
+        return await self.__warn_settings_repository.get_warn_decay_threshold(server_id)
     
     async def set_warn_decay(self, server_id: str, decay_time: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")

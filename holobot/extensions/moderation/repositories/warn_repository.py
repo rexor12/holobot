@@ -31,8 +31,8 @@ class WarnRepository(IWarnRepository):
                 count: Optional[int] = await connection.fetchval(
                     (
                         f"SELECT COUNT(*) FROM {TABLE_NAME} AS t1"
-                        f" INNER JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
-                        " WHERE t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold"
+                        f" LEFT JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
+                        " WHERE (t2.decay_threshold IS NULL OR (t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold))"
                         " AND t1.server_id = $1 AND t1.user_id = $2"
                     ), server_id, user_id
                 )
@@ -48,8 +48,8 @@ class WarnRepository(IWarnRepository):
                 records = await connection.fetch(
                     (
                         f"SELECT t1.id, t1.created_at, t1.server_id, t1.user_id, t1.reason, t1.warner_id FROM {TABLE_NAME} AS t1"
-                        f" INNER JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
-                        " WHERE t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold"
+                        f" LEFT JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
+                        " WHERE (t2.decay_threshold IS NULL OR (t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold))"
                         " AND t1.server_id = $1 AND t1.user_id = $2"
                         " LIMIT $3 OFFSET $4"
                     ), server_id, user_id, max_count, start_offset
@@ -115,7 +115,7 @@ class WarnRepository(IWarnRepository):
                     (
                         f"DELETE FROM {TABLE_NAME} AS t1"
                         f" USING {SETTINGS_TABLE_NAME} AS t2"
-                        " WHERE t1.server_id = t2.server_id AND t1.created_at < (NOW() at time zone 'utc') - t2.decay_threshold"
+                        " WHERE t1.server_id = t2.server_id AND t2.decay_threshold IS NOT NULL AND t1.created_at < (NOW() at time zone 'utc') - t2.decay_threshold"
                     )
                 )
                 status_tag: CommandComplete[DeleteCommandTag] = CommandComplete.parse(status)

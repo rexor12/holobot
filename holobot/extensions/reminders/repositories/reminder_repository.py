@@ -29,13 +29,11 @@ class ReminderRepository(ReminderRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                result = await Query.select().columns(
+                record = await Query.select().columns(
                     "id", "user_id", "created_at", "message", "is_repeating", "frequency_time",
                     "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
                 ).from_table(TABLE_NAME).where().field("id", Equality.EQUAL, id).compile().fetchrow(connection)
-                if result is None:
-                    return None
-                return ReminderRepository.__parse_reminder(result)
+                return ReminderRepository.__parse_reminder(record) if record else None
     
     async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[Reminder, ...]:
         async with self.__database_manager.acquire_connection() as connection:

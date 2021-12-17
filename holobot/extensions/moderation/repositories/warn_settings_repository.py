@@ -65,15 +65,12 @@ class WarnSettingsRepository(IWarnSettingsRepository):
                 ).where().field(
                     "server_id", Equality.EQUAL, server_id
                 ).compile().fetchrow(connection)
-                if not record:
-                    return WarnSettings()
-
                 return WarnSettings(
                     auto_mute_after=record["auto_mute_after"],
                     auto_mute_duration=record["auto_mute_duration"],
                     auto_kick_after=record["auto_kick_after"],
                     auto_ban_after=record["auto_ban_after"]
-                )
+                ) if record else WarnSettings()
 
     async def set_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
         assert_not_none(server_id, "server_id")

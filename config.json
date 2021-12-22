@@ -4,7 +4,8 @@
             "IsDebug": false,
             "DiscordToken": "",
             "LogLevel": "Information",
-            "HttpPoolSize": 50
+            "HttpPoolSize": 50,
+            "AvatarArtworkArtistName": "unknown"
         }
     },
     "Google": {

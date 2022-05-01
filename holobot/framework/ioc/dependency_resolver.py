@@ -68,7 +68,7 @@ class DependencyResolver:
 				# as they may be needed later.
 				for dependent_impl in dependent_impls:
 					dependency_graph.try_add_node(dependee_impl)
-					dependency_graph.add_edge(dependee_impl, dependent_impl)
+					dependency_graph.try_add_edge(dependee_impl, dependent_impl)
 					resolvable_impls.append(dependent_impl)
 					self.__log.debug(f"Identified dependent implementation. {{ Dependee = {dependee_impl}, Dependent = {dependent_impl} }}")
 

@@ -100,15 +100,34 @@ class Graph(Generic[TNode]):
             Raised when parallel edges aren't allowed and an identical edge is already added.
         """
 
+        if not self.try_add_edge(source, target):
+            raise ArgumentError("target", f"An edge between '{source}' and '{target}' is added already.")
+
+    def try_add_edge(self, source: TNode, target: TNode) -> bool:
+        """Adds an edge to the graph.
+
+        Adds an edge to the graph between the specified nodes if a) such an edge doesn't exist yet, or b) parallel edges are allowed.
+
+        Parameters
+        ----------
+        source : ``TNode``
+            The source node of the edge.
+        
+        target : ``TNode``
+            The target node of the edge.
+        """
+
         new_edge = Edge(source, target)
         if self.__allow_parallel_edges:
             self.__edges.append(new_edge)
-            return
+            return True
         
         for edge in self.__edges:
             if self._is_same_edge(edge, new_edge):
-                raise ArgumentError("target", f"An edge between '{source}' and '{target}' is added already.")
+                return False
+
         self.__edges.append(new_edge)
+        return True
     
     def _is_same_edge(self, existing_edge: Edge, new_edge: Edge) -> bool:
         """Determines whether two edges are equal.

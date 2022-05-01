@@ -7,12 +7,12 @@ from typing import Any, List, Optional, Tuple
 from yt_dlp import YoutubeDL
 
 FFMPEG_PARAMETERS = {
-    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 3",
     "options": "-vn"
 }
 
 class YouTubeDlAudioSource(PCMVolumeTransformer, IAudioSource):
-    def __init__(self, source, *, data, volume=1.0):
+    def __init__(self, source, *, data, volume: float = 1.0):
         super().__init__(source, volume)
         self.__title: str = data.get("title", "Unknown song")
         self.__duration: Optional[timedelta] = timedelta(seconds=data.get("duration")) if data.get("duration", None) else None
@@ -41,17 +41,16 @@ class YouTubeDlAudioSource(PCMVolumeTransformer, IAudioSource):
         return read_bytes
 
     @staticmethod
-    async def from_url(extractor: YoutubeDL, url: str, *, loop: Optional[AbstractEventLoop] = None, stream: bool = False) -> 'Tuple[YouTubeDlAudioSource, ...]':
+    async def from_url(extractor: YoutubeDL, url: str, ffmpeg_path: str, *, loop: Optional[AbstractEventLoop] = None, stream: bool = False) -> 'Tuple[YouTubeDlAudioSource, ...]':
         loop = loop or get_event_loop()
         data: Any = await loop.run_in_executor(None, lambda: extractor.extract_info(url, download=not stream))
-        # TODO Handle playlist items.
         playlist_items = [data["entries"][0]] if "entries" in data else [data]
         audio_sources: List[YouTubeDlAudioSource] = []
         for playlist_item in playlist_items:
             filename = playlist_item["url"] if stream else extractor.prepare_filename(playlist_item)
             audio_sources.append(YouTubeDlAudioSource(
                 FFmpegPCMAudio(
-                    executable="C:\\Program Files\\ffmpeg\\ffmpeg.exe", # TODO Configuration, defaulting to "ffmpeg" simply.
+                    executable=ffmpeg_path,
                     source=filename,
                     **FFMPEG_PARAMETERS),
                 data=playlist_item))

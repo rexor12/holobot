@@ -37,6 +37,11 @@
             "EnableUpdates": true
         }
     },
+    "Music": {
+        "parameters": {
+            "FfmpegPath": "ffmpeg"
+        }
+    },
     "Reminders": {
         "parameters": {
             "Enable": true,

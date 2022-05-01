@@ -1,3 +1,6 @@
 from .async_anonymous_disposable import AsyncAnonymousDisposable
+from .async_producer_consumer_queue import AsyncProducerConsumerQueue
+from .cancellation_token import CancellationToken, EMPTY_CANCELLATION_TOKEN
 from .iasync_disposable import IAsyncDisposable
 from .task import Task, TResult
+from .task_completion_source import TaskCompletionSource

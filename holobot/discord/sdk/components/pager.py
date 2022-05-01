@@ -20,8 +20,9 @@ class Pager(Generic[TContext], Awaitable[Any]):
         messaging: IMessaging,
         log: LogInterface,
         context: TContext,
-        embed_factory: Callable[[TContext, int, int], Awaitable[Optional[Embed]]]):
-        self.current_page = 0
+        embed_factory: Callable[[TContext, int, int], Awaitable[Optional[Embed]]],
+        initial_page: int = 0):
+        self.current_page = initial_page
         self.reaction_next = DEFAULT_REACTION_NEXT
         self.reaction_previous = DEFAULT_REACTION_PREVIOUS
         self.__messaging = messaging

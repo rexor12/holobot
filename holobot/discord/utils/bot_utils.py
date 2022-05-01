@@ -1,6 +1,7 @@
 from ..bot import BotAccessor
 from discord.abc import GuildChannel
 from discord.guild import Guild, Member
+from discord.member import VoiceState
 from discord.role import Role
 from discord.user import User
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, RoleNotFoundError, ServerNotFoundError, UserNotFoundError
@@ -32,6 +33,13 @@ def get_guild_role(server_id: str, role_id: str) -> Role:
     if not role:
         raise RoleNotFoundError(server_id, role_id)
     return role
+
+def get_guild_member_voice_channel_id(server_id: str, user_id: str) -> Optional[str]:
+    member = get_guild_member(server_id, user_id)
+    voice_state = member.voice
+    if not voice_state or not isinstance(voice_state, VoiceState):
+        return None
+    return str(voice_state.channel.id)
 
 def get_user(user_id: str) -> User:
     if not (user := BotAccessor.get_bot().get_user(int(user_id))):

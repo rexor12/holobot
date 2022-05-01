@@ -5,5 +5,6 @@ from .embed import Embed
 from .emoji import Emoji
 from .interaction_context import InteractionContext
 from .message import Message
+from .paged_results import PagedResults
 from .reaction import Reaction
 from .role import Role

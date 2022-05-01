@@ -1,3 +1,4 @@
+from typing import Optional
 from .models import MemberData
 from ..enums import Permission
 
@@ -12,4 +13,7 @@ class IMemberDataProvider:
         raise NotImplementedError
 
     def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
+        raise NotImplementedError
+    
+    def get_member_voice_channel_id(self, server_id: str, user_id: str) -> Optional[str]:
         raise NotImplementedError

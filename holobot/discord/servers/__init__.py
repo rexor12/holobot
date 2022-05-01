@@ -1,2 +1,3 @@
 from .member_data_provider import MemberDataProvider
 from .server_data_provider import ServerDataProvider
+from .voice_channel_connection_factory import VoiceChannelConnectionFactory

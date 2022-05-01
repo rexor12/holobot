@@ -1,17 +1,14 @@
-from ..bot import BotAccessor
-from ..utils import get_guild_member
+from ..utils import get_guild_member, get_guild_member_voice_channel_id
 from discord import Permissions
-from discord.abc import GuildChannel, PrivateChannel
-from discord.guild import Guild
 from discord.member import Member
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
+from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
 from holobot.discord.utils import get_guild_channel, get_guild
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 permission_map: Dict[Permission, int] = {
     Permission.NONE: Permissions.none().value,
@@ -96,6 +93,12 @@ class MemberDataProvider(IMemberDataProvider):
         user = get_guild_member(server_id, user_id)
         permissions = channel.permissions_for(user)
         return MemberDataProvider.__transform_permissions(permissions)
+    
+    def get_member_voice_channel_id(self, server_id: str, user_id: str) -> Optional[str]:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+        
+        return get_guild_member_voice_channel_id(server_id, user_id)
 
     @staticmethod
     def __transform_permissions(discord_permissions: Permissions) -> Permission:

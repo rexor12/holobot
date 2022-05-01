@@ -1,2 +1,3 @@
 from .imember_data_provider import IMemberDataProvider
 from .iserver_data_provider import IServerDataProvider
+from .ivoice_channel_connection_factory import IVoiceChannelConnectionFactory

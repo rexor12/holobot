@@ -89,4 +89,4 @@ class AsyncCircuitBreaker:
     
     def __on_success(self):
         self.__failure_count = 0
-        self.__state == CircuitState.CLOSED
+        self.__state = CircuitState.CLOSED

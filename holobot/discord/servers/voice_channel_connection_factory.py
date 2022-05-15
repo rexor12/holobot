@@ -13,7 +13,7 @@ class VoiceChannelConnectionFactory(IVoiceChannelConnectionFactory):
         if not isinstance(channel, VoiceChannel):
             raise Exception("Not a voice channel.")
 
-        voice_client = await channel.connect()
+        voice_client = await channel.connect(cls=VoiceClient)
         if not isinstance(voice_client, VoiceClient):
             raise Exception(f"discord.py returned the unexpected voice client type '{type(voice_client)}'.")
 

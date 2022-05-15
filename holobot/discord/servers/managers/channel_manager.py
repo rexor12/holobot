@@ -4,11 +4,11 @@ from discord.role import Role
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, PermissionError, RoleNotFoundError
 from holobot.discord.sdk.servers.managers import IChannelManager
-from holobot.discord.sdk.servers.models import ServerChannel
+from holobot.discord.sdk.servers.models import ServerAudioChannel, ServerChannel
 from holobot.discord.transformers.server_channel import remote_to_local
 from holobot.discord.utils import get_guild
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils import assert_not_none, first_or_default
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 permission_mapping: Dict[Permission, str] = {
@@ -49,12 +49,26 @@ permission_mapping: Dict[Permission, str] = {
 
 @injectable(IChannelManager)
 class ChannelManager(IChannelManager):
+    def get_audio_channel(self, server_id: str, channel_id: str) -> Optional[ServerAudioChannel]:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+
+        guild = get_guild(server_id)
+        channels: List[GuildChannel] = guild.channels
+        channel = first_or_default(channels, lambda c: str(c.id) == channel_id) # type: ignore
+        return ServerAudioChannel(
+            id=str(channel.id), # type: ignore
+            server_id=server_id,
+            name=channel.name, # type: ignore
+            member_ids=[member.id for member in channel.members] # type: ignore
+        )
+
     def get_channels(self, server_id: str) -> Iterable[ServerChannel]:
         assert_not_none(server_id, "server_id")
 
         guild = get_guild(server_id)
         channels: List[GuildChannel] = guild.channels
-        return [remote_to_local(channel) for channel in channels]
+        return [remote_to_local(channel, server_id) for channel in channels]
 
     async def set_role_permissions(self, server_id: str, channel_id: str, role_id: str, *permissions: Tuple[Permission, Union[bool, None]]) -> None:
         assert_not_none(server_id, "server_id")

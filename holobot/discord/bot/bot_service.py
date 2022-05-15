@@ -1,12 +1,13 @@
 from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
+from .ibot_event_handler import IBotEventHandler
 from ..commands import ICommandProcessor
 from ..components import IComponentInteractionProcessor
 from ..context_menus import IMenuItemRegistry
 from asyncio.tasks import Task
 from discord import Intents
-from discord_slash import SlashCommand, SlashContext
+from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_choice, create_option, SlashCommandOptionType
 from holobot.discord.sdk import ExtensionProviderInterface
 from holobot.discord.sdk.commands import CommandInterface
@@ -43,7 +44,8 @@ class BotService(BotServiceInterface):
         commands: Tuple[CommandInterface, ...],
         debugger: DebuggerInterface,
         context_menu_item_registry: IMenuItemRegistry,
-        component_interaction_processor: IComponentInteractionProcessor) -> None:
+        component_interaction_processor: IComponentInteractionProcessor,
+        bot_event_handler: IBotEventHandler) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__extension_providers: Tuple[ExtensionProviderInterface, ...] = extension_providers
@@ -53,8 +55,9 @@ class BotService(BotServiceInterface):
         self.__debugger: DebuggerInterface = debugger
         self.__context_menu_item_registry: IMenuItemRegistry = context_menu_item_registry
         self.__component_interaction_processor: IComponentInteractionProcessor = component_interaction_processor
+        self.__bot_event_handler: IBotEventHandler = bot_event_handler
         self.__bot: Bot = self.__initialize_bot()
-        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=True, sync_on_cog_reload=True, delete_from_unused_guilds=True)
+        self.__slash: SlashCommand = SlashCommand(self.__bot, sync_commands=False, sync_on_cog_reload=False, delete_from_unused_guilds=False)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.
         BotAccessor._bot = self.__bot
@@ -164,13 +167,7 @@ class BotService(BotServiceInterface):
             intents = intents,
             loop = asyncio.get_event_loop()
         )
-
-        bot.add_listener(self.__on_slash_command_error, "on_slash_command_error")
+        
+        self.__bot_event_handler.register_callbacks(bot)
 
         return bot
-
-    async def __on_slash_command_error(self, context: SlashContext, exception: Exception) -> None:
-        self.__log.error((
-            "An error has occurred while processing a slash command. "
-            f"{{ Type = {type(exception).__name__}, UserId = {context.author_id} }}"
-            ), exception)

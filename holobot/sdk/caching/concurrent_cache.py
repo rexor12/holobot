@@ -1,6 +1,6 @@
 from asyncio.locks import Lock
 from holobot.sdk.exceptions import ArgumentError
-from typing import Any, Awaitable, Callable, Dict, Generic, Optional, TypeVar
+from typing import Any, Awaitable, Callable, Dict, Generic, Iterable, Optional, TypeVar
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -11,6 +11,10 @@ class ConcurrentCache(Generic[TKey, TValue]):
     def __init__(self):
         self.__dict: Dict[TKey, TValue] = {}
         self.__lock: Lock = Lock()
+
+    async def get_all(self) -> Iterable[TValue]:
+        async with self.__lock:
+            return list(self.__dict.values())
 
     async def get(self, key: TKey) -> Optional[TValue]:
         return self.__dict.get(key, None)

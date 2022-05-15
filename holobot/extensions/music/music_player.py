@@ -3,18 +3,22 @@ from .music_player_worker import MusicPlayerWorker
 from .enums import QueueMode
 from .models import MusicContext, Song
 from datetime import datetime, timedelta
-from holobot.discord.sdk.audio import IAudioSourceFactory
+from holobot.discord.sdk.audio import IAudioClient, IAudioSourceFactory
+from holobot.discord.sdk.audio.events import UserJoinedAudioChannelEvent, UserLeftAudioChannelEvent
 from holobot.discord.sdk.audio.models import SongMetadata
 from holobot.discord.sdk.models import PagedResults
 from holobot.discord.sdk.servers import IVoiceChannelConnectionFactory
+from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.concurrency import AsyncProducerConsumerQueue, CancellationToken
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.logging import LogInterface
+from holobot.sdk.reactive import ListenerInterface
 from holobot.sdk.utils import assert_not_none, assert_range, take
-from typing import Any, Generator, List, Optional, Tuple
+from typing import Any, Generator, List, Optional, Tuple, Union
 
 import asyncio, math, sys
 
@@ -57,15 +61,21 @@ class WorkerDisposer:
                 break
             await asyncio.sleep(10)
 
+@injectable(ListenerInterface[UserLeftAudioChannelEvent])
+@injectable(ListenerInterface[UserJoinedAudioChannelEvent])
 @injectable(StartableInterface)
 @injectable(IMusicPlayer)
-class MusicPlayer(IMusicPlayer, StartableInterface):
+class MusicPlayer(IMusicPlayer, StartableInterface, ListenerInterface[Any]):
     def __init__(self,
                  audio_source_factory: IAudioSourceFactory,
+                 channel_manager: IChannelManager,
                  configurator: ConfiguratorInterface,
+                 log: LogInterface,
                  voice_channel_connection_factory: IVoiceChannelConnectionFactory) -> None:
         super().__init__()
         self.__audio_source_factory: IAudioSourceFactory = audio_source_factory
+        self.__channel_manager: IChannelManager = channel_manager
+        self.__log: LogInterface = log.with_name("Music", "MusicPlayer")
         self.__voice_channel_connection_factory: IVoiceChannelConnectionFactory = voice_channel_connection_factory
         self.__queue_size_max: int = configurator.get("Music", "QueueSizeMax", 50)
         self.__workers: ConcurrentCache[str, MusicPlayerWorker] = ConcurrentCache()
@@ -75,6 +85,9 @@ class MusicPlayer(IMusicPlayer, StartableInterface):
         self.__disposer.start()
 
     async def stop(self):
+        for worker in await self.__workers.get_all():
+            await self.__disconnect(worker)
+            await worker
         await self.__disposer.stop()
         await self.__disposer
     
@@ -177,6 +190,17 @@ class MusicPlayer(IMusicPlayer, StartableInterface):
             total_results=len(queue)
         )
 
+    async def on_event(self, event: Union[UserLeftAudioChannelEvent, UserJoinedAudioChannelEvent]) -> None:
+        if isinstance(event, UserJoinedAudioChannelEvent):
+            self.__log.debug(f"User joined a voice channel. {{ ServerId = {event.server_id}, ChannelId = {event.channel_id}, UserId = {event.user_id} }}")
+            return
+
+        if isinstance(event, UserLeftAudioChannelEvent):
+            self.__log.debug(f"User left a voice channel. {{ ServerId = {event.server_id}, ChannelId = {event.channel_id}, UserId = {event.user_id} }}")
+            if not event.server_id or not event.channel_id:
+                return
+            await self.__disconnect_if_alone(event.server_id, event.channel_id)
+
     async def __create_worker(self, server_id: str, channel_id: str, initiating_user_id: str) -> MusicPlayerWorker:
         return MusicPlayerWorker(
             MusicContext(
@@ -190,11 +214,22 @@ class MusicPlayer(IMusicPlayer, StartableInterface):
     
     async def __disconnect(self, worker: MusicPlayerWorker) -> None:
         worker.shutdown()
+        # Not awaiting here to avoid blocking an executing command.
+        # await worker
         await worker.audio_client.close()
         await self.__workers.remove(worker.music_context.server_id)
 
     async def __try_disconnect(self, worker: MusicPlayerWorker) -> None:
         if datetime.utcnow() - worker.music_context.last_song_finished_at < timedelta(minutes=5):
             return
+        await self.__disconnect(worker)
+        await self.__disposer.add(worker)
+
+    async def __disconnect_if_alone(self, server_id: str, channel_id: str) -> None:
+        if (not (channel := self.__channel_manager.get_audio_channel(server_id, channel_id))
+            or len(channel.member_ids) > 1
+            or not (worker := await self.__workers.get(server_id))):
+            return
+
         await self.__disconnect(worker)
         await self.__disposer.add(worker)

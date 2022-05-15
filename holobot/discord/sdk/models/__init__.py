@@ -1,3 +1,4 @@
+from .audio_channel import AudioChannel
 from .channel import Channel
 from .embed_field import EmbedField
 from .embed_footer import EmbedFooter

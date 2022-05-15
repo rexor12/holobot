@@ -1,5 +1,5 @@
+from .youtube_dl_audio_source import YouTubeDlAudioSource
 from discord import VoiceClient
-from holobot.discord.audio.youtube_dl_audio_source import YouTubeDlAudioSource
 from holobot.discord.sdk.audio import IAudioClient, IAudioSource
 from holobot.sdk.concurrency import TaskCompletionSource
 
@@ -21,7 +21,3 @@ class AudioClient(IAudioClient):
     
     async def stop(self) -> None:
         self.__voice_client.stop()
-    
-    def add_on_disconnect_handler(self) -> None:
-        #self.__voice_client.on_voice_state_update()
-        pass

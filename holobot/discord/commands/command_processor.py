@@ -42,10 +42,13 @@ class CommandProcessor(ICommandProcessor):
                     self.__log.debug(f"Command has been halted. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}")
                     await self.__action_processor.process(context, ReplyAction(content="You're not allowed to use this command here."))
                     return
-
-            response = await __command.execute(interaction_context, **kwargs)
-            await self.__action_processor.process(context, response.action)
-            await self.__on_command_executed(__command, context, response)
+            try:
+                response = await __command.execute(interaction_context, **kwargs)
+                await self.__action_processor.process(context, response.action)
+                await self.__on_command_executed(__command, context, response)
+            except Exception as error:
+                self.__log.error(f"Error while processing command. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id} }}", error)
+                await context.reply("A technical error occurred while processing your command. Please, try again later or contact the developer.")
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
         self.__log.debug(f"Processed command. {{ Name = {__command.name}, Group = {__command.group_name}, SubGroup = {__command.subgroup_name}, UserId = {context.author_id}, Elapsed = {elapsed_time} }}")

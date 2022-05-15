@@ -43,9 +43,13 @@ class MenuItemProcessor(IMenuItemProcessor):
                     await self.__action_processor.process(context, ReplyAction(content="You're not allowed to use this command here."))
                     return
 
-            response = await menu_item.execute(interaction_context, **kwargs)
-            await self.__action_processor.process(context, response.action)
-            await self.__on_menu_item_executed(menu_item, context, response)
+            try:
+                response = await menu_item.execute(interaction_context, **kwargs)
+                await self.__action_processor.process(context, response.action)
+                await self.__on_menu_item_executed(menu_item, context, response)
+            except Exception as error:
+                self.__log.error(f"Error while processing command. {{ Type = {type(menu_item)}, UserId = {context.author_id} }}", error)
+                await context.reply("A technical error occurred while processing your action. Please, try again later or contact the developer.")
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
         self.__log.debug(f"Executed menu item. {{ Type = {type(menu_item)}, Elapsed = {elapsed_time} }}")

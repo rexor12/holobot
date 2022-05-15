@@ -8,14 +8,16 @@
             "name": "Python: Attach using Process Id",
             "type": "python",
             "request": "attach",
-            "processId": "${command:pickProcess}"
+            "processId": "${command:pickProcess}",
+            "justMyCode": false
         },
         {
             "name": "Python: __main__",
             "type": "python",
             "request": "launch",
             "program": "__main__.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }

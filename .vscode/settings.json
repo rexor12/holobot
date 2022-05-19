@@ -1,5 +1,12 @@
 {
     "python.formatting.provider": "black",
     "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.diagnosticMode": "workspace"
+    "python.analysis.diagnosticMode": "workspace",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintArgs": [
+        "--disable=missing-module-docstring,too-few-public-methods,wrong-import-order"
+    ],
+    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.guessTypes": true
 }

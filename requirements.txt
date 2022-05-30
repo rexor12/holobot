@@ -1,7 +1,7 @@
 asyncpg==0.24.0                     # Used for working with PostgreSQL databases.
 discord.py[voice]==1.7.3            # Discord bot framework.
 discord-py-slash-command==3.0.1a    # Unofficial extension for discord.py to support slash commands.
-kanata==0.1.0.0                     # Dependency injection framework.
+kanata==1.0.0.0                     # Dependency injection framework.
 pytz==2021.1                        # Used for working with timezones.
 structlog==21.5.0                   # Used for structured logging.
 tzlocal==3.0                        # Used for determining the current system timezone.

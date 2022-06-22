@@ -10,9 +10,11 @@ import hikari
 
 @injectable(IMenuItemRegistry)
 class MenuItemRegistry(IMenuItemRegistry):
-    def __init__(self,
+    def __init__(
+        self,
         log: LogInterface,
-        user_menu_items: Tuple[IMenuItem, ...]) -> None:
+        user_menu_items: Tuple[IMenuItem, ...]
+    ) -> None:
         super().__init__()
         self.__log: LogInterface = log.with_name("Discord", "ContextMenuItemRegistry")
         self.__user_menu_items: Dict[str, IMenuItem] = {
@@ -33,7 +35,11 @@ class MenuItemRegistry(IMenuItemRegistry):
         self.__log.info(f"Successfully registered user menu items. {{ Count = {len(self.__user_menu_items)} }}")
         return context_menu_item_builders
 
-    def __get_user_menu_item_builder(self, bot: Bot, menu_item: IUserMenuItem) -> ContextMenuCommandBuilder:
+    def __get_user_menu_item_builder(
+        self,
+        bot: Bot,
+        menu_item: IUserMenuItem
+    ) -> ContextMenuCommandBuilder:
         builder = bot.rest.context_menu_command_builder(
             type=hikari.CommandType.USER, # TODO Support others.
             name=menu_item.name

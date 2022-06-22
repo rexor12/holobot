@@ -17,6 +17,7 @@ if __name__ == "__main__":
     try:
         scope.resolve(Kernel).run()
     except CyclicGraphException as error:
-        print("Failed to resolve the services, because there is a cycle in the dependency graph. Nodes: {}".format(
-            ", ".join([str(node) for node in error.nodes])
+        print((
+            'Failed to resolve the services, because there is a cycle in the dependency graph.'
+            f' Nodes: {", ".join([str(node) for node in error.nodes])}'
         ))

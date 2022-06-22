@@ -6,12 +6,13 @@ from ..components import IComponentInteractionProcessor
 from ..context_menus import IMenuItemRegistry
 from ..context_menus import IMenuItemProcessor
 from asyncio.tasks import Task
+from hikari.api.special_endpoints import CommandBuilder
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional
+from typing import List, Optional
 
 import asyncio
 import hikari
@@ -90,16 +91,16 @@ class BotService(BotServiceInterface):
 
         return bot
 
-    async def __on_bot_starting(self, bot: Bot, event: hikari.StartingEvent) -> None:
+    async def __on_bot_starting(self, bot: Bot, _: hikari.StartingEvent) -> None:
         application = await bot.rest.fetch_application()
-        command_builders = []
+        command_builders: List[CommandBuilder] = []
         command_builders.extend(self.__command_registry.get_command_builders(bot))
         command_builders.extend(self.__context_menu_item_registry.get_command_builders(bot))
 
         await bot.rest.set_application_commands(
             application=application.id,
             commands=command_builders,
-            guild=self.__developer_server_id if self.__debugger.is_debug_mode_enabled() else 0
+            guild=self.__developer_server_id if self.__debugger.is_debug_mode_enabled() else hikari.UNDEFINED
         )
         self.__log.info("The bot has just started.")
 

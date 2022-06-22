@@ -6,12 +6,14 @@ Holo is a gradually growing bot with Discord integration. As it is a hobby proje
 
 Below are some of the feature groups currently available:
 
-* General functionality (avatar, emoji, dice)
-* Development related functionality (module management, ping, logging)
+* General (avatar, emoji, dice, 8-ball)
+* Administration (command usage permissions)
+* Moderation (manual/auto mute, kick, ban, logging)
 * Google text and image search
 * Reminders
 * To-do lists
-* Cryptocurrency information
+* Weather information
+* Cryptocurrency information (provided by Binance)
 
 For details about each group, please refer to the source code or the bot's help menu.
 
@@ -19,26 +21,30 @@ For details about each group, please refer to the source code or the bot's help 
 
 Below are some of the technologies used by this project:
 * [Python 3](https://www.python.org/)
-* [discord.py](https://github.com/Rapptz/discord.py)
+* [hikari](https://github.com/hikari-py)
+* [kanata](https://github.com/rexor12/kanata)
 * [asyncpg](https://github.com/MagicStack/asyncpg)
 * [pytz](https://pythonhosted.org/pytz)
 * [tzlocal](https://github.com/regebro/tzlocal)
 * [Binance API](https://developers.binance.com)
+* [Google API](https://developers.google.com/custom-search/v1/overview)
   
 # Installation
 
 ## Inviting the official instance to your server
 
-It is suggested to use the official instance of this bot which you can invite to your Discord server by using the following authorization link:
+While you are free to host your own instance of the bot, I would be grateful if you used the official instance that I maintain so that Holo can grow by getting more valuable feedback.
+
+You can use the following authorization link to invite the official instance:
 https://discord.com/api/oauth2/authorize?client_id=791766309611634698&permissions=122707586134&scope=bot%20applications.commands
 
-Currently, the bot requires administrator permissions to work correctly, which will be changed in the future when proper permission handling is implemented. If you deny some of the permissions, some features may not work as expected.
+To enable additional features of the bot, you can provide the necessary permissions in Discord for the bot's role or the bot user itself. When a required permission is missing, the bot should be able to tell you upon invoking the command.
 
-This instance of the bot is automatically deployed from the _main_ branch with new commits.
+This instance of the bot is deployed from the _main_ branch, therefore it is usually the latest and greatest version.
 
 ## Hosting your own instance
 
-**Python 3.8 or higher is required.**
+**Python 3.10 or higher is required.**
 
 After cloning the repository, you will have to make sure that all the dependencies are installed correctly. This can be achieved by the following command:
 
@@ -64,7 +70,7 @@ Depending on your environment (such as [Heroku](https://www.heroku.com)), you ca
 
 # Contribution
 
-Your contribution is more than welcome any time, be it ideas, suggestions, bug reports, bug fixes or new features.
+Your contribution is welcome any time, be it suggestions, bug reports, bug fixes or new features.
 
 There is no specific process for now, therefore - depending on the type of contribution - I suggest either creating an [issue](https://github.com/rexor12/holobot/issues) or forking the repository and creating a [pull request](https://github.com/rexor12/holobot/pulls).
 

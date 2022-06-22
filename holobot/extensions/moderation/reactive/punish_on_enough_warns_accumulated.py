@@ -55,6 +55,7 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
             return
 
         await self.__messaging.send_channel_message(
+            event.server_id,
             log_channel,
             f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes."
         )
@@ -79,13 +80,13 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
             await action()
             return True
         except ForbiddenError:
-            self.__log.error(f"Failed to execute punishment as access was forbidden.")
+            self.__log.error("Failed to execute punishment as access was forbidden.")
             return False
         except ServerNotFoundError:
-            self.__log.error(f"Failed to execute punishment as the server was not found.")
+            self.__log.error("Failed to execute punishment as the server was not found.")
             return False
         except UserNotFoundError:
-            self.__log.error(f"Failed to execute punishment as the user was not found.")
+            self.__log.error("Failed to execute punishment as the user was not found.")
             return False
     
     @staticmethod

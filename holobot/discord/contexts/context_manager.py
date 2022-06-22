@@ -1,14 +1,12 @@
 from .icontext_manager import IContextManager
 from .itracked_context import ITrackedContext
 from .tracked_context import TrackedContext
-from discord.ext.commands import Context
-from discord_slash.context import ComponentContext, MenuContext, SlashContext
+from hikari import PartialInteraction
 from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.concurrency import AsyncAnonymousDisposable, IAsyncDisposable, Task
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
-from typing import Union
 from uuid import UUID
 
 @injectable(IContextManager)
@@ -24,7 +22,7 @@ class ContextManager(IContextManager):
             raise ArgumentError("request_id", "No context exists for the specified request ID.")
         return context
 
-    async def store_context(self, request_id: UUID, context: Union[ComponentContext, Context, MenuContext, SlashContext]) -> None:
+    async def store_context(self, request_id: UUID, context: PartialInteraction) -> None:
         assert_not_none(request_id, "request_id")
         assert_not_none(context, "context")
 
@@ -37,7 +35,7 @@ class ContextManager(IContextManager):
     async def remove_context(self, request_id: UUID) -> ITrackedContext:
         return await self.__cache.remove(request_id)
 
-    async def register_context(self, request_id: UUID, context: Union[ComponentContext, Context, MenuContext, SlashContext]) -> IAsyncDisposable:
+    async def register_context(self, request_id: UUID, context: PartialInteraction) -> IAsyncDisposable:
         assert_not_none(request_id, "request_id")
         assert_not_none(context, "context")
 

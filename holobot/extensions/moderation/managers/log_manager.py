@@ -30,9 +30,9 @@ class LogManager(ILogManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(message, "message")
 
-        log_channel = await self.__log_settings_repository.get_log_channel(server_id)
-        if not log_channel:
+        channel_id = await self.__log_settings_repository.get_log_channel(server_id)
+        if not channel_id:
             return False
 
-        await self.__messaging.send_channel_message(log_channel, message)
+        await self.__messaging.send_channel_message(server_id, channel_id, message)
         return True

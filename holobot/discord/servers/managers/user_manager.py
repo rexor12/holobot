@@ -1,4 +1,4 @@
-from discord.errors import Forbidden
+from hikari import ForbiddenError as HikariForbiddenError
 from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.discord.utils import get_guild_member, get_guild_role
@@ -15,8 +15,8 @@ class UserManager(IUserManager):
         member = get_guild_member(server_id, user_id)
         try:
             await member.kick(reason=reason)
-        except Forbidden:
-            raise ForbiddenError()
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot kick server member.") from error
 
     async def ban_user(self, server_id: str, user_id: str, reason: str, delete_message_days: int = 0) -> None:
         assert_not_none(server_id, "server_id")
@@ -27,8 +27,8 @@ class UserManager(IUserManager):
         member = get_guild_member(server_id, user_id)
         try:
             await member.ban(reason=reason, delete_message_days=delete_message_days)
-        except Forbidden:
-            raise ForbiddenError()
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot ban server member.") from error
 
     async def assign_role(self, server_id: str, user_id: str, role_id: str) -> None:
         assert_not_none(server_id, "server_id")
@@ -38,9 +38,9 @@ class UserManager(IUserManager):
         member = get_guild_member(server_id, user_id)
         role = get_guild_role(server_id, role_id)
         try:
-            await member.add_roles(role)
-        except Forbidden:
-            raise ForbiddenError("Cannot assign role to server member.")
+            await member.add_role(role)
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot assign role to server member.") from error
 
     async def remove_role(self, server_id: str, user_id: str, role_id: str) -> None:
         assert_not_none(server_id, "server_id")
@@ -50,6 +50,6 @@ class UserManager(IUserManager):
         member = get_guild_member(server_id, user_id)
         role = get_guild_role(server_id, role_id)
         try:
-            await member.remove_roles(role)
-        except Forbidden:
-            raise ForbiddenError("Cannot remove role from server member.")
+            await member.remove_role(role)
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot remove role from server member.") from error

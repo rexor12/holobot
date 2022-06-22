@@ -1,35 +1,29 @@
-from ..contexts import IContextManager
-from ..transformers.emoji import remote_to_local
-from discord.ext.commands.converter import EmojiConverter, PartialEmojiConverter
-from discord.ext.commands.errors import EmojiNotFound, PartialEmojiConversionFailure
-from discord.partial_emoji import PartialEmoji
+from ..bot import BotAccessor
+from ..transformers.emoji import to_model
+from hikari import Emoji as HikariEmoji
 from holobot.discord.sdk.data_providers import IEmojiDataProvider
-from holobot.discord.sdk.models import Emoji, InteractionContext
+from holobot.discord.sdk.models import Emoji
 from holobot.sdk.ioc.decorators import injectable
 from typing import Optional
 
-partial_emoji_converter = PartialEmojiConverter()
-emoji_converter = EmojiConverter()
+import re
+
+EMOJI_REGEX = re.compile(r"^<(?:\:[aA])?\:(?:\w+)\:(?P<id>\d+)>$")
 
 @injectable(IEmojiDataProvider)
 class EmojiDataProvider(IEmojiDataProvider):
-    def __init__(self, context_manager: IContextManager) -> None:
-        super().__init__()
-        self.__context_manager: IContextManager = context_manager
+    async def find_emoji(self, name_or_mention: str) -> Optional[Emoji]:
+        return to_model(emoji) if (emoji := await self.__find_emoji(name_or_mention)) else None
 
-    async def find_emoji(self, context: InteractionContext, name_or_mention: str) -> Optional[Emoji]:
-        if not (emoji := await self.__find_emoji(context, name_or_mention)):
-            return None
-        return remote_to_local(emoji)
+    async def __find_emoji(self, name_or_mention: str) -> Optional[HikariEmoji]:
+        # TODO Doesn't find emojis from other servers.
+        if (match := EMOJI_REGEX.match(name_or_mention)) is not None:
+            return BotAccessor.get_bot().cache.get_emoji(int(match["id"]))
 
-    async def __find_emoji(self, context: InteractionContext, name_or_mention: str) -> Optional[PartialEmoji]:
-        tracked_context = await self.__context_manager.get_context(context.request_id)
-        try:
-            return await partial_emoji_converter.convert(tracked_context.context, name_or_mention)
-        except PartialEmojiConversionFailure:
-            pass
-        
-        try:
-            return await emoji_converter.convert(tracked_context.context, name_or_mention)
-        except EmojiNotFound:
-            return None
+        name_or_mention = name_or_mention.lower()
+        return next((
+                emoji for emoji in BotAccessor.get_bot().cache.get_emojis_view().values()
+                if emoji.name.lower() == name_or_mention
+            ),
+            None
+        )

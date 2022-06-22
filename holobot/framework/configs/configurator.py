@@ -22,13 +22,13 @@ class Configurator(ConfiguratorInterface):
         if not (parameters := section.get("parameters", None)):
             return default_value
         return parameters.get(parameter_name, default_value)
-    
+
     @staticmethod
     def __load_config(environment: EnvironmentInterface):
         config_file_path = os.path.join(environment.root_path, CONFIG_FILE_NAME)
         with open(config_file_path) as config_file:
             return load(config_file)
-    
+
     @staticmethod
     def __get_env(section_name: str, parameter_name: str, default_value: TValue) -> Optional[TValue]:
         if (value := os.environ.get(f"{section_name}-{parameter_name}", None)) is None:

@@ -1,13 +1,10 @@
 from ..bot import BotAccessor
-from discord.abc import GuildChannel
-from discord.guild import Guild, Member
-from discord.role import Role
-from discord.user import User
+from hikari import Guild, GuildChannel, Member, Role, User
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, RoleNotFoundError, ServerNotFoundError, UserNotFoundError
 from typing import Optional
     
 def get_guild(server_id: str) -> Guild:
-    guild: Optional[Guild] = BotAccessor.get_bot().get_guild(int(server_id))
+    guild: Optional[Guild] = BotAccessor.get_bot().cache.get_available_guild(int(server_id))
     if not guild:
         raise ServerNotFoundError(server_id)
     return guild
@@ -34,6 +31,6 @@ def get_guild_role(server_id: str, role_id: str) -> Role:
     return role
 
 def get_user(user_id: str) -> User:
-    if not (user := BotAccessor.get_bot().get_user(int(user_id))):
+    if not (user := BotAccessor.get_bot().cache.get_user(int(user_id))):
         raise UserNotFoundError(user_id)
     return user

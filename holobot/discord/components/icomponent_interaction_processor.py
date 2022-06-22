@@ -1,6 +1,7 @@
-from discord_slash.context import ComponentContext
-from holobot.discord.sdk.components.models import ComponentRegistration
+from abc import ABCMeta, abstractmethod
+from hikari import ComponentInteraction
 
-class IComponentInteractionProcessor:
-    async def process(self, registration: ComponentRegistration, context: ComponentContext) -> None:
-        raise NotImplementedError
+class IComponentInteractionProcessor(metaclass=ABCMeta):
+    @abstractmethod
+    async def process(self, interaction: ComponentInteraction) -> None:
+        ...

@@ -1,8 +1,11 @@
-from discord.role import Role as DiscordRole
+from hikari import PartialRole as HikariPartialRole, Role as HikariRole
 from holobot.discord.sdk.models import Role
+from typing import Union
 
-def remote_to_local(discord_role: DiscordRole) -> Role:
+TRole = Union[HikariPartialRole, HikariRole]
+
+def to_model(dto: TRole) -> Role:
     return Role(
-        id=str(discord_role.id),
-        name=discord_role.name
+        id=str(dto.id),
+        name=dto.name
     )

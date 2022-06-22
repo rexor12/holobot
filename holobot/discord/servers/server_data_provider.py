@@ -1,4 +1,4 @@
-from discord.guild import Guild
+from hikari import Guild
 from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.discord.sdk.servers.models import ServerData
 from holobot.discord.utils import get_guild
@@ -17,6 +17,6 @@ class ServerDataProvider(IServerDataProvider):
     def __guild_to_basic_data(guild: Guild) -> ServerData:
         return ServerData(
             server_id=str(guild.id),
-            icon_url=str(guild.icon_url),
+            icon_url=str(guild.icon_url) if guild.icon_url else None,
             name=guild.name
         )

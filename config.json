@@ -5,7 +5,8 @@
             "DiscordToken": "",
             "LogLevel": "Information",
             "HttpPoolSize": 50,
-            "AvatarArtworkArtistName": "unknown"
+            "AvatarArtworkArtistName": "unknown",
+            "DeveloperServerId": 822228166381797427
         }
     },
     "Google": {

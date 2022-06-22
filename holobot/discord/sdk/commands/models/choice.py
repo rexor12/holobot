@@ -6,4 +6,4 @@ class Choice:
     """Describes a choice of an option of a command."""
 
     name: str
-    value: Union[str, int]
+    value: Union[str, int, float]

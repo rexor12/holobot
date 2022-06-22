@@ -1,7 +1,7 @@
-from discord_slash.context import MenuContext
-from holobot.discord.sdk.context_menus import IMenuItem
-from typing import Any
+from abc import ABCMeta, abstractmethod
+from hikari import CommandInteraction
 
-class IMenuItemProcessor:
-    async def process(self, menu_item: IMenuItem, context: MenuContext, **kwargs: Any) -> None:
-        raise NotImplementedError
+class IMenuItemProcessor(metaclass=ABCMeta):
+    @abstractmethod
+    async def process(self, interaction: CommandInteraction) -> None:
+        ...

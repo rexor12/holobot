@@ -1,11 +1,11 @@
 from ..context_menus.models import MenuItemResponse
 from dataclasses import dataclass, field
 from holobot.sdk.reactive.models import EventBase
-from typing import Any, Type
+from typing import Any, Optional, Type
 
 @dataclass
 class MenuItemExecutedEvent(EventBase):
     menu_item_type: Type[Any] = object
-    server_id: str = ""
+    server_id: Optional[str] = ""
     user_id: str = ""
-    response: MenuItemResponse = field(default_factory=lambda: MenuItemResponse())
+    response: MenuItemResponse = field(default_factory=MenuItemResponse)

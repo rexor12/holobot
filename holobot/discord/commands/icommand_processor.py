@@ -1,7 +1,7 @@
-from discord_slash import SlashContext
-from holobot.discord.sdk.commands import CommandInterface
-from typing import Any
+from abc import ABCMeta, abstractmethod
+from hikari import CommandInteraction
 
-class ICommandProcessor:
-    async def process(self, __command: CommandInterface, context: SlashContext, **kwargs: Any) -> None:
-        raise NotImplementedError
+class ICommandProcessor(metaclass=ABCMeta):
+    @abstractmethod
+    async def process(self, interaction: CommandInteraction) -> None:
+        ...

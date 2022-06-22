@@ -1,29 +1,27 @@
-from abc import abstractmethod
-from discord import Message
-from discord.ext.commands import Context
-from discord_slash.context import ComponentContext, MenuContext, SlashContext
-from typing import Awaitable, Callable, Optional, Union
+from abc import ABCMeta, abstractmethod
+from hikari import PartialInteraction, PartialMessage
+from typing import Awaitable, Callable, Optional
 from uuid import UUID
 
-class ITrackedContext:
+class ITrackedContext(metaclass=ABCMeta):
     @property
     @abstractmethod
     def request_id(self) -> UUID:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
-    def context(self) -> Union[ComponentContext, Context, MenuContext, SlashContext]:
-        raise NotImplementedError
+    def context(self) -> PartialInteraction:
+        ...
 
     @abstractmethod
-    async def add_message(self, channel_id: str, message_id: str, message: Message) -> None:
-        raise NotImplementedError
+    async def add_message(self, channel_id: str, message_id: str, message: PartialMessage) -> None:
+        ...
 
     @abstractmethod
-    async def get_message(self, channel_id: str, message_id: str) -> Optional[Message]:
-        raise NotImplementedError
+    async def get_message(self, channel_id: str, message_id: str) -> Optional[PartialMessage]:
+        ...
 
     @abstractmethod
-    async def get_or_add_message(self, channel_id: str, message_id: str, factory: Callable[[str, str], Awaitable[Message]]) -> Message:
-        raise NotImplementedError
+    async def get_or_add_message(self, channel_id: str, message_id: str, factory: Callable[[str, str], Awaitable[PartialMessage]]) -> PartialMessage:
+        ...

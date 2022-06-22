@@ -27,7 +27,7 @@ class CryptoRepository(CryptoRepositoryInterface):
         result = await self.__cache.get_or_add(symbol, self.__load)
         self.__log.debug(f"Got price. {{ Symbol = {symbol} }}")
         return result
-    
+
     async def update_prices(self, prices: List[PriceData]):
         self.__log.debug("Updating prices...")
         async with self.__database_manager.acquire_connection() as connection:
@@ -49,8 +49,8 @@ class CryptoRepository(CryptoRepositoryInterface):
                 result = await connection.fetchrow("SELECT price, timestamp FROM crypto_binance WHERE symbol = $1 ORDER BY timestamp DESC", symbol)
                 self.__log.debug(f"Loaded price. {{ Symbol = {symbol}, Exists = {result is not None} }}")
                 return PriceData(symbol, result["price"], result["timestamp"]) if result is not None else None
-    
-    async def __save(self, connection: Connection, price_data: PriceData, previous: PriceData = None):
+
+    async def __save(self, connection: Connection, price_data: PriceData, previous: Optional[PriceData] = None):
         # TODO Implement this persistence toggle in a more efficient way, so that no database connection is made.
         if self.__configurator.get("Crypto", "PersistPrices", True):
             await connection.execute("INSERT INTO crypto_binance (symbol, timestamp, price) VALUES ($1, $2, $3)", price_data.symbol, price_data.timestamp, price_data.price)

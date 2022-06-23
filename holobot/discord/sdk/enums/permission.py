@@ -1,4 +1,8 @@
+from __future__ import annotations
 from enum import IntFlag, unique
+
+import functools
+import operator
 
 @unique
 class Permission(IntFlag):
@@ -36,3 +40,7 @@ class Permission(IntFlag):
     MANAGE_NICKNAMES            =   1 << 30
     USE_SLASH_COMMANDS          =   1 << 31
     REQUEST_TO_SPEAK            =   1 << 32
+
+    @classmethod
+    def all_permissions(cls) -> Permission:
+        return functools.reduce(operator.ior, Permission)

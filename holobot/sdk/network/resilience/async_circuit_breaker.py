@@ -29,7 +29,7 @@ class AsyncCircuitBreaker:
     @property
     def failure_threshold(self) -> int:
         return self.__failure_threshold
-    
+
     @failure_threshold.setter
     def failure_threshold(self, value: int):
         if value <= 0:
@@ -39,17 +39,17 @@ class AsyncCircuitBreaker:
     @property
     def recovery_timeout(self) -> int:
         return self.__recovery_timeout
-    
+
     @recovery_timeout.setter
     def recovery_timeout(self, value: int):
         if value <= 0:
             raise ValueError("The recovery timeout must be greater than zero.")
         self.__recovery_timeout = value
-    
+
     @property
     def error_evaluator(self):
         return self.__error_evaluator
-    
+
     @error_evaluator.setter
     def error_evaluator(self, corof):
         if not asyncio.iscoroutinefunction(corof):
@@ -61,7 +61,7 @@ class AsyncCircuitBreaker:
         if self.__state == CircuitState.OPEN and self.__close_time < time():
             return CircuitState.HALF_OPEN
         return self.__state
-    
+
     @property
     def time_to_recover(self) -> int:
         return int(self.__close_time - time()) if self.state != CircuitState.CLOSED else 0
@@ -75,10 +75,10 @@ class AsyncCircuitBreaker:
         except Exception as error:
             await self.__on_failure(error)
             raise
-        
+
         self.__on_success()
         return result
-    
+
     async def __on_failure(self, error: Exception):
         self.__failure_count += 1
         if self.__failure_count >= self.__failure_threshold:
@@ -86,7 +86,7 @@ class AsyncCircuitBreaker:
             recovery_timeout = await self.error_evaluator(self, error)
             self.__state = CircuitState.OPEN
             self.__close_time = time() + recovery_timeout
-    
+
     def __on_success(self):
         self.__failure_count = 0
-        self.__state == CircuitState.CLOSED
+        self.__state = CircuitState.CLOSED

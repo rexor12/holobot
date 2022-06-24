@@ -51,7 +51,7 @@ class MenuItemProcessor(IMenuItemProcessor):
         async with await self.__context_manager.register_context(interaction_context.request_id, interaction):
             for rule in self.__menu_item_execution_rules:
                 if await rule.should_halt(menu_item, interaction_context):
-                    self.__log.debug(f"Menu item has been halted. {{ Type = {type(menu_item)} }}")
+                    self.__log.debug(f"Menu item has been halted. {{ Type = {type(menu_item).__name__}, Rule = {type(rule).__name__} }}")
                     await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."))
                     return
 

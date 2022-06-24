@@ -39,12 +39,12 @@ class CommandProcessor(ICommandProcessor):
         self.__context_manager: IContextManager = context_manager
 
     async def process(self, interaction: CommandInteraction) -> None:
-        self.__log.trace(f"Processing command... {{ Name = {interaction.command_name} }}")
+        details = CommandProcessor.__get_command_details(interaction)
+        self.__log.trace(f"Processing command... {{ Name = {details.command_name} }}")
         start_time = time.perf_counter()
         await interaction.create_initial_response(response_type=ResponseType.DEFERRED_MESSAGE_CREATE)
 
         context = await CommandProcessor.__get_context(interaction)
-        details = CommandProcessor.__get_command_details(interaction)
         if not (command := self.__command_registry.get_command(details.group_name, details.sub_group_name, details.command_name)):
             await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent command."))
             return
@@ -52,7 +52,7 @@ class CommandProcessor(ICommandProcessor):
         async with await self.__context_manager.register_context(context.request_id, interaction):
             for rule in self.__command_execution_rules:
                 if await rule.should_halt(command, context):
-                    self.__log.debug(f"Command has been halted. {{ Name = {command.name}, Group = {command.group_name}, SubGroup = {command.subgroup_name}, UserId = {context.author_id} }}")
+                    self.__log.debug(f"Command has been halted. {{ Name = {command.name}, Group = {command.group_name}, SubGroup = {command.subgroup_name}, UserId = {context.author_id}, Rule = {type(rule).__name__} }}")
                     await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."))
                     return
 

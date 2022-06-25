@@ -1,11 +1,15 @@
 from .icomponent_transformer import IComponentTransformer
-from holobot.discord.sdk.components import Button, ComboBox, Component, StackLayout
+from holobot.discord.sdk.components import (
+    Button, ComboBox, Component, Paginator, StackLayout
+)
 from holobot.discord.sdk.components.enums import ComponentStyle
-from holobot.discord.sdk.components.models import ComboBoxState, DEFAULT_EMPTY_STATE
+from holobot.discord.sdk.components.models import (
+    ComboBoxState, PagerState, DEFAULT_EMPTY_STATE
+)
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import assert_not_none, assert_range
-from typing import Any, Callable, Dict, Optional, Type
+from holobot.sdk.utils import assert_not_none, assert_range, try_parse_int
+from typing import Any, Callable, Dict, NamedTuple, Optional, Type
 
 import hikari
 import hikari.messages as hikari_messages
@@ -27,6 +31,10 @@ _TComponentBuilder = Callable[
     endpointsintf.ComponentBuilder
 ]
 
+class _ComponentData(NamedTuple):
+    identifier: str
+    data: str
+
 @injectable(IComponentTransformer)
 class ComponentTransformer(IComponentTransformer):
     def __init__(self) -> None:
@@ -34,12 +42,14 @@ class ComponentTransformer(IComponentTransformer):
         self.__component_transformers: Dict[Type[Component], _TComponentBuilder] = {
             StackLayout: self.__transform_stack_layout,
             Button: self.__transform_button,
-            ComboBox: self.__transform_combo_box
+            ComboBox: self.__transform_combo_box,
+            Paginator: self.__transform_pager
         }
         self.__state_transformers: Dict[Type[Component], Callable[[hikari.ComponentInteraction], Any]] = {
             StackLayout: lambda _: DEFAULT_EMPTY_STATE,
             Button: lambda _: DEFAULT_EMPTY_STATE,
-            ComboBox: self.__transform_combo_box_state
+            ComboBox: self.__transform_combo_box_state,
+            Paginator: self.__transform_pager_state
         }
 
     def transform_component(self, component: Component) -> endpointsintf.ComponentBuilder:
@@ -56,6 +66,14 @@ class ComponentTransformer(IComponentTransformer):
         if not (transformer := self.__state_transformers.get(component_type, None)):
             raise ArgumentError("component_type", "Invalid component type.")
         return transformer(interaction)
+
+    @staticmethod
+    def __get_component_data_from_custom_id(custom_id: str) -> _ComponentData:
+        custom_id_parts = custom_id.split("~", 1)
+        return _ComponentData(
+            custom_id_parts[0],
+            custom_id_parts[1] if len(custom_id_parts) > 1 else ""
+        )
 
     def __transform_component(
         self,
@@ -153,3 +171,39 @@ class ComponentTransformer(IComponentTransformer):
         return ComboBoxState(
             selected_values=interaction.values
         )
+
+    def __transform_pager(
+        self,
+        component: Paginator,
+        container: Optional[endpointsintf.ComponentBuilder]
+    ) -> endpointsintf.ComponentBuilder:
+        assert_not_none(component, "component")
+        if container:
+            raise ArgumentError(f"A pager is a layout and cannot be placed in another layout, but was placed in '{type(container)}'.")
+
+        return self.__transform_component(
+            StackLayout(
+                component.id,
+                [
+                    # TODO Dedicated data field (implemented on the main/FreeEpicGamesCommand branch).
+                    Button(
+                        f"{component.id}~{component.current_page - 1}",
+                        "Previous",
+                        ComponentStyle.SECONDARY
+                    ),
+                    Button(
+                        f"{component.id}~{component.current_page + 1}",
+                        "Next",
+                        ComponentStyle.SECONDARY
+                    )
+                ]
+            ),
+            None
+        )
+
+    def __transform_pager_state(
+        self,
+        interaction: hikari.ComponentInteraction
+    ) -> PagerState:
+        _, data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
+        return PagerState(try_parse_int(data) or 0)

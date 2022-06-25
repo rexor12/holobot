@@ -1,12 +1,9 @@
-from .action_base import ActionBase
-from ..components import Component, StackLayout
+from .content_changing_action_base import ContentChangingActionBase
+from ..components import Component, Layout
 from ..models import Embed
 from dataclasses import dataclass, field
 from typing import List, Union
 
 @dataclass
-class ReplyAction(ActionBase):
+class ReplyAction(ContentChangingActionBase):
     """An action that replies to a request with a message."""
-
-    content: Union[str, Embed]
-    components: Union[Component, List[StackLayout]] = field(default_factory=lambda: [])

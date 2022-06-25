@@ -1,9 +1,9 @@
 from .icommand_processor import ICommandProcessor
 from .icommand_registry import ICommandRegistry
 from ..actions import IActionProcessor
-from ..contexts import IContextManager
 from hikari import CommandInteraction, OptionType, ResponseType
 from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.commands import CommandExecutionRuleInterface, CommandInterface
 from holobot.discord.sdk.commands.models import CommandResponse, ServerChatInteractionContext
 from holobot.discord.sdk.events import CommandExecutedEvent
@@ -28,15 +28,13 @@ class CommandProcessor(ICommandProcessor):
         log: LogInterface,
         command_executed_event_handlers: Tuple[ListenerInterface[CommandExecutedEvent], ...],
         command_execution_rules: Tuple[CommandExecutionRuleInterface, ...],
-        command_registry: ICommandRegistry,
-        context_manager: IContextManager) -> None:
+        command_registry: ICommandRegistry) -> None:
         super().__init__()
         self.__action_processor: IActionProcessor = action_processor
         self.__log: LogInterface = log.with_name("Discord", "CommandProcessor")
         self.__command_executed_event_handlers: Tuple[ListenerInterface[CommandExecutedEvent], ...] = command_executed_event_handlers
         self.__command_execution_rules: Tuple[CommandExecutionRuleInterface, ...] = command_execution_rules
         self.__command_registry: ICommandRegistry = command_registry
-        self.__context_manager: IContextManager = context_manager
 
     async def process(self, interaction: CommandInteraction) -> None:
         details = CommandProcessor.__get_command_details(interaction)
@@ -46,19 +44,18 @@ class CommandProcessor(ICommandProcessor):
 
         context = await CommandProcessor.__get_context(interaction)
         if not (command := self.__command_registry.get_command(details.group_name, details.sub_group_name, details.command_name)):
-            await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent command."))
+            await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent command."), DeferType.DEFER_MESSAGE_CREATION)
             return
 
-        async with await self.__context_manager.register_context(context.request_id, interaction):
-            for rule in self.__command_execution_rules:
-                if await rule.should_halt(command, context):
-                    self.__log.debug(f"Command has been halted. {{ Name = {command.name}, Group = {command.group_name}, SubGroup = {command.subgroup_name}, UserId = {context.author_id}, Rule = {type(rule).__name__} }}")
-                    await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."))
-                    return
+        for rule in self.__command_execution_rules:
+            if await rule.should_halt(command, context):
+                self.__log.debug(f"Command has been halted. {{ Name = {command.name}, Group = {command.group_name}, SubGroup = {command.subgroup_name}, UserId = {context.author_id}, Rule = {type(rule).__name__} }}")
+                await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."), DeferType.DEFER_MESSAGE_CREATION)
+                return
 
             # TODO Is this **kwargs expansion safe? Maybe bind known params only?
             response = await command.execute(context, **details.arguments)
-            await self.__action_processor.process(interaction, response.action)
+            await self.__action_processor.process(interaction, response.action, DeferType.DEFER_MESSAGE_CREATION)
             await self.__on_command_executed(command, interaction, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)

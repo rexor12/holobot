@@ -47,7 +47,7 @@ class BotService(BotServiceInterface):
         self.__context_menu_item_registry: IMenuItemRegistry = context_menu_item_registry
         self.__component_interaction_processor: IComponentInteractionProcessor = component_interaction_processor
         self.__menu_item_processor: IMenuItemProcessor = menu_item_processor
-        self.__developer_server_id: int = configurator.get("General", "DeveloperServerId", 0)
+        self.__developer_server_id: int = configurator.get("Development", "DevelopmentServerId", 0)
         self.__bot: Bot = self.__initialize_bot(configurator)
         self.__bot_task: Optional[Task] = None
         # See the reference for a note about what this is.

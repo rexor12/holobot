@@ -1,9 +1,9 @@
 from .imenu_item_processor import IMenuItemProcessor
 from .imenu_item_registry import IMenuItemRegistry
 from ..actions import IActionProcessor
-from ..contexts import IContextManager
 from hikari import CommandInteraction, ResponseType
 from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.context_menus import IMenuItem, IMenuItemExecutionRule
 from holobot.discord.sdk.context_menus.models import MenuItemResponse, ServerUserInteractionContext
 from holobot.discord.sdk.events import MenuItemExecutedEvent
@@ -23,7 +23,6 @@ class MenuItemDetails(NamedTuple):
 class MenuItemProcessor(IMenuItemProcessor):
     def __init__(self,
         action_processor: IActionProcessor,
-        context_manager: IContextManager,
         log: LogInterface,
         menu_item_executed_event_handlers: Tuple[ListenerInterface[MenuItemExecutedEvent], ...],
         menu_item_execution_rules: Tuple[IMenuItemExecutionRule, ...],
@@ -31,7 +30,6 @@ class MenuItemProcessor(IMenuItemProcessor):
     ) -> None:
         super().__init__()
         self.__action_processor: IActionProcessor = action_processor
-        self.__context_manager: IContextManager = context_manager
         self.__log: LogInterface = log.with_name("Discord", "MenuItemProcessor")
         self.__menu_item_executed_event_handlers: Tuple[ListenerInterface[MenuItemExecutedEvent], ...] = menu_item_executed_event_handlers
         self.__menu_item_execution_rules: Tuple[IMenuItemExecutionRule, ...] = menu_item_execution_rules
@@ -45,18 +43,17 @@ class MenuItemProcessor(IMenuItemProcessor):
         interaction_context = MenuItemProcessor.__get_context(interaction)
         details = MenuItemProcessor.__get_menu_item_details(interaction)
         if not (menu_item := self.__menu_item_registry.get_menu_item(details.name)):
-            await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent menu item."))
+            await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent menu item."), DeferType.DEFER_MESSAGE_CREATION)
             return
 
-        async with await self.__context_manager.register_context(interaction_context.request_id, interaction):
-            for rule in self.__menu_item_execution_rules:
-                if await rule.should_halt(menu_item, interaction_context):
-                    self.__log.debug(f"Menu item has been halted. {{ Type = {type(menu_item).__name__}, Rule = {type(rule).__name__} }}")
-                    await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."))
-                    return
+        for rule in self.__menu_item_execution_rules:
+            if await rule.should_halt(menu_item, interaction_context):
+                self.__log.debug(f"Menu item has been halted. {{ Type = {type(menu_item).__name__}, Rule = {type(rule).__name__} }}")
+                await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."), DeferType.DEFER_MESSAGE_CREATION)
+                return
 
             response = await menu_item.execute(interaction_context, **details.arguments)
-            await self.__action_processor.process(interaction, response.action)
+            await self.__action_processor.process(interaction, response.action, DeferType.DEFER_MESSAGE_CREATION)
             await self.__on_menu_item_executed(menu_item, interaction, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)

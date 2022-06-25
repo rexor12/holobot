@@ -2,9 +2,9 @@ from .icomponent_interaction_processor import IComponentInteractionProcessor
 from .icomponent_registry import IComponentRegistry
 from .icomponent_transformer import IComponentTransformer
 from ..actions.iaction_processor import IActionProcessor
-from ..contexts import IContextManager
 from hikari import ComponentInteraction
 from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.commands.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -25,12 +25,10 @@ class ComponentInteractionProcessor(IComponentInteractionProcessor):
         action_processor: IActionProcessor,
         component_registry: IComponentRegistry,
         component_transformer: IComponentTransformer,
-        context_manager: IContextManager,
         log: LogInterface
     ) -> None:
         super().__init__()
         self.__action_processor: IActionProcessor = action_processor
-        self.__context_manager: IContextManager = context_manager
         self.__log: LogInterface = log.with_name("Discord", "ComponentInteractionProcessor")
         self.__component_registry: IComponentRegistry = component_registry
         self.__component_transformer: IComponentTransformer = component_transformer
@@ -38,23 +36,26 @@ class ComponentInteractionProcessor(IComponentInteractionProcessor):
     async def process(self, interaction: ComponentInteraction) -> None:
         component_id = interaction.custom_id.split("~", 1)[0]
         self.__log.trace(f"Processing component interaction... {{ Id = {component_id}, UserId = {interaction.user.id} }}")
-        start_time = time.perf_counter()
-        await interaction.create_initial_response(response_type=hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
-
-        context = await ComponentInteractionProcessor.__get_context(interaction)
         if not (registration := self.__component_registry.get_registration(component_id)):
-            await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent command."))
+            await self.__action_processor.process(interaction, ReplyAction(content="You've invoked an inexistent command."), DeferType.NONE)
+            self.__log.trace(f"Processed component interaction. {{ Id = {component_id}, IsInvalid = True }}")
             return
 
-        async with await self.__context_manager.register_context(context.request_id, interaction):
-            response = await registration.on_interaction(
-                registration,
-                context,
-                self.__component_transformer.transform_state(registration.component_type, interaction))
-            await self.__action_processor.process(interaction, response.action)
+        start_time = time.perf_counter()
+        if registration.deferral == DeferType.DEFER_MESSAGE_CREATION:
+            await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
+        elif registration.deferral == DeferType.DEFER_MESSAGE_UPDATE:
+            await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+
+        context = await ComponentInteractionProcessor.__get_context(interaction)
+        response = await registration.on_interaction(
+            registration,
+            context,
+            self.__component_transformer.transform_state(registration.component_type, interaction))
+        await self.__action_processor.process(interaction, response.action, registration.deferral)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
-        self.__log.trace(f"Processed component interaction. {{ Id = {registration.id}, UserId = {context.author_id}, Elapsed = {elapsed_time} }}")
+        self.__log.trace(f"Processed component interaction. {{ Id = {component_id}, UserId = {context.author_id}, Elapsed = {elapsed_time} }}")
 
     @staticmethod
     async def __get_context(interaction: ComponentInteraction) -> ServerChatInteractionContext:

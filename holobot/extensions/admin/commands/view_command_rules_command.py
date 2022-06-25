@@ -3,7 +3,6 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.commands import CommandBase, CommandInterface
 from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
-from holobot.discord.sdk.components import Pager
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import Embed, EmbedField
 from holobot.sdk.ioc.decorators import injectable
@@ -27,27 +26,29 @@ class ViewCommandRulesCommand(CommandBase):
         self.required_permissions = Permission.ADMINISTRATOR
         
     async def execute(self, context: ServerChatInteractionContext, group: Optional[str] = None, subgroup: Optional[str] = None) -> CommandResponse:
-        if not group and subgroup:
-            return CommandResponse(
-                action=ReplyAction(content="You can specify a subgroup if and only if you specify a group, too.")
-            )
+        # if not group and subgroup:
+        #     return CommandResponse(
+        #         action=ReplyAction(content="You can specify a subgroup if and only if you specify a group, too.")
+        #     )
 
-        async def create_filtered_embed(context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
-            start_offset = page * page_size
-            rules = await self.__command_manager.get_rules_by_server(context.server_id, start_offset, page_size, group, subgroup)
-            if len(rules) == 0:
-                return None
+        # async def create_filtered_embed(context: ServerChatInteractionContext, page: int, page_size: int) -> Optional[Embed]:
+        #     start_offset = page * page_size
+        #     rules = await self.__command_manager.get_rules_by_server(context.server_id, start_offset, page_size, group, subgroup)
+        #     if len(rules) == 0:
+        #         return None
 
-            return Embed(
-                title="Command rules",
-                description="The list of command rules set on this server.",
-                color=0xeb7d00,
-                fields=[EmbedField(
-                    name=f"Rule #{rule.id}",
-                    value=rule.textify(),
-                    is_inline=False
-                ) for rule in rules]
-            )
+        #     return Embed(
+        #         title="Command rules",
+        #         description="The list of command rules set on this server.",
+        #         color=0xeb7d00,
+        #         fields=[EmbedField(
+        #             name=f"Rule #{rule.id}",
+        #             value=rule.textify(),
+        #             is_inline=False
+        #         ) for rule in rules]
+        #     )
 
-        await Pager(self.__messaging, self.__log, context, create_filtered_embed)
-        return CommandResponse()
+        # await Pager(self.__messaging, self.__log, context, create_filtered_embed)
+        # return CommandResponse()
+        # TODO Implement paging.
+        return CommandResponse(ReplyAction("Not implemented yet."))

@@ -5,8 +5,7 @@
             "DiscordToken": "",
             "LogLevel": "Information",
             "HttpPoolSize": 50,
-            "AvatarArtworkArtistName": "unknown",
-            "DeveloperServerId": 822228166381797427
+            "AvatarArtworkArtistName": "unknown"
         }
     },
     "Google": {
@@ -19,7 +18,8 @@
     },
     "Development": {
         "parameters": {
-            "DeveloperUserIds": []
+            "DeveloperUserIds": [],
+            "DevelopmentServerId": 0
         }
     },
     "Database": {

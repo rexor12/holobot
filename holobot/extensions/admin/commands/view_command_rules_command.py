@@ -77,7 +77,7 @@ class ViewCommandRulesCommand(CommandBase):
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
                 ),
-                Paginator("todo_paginator", current_page=max(state.current_page, 0))
+                Paginator("avrc_paginator", current_page=max(state.current_page, 0))
             )
         )
 

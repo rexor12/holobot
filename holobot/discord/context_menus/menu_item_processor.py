@@ -52,9 +52,9 @@ class MenuItemProcessor(IMenuItemProcessor):
                 await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."), DeferType.DEFER_MESSAGE_CREATION)
                 return
 
-            response = await menu_item.execute(interaction_context, **details.arguments)
-            await self.__action_processor.process(interaction, response.action, DeferType.DEFER_MESSAGE_CREATION)
-            await self.__on_menu_item_executed(menu_item, interaction, response)
+        response = await menu_item.execute(interaction_context, **details.arguments)
+        await self.__action_processor.process(interaction, response.action, DeferType.DEFER_MESSAGE_CREATION)
+        await self.__on_menu_item_executed(menu_item, interaction, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
         self.__log.debug(f"Executed menu item. {{ Type = {type(menu_item)}, Elapsed = {elapsed_time} }}")

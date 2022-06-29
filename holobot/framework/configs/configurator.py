@@ -14,7 +14,6 @@ class Configurator(ConfiguratorInterface):
         self.__configs = Configurator.__load_config(environment)
 
     def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
-        # TODO Temporary change to support Heroku's way of configuration.
         if (env_value := Configurator.__get_env(section_name, parameter_name, default_value)) is not None:
             return env_value
         if not (section := self.__configs.get(section_name, None)):

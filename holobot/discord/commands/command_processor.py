@@ -53,10 +53,10 @@ class CommandProcessor(ICommandProcessor):
                 await self.__action_processor.process(interaction, ReplyAction(content="You're not allowed to use this command here."), DeferType.DEFER_MESSAGE_CREATION)
                 return
 
-            # TODO Is this **kwargs expansion safe? Maybe bind known params only?
-            response = await command.execute(context, **details.arguments)
-            await self.__action_processor.process(interaction, response.action, DeferType.DEFER_MESSAGE_CREATION)
-            await self.__on_command_executed(command, interaction, response)
+        # TODO Is this **kwargs expansion safe? Maybe bind known params only?
+        response = await command.execute(context, **details.arguments)
+        await self.__action_processor.process(interaction, response.action, DeferType.DEFER_MESSAGE_CREATION)
+        await self.__on_command_executed(command, interaction, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
         self.__log.debug(f"Processed command. {{ Name = {interaction.command_name}, Elapsed = {elapsed_time} }}")

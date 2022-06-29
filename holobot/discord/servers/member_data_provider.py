@@ -140,20 +140,17 @@ class MemberDataProvider(IMemberDataProvider):
         channel: hikari.GuildChannel,
         permissions: hikari.Permissions
     ) -> hikari.Permissions:
+        # Get the permissions of "everyone" first.
         if everyone_overwrite := channel.permission_overwrites.get(member.guild_id):
             permissions &= ~everyone_overwrite.deny
             permissions |= everyone_overwrite.allow
 
-        # TODO Do we need to collect deny and allow instead of directly adding them?
-        deny = hikari.Permissions.NONE
-        allow = hikari.Permissions.NONE
+        # Then apply the permissions of the member's roles.
         for overwrite in filter(None, map(channel.permission_overwrites.get, member.role_ids)):
-            deny |= overwrite.deny
-            allow |= overwrite.allow
+            permissions &= ~overwrite.deny
+            permissions |= overwrite.allow
 
-        permissions &= ~deny
-        permissions |= allow
-
+        # Then apply the permissions of the channel itself.
         if member_overwrite := channel.permission_overwrites.get(member.user.id):
             permissions &= ~member_overwrite.deny
             permissions |= member_overwrite.allow

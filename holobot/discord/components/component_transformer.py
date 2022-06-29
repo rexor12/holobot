@@ -181,18 +181,19 @@ class ComponentTransformer(IComponentTransformer):
         if container:
             raise ArgumentError(f"A pager is a layout and cannot be placed in another layout, but was placed in '{type(container)}'.")
 
+        custom_data = ";".join((f"{key}={value}" for key, value in component.custom_data.items()))
         return self.__transform_component(
             StackLayout(
                 component.id,
                 [
                     # TODO Dedicated data field (implemented on the main/FreeEpicGamesCommand branch).
                     Button(
-                        f"{component.id}~{component.current_page - 1}",
+                        f"{component.id}~{component.current_page - 1};{custom_data}",
                         "Previous",
                         ComponentStyle.SECONDARY
                     ),
                     Button(
-                        f"{component.id}~{component.current_page + 1}",
+                        f"{component.id}~{component.current_page + 1};{custom_data}",
                         "Next",
                         ComponentStyle.SECONDARY
                     )
@@ -206,4 +207,12 @@ class ComponentTransformer(IComponentTransformer):
         interaction: hikari.ComponentInteraction
     ) -> PagerState:
         _, data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
-        return PagerState(try_parse_int(data) or 0)
+        data_parts = data.split(";")
+        current_page = data_parts[0] if len(data_parts) > 0 else None
+        custom_data = {}
+        for data_part in data_parts:
+            custom_data_parts = data_part.split("=", 1)
+            if len(custom_data_parts) == 2:
+                custom_data[custom_data_parts[0]] = custom_data_parts[1]
+
+        return PagerState(try_parse_int(current_page) or 0, custom_data)

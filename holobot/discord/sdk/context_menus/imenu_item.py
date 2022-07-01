@@ -5,6 +5,14 @@ from typing import Any
 
 class IMenuItem:
     @property
+    def name(self) -> str:
+        return self.__name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self.__name = value
+
+    @property
     def required_permissions(self) -> Permission:
         return self.__required_permissions
     
@@ -31,4 +39,4 @@ class IMenuItem:
         raise NotImplementedError
 
     def __lt__(self, other: Any) -> bool:
-        return False
+        return self.name < other.name if isinstance(other, IMenuItem) else False

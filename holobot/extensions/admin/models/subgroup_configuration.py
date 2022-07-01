@@ -6,7 +6,7 @@ class SubgroupConfiguration:
         self.name = name
         self.can_disable = True
         self.commands = {}
-    
+
     @property
     def name(self) -> str:
         return self.__name
@@ -18,19 +18,19 @@ class SubgroupConfiguration:
     @property
     def can_disable(self) -> bool:
         return self.__can_disable
-    
+
     @can_disable.setter
     def can_disable(self, value: bool) -> None:
         self.__can_disable = value
-    
+
     @property
     def commands(self) -> Dict[str, CommandConfiguration]:
         return self.__commands
-    
+
     @commands.setter
     def commands(self, value: Dict[str, CommandConfiguration]) -> None:
         self.__commands = value
-    
+
     @staticmethod
     def from_json(name: str, can_disable_parent: bool, json: Dict[str, Any]) -> 'SubgroupConfiguration':
         config = SubgroupConfiguration(name)

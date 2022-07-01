@@ -18,7 +18,8 @@
     },
     "Development": {
         "parameters": {
-            "DeveloperUserIds": []
+            "DeveloperUserIds": [],
+            "DevelopmentServerId": 0
         }
     },
     "Database": {

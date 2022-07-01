@@ -15,10 +15,15 @@ class ViewEmojiCommand(CommandBase):
         ]
 
     async def execute(self, context: ServerChatInteractionContext, name: str) -> CommandResponse:
-        if (emoji := await self.__emoji_data_provider.find_emoji(context, name.strip())) is None:
+        if (emoji := await self.__emoji_data_provider.find_emoji(name.strip())) is None:
             return CommandResponse(
                 action=ReplyAction(content="The specified emoji cannot be found. Did you make a typo?")
             )
+
+        if not emoji.url:
+            return CommandResponse(ReplyAction((
+                "The specified emoji isn't a custom emoji, therefore it has no attributes."
+            )))
 
         return CommandResponse(
             action=ReplyAction(content=emoji.url)

@@ -7,7 +7,7 @@ from holobot.sdk.logging import LogInterface
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
 from multidict import CIMultiDict
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 DEFAULT_TIMEOUT = ClientTimeout(total=5)
 
@@ -30,7 +30,7 @@ class HttpClientPool(HttpClientPoolInterface, StartableInterface):
         await self.__session.close()
         self.__log.debug("Successfully closed session.")
 
-    async def get(self, url: str, query_parameters: Dict[str, Any] = None) -> Any:
+    async def get(self, url: str, query_parameters: Optional[Dict[str, Any]] = None) -> Any:
         try:
             async with self.__session.get(url, params=query_parameters, timeout=DEFAULT_TIMEOUT) as response:
                 return await response.json()

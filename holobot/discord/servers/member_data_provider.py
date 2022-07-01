@@ -1,56 +1,15 @@
-from ..bot import BotAccessor
 from ..utils import get_guild_member
-from discord import Permissions
-from discord.abc import GuildChannel, PrivateChannel
-from discord.guild import Guild
-from discord.member import Member
+from ..utils.permission_utils import PERMISSION_TO_MODELS
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
+from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
 from holobot.discord.utils import get_guild_channel, get_guild
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Mapping, Tuple
 
-permission_map: Dict[Permission, int] = {
-    Permission.NONE: Permissions.none().value,
-    Permission.ADMINISTRATOR: Permissions.administrator.flag,
-    Permission.VIEW_CHANNEL: Permissions.view_channel.flag,
-    Permission.MANAGE_CHANNELS: Permissions.manage_channels.flag,
-    Permission.MANAGE_ROLES: Permissions.manage_roles.flag,
-    Permission.MANAGE_EMOJIS_AND_STICKERS: Permissions.manage_emojis.flag,
-    Permission.VIEW_AUDIT_LOG: Permissions.view_audit_log.flag,
-    Permission.MANAGE_WEBHOOKS: Permissions.manage_webhooks.flag,
-    Permission.MANAGE_SERVER: Permissions.manage_guild.flag,
-    Permission.CREATE_INSTANT_INVITE: Permissions.create_instant_invite.flag,
-    Permission.KICK_MEMBERS: Permissions.kick_members.flag,
-    Permission.BAN_MEMBERS: Permissions.ban_members.flag,
-    Permission.ADD_REACTIONS: Permissions.add_reactions.flag,
-    Permission.PRIORITY_SPEAKER: Permissions.priority_speaker.flag,
-    Permission.STREAM: Permissions.stream.flag,
-    Permission.SEND_MESSAGES: Permissions.send_messages.flag,
-    Permission.SEND_TTS_MESSAGES: Permissions.send_tts_messages.flag,
-    Permission.MANAGE_MESSAGES: Permissions.manage_messages.flag,
-    Permission.EMBED_LINKS: Permissions.embed_links.flag,
-    Permission.ATTACH_FILES: Permissions.attach_files.flag,
-    Permission.READ_MESSAGE_HISTORY: Permissions.read_message_history.flag,
-    Permission.MENTION_EVERYONE: Permissions.mention_everyone.flag,
-    Permission.USE_EXTERNAL_EMOJIS: Permissions.external_emojis.flag,
-    Permission.VIEW_SERVER_INSIGHTS: Permissions.view_guild_insights.flag,
-    Permission.JOIN_VOICE_CHANNEL: Permissions.connect.flag,
-    Permission.SPEAK_IN_VOICE_CHANNEL: Permissions.speak.flag,
-    Permission.MUTE_MEMBERS: Permissions.mute_members.flag,
-    Permission.DEAFEN_MEMBERS: Permissions.deafen_members.flag,
-    Permission.MOVE_MEMBERS: Permissions.move_members.flag,
-    Permission.USE_VOICE_ACTIVATION: Permissions.use_voice_activation.flag,
-    Permission.CHANGE_OWN_NICKNAME: Permissions.change_nickname.flag,
-    Permission.MANAGE_NICKNAMES: Permissions.manage_nicknames.flag,
-    Permission.USE_SLASH_COMMANDS: Permissions.use_slash_commands.flag,
-    Permission.REQUEST_TO_SPEAK: Permissions.request_to_speak.flag
-}
-
-discord_permission_map: Dict[int, Permission] = { value: key for key, value in permission_map.items() }
+import hikari
 
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):
@@ -66,14 +25,12 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(name, "name")
 
         guild = get_guild(server_id)
-        relevant_members: List[Tuple[Member, int]] = []
-        for member in guild.members:
-            # An attempt to fix type hints for the messy discord.py.
-            member: Member
+        relevant_members: List[Tuple[hikari.Member, int]] = []
+        for member in guild.get_members().values():
             relevance = MemberDataProvider.__match_user_with_relevance(name, member)
             if relevance > 0:
                 relevant_members.append((member, relevance))
-        
+
         best_match = first_or_default(sorted(relevant_members, key=lambda p: p[1], reverse=True))
         if not best_match:
             raise UserNotFoundError(name)
@@ -85,25 +42,39 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(user_id, "user_id")
 
         guild = get_guild(server_id)
-        return first_or_default(guild.members, lambda member: str(member.id) == user_id) is not None
+        return first_or_default(guild.get_members().values(), lambda member: str(member.id) == user_id) is not None
 
     def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(user_id, "user_id")
 
+        guild = get_guild(server_id)
+        member = get_guild_member(server_id, user_id)
+        # Check if the user the owner of the server, in which case all permissions are granted.
+        if member.id == guild.owner_id:
+            return Permission.all_permissions()
+
+        # Check if any of the user's roles has the administrator permission.
+        roles = guild.get_roles()
+        base_permissions = MemberDataProvider._get_role_permissions(member, roles)
+        if base_permissions & base_permissions.ADMINISTRATOR:
+            return Permission.all_permissions()
+
         channel = get_guild_channel(server_id, channel_id)
-        user = get_guild_member(server_id, user_id)
-        permissions = channel.permissions_for(user)
-        return MemberDataProvider.__transform_permissions(permissions)
+        if not channel:
+            return MemberDataProvider.__transform_permissions(base_permissions)
+
+        channel_permissions = MemberDataProvider._get_channel_permissions(member, channel, base_permissions)
+        return MemberDataProvider.__transform_permissions(channel_permissions)
 
     @staticmethod
-    def __transform_permissions(discord_permissions: Permissions) -> Permission:
-        if discord_permissions == Permissions.none():
+    def __transform_permissions(dto: hikari.Permissions) -> Permission:
+        if dto == hikari.Permissions.NONE:
             return Permission.NONE
 
         permissions = Permission.NONE
-        flags = discord_permissions.value
+        flags = dto.value
         current_flag = 1
         while flags > 0:
             if (flags & current_flag) != current_flag:
@@ -111,22 +82,22 @@ class MemberDataProvider(IMemberDataProvider):
                 continue
 
             flags ^= current_flag
-            if (current_permission := discord_permission_map.get(current_flag, None)) is None:
+            if (current_permission := PERMISSION_TO_MODELS.get(hikari.Permissions(current_flag), None)) is None:
                 current_flag <<= 1
                 continue
 
-            permissions |= current_permission
+            permissions |= int(current_permission)
             current_flag <<= 1
 
         return permissions
 
     @staticmethod
-    def __member_to_basic_data(user: Member) -> MemberData:
+    def __member_to_basic_data(user: hikari.Member) -> MemberData:
         return MemberData(
-            user_id=str(user.id), # type: ignore
-            avatar_url=user.avatar_url, # type: ignore
-            name=user.name, # type: ignore
-            nick_name=user.nick
+            user_id=str(user.id),
+            avatar_url=user.avatar_url.url if user.avatar_url else None,
+            name=user.username,
+            nick_name=user.nickname
         )
 
     @staticmethod
@@ -136,29 +107,67 @@ class MemberDataProvider(IMemberDataProvider):
         value_lower = value.lower()
 
         # Containment, different casing.
-        if not pattern_lower in value_lower:
+        if pattern_lower not in value_lower:
             return relevance
-        relevance = relevance + 1
+        relevance += 1
 
         # Full match, different casing.
         if pattern_lower == value_lower:
-            relevance = relevance + 1
-        
+            relevance += 1
+
         # Containment, same casing.
-        if not pattern in value:
+        if pattern not in value:
             return relevance
-        relevance = relevance + 1
+        relevance += 1
 
         # Full match, same casing.
-        if not pattern == value:
+        if pattern != value:
             return relevance
-        
+
         return relevance + 1
 
     @staticmethod
-    def __match_user_with_relevance(pattern: str, user: Member) -> int:
+    def __match_user_with_relevance(pattern: str, user: hikari.Member) -> int:
         # Display names are more relevant than real names.
         relevance = MemberDataProvider.__match_with_relevance(pattern, user.display_name)
         if relevance > 0:
             return relevance + 1
         return MemberDataProvider.__match_with_relevance(pattern, user.name) # type: ignore
+
+    @staticmethod
+    def _get_channel_permissions(
+        member: hikari.Member,
+        channel: hikari.GuildChannel,
+        permissions: hikari.Permissions
+    ) -> hikari.Permissions:
+        # Get the permissions of "everyone" first.
+        if everyone_overwrite := channel.permission_overwrites.get(member.guild_id):
+            permissions &= ~everyone_overwrite.deny
+            permissions |= everyone_overwrite.allow
+
+        # Then apply the permissions of the member's roles.
+        for overwrite in filter(None, map(channel.permission_overwrites.get, member.role_ids)):
+            permissions &= ~overwrite.deny
+            permissions |= overwrite.allow
+
+        # Then apply the permissions of the channel itself.
+        if member_overwrite := channel.permission_overwrites.get(member.user.id):
+            permissions &= ~member_overwrite.deny
+            permissions |= member_overwrite.allow
+
+        return permissions
+
+    @staticmethod
+    def _get_role_permissions(
+        member: hikari.Member,
+        roles: Mapping[hikari.Snowflake, hikari.Role]
+    ) -> hikari.Permissions:
+        # Get the "everyone" permissions for the guild.
+        permissions = roles[member.guild_id].permissions
+
+        # Apply the permissions of each role the user has.
+        for role in map(roles.get, member.role_ids):
+            if role and role.id != member.guild_id:
+                permissions |= role.permissions
+
+        return permissions

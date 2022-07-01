@@ -19,10 +19,11 @@ class LogOnModerationMenuItemUsed(ListenerInterface[MenuItemExecutedEvent]):
         self.__log_manager: ILogManager = log_manager
 
     async def on_event(self, event: MenuItemExecutedEvent):
-        if (not issubclass(event.menu_item_type, ModerationMenuItemBase)
+        if (not event.server_id
+            or not issubclass(event.menu_item_type, ModerationMenuItemBase)
             or not (event_message := LogOnModerationMenuItemUsed.__create_event_message(event))):
             return
-        
+
         try:
             is_published = await self.__log_manager.publish_log_entry(event.server_id, event_message)
             if not is_published:

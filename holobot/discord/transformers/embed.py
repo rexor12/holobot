@@ -1,56 +1,51 @@
-from discord.embeds import Embed as DiscordEmbed, EmptyEmbed
+from hikari import Embed as HikariEmbed
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 
-def remote_to_local(discord_embed: DiscordEmbed) -> Embed:
+def to_model(dto: HikariEmbed) -> Embed:
     embed = Embed(
-        title=discord_embed.title, # type: ignore
-        description=discord_embed.description, # type: ignore
-        color=discord_embed.colour, # type: ignore
-        thumbnail_url=discord_embed.thumbnail.url, # type: ignore
-        image_url=discord_embed.image.url # type: ignore
+        title=dto.title,
+        description=dto.description,
+        color=dto.color,
+        thumbnail_url=dto.thumbnail.url if dto.thumbnail else None,
+        image_url=dto.image.url if dto.image else None,
+        footer = EmbedFooter(
+            text=dto.footer.text,
+            icon_url=dto.footer.icon.url if dto.footer.icon else None
+        ) if dto.footer else None
     )
 
-    for field in discord_embed.fields:
+    for field in dto.fields:
         embed.fields.append(EmbedField(
             name=field.name, # type: ignore
             value=field.value, # type: ignore
             is_inline=field.inline # type: ignore
         ))
 
-    footer = discord_embed.footer
-    if footer is not EmptyEmbed:
-        text = footer.text if footer.text is not EmptyEmbed else None
-        icon_url = footer.icon_url if footer.icon_url is not EmptyEmbed else None
-        embed.footer = EmbedFooter(
-            text=text, # type: ignore
-            icon_url=icon_url # type: ignore
-        )
-
     return embed
 
-def local_to_remote(embed: Embed) -> DiscordEmbed:
-    discord_embed = DiscordEmbed(
-        title=embed.title,
-        description=embed.description,
-        colour=embed.color
+def to_dto(model: Embed) -> HikariEmbed:
+    dto = HikariEmbed(
+        title=model.title,
+        description=model.description,
+        colour=model.color
     )
 
-    if embed.thumbnail_url:
-        discord_embed.set_thumbnail(url=embed.thumbnail_url)
-    elif embed.image_url:
-        discord_embed.set_image(url=embed.image_url)
+    if model.thumbnail_url:
+        dto.set_thumbnail(model.thumbnail_url)
+    elif model.image_url:
+        dto.set_image(model.image_url)
 
-    for field in embed.fields:
-        discord_embed.add_field(
+    for field in model.fields:
+        dto.add_field(
             name=field.name,
             value=field.value,
             inline=field.is_inline
         )
 
-    if embed.footer:
-        discord_embed.set_footer(
-            text=embed.footer.text or EmptyEmbed,
-            icon_url=embed.footer.icon_url or EmptyEmbed
+    if model.footer:
+        dto.set_footer(
+            text=model.footer.text,
+            icon=model.footer.icon_url
         )
 
-    return discord_embed
+    return dto

@@ -1,8 +1,8 @@
-from discord.abc import GuildChannel
+from hikari import GuildChannel as HikariGuildChannel
 from holobot.discord.sdk.servers.models import ServerChannel
 
-def remote_to_local(entity: GuildChannel) -> ServerChannel:
+def to_model(dto: HikariGuildChannel) -> ServerChannel:
     return ServerChannel(
-        id=str(entity.id), # type: ignore
-        name=entity.name # type: ignore
+        id=str(dto.id),
+        name=dto.name or "Unknown"
     )

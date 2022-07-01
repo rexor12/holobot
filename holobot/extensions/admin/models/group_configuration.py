@@ -8,7 +8,7 @@ class GroupConfiguration:
         self.can_disable = True
         self.subgroups = {}
         self.commands = {}
-    
+
     @property
     def name(self) -> str:
         return self.__name
@@ -20,23 +20,23 @@ class GroupConfiguration:
     @property
     def can_disable(self) -> bool:
         return self.__can_disable
-    
+
     @can_disable.setter
     def can_disable(self, value: bool) -> None:
         self.__can_disable = value
-    
+
     @property
     def subgroups(self) -> Dict[str, SubgroupConfiguration]:
         return self.__subgroups
-    
+
     @subgroups.setter
     def subgroups(self, value: Dict[str, SubgroupConfiguration]) -> None:
         self.__subgroups = value
-    
+
     @property
     def commands(self) -> Dict[str, CommandConfiguration]:
         return self.__commands
-    
+
     @commands.setter
     def commands(self, value: Dict[str, CommandConfiguration]) -> None:
         self.__commands = value

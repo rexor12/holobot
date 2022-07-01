@@ -1,7 +1,6 @@
-from .component import Component
-from dataclasses import dataclass, field
-from typing import List
+from .layout import Layout
+from dataclasses import dataclass
 
 @dataclass
-class StackLayout(Component):
-    children: List[Component] = field(default_factory=lambda: [])
+class StackLayout(Layout):
+    pass

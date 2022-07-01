@@ -1,12 +1,15 @@
-from typing import Any, Dict
+from abc import ABCMeta, abstractmethod
+from typing import Any, Dict, Optional
 
 # NOTE: The HTTP methods return the JSON responses.
-class HttpClientPoolInterface:
+class HttpClientPoolInterface(metaclass=ABCMeta):
     async def close(self):
         pass
 
-    async def get(self, url: str, query_parameters: Dict[str, Any] = None) -> Any:
-        raise NotImplementedError
-    
+    @abstractmethod
+    async def get(self, url: str, query_parameters: Optional[Dict[str, Any]] = None) -> Any:
+        ...
+
+    @abstractmethod
     async def post(self, url: str, json: Dict[str, Any]) -> Any:
-        raise NotImplementedError
+        ...

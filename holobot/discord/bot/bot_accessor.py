@@ -7,7 +7,7 @@ class BotAccessor:
     # which commands are used by the Bot instance.
     # Therefore, as a hack, we're using this static field
     # to have a reference to our instance of Bot... at some point.
-    # This could possibly be avoided if discord.py supported IoC, which it doesn't.
+    # To avoid this, kanata needs to support lazy dependency injection.
     _bot: Optional[Bot] = None
 
     def __init__(self) -> None:

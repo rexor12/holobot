@@ -1,34 +1,48 @@
-from typing import Tuple
-from .imenu_item_processor import IMenuItemProcessor
 from .imenu_item_registry import IMenuItemRegistry
-from discord_slash import ContextMenuType, SlashCommand
+from ..bot import Bot
+from hikari.api.special_endpoints import ContextMenuCommandBuilder
 from holobot.discord.sdk.context_menus import IMenuItem, IUserMenuItem
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from typing import Dict, Optional, Sequence, Tuple
+
+import hikari
 
 @injectable(IMenuItemRegistry)
 class MenuItemRegistry(IMenuItemRegistry):
-    def __init__(self,
+    def __init__(
+        self,
         log: LogInterface,
-        menu_item_processor: IMenuItemProcessor,
-        user_menu_items: Tuple[IMenuItem, ...]) -> None:
+        user_menu_items: Tuple[IMenuItem, ...]
+    ) -> None:
         super().__init__()
         self.__log: LogInterface = log.with_name("Discord", "ContextMenuItemRegistry")
-        self.__menu_item_processor: IMenuItemProcessor = menu_item_processor
-        self.__user_menu_items: Tuple[IMenuItem, ...] = tuple(sorted(user_menu_items))
+        self.__user_menu_items: Dict[str, IMenuItem] = {
+            menu_item.name: menu_item
+            for menu_item in user_menu_items
+        }
 
-    def register_menu_items(self, slash: SlashCommand) -> None:
+    def get_menu_item(self, name: str) -> Optional[IMenuItem]:
+        return self.__user_menu_items.get(name)
+
+    def get_command_builders(self, bot: Bot) -> Sequence[ContextMenuCommandBuilder]:
         self.__log.info("Registering user menu items...")
-        for menu_item in self.__user_menu_items:
+        context_menu_item_builders = []
+        for menu_item in sorted(self.__user_menu_items.values()):
             if isinstance(menu_item, IUserMenuItem):
-                self.__register_user_menu_item(slash, menu_item)
+                context_menu_item_builders.append(self.__get_user_menu_item_builder(bot, menu_item))
             else: raise TypeError(f"Unexpected menu item type '{type(menu_item)}'.")
         self.__log.info(f"Successfully registered user menu items. {{ Count = {len(self.__user_menu_items)} }}")
+        return context_menu_item_builders
 
-    def __register_user_menu_item(self, slash: SlashCommand, menu_item: IUserMenuItem) -> None:
-        slash.add_context_menu(
-            lambda context, **kwargs: self.__menu_item_processor.process(menu_item, context, **kwargs),
-            menu_item.name,
-            ContextMenuType.USER
+    def __get_user_menu_item_builder(
+        self,
+        bot: Bot,
+        menu_item: IUserMenuItem
+    ) -> ContextMenuCommandBuilder:
+        builder = bot.rest.context_menu_command_builder(
+            type=hikari.CommandType.USER, # TODO Support others.
+            name=menu_item.name
         )
         self.__log.debug(f"Registered user menu item. {{ Type = {menu_item.name} }}")
+        return builder

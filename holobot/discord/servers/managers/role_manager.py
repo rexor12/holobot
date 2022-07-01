@@ -27,10 +27,12 @@ class RoleManager(IRoleManager):
             raise RoleAlreadyExistsError(server_id, role_name)
 
         try:
-            # TODO Implement role creation.
-            # role = await guild.create_role(name=role_name, reason=description)
-            # return to_model(role)
-            raise NotImplementedError
+            role = await BotAccessor.get_bot().rest.create_role(
+                guild,
+                name=role_name,
+                reason=description
+            )
+            return to_model(role)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot create role.") from error
 

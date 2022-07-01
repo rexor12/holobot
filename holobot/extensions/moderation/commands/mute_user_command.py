@@ -8,14 +8,20 @@ from holobot.discord.sdk.commands import CommandInterface
 from holobot.discord.sdk.commands.models import CommandResponse, Option, ServerChatInteractionContext
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
 from holobot.discord.sdk.utils import get_user_id
+from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.chrono import parse_interval
+from holobot.sdk.logging import LogInterface
 from typing import Optional
 
 @injectable(CommandInterface)
 class MuteUserCommand(ModerationCommandBase):
-    def __init__(self, messaging: IMessaging, mute_manager: IMuteManager) -> None:
+    def __init__(
+        self,
+        log: LogInterface,
+        messaging: IMessaging,
+        mute_manager: IMuteManager
+    ) -> None:
         super().__init__("mute")
         self.group_name = "moderation"
         self.description = "Mutes a user."
@@ -25,6 +31,7 @@ class MuteUserCommand(ModerationCommandBase):
             Option("duration", "The duration after which to lift the mute. Eg. 1h or 30m.", is_mandatory=False)
         ]
         self.required_moderator_permissions = ModeratorPermission.MUTE_USERS
+        self.__log: LogInterface = log.with_name("Moderation", "MuteUserCommand")
         self.__messaging: IMessaging = messaging
         self.__mute_manager: IMuteManager = mute_manager
     
@@ -51,7 +58,8 @@ class MuteUserCommand(ModerationCommandBase):
             return CommandResponse(
                 action=ReplyAction(content="The user you mentioned cannot be found.")
             )
-        except ForbiddenError:
+        except ForbiddenError as error:
+            self.__log.error("Failed to mute user.", error)
             return CommandResponse(
                 action=ReplyAction(content=(
                     "I cannot assign/create a 'Muted' role.\n"

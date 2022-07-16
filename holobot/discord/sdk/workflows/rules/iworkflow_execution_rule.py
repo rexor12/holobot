@@ -28,3 +28,4 @@ class IWorkflowExecutionRule(metaclass=ABCMeta):
         :return: True, if the interaction's execution should be stopped.
         :rtype: bool
         """
+        ...

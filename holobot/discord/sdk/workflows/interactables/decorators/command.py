@@ -1,10 +1,11 @@
-from typing import Any, Awaitable, Callable, Optional, Tuple
+from typing import Any, Callable, Coroutine, Optional, Tuple
 
 from ..models import Option
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Command
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 
 def command(
     *,
@@ -41,9 +42,9 @@ def command(
     :type defer_type: DeferType, optional
     """
 
-    def wrapper(target: Callable[..., Awaitable[Any]]):
+    def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
         setattr(target, DECORATOR_METADATA_NAME, Command(
-            callback = target,
+            callback=target,
             description=description,
             name=name or target.__name__,
             group_name=group_name,

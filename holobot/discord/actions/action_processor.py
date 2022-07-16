@@ -1,9 +1,15 @@
-from .iaction_processor import IActionProcessor
-from ..components.icomponent_transformer import IComponentTransformer
+from typing import List, Union
+
+import contextlib
+
 from hikari import (
-    CommandInteraction, ComponentInteraction, NotFoundError, PartialInteraction,
-    ResponseType, UNDEFINED
+    CommandInteraction, ComponentInteraction, MessageFlag, NotFoundError,
+    PartialInteraction, ResponseType, UNDEFINED
 )
+import hikari.api.special_endpoints as hikari_endpoints
+
+from .iaction_processor import IActionProcessor
+from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.discord.sdk.actions import (
     ActionBase, DoNothingAction, EditMessageAction, ReplyAction
 )
@@ -13,10 +19,6 @@ from holobot.discord.sdk.models import Embed
 from holobot.discord.transformers.embed import to_dto
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
-from typing import List, Union
-
-import contextlib
-import hikari.api.special_endpoints as hikari_endpoints
 
 @injectable(IActionProcessor)
 class ActionProcessor(IActionProcessor):
@@ -28,21 +30,23 @@ class ActionProcessor(IActionProcessor):
         self,
         context: PartialInteraction,
         action: ActionBase,
-        deferral: DeferType
+        deferral: DeferType = DeferType.NONE,
+        is_ephemeral: bool = False
     ) -> None:
         if isinstance(action, DoNothingAction):
             return
 
         if isinstance(action, ReplyAction):
-            await self.__process_reply(context, action, deferral)
+            await self.__process_reply(context, action, deferral, is_ephemeral)
         elif isinstance(action, EditMessageAction):
-            await self.__process_edit_reference_message(context, action, deferral)
+            await self.__process_edit_reference_message(context, action, deferral, is_ephemeral)
 
     async def __process_reply(
         self,
         interaction: PartialInteraction,
         action: ReplyAction,
-        deferral: DeferType
+        deferral: DeferType,
+        is_ephemeral: bool
     ) -> None:
         if not isinstance(interaction, (CommandInteraction, ComponentInteraction)):
             raise ArgumentError("Replying to a message is valid for command and component interactions only.")
@@ -56,7 +60,8 @@ class ActionProcessor(IActionProcessor):
                     ResponseType.MESSAGE_CREATE,
                     content=content,
                     embed=embed or UNDEFINED,
-                    components=components
+                    components=components,
+                    flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE
                 )
                 return
 
@@ -74,7 +79,8 @@ class ActionProcessor(IActionProcessor):
         self,
         interaction: PartialInteraction,
         action: EditMessageAction,
-        deferral: DeferType
+        deferral: DeferType,
+        is_ephemeral: bool
     ) -> None:
         if not isinstance(interaction, ComponentInteraction):
             raise ArgumentError("Editing a reference message is valid for component interactions only.")
@@ -88,7 +94,8 @@ class ActionProcessor(IActionProcessor):
                     ResponseType.MESSAGE_UPDATE,
                     content=content,
                     embed=embed or UNDEFINED,
-                    components=components
+                    components=components,
+                    flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE
                 )
                 return
 

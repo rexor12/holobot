@@ -1,8 +1,10 @@
 from __future__ import annotations
-from .utils import transform_option
-from hikari.api.special_endpoints import SlashCommandBuilder
-from holobot.discord.sdk.commands.models import Option
 from typing import Callable, List
+
+from hikari.api.special_endpoints import SlashCommandBuilder
+
+from .utils import transform_option
+from holobot.discord.sdk.workflows.interactables.models import Option
 
 class CommandBuilder:
     def __init__(

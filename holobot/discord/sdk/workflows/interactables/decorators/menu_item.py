@@ -1,13 +1,15 @@
-from typing import Any, Awaitable, Callable
+from typing import Any, Callable, Coroutine
 
 from ..enums import MenuType
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import MenuItem
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 
 def menu_item(
     *,
+    name: str,
     title: str,
     menu_type: MenuType,
     index: int,
@@ -19,6 +21,8 @@ def menu_item(
     """A decorator that can be used to conveniently turn a function
     of a workflow into a context menu item interaction.
 
+    :param name: The globally unique name of the context menu item.
+    :type name: str
     :param title: The user-friendly title of the context menu item.
     :type title: str
     :param menu_type: The type of the context menu the menu item appears in.
@@ -35,9 +39,10 @@ def menu_item(
     :type defer_type: DeferType, optional
     """
 
-    def wrapper(target: Callable[..., Awaitable[Any]]):
+    def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
         setattr(target, DECORATOR_METADATA_NAME, MenuItem(
-            callback = target,
+            name=name,
+            callback=target,
             title=title,
             menu_type=menu_type,
             index=index,

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
 from .interactables import Interactable
@@ -21,12 +21,12 @@ class WorkflowBase(IWorkflow, metaclass=WorkflowMeta):
 
     def __init__(
         self,
-        name: str,
         *,
+        name: Optional[str] = None,
         interactables: Tuple[Interactable, ...] = (),
         required_permissions: Permission = Permission.NONE
     ) -> None:
-        self.__name: str = name
+        self.__name: str = name or type(self).__name__
         self.__required_permissions: Permission = required_permissions
         predefined_interactables: List[Interactable] = getattr(
             self,

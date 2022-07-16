@@ -1,5 +1,5 @@
-from holobot.discord.sdk.commands.enums import OptionType
-from holobot.discord.sdk.commands.models import Option
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
+from holobot.discord.sdk.workflows.interactables.models import Option
 
 import hikari
 

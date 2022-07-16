@@ -1,16 +1,16 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable
+from typing import Any, Callable, Coroutine
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums.permission import Permission
-from holobot.discord.sdk.models import InteractionContext
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 
 @dataclass(kw_only=True)
 class Interactable:
     """Defines a user interaction type."""
 
-    callback: Callable[[Any, Interactable, InteractionContext, *Any], Awaitable[Any]]
+    callback: Callable[..., Coroutine[Any, Any, InteractionResponse]]
     """Determines the method that is called when
     the interaction needs to be processed.
     """
@@ -34,3 +34,6 @@ class Interactable:
 
     defer_type: DeferType = DeferType.NONE
     """Determines the type of deferral of the response."""
+    
+    def describe(self) -> str:
+        return self.__str__()

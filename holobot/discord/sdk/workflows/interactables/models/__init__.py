@@ -1,4 +1,3 @@
 from .choice import Choice
-from .command_response import CommandResponse
-from .menu_item_response import MenuItemResponse
+from .interaction_response import InteractionResponse
 from .option import Option

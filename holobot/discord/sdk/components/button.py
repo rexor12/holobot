@@ -1,10 +1,10 @@
 from .enums import ComponentStyle
-from .component import Component
+from .component_base import ComponentBase
 from dataclasses import dataclass
 from typing import Optional
 
 @dataclass
-class Button(Component):
+class Button(ComponentBase):
     text: str
     style: ComponentStyle = ComponentStyle.PRIMARY
     is_enabled: bool = True

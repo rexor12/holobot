@@ -1,6 +1,6 @@
 from .icomponent_transformer import IComponentTransformer
 from holobot.discord.sdk.components import (
-    Button, ComboBox, Component, Paginator, StackLayout
+    Button, ComboBox, ComponentBase, Paginator, StackLayout
 )
 from holobot.discord.sdk.components.enums import ComponentStyle
 from holobot.discord.sdk.components.models import (
@@ -39,25 +39,25 @@ class _ComponentData(NamedTuple):
 class ComponentTransformer(IComponentTransformer):
     def __init__(self) -> None:
         super().__init__()
-        self.__component_transformers: Dict[Type[Component], _TComponentBuilder] = {
+        self.__component_transformers: Dict[Type[ComponentBase], _TComponentBuilder] = {
             StackLayout: self.__transform_stack_layout,
             Button: self.__transform_button,
             ComboBox: self.__transform_combo_box,
             Paginator: self.__transform_pager
         }
-        self.__state_transformers: Dict[Type[Component], Callable[[hikari.ComponentInteraction], Any]] = {
+        self.__state_transformers: Dict[Type[ComponentBase], Callable[[hikari.ComponentInteraction], Any]] = {
             StackLayout: lambda _: DEFAULT_EMPTY_STATE,
             Button: lambda _: DEFAULT_EMPTY_STATE,
             ComboBox: self.__transform_combo_box_state,
             Paginator: self.__transform_pager_state
         }
 
-    def transform_component(self, component: Component) -> endpointsintf.ComponentBuilder:
+    def transform_component(self, component: ComponentBase) -> endpointsintf.ComponentBuilder:
         return self.__transform_component(component, None)
 
     def transform_state(
         self,
-        component_type: Type[Component],
+        component_type: Type[ComponentBase],
         interaction: hikari.ComponentInteraction
     ) -> Any:
         assert_not_none(component_type, "component_type")
@@ -77,7 +77,7 @@ class ComponentTransformer(IComponentTransformer):
 
     def __transform_component(
         self,
-        component: Component,
+        component: ComponentBase,
         container: Optional[endpointsintf.ComponentBuilder]
     ) -> endpointsintf.ComponentBuilder:
         assert_not_none(component, "component")

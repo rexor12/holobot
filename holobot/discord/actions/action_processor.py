@@ -8,7 +8,7 @@ from holobot.discord.sdk.actions import (
     ActionBase, DoNothingAction, EditMessageAction, ReplyAction
 )
 from holobot.discord.sdk.actions.enums import DeferType
-from holobot.discord.sdk.components import Component, Layout, StackLayout
+from holobot.discord.sdk.components import ComponentBase, Layout, StackLayout
 from holobot.discord.sdk.models import Embed
 from holobot.discord.transformers.embed import to_dto
 from holobot.sdk.exceptions import ArgumentError
@@ -104,7 +104,7 @@ class ActionProcessor(IActionProcessor):
 
     def __transform_component(
         self,
-        components: Union[Component, List[Layout]]
+        components: Union[ComponentBase, List[Layout]]
     ) -> List[hikari_endpoints.ComponentBuilder]:
         if not components:
             return []

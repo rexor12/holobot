@@ -1,7 +1,8 @@
-from ..context_menus.models import MenuItemResponse
 from dataclasses import dataclass, field
-from holobot.sdk.reactive.models import EventBase
 from typing import Any, Optional, Type
+
+from ..workflows.interactables.models import MenuItemResponse
+from holobot.sdk.reactive.models import EventBase
 
 @dataclass
 class MenuItemExecutedEvent(EventBase):

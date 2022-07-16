@@ -1,5 +1,5 @@
 from dataclasses import dataclass
 
 @dataclass
-class Component:
+class ComponentBase:
     id: str

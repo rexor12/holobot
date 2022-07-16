@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from holobot.discord.sdk.models import InteractionContext
 from typing import Optional
+
+from holobot.discord.sdk.models import InteractionContext
 
 @dataclass
 class ServerUserInteractionContext(InteractionContext):

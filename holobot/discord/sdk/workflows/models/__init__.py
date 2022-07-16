@@ -1,3 +1,3 @@
-from .menu_item_response import MenuItemResponse
+from .server_chat_interaction_context import ServerChatInteractionContext
 from .server_message_interaction_context import ServerMessageInteractionContext
 from .server_user_interaction_context import ServerUserInteractionContext

@@ -1,13 +1,13 @@
 from typing import Tuple
 from uuid import uuid4
 
-from hikari import CommandInteraction
+from hikari import CommandInteraction, CommandType
 
 from .imenu_item_processor import IMenuItemProcessor
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import MenuItem
-from holobot.discord.sdk.workflows.models import ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import ServerMessageInteractionContext, ServerUserInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
@@ -36,7 +36,7 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
             interactable=invocation_target[1] if invocation_target else None
         )
 
-    async def _get_interaction_context(
+    def _get_interaction_context(
         self,
         interaction: CommandInteraction
     ) -> InteractionContext:
@@ -44,23 +44,26 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         if not interaction.guild_id:
             raise NotImplementedError("Non-server specific commands are not supported.")
 
-        # TODO Support for message interactions.
-        return ServerUserInteractionContext(
-            request_id=uuid4(),
-            author_id=str(interaction.user.id),
-            author_name=interaction.user.username,
-            author_nickname=interaction.member.nickname if interaction.member else None,
-            server_id=str(interaction.guild_id),
-            server_name=guild.name if (guild := interaction.get_guild()) else None,
-            channel_id=str(interaction.channel_id),
-            target_user_id=str(interaction.target_id)
-        )
-
-    @staticmethod
-    async def __get_server_name(interaction: CommandInteraction) -> str:
-        server = interaction.get_guild()
-        if server:
-            return server.name
-
-        server = await interaction.fetch_guild()
-        return server.name if server else "Unknown Server"
+        if interaction.command_type == CommandType.MESSAGE:
+            return ServerMessageInteractionContext(
+                request_id=uuid4(),
+                author_id=str(interaction.user.id),
+                author_name=interaction.user.username,
+                author_nickname=interaction.member.nickname if interaction.member else None,
+                server_id=str(interaction.guild_id),
+                server_name=guild.name if (guild := interaction.get_guild()) else None,
+                channel_id=str(interaction.channel_id),
+                target_message_id=str(interaction.target_id)
+            )
+        elif interaction.command_type == CommandType.USER:
+            return ServerUserInteractionContext(
+                request_id=uuid4(),
+                author_id=str(interaction.user.id),
+                author_name=interaction.user.username,
+                author_nickname=interaction.member.nickname if interaction.member else None,
+                server_id=str(interaction.guild_id),
+                server_name=guild.name if (guild := interaction.get_guild()) else None,
+                channel_id=str(interaction.channel_id),
+                target_user_id=str(interaction.target_id)
+            )
+        else: raise ValueError(f"The command type '{interaction.command_type}' is not supported.")

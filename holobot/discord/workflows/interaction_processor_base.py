@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Coroutine, Dict, Generic, Optional, Tuple, TypeVar
+from typing import Any, Dict, Generic, Optional, Tuple, TypeVar
 
 import time
 
@@ -56,7 +56,7 @@ class InteractionProcessorBase(
         elif interactable.defer_type == DeferType.DEFER_MESSAGE_UPDATE:
             await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
 
-        context = await self._get_interaction_context(interaction)
+        context = self._get_interaction_context(interaction)
         if await self.__try_halt_interactable(interaction, workflow, interactable, context):
             return
 
@@ -84,7 +84,7 @@ class InteractionProcessorBase(
     def _get_interaction_context(
         self,
         interaction: TInteraction
-    ) -> Coroutine[Any, Any, InteractionContext]:
+    ) -> InteractionContext:
         ...
 
     @staticmethod

@@ -9,10 +9,9 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 
 def menu_item(
     *,
-    name: str,
     title: str,
     menu_type: MenuType,
-    index: int,
+    priority: int,
     is_bound: bool = False,
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
@@ -21,14 +20,12 @@ def menu_item(
     """A decorator that can be used to conveniently turn a function
     of a workflow into a context menu item interaction.
 
-    :param name: The globally unique name of the context menu item.
-    :type name: str
-    :param title: The user-friendly title of the context menu item.
+    :param title: The globally unique user-friendly title of the context menu item. This also serves as the identifier.
     :type title: str
     :param menu_type: The type of the context menu the menu item appears in.
     :type menu_type: MenuType
-    :param index: The display order of the context menu item.
-    :type index: int
+    :param priority: The priority of the menu item in the context menu.
+    :type priority: int
     :param is_bound: Whether only the invoking user can interact with the result, defaults to False
     :type is_bound: bool, optional
     :param is_ephemeral: Whether only the invoking user can see the result, defaults to False
@@ -41,11 +38,10 @@ def menu_item(
 
     def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
         setattr(target, DECORATOR_METADATA_NAME, MenuItem(
-            name=name,
             callback=target,
             title=title,
             menu_type=menu_type,
-            index=index,
+            priority=priority,
             is_bound=is_bound,
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,

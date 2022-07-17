@@ -1,10 +1,10 @@
 from typing import Any, Callable, Coroutine, Type
 
 from holobot.discord.sdk.actions.enums import DeferType
-from holobot.discord.sdk.components import ComponentBase
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Component
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 
 def component(

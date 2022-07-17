@@ -1,8 +1,6 @@
+from dataclasses import dataclass
+
 from .content_changing_action_base import ContentChangingActionBase
-from ..components import ComponentBase, Layout
-from ..models import Embed
-from dataclasses import dataclass, field
-from typing import List, Union
 
 @dataclass
 class ReplyAction(ContentChangingActionBase):

@@ -14,8 +14,8 @@ from holobot.discord.sdk.actions import (
     ActionBase, DoNothingAction, EditMessageAction, ReplyAction
 )
 from holobot.discord.sdk.actions.enums import DeferType
-from holobot.discord.sdk.components import ComponentBase, Layout, StackLayout
 from holobot.discord.sdk.models import Embed
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, StackLayout
 from holobot.discord.transformers.embed import to_dto
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable

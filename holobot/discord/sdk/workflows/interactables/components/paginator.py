@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from holobot.discord.sdk.components import Layout
 from typing import Any, Dict
+
+from .layout import Layout
 
 @dataclass
 class Paginator(Layout):

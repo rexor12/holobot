@@ -58,7 +58,7 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
             arguments=arguments
         )
 
-    async def _get_interaction_context(
+    def _get_interaction_context(
         self,
         interaction: CommandInteraction
     ) -> InteractionContext:
@@ -72,15 +72,6 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
             author_name=interaction.user.username,
             author_nickname=interaction.member.nickname if interaction.member else None,
             server_id=str(interaction.guild_id),
-            server_name=await CommandProcessor.__get_server_name(interaction),
+            server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
             channel_id=str(interaction.channel_id)
         )
-
-    @staticmethod
-    async def __get_server_name(interaction: CommandInteraction) -> str:
-        server = interaction.get_guild()
-        if server:
-            return server.name
-
-        server = await interaction.fetch_guild()
-        return server.name if server else "Unknown Server"

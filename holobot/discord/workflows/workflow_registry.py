@@ -81,7 +81,7 @@ class WorkflowRegistry(IWorkflowRegistry):
     def get_menu_item_builders(self, bot: Bot) -> Sequence[ContextMenuCommandBuilder]:
         self.__log.info("Registering user menu items...")
         context_menu_item_builders = []
-        for menu_item in sorted(self.__menu_items.values(), key=lambda i: i[1].index):
+        for menu_item in sorted(self.__menu_items.values(), key=lambda i: i[1].priority, reverse=True):
             if isinstance(menu_item[1], MenuItem):
                 context_menu_item_builders.append(self.__get_user_menu_item_builder(bot, menu_item[1]))
             else: raise TypeError(f"Unexpected menu item type '{type(menu_item)}'.")
@@ -145,7 +145,7 @@ class WorkflowRegistry(IWorkflowRegistry):
                 elif isinstance(interactable, Component):
                     components[interactable.identifier] = (workflow, interactable)
                 elif isinstance(interactable, MenuItem):
-                    menu_items[interactable.name] = (workflow, interactable)
+                    menu_items[interactable.title] = (workflow, interactable)
         self.__commands = commands
         self.__components = components
         self.__menu_items = menu_items
@@ -157,7 +157,7 @@ class WorkflowRegistry(IWorkflowRegistry):
     ) -> ContextMenuCommandBuilder:
         builder = bot.rest.context_menu_command_builder(
             type=CommandType.USER if menu_item.menu_type == MenuType.USER else CommandType.MESSAGE,
-            name=menu_item.name
+            name=menu_item.title
         )
-        self.__log.debug(f"Registered menu item. {{ Name = {menu_item.name}, Type = {menu_item.menu_type} }}")
+        self.__log.debug(f"Registered menu item. {{ Name = {menu_item.title}, Type = {menu_item.menu_type} }}")
         return builder

@@ -13,6 +13,9 @@ class Interactable:
     callback: Callable[..., Coroutine[Any, Any, InteractionResponse]]
     """Determines the method that is called when
     the interaction needs to be processed.
+    
+    The arguments passed to this callback are the workflow, the interaction
+    context and any custom arguments in this order.
     """
 
     required_permissions: Permission = Permission.NONE
@@ -20,6 +23,7 @@ class Interactable:
     in addition to those requires by the associated workflow itself.
     """
 
+    # TODO Bound interactions are currently not supported.
     is_bound: bool = False
     """Determines if the interactable is bound to the user who invoked it.
 
@@ -36,4 +40,10 @@ class Interactable:
     """Determines the type of deferral of the response."""
     
     def describe(self) -> str:
+        """Returns a short description of the interactable, mainly for logging purposes.
+
+        :return: The short description of the interactable.
+        :rtype: str
+        """
+
         return self.__str__()

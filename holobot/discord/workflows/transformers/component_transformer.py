@@ -6,11 +6,11 @@ import hikari.api.special_endpoints as endpointsintf
 import hikari.impl.special_endpoints as endpoints
 
 from .icomponent_transformer import IComponentTransformer
-from holobot.discord.sdk.components import (
+from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComboBox, ComponentBase, Paginator, StackLayout
 )
-from holobot.discord.sdk.components.enums import ComponentStyle
-from holobot.discord.sdk.components.models import (
+from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
+from holobot.discord.sdk.workflows.interactables.components.models import (
     ComboBoxState, PagerState, DEFAULT_EMPTY_STATE
 )
 from holobot.sdk.exceptions import ArgumentError

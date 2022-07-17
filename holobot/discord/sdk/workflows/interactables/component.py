@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Type
 
 from .interactable import Interactable
-from holobot.discord.sdk.components import ComponentBase
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase
 
 @dataclass(kw_only=True)
 class Component(Interactable):

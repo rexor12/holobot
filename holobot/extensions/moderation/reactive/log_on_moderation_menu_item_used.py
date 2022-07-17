@@ -1,15 +1,16 @@
-from ..context_menus import ModerationMenuItemBase
-from ..context_menus.responses import (
-    UserBannedResponse, UserKickedResponse, UserMutedResponse,
-    UserUnmutedResponse, UserWarnedResponse
-)
+from typing import Optional
+
 from ..managers import ILogManager
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.sdk.events import MenuItemExecutedEvent
+from holobot.extensions.moderation.workflows.interactables import ModerationMenuItem
+from holobot.extensions.moderation.workflows.responses.menu_item_responses import (
+    UserBannedResponse, UserKickedResponse, UserMutedResponse,
+    UserUnmutedResponse, UserWarnedResponse
+)
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
 from holobot.sdk.reactive import ListenerInterface
-from typing import Optional
 
 @injectable(ListenerInterface[MenuItemExecutedEvent])
 class LogOnModerationMenuItemUsed(ListenerInterface[MenuItemExecutedEvent]):
@@ -20,7 +21,7 @@ class LogOnModerationMenuItemUsed(ListenerInterface[MenuItemExecutedEvent]):
 
     async def on_event(self, event: MenuItemExecutedEvent):
         if (not event.server_id
-            or not issubclass(event.menu_item_type, ModerationMenuItemBase)
+            or not issubclass(event.menu_item_type, ModerationMenuItem)
             or not (event_message := LogOnModerationMenuItemUsed.__create_event_message(event))):
             return
 

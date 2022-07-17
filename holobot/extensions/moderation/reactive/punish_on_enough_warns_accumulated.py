@@ -1,8 +1,8 @@
-from ..commands import ModerationCommandBase
-from ..commands.responses import UserWarnedResponse
 from ..managers import IMuteManager
 from ..models import WarnSettings
 from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSettingsRepository
+from ..workflows.interactables import ModerationCommand
+from ..workflows.responses import UserWarnedResponse
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.events import CommandExecutedEvent
 from holobot.discord.sdk.exceptions import ForbiddenError, ServerNotFoundError, UserNotFoundError
@@ -34,7 +34,7 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
         self.__warn_settings_repository: IWarnSettingsRepository = warn_settings_repository
 
     async def on_event(self, event: CommandExecutedEvent):
-        if (not issubclass(event.command_type, ModerationCommandBase)
+        if (not issubclass(event.command_type, ModerationCommand)
             or not isinstance(event.response, UserWarnedResponse)):
             return
         

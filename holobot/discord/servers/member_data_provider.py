@@ -132,7 +132,7 @@ class MemberDataProvider(IMemberDataProvider):
         relevance = MemberDataProvider.__match_with_relevance(pattern, user.display_name)
         if relevance > 0:
             return relevance + 1
-        return MemberDataProvider.__match_with_relevance(pattern, user.name) # type: ignore
+        return MemberDataProvider.__match_with_relevance(pattern, user.username)
 
     @staticmethod
     def _get_channel_permissions(

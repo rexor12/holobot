@@ -14,7 +14,6 @@ class MenuItem(Interactable):
     menu_type: MenuType
     """The type of the containing context menu."""
 
-    # TODO Instead of hard-coding this, move it to configuration.
     priority: int
     """The priority of the menu item in the context menu.
     

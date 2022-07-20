@@ -4,8 +4,8 @@ from typing import Any, Optional, Type
 from ..workflows.interactables.models import InteractionResponse
 from holobot.sdk.reactive.models import EventBase
 
-@dataclass
-class CommandExecutedEvent(EventBase):
+@dataclass(frozen=True)
+class CommandProcessedEvent(EventBase):
     command_type: Type[Any] = object
     server_id: str = ""
     user_id: str = ""

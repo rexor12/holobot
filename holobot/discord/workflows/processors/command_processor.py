@@ -4,25 +4,30 @@ from uuid import uuid4
 from hikari import CommandInteraction, OptionType
 
 from holobot.discord.actions import IActionProcessor
+from holobot.discord.sdk.events import CommandProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import Command
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from holobot.sdk.reactive import IListener
 
 @injectable(IInteractionProcessor[CommandInteraction])
 class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
     def __init__(
         self,
         action_processor: IActionProcessor,
+        event_listeners: Tuple[IListener[CommandProcessedEvent], ...],
         log: LogInterface,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, log, workflow_execution_rules)
+        self.__event_listeners = event_listeners
         self.__workflow_registry = workflow_registry
 
     def _get_interactable_descriptor(
@@ -75,3 +80,24 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
             server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
             channel_id=str(interaction.channel_id)
         )
+
+    async def _on_interaction_processed(
+        self,
+        interaction: CommandInteraction,
+        interactable: Command,
+        response: InteractionResponse
+    ) -> None:
+        if not self.__event_listeners:
+            return
+
+        event = CommandProcessedEvent(
+            command_type=type(interactable),
+            server_id=str(interaction.guild_id),
+            user_id=str(interaction.user.id),
+            command=interactable.name,
+            group=interactable.group_name,
+            subgroup=interactable.subgroup_name,
+            response=response
+        )
+        for event_listener in self.__event_listeners:
+            await event_listener.on_event(event)

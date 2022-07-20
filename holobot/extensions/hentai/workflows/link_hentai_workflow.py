@@ -27,7 +27,7 @@ class LinkHentaiWorkflow(WorkflowBase):
                 Choice("nhentai", NHENTAI_SITE_ID),
                 Choice("e-hentai", EHENTAI_SITE_ID)
             )),
-            Option("id", "The identifier of the title.")
+            Option("code", "The identifier of the title.")
         )
     )
     async def show_hentai_link(

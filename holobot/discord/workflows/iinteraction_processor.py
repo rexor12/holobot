@@ -1,14 +1,12 @@
-from abc import ABCMeta, abstractmethod
-from typing import Any, Coroutine, Generic, TypeVar
+from typing import Any, Coroutine, Generic, Protocol, TypeVar
 
 from hikari import MessageResponseMixin
 
 TInteraction = TypeVar("TInteraction", bound=MessageResponseMixin, contravariant=True)
 
-class IInteractionProcessor(Generic[TInteraction], metaclass=ABCMeta):
+class IInteractionProcessor(Generic[TInteraction], Protocol):
     """Interface for an interaction processor."""
 
-    @abstractmethod
     def process(self, interaction: TInteraction) -> Coroutine[Any, Any, None]:
         """Processes the specified interaction by invoking
         an associated workflow handler.

@@ -1,4 +1,5 @@
-from typing import Tuple
+from types import coroutine
+from typing import Generator, Tuple
 from uuid import uuid4
 
 from hikari import ComponentInteraction
@@ -6,6 +7,7 @@ from hikari import ComponentInteraction
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import Component
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
@@ -63,3 +65,12 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
             server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
             channel_id=str(interaction.channel_id)
         )
+
+    @coroutine
+    def _on_interaction_processed(
+        self,
+        interaction: ComponentInteraction,
+        interactable: Component,
+        response: InteractionResponse
+    ) -> Generator[None, None, None]:
+        yield

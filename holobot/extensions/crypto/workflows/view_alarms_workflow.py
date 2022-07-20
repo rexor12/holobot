@@ -7,7 +7,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
@@ -26,10 +26,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
         description="Displays your currently set alarms.",
         name="view",
         group_name="crypto",
-        subgroup_name="alarm",
-        options=(
-            Option("symbol", "The symbol, such as BTCEUR."),
-        )
+        subgroup_name="alarm"
     )
     async def view_alarms(self, context: ServerChatInteractionContext) -> InteractionResponse:
         return InteractionResponse(ReplyAction(

@@ -3,27 +3,33 @@ from uuid import uuid4
 
 from hikari import CommandInteraction, CommandType
 
+
 from .imenu_item_processor import IMenuItemProcessor
 from holobot.discord.actions import IActionProcessor
+from holobot.discord.sdk.events import MenuItemProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import MenuItem
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerMessageInteractionContext, ServerUserInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from holobot.sdk.reactive import IListener
 
 @injectable(IMenuItemProcessor)
 class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], IMenuItemProcessor):
     def __init__(
         self,
         action_processor: IActionProcessor,
+        event_listeners: Tuple[IListener[MenuItemProcessedEvent], ...],
         log: LogInterface,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, log, workflow_execution_rules)
+        self.__event_listeners = event_listeners
         self.__workflow_registry = workflow_registry
 
     def _get_interactable_descriptor(
@@ -67,3 +73,21 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
                 target_user_id=str(interaction.target_id)
             )
         else: raise ValueError(f"The command type '{interaction.command_type}' is not supported.")
+
+    async def _on_interaction_processed(
+        self,
+        interaction: CommandInteraction,
+        interactable: MenuItem,
+        response: InteractionResponse
+    ) -> None:
+        if not self.__event_listeners:
+            return
+
+        event = MenuItemProcessedEvent(
+            menu_item_type=type(interactable),
+            server_id=str(interaction.guild_id) if interaction.guild_id else None,
+            user_id=str(interaction.user.id),
+            response=response
+        )
+        for event_listener in self.__event_listeners:
+            await event_listener.on_event(event)

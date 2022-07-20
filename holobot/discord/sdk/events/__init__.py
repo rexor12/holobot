@@ -1,2 +1,2 @@
-from .command_executed_event import CommandExecutedEvent
-from .menu_item_executed_event import MenuItemExecutedEvent
+from .command_processed_event import CommandProcessedEvent
+from .menu_item_processed_event import MenuItemProcessedEvent

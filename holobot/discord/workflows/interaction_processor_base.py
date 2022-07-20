@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Generic, Optional, Tuple, TypeVar
+from typing import Any, Coroutine, Dict, Generic, Optional, Tuple, TypeVar
 
 import time
 
@@ -13,6 +13,7 @@ from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.sdk.logging import LogInterface
 
@@ -67,8 +68,8 @@ class InteractionProcessorBase(
             interactable.defer_type,
             interactable.is_ephemeral
         )
-        # TODO Interactable executed events.
-        # await self.__on_command_executed(command, interaction, response)
+
+        await self._on_interaction_processed(interaction, interactable, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
         self.__log.debug(f"Processed command. {{ Interactable = {interactable.describe()}, Elapsed = {elapsed_time} }}")
@@ -85,6 +86,15 @@ class InteractionProcessorBase(
         self,
         interaction: TInteraction
     ) -> InteractionContext:
+        ...
+
+    @abstractmethod
+    def _on_interaction_processed(
+        self,
+        interaction: TInteraction,
+        interactable: TInteractable,
+        response: InteractionResponse
+    ) -> Coroutine[Any, Any, None]:
         ...
 
     @staticmethod

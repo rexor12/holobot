@@ -3,7 +3,7 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticMode": "workspace",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
+    "python.linting.enabled": false,
     "python.linting.pylintArgs": [
         "--disable=missing-class-docstring,missing-function-docstring,missing-module-docstring,too-few-public-methods,wrong-import-order"
     ],

@@ -1,26 +1,27 @@
-from ..context_menus import ModerationMenuItemBase
-from ..context_menus.responses import (
+from typing import Optional
+
+from ..managers import ILogManager
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
+from holobot.discord.sdk.events import MenuItemProcessedEvent
+from holobot.extensions.moderation.workflows.interactables import ModerationMenuItem
+from holobot.extensions.moderation.workflows.responses.menu_item_responses import (
     UserBannedResponse, UserKickedResponse, UserMutedResponse,
     UserUnmutedResponse, UserWarnedResponse
 )
-from ..managers import ILogManager
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
-from holobot.discord.sdk.events import MenuItemExecutedEvent
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from holobot.sdk.reactive import ListenerInterface
-from typing import Optional
+from holobot.sdk.reactive import IListener
 
-@injectable(ListenerInterface[MenuItemExecutedEvent])
-class LogOnModerationMenuItemUsed(ListenerInterface[MenuItemExecutedEvent]):
+@injectable(IListener[MenuItemProcessedEvent])
+class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
     def __init__(self, log: LogInterface, log_manager: ILogManager) -> None:
         super().__init__()
         self.__log: LogInterface = log.with_name("Moderation", "LogOnModerationMenuItemUsed")
         self.__log_manager: ILogManager = log_manager
 
-    async def on_event(self, event: MenuItemExecutedEvent):
+    async def on_event(self, event: MenuItemProcessedEvent):
         if (not event.server_id
-            or not issubclass(event.menu_item_type, ModerationMenuItemBase)
+            or not issubclass(event.menu_item_type, ModerationMenuItem)
             or not (event_message := LogOnModerationMenuItemUsed.__create_event_message(event))):
             return
 
@@ -35,7 +36,7 @@ class LogOnModerationMenuItemUsed(ListenerInterface[MenuItemExecutedEvent]):
         self.__log.trace(f"A loggable moderation menu item has been used. {{ Type = {event.menu_item_type}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
 
     @staticmethod
-    def __create_event_message(event: MenuItemExecutedEvent) -> Optional[str]:
+    def __create_event_message(event: MenuItemProcessedEvent) -> Optional[str]:
         response = event.response
         if isinstance(response, UserWarnedResponse):
             return f":warning: <@{response.author_id}> has warned <@{response.user_id}> via a context menu item."

@@ -1,28 +1,28 @@
-from ..commands import ModerationCommandBase
-from ..commands.responses import (
+from ..managers import ILogManager
+from ..workflows.interactables import ModerationCommand
+from ..workflows.responses import (
     AutoBanToggledResponse, AutoKickToggledResponse, AutoMuteToggledResponse,
     LogChannelToggledResponse, ModeratorPermissionsChangedResponse,
     UserBannedResponse, UserKickedResponse, UserMutedResponse, UserUnmutedResponse,
     UserWarnedResponse, WarnDecayToggledResponse
 )
-from ..managers import ILogManager
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
-from holobot.discord.sdk.events import CommandExecutedEvent
+from holobot.discord.sdk.events import CommandProcessedEvent
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from holobot.sdk.reactive import ListenerInterface
+from holobot.sdk.reactive import IListener
 from holobot.sdk.utils import textify_timedelta
 from typing import Optional
 
-@injectable(ListenerInterface[CommandExecutedEvent])
-class LogOnModerationCommandUsed(ListenerInterface[CommandExecutedEvent]):
+@injectable(IListener[CommandProcessedEvent])
+class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
     def __init__(self, log: LogInterface, log_manager: ILogManager) -> None:
         super().__init__()
         self.__log: LogInterface = log.with_name("Moderation", "LogOnModerationCommandUsed")
         self.__log_manager: ILogManager = log_manager
 
-    async def on_event(self, event: CommandExecutedEvent):
-        if (not issubclass(event.command_type, ModerationCommandBase)
+    async def on_event(self, event: CommandProcessedEvent):
+        if (not issubclass(event.command_type, ModerationCommand)
             or not (event_message := LogOnModerationCommandUsed.__create_event_message(event))):
             return
         
@@ -37,7 +37,7 @@ class LogOnModerationCommandUsed(ListenerInterface[CommandExecutedEvent]):
         self.__log.trace(f"A loggable moderation command has been used. {{ Name = {event.command}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
 
     @staticmethod
-    def __create_event_message(event: CommandExecutedEvent) -> Optional[str]:
+    def __create_event_message(event: CommandProcessedEvent) -> Optional[str]:
         response = event.response
         if isinstance(response, UserWarnedResponse):
             return f":warning: <@{response.author_id}> has warned <@{response.user_id}> with the reason '{response.reason}'."
@@ -53,26 +53,26 @@ class LogOnModerationCommandUsed(ListenerInterface[CommandExecutedEvent]):
         if isinstance(response, ModeratorPermissionsChangedResponse):
             if response.is_addition:
                 return f":shield: <@{response.author_id}> has granted <@{response.user_id}> the permission to {response.permission.textify()}."
-            else: return f":shield: <@{response.author_id}> has revoked <@{response.user_id}>'s permission to {response.permission.textify()}."
+            return f":shield: <@{response.author_id}> has revoked <@{response.user_id}>'s permission to {response.permission.textify()}."
         if isinstance(response, LogChannelToggledResponse):
             if response.is_enabled:
                 return f":clipboard: <@{response.author_id}> has enabled moderation command logging in <#{response.channel_id}>."
-            else: return f":clipboard: <@{response.author_id}> has disabled moderation command logging."
+            return f":clipboard: <@{response.author_id}> has disabled moderation command logging."
         if isinstance(response, AutoBanToggledResponse):
             if response.is_enabled:
                 return f":gear: <@{response.author_id}> has enabled the automatic banning of users after {response.warn_count} warn strikes."
-            else: return f":gear: <@{response.author_id}> has disabled the automatic banning of users."
+            return f":gear: <@{response.author_id}> has disabled the automatic banning of users."
         if isinstance(response, AutoKickToggledResponse):
             if response.is_enabled:
                 return f":gear: <@{response.author_id}> has enabled the automatic kicking of users after {response.warn_count} warn strikes."
-            else: return f":gear: <@{response.author_id}> has disabled the automatic kicking of users."
+            return f":gear: <@{response.author_id}> has disabled the automatic kicking of users."
         if isinstance(response, AutoMuteToggledResponse):
             if response.is_enabled:
                 duration = textify_timedelta(response.duration) if response.duration is not None else "an unspecified duration"
                 return f":gear: <@{response.author_id}> has enabled the automatic muting of users after {response.warn_count} warn strikes for {duration}."
-            else: return f":gear: <@{response.author_id}> has disabled the automatic muting of users."
+            return f":gear: <@{response.author_id}> has disabled the automatic muting of users."
         if isinstance(response, WarnDecayToggledResponse):
             if response.is_enabled:
                 return f":gear: <@{response.author_id}> has enabled automatic warn strike removal after {textify_timedelta(response.duration)}."
-            else: return f":gear: <@{response.author_id}> has disabled automatic warn strike removal."
+            return f":gear: <@{response.author_id}> has disabled automatic warn strike removal."
         return None

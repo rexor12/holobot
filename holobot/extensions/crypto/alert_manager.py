@@ -7,12 +7,12 @@ from holobot.discord.sdk import IMessaging
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from holobot.sdk.reactive import ListenerInterface
+from holobot.sdk.reactive import IListener
 from typing import List
 
 @injectable(AlertManagerInterface)
-@injectable(ListenerInterface[SymbolUpdateEvent])
-class AlertManager(AlertManagerInterface, ListenerInterface[SymbolUpdateEvent]):
+@injectable(IListener[SymbolUpdateEvent])
+class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
     def __init__(self, database_manager: DatabaseManagerInterface, messaging: IMessaging, log: LogInterface):
         self.__database_manager = database_manager
         self.__messaging = messaging

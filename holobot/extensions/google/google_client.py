@@ -1,4 +1,4 @@
-from .google_client_interface import GoogleClientInterface
+from .igoogle_client import IGoogleClient
 from .enums import SearchType
 from .exceptions import SearchQuotaExhaustedError
 from .models import SearchResult
@@ -19,8 +19,8 @@ CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "CircuitBreakerFailureThreshold"
 CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER = "CircuitBreakerRecoveryTime"
 TEXT_SEARCH_TYPE = "SEARCH_TYPE_UNDEFINED"
 
-@injectable(GoogleClientInterface)
-class GoogleClient(GoogleClientInterface):
+@injectable(IGoogleClient)
+class GoogleClient(IGoogleClient):
     search_types: Dict[SearchType, str] = {
         SearchType.TEXT: TEXT_SEARCH_TYPE,
         SearchType.IMAGE: "IMAGE"
@@ -40,7 +40,7 @@ class GoogleClient(GoogleClientInterface):
             raise InvalidOperationError("Google searches aren't configured.")
         if not query:
             raise ValueError("The query must not be empty.")
-        
+
         try:
             response = await self.__circuit_breaker(
                 self.__http_client_pool.get,
@@ -52,8 +52,8 @@ class GoogleClient(GoogleClientInterface):
                     "num": max_results,
                     "q": query
                 })
-        except TooManyRequestsError:
-            raise SearchQuotaExhaustedError
+        except TooManyRequestsError as error:
+            raise SearchQuotaExhaustedError from error
         except HttpStatusError as error:
             self.__log.error("An HTTP error has occurred during a Google search request.", error)
             raise
@@ -62,11 +62,11 @@ class GoogleClient(GoogleClientInterface):
         except Exception as error:
             self.__log.error(f"An unexpected error has occurred during a Google request. ({type(error)})", error)
             raise
-        
+
         if len(results := response.get("items", [])) == 0:
             return ()
-        
-        return tuple([SearchResult.from_json(result) for result in results])
+
+        return tuple(SearchResult.from_json(result) for result in results)
     
     @staticmethod
     def __create_circuit_breaker(configurator: ConfiguratorInterface) -> AsyncCircuitBreaker:

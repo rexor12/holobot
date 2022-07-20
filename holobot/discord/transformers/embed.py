@@ -16,9 +16,9 @@ def to_model(dto: HikariEmbed) -> Embed:
 
     for field in dto.fields:
         embed.fields.append(EmbedField(
-            name=field.name, # type: ignore
-            value=field.value, # type: ignore
-            is_inline=field.inline # type: ignore
+            name=field.name,
+            value=field.value,
+            is_inline=field.is_inline
         ))
 
     return embed

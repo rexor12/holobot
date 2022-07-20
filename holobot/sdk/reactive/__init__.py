@@ -1,1 +1,1 @@
-from .listener_interface import ListenerInterface, TEvent
+from .ilistener import IListener, TEvent

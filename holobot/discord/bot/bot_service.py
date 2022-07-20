@@ -1,21 +1,24 @@
+from asyncio.tasks import Task
+from typing import List, Optional
+
+import asyncio
+
+import hikari
+
+from hikari import CommandInteraction, ComponentInteraction
+from hikari.api.special_endpoints import CommandBuilder
+
+from holobot.discord.workflows.processors.imenu_item_processor import IMenuItemProcessor
+
 from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
-from ..commands import ICommandProcessor, ICommandRegistry
-from ..components import IComponentInteractionProcessor
-from ..context_menus import IMenuItemRegistry
-from ..context_menus import IMenuItemProcessor
-from asyncio.tasks import Task
-from hikari.api.special_endpoints import CommandBuilder
+from holobot.discord.workflows import IInteractionProcessor, IWorkflowRegistry
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import List, Optional
-
-import asyncio
-import hikari
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"
@@ -31,22 +34,20 @@ REQUIRED_INTENTS = (
 class BotService(BotServiceInterface):
     def __init__(self,
         configurator: ConfiguratorInterface,
-        log: LogInterface,
-        command_processor: ICommandProcessor,
-        command_registry: ICommandRegistry,
         debugger: DebuggerInterface,
-        context_menu_item_registry: IMenuItemRegistry,
-        component_interaction_processor: IComponentInteractionProcessor,
-        menu_item_processor: IMenuItemProcessor
+        command_processor: IInteractionProcessor[CommandInteraction],
+        component_processor: IInteractionProcessor[ComponentInteraction],
+        log: LogInterface,
+        menu_item_processor: IMenuItemProcessor,
+        workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Discord", "BotService")
-        self.__command_processor: ICommandProcessor = command_processor
-        self.__command_registry: ICommandRegistry = command_registry
         self.__debugger: DebuggerInterface = debugger
-        self.__context_menu_item_registry: IMenuItemRegistry = context_menu_item_registry
-        self.__component_interaction_processor: IComponentInteractionProcessor = component_interaction_processor
-        self.__menu_item_processor: IMenuItemProcessor = menu_item_processor
+        self.__command_processor = command_processor
+        self.__component_processor = component_processor
+        self.__log: LogInterface = log.with_name("Discord", "BotService")
+        self.__menu_item_processor = menu_item_processor
+        self.__workflow_registry = workflow_registry
         self.__developer_server_id: int = configurator.get("Development", "DevelopmentServerId", 0)
         self.__bot: Bot = self.__initialize_bot(configurator)
         self.__bot_task: Optional[Task] = None
@@ -94,8 +95,8 @@ class BotService(BotServiceInterface):
     async def __on_bot_starting(self, bot: Bot, _: hikari.StartingEvent) -> None:
         application = await bot.rest.fetch_application()
         command_builders: List[CommandBuilder] = []
-        command_builders.extend(self.__command_registry.get_command_builders(bot))
-        command_builders.extend(self.__context_menu_item_registry.get_command_builders(bot))
+        command_builders.extend(self.__workflow_registry.get_command_builders(bot))
+        command_builders.extend(self.__workflow_registry.get_menu_item_builders(bot))
 
         await bot.rest.set_application_commands(
             application=application.id,
@@ -108,10 +109,10 @@ class BotService(BotServiceInterface):
         if isinstance(event.interaction, hikari.CommandInteraction):
             if event.interaction.command_type == hikari.CommandType.SLASH:
                 await self.__command_processor.process(event.interaction)
-            elif event.interaction.command_type == hikari.CommandType.USER:
+            elif event.interaction.command_type in (hikari.CommandType.USER, hikari.CommandType.MESSAGE):
                 await self.__menu_item_processor.process(event.interaction)
         elif isinstance(event.interaction, hikari.ComponentInteraction):
-            await self.__component_interaction_processor.process(event.interaction)
+            await self.__component_processor.process(event.interaction)
 
     async def __on_error_event(self, event: hikari.ExceptionEvent) -> None:
         self.__log.error((

@@ -1,5 +1,6 @@
-from .content_changing_action_base import ContentChangingActionBase
 from dataclasses import dataclass
+
+from .content_changing_action_base import ContentChangingActionBase
 
 @dataclass
 class EditMessageAction(ContentChangingActionBase):

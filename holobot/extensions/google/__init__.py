@@ -1,2 +1,2 @@
 from .google_client import GoogleClient
-from .google_client_interface import GoogleClientInterface
+from .igoogle_client import IGoogleClient

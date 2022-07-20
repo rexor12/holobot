@@ -1,21 +1,21 @@
-from ..commands import ModerationCommandBase
-from ..commands.responses import UserWarnedResponse
 from ..managers import IMuteManager
 from ..models import WarnSettings
 from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSettingsRepository
+from ..workflows.interactables import ModerationCommand
+from ..workflows.responses import UserWarnedResponse
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.events import CommandExecutedEvent
+from holobot.discord.sdk.events import CommandProcessedEvent
 from holobot.discord.sdk.exceptions import ForbiddenError, ServerNotFoundError, UserNotFoundError
 from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from holobot.sdk.reactive import ListenerInterface
+from holobot.sdk.reactive import IListener
 from typing import Any, Callable, Coroutine, Tuple
 
 # TODO Implement sequence registration in IoC to ensure that punish is executed after log.
 # Eg. container.register_sequence(LogListener, PunishListener)
-@injectable(ListenerInterface[CommandExecutedEvent])
-class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
+@injectable(IListener[CommandProcessedEvent])
+class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
     def __init__(self,
         log: LogInterface,
         log_settings_repository: ILogSettingsRepository,
@@ -33,8 +33,8 @@ class PunishOnEnoughWarnsAccumulated(ListenerInterface[CommandExecutedEvent]):
         self.__warn_repository: IWarnRepository = warn_repository
         self.__warn_settings_repository: IWarnSettingsRepository = warn_settings_repository
 
-    async def on_event(self, event: CommandExecutedEvent):
-        if (not issubclass(event.command_type, ModerationCommandBase)
+    async def on_event(self, event: CommandProcessedEvent):
+        if (not issubclass(event.command_type, ModerationCommand)
             or not isinstance(event.response, UserWarnedResponse)):
             return
         

@@ -52,14 +52,15 @@ class InteractionProcessorBase(
 
         self.__log.trace(f"Processing interactable... {{ Interactable = {interactable.describe()} }}")
         start_time = time.perf_counter()
-        if interactable.defer_type == DeferType.DEFER_MESSAGE_CREATION:
-            await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
-        elif interactable.defer_type == DeferType.DEFER_MESSAGE_UPDATE:
-            await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
 
         context = self._get_interaction_context(interaction)
         if await self.__try_halt_interactable(interaction, workflow, interactable, context):
             return
+
+        if interactable.defer_type == DeferType.DEFER_MESSAGE_CREATION:
+            await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
+        elif interactable.defer_type == DeferType.DEFER_MESSAGE_UPDATE:
+            await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
 
         response = await interactable.callback(workflow, context, **arguments)
         await self.__action_processor.process(
@@ -122,7 +123,8 @@ class InteractionProcessorBase(
                     ReplyAction(
                         content="You're not allowed to use this command."
                     ),
-                    interactable.defer_type
+                    DeferType.NONE,
+                    True
                 )
                 return True
         return False

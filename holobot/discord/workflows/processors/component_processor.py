@@ -1,10 +1,10 @@
-from types import coroutine
-from typing import Generator, Tuple
+from typing import Tuple
 from uuid import uuid4
 
 from hikari import ComponentInteraction
 
 from holobot.discord.actions import IActionProcessor
+from holobot.discord.sdk.events import ComponentProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import Component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
@@ -15,6 +15,7 @@ from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from holobot.sdk.reactive import IListener
 
 @injectable(IInteractionProcessor[ComponentInteraction])
 class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Component]):
@@ -22,12 +23,14 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
         self,
         action_processor: IActionProcessor,
         component_transformer: IComponentTransformer,
+        event_listeners: Tuple[IListener[ComponentProcessedEvent], ...],
         log: LogInterface,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, log, workflow_execution_rules)
         self.__component_transformer = component_transformer
+        self.__event_listeners = event_listeners
         self.__workflow_registry = workflow_registry
 
     def _get_interactable_descriptor(
@@ -66,11 +69,20 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
             channel_id=str(interaction.channel_id)
         )
 
-    @coroutine
-    def _on_interaction_processed(
+    async def _on_interaction_processed(
         self,
         interaction: ComponentInteraction,
         interactable: Component,
         response: InteractionResponse
-    ) -> Generator[None, None, None]:
-        yield
+    ) -> None:
+        if not self.__event_listeners:
+            return
+
+        event = ComponentProcessedEvent(
+            component_type=type(interactable),
+            server_id=str(interaction.guild_id),
+            user_id=str(interaction.user.id),
+            response=response
+        )
+        for event_listener in self.__event_listeners:
+            await event_listener.on_event(event)

@@ -1,2 +1,3 @@
 from .command_processed_event import CommandProcessedEvent
+from .component_processed_event import ComponentProcessedEvent
 from .menu_item_processed_event import MenuItemProcessedEvent

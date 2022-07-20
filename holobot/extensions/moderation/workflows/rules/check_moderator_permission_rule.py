@@ -1,10 +1,10 @@
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerMessageInteractionContext, ServerUserInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.extensions.moderation.managers import IPermissionManager
-from holobot.extensions.moderation.workflows.interactables import ModerationCommand, ModerationMenuItem
+from holobot.extensions.moderation.workflows.interactables import ModerationCommand, ModerationComponent, ModerationMenuItem
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflowExecutionRule)
@@ -20,8 +20,8 @@ class CheckModeratorPermissionRule(IWorkflowExecutionRule):
         context: InteractionContext
     ) -> bool:
         if (
-            not isinstance(interactable, (ModerationCommand, ModerationMenuItem))
-            or not isinstance(context, (ServerChatInteractionContext, ServerUserInteractionContext))
+            not isinstance(interactable, (ModerationCommand, ModerationComponent, ModerationMenuItem))
+            or not isinstance(context, (ServerChatInteractionContext, ServerMessageInteractionContext, ServerUserInteractionContext))
         ):
             return False
 

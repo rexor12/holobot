@@ -1,21 +1,23 @@
-from .models import CommandRule
-from typing import Optional, Tuple
+from typing import Optional, Protocol, Sequence
 
-class CommandRuleRepositoryInterface:
+from .models import CommandRule
+from holobot.sdk.queries import PaginationResult
+
+class CommandRuleRepositoryInterface(Protocol):
     async def add_or_update(self, rule: CommandRule) -> int:
-        raise NotImplementedError
+        ...
     
     async def get(self, id: int) -> Optional[CommandRule]:
-        raise NotImplementedError
+        ...
     
-    async def get_many(self, server_id: str, group: Optional[str], subgroup: Optional[str], start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
-        raise NotImplementedError
+    async def get_many(self, server_id: str, group: Optional[str], subgroup: Optional[str], page_index: int, page_size: int) -> PaginationResult[CommandRule]:
+        ...
     
-    async def get_relevant(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: Optional[str]) -> Tuple[CommandRule, ...]:
-        raise NotImplementedError
+    async def get_relevant(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: Optional[str]) -> Sequence[CommandRule]:
+        ...
     
     async def delete_by_id(self, rule_id: int) -> None:
-        raise NotImplementedError
+        ...
     
     async def delete_by_server(self, server_id: str) -> None:
-        raise NotImplementedError
+        ...

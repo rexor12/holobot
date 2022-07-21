@@ -39,5 +39,10 @@ class ColumnConstraintBuilder(IConstraintBuilder):
                 arguments.append(self.value)
         return (" ".join(sql), tuple(arguments))
 
-def column_expression(column_name: str, equality: Equality, value: Optional[Any]) -> ColumnConstraintBuilder:
-    return ColumnConstraintBuilder(column_name, equality, value)
+def column_expression(
+    column_name: str,
+    equality: Equality,
+    value: Optional[Any],
+    is_raw_value: bool = False
+) -> ColumnConstraintBuilder:
+    return ColumnConstraintBuilder(column_name, equality, value, is_raw_value)

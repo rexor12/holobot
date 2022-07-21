@@ -1,12 +1,14 @@
+from datetime import timedelta
+from typing import Optional, Tuple
+
 from .iwarn_manager import IWarnManager
 from .. import IConfigProvider
 from ..models import WarnStrike
 from ..repositories import IWarnRepository, IWarnSettingsRepository
-from datetime import timedelta
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
-from typing import Optional, Tuple
+from holobot.sdk.queries import PaginationResult
 
 MIN_WARN_COUNT: int = 1
 MAX_WARN_COUNT: int = 20
@@ -22,15 +24,22 @@ class WarnManager(IWarnManager):
         self.__warn_repository: IWarnRepository = warn_repository
         self.__warn_settings_repository: IWarnSettingsRepository = warn_settings_repository
 
-    async def get_warns(self, server_id: str, user_id: str, page_index: int, page_size: int) -> Tuple[WarnStrike, ...]:
+    async def get_warns(
+        self,
+        server_id: str,
+        user_id: str,
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[WarnStrike]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
         if page_index < 0:
             page_index = 0
         if page_size < 0:
-            return ()
-        return await self.__warn_repository.get_warns_by_user(server_id, user_id, page_index * page_size, page_size)
+            return PaginationResult(page_index, page_size, 0)
+
+        return await self.__warn_repository.get_warns_by_user(server_id, user_id, page_index, page_size)
     
     async def warn_user(self, server_id: str, user_id: str, reason: str, warner_id: str) -> WarnStrike:
         assert_not_none(server_id, "server_id")

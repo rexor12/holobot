@@ -1,13 +1,16 @@
+from datetime import datetime
+from typing import Tuple, Optional
+
+from asyncpg.connection import Connection
+
 from .reminder_repository_interface import ReminderRepositoryInterface
 from ..enums import DayOfWeek
 from ..models import Reminder
-from asyncpg.connection import Connection
-from datetime import datetime
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
-from typing import Tuple, Optional
+from holobot.sdk.queries import PaginationResult
 
 TABLE_NAME = "reminders"
 
@@ -35,17 +38,30 @@ class ReminderRepository(ReminderRepositoryInterface):
                 ).from_table(TABLE_NAME).where().field("id", Equality.EQUAL, id).compile().fetchrow(connection)
                 return ReminderRepository.__parse_reminder(record) if record else None
     
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[Reminder, ...]:
+    async def get_many(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[Reminder]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await Query.select().columns(
-                    "id", "user_id", "created_at", "message", "is_repeating", "frequency_time",
-                    "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
-                ).from_table(TABLE_NAME).where().field(
-                    "user_id", Equality.EQUAL, user_id
-                ).limit().max_count(page_size).start_index(start_offset).compile().fetch(connection)
-                return tuple([ReminderRepository.__parse_reminder(record) for record in records])
+                result = await (Query
+                    .select()
+                    .columns(
+                        "id", "user_id", "created_at", "message", "is_repeating", "frequency_time",
+                        "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
+                    )
+                    .from_table(TABLE_NAME)
+                    .where()
+                    .field("user_id", Equality.EQUAL, user_id)
+                    .paginate("id", page_index, page_size)
+                    .compile()
+                    .fetch(connection)
+                )
+
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [ReminderRepository.__parse_reminder(record) for record in result.records]
+                )
 
     async def get_triggerable(self) -> Tuple[Reminder, ...]:
         async with self.__database_manager.acquire_connection() as connection:

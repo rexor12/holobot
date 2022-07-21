@@ -1,16 +1,20 @@
+from datetime import timedelta
+from typing import Optional
+
+from asyncpg.connection import Connection
+
 from .iwarn_repository import IWarnRepository
 from ..models import WarnStrike
-from asyncpg.connection import Connection
-from datetime import timedelta
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
+from holobot.sdk.database.queries.constraints import and_expression, column_expression, or_expression
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import assert_not_none
-from typing import Optional, Tuple
 
 TABLE_NAME = "moderation_warns"
 SETTINGS_TABLE_NAME = "moderation_warn_settings"
@@ -38,23 +42,46 @@ class WarnRepository(IWarnRepository):
                 )
                 return count if count is not None else 0
 
-    async def get_warns_by_user(self, server_id: str, user_id: str, start_offset: int, max_count: int) -> Tuple[WarnStrike, ...]:
+    async def get_warns_by_user(
+        self,
+        server_id: str,
+        user_id: str,
+        page_index: int,
+        max_count: int
+    ) -> PaginationResult[WarnStrike]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await connection.fetch(
-                    (
-                        f"SELECT t1.id, t1.created_at, t1.server_id, t1.user_id, t1.reason, t1.warner_id FROM {TABLE_NAME} AS t1"
-                        f" LEFT JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
-                        " WHERE (t2.decay_threshold IS NULL OR (t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold))"
-                        " AND t1.server_id = $1 AND t1.user_id = $2"
-                        " LIMIT $3 OFFSET $4"
-                    ), server_id, user_id, max_count, start_offset
+                result = await (Query
+                    .select()
+                    .columns("t1.id", "t1.created_at", "t1.server_id", "t1.user_id", "t1.reason", "t1.warner_id")
+                    .from_table(TABLE_NAME, "t1")
+                    .join(SETTINGS_TABLE_NAME, "t1.server_id", "t2.server_id", "t2")
+                    .where()
+                    .expression(
+                        and_expression(
+                            or_expression(
+                                column_expression("t2.decay_threshold", Equality.EQUAL, None),
+                                column_expression("t1.created_at", Equality.GREATER | Equality.EQUAL, "((NOW() at time zone 'utc') - t2.decay_threshold)", True)
+                            ),
+                            column_expression("t1.server_id", Equality.EQUAL, server_id),
+                            column_expression("t1.user_id", Equality.EQUAL, user_id)
+                        )
+                    )
+                    .paginate("t1.id", page_index, max_count)
+                    .compile()
+                    .fetch(connection)
                 )
-                return tuple([WarnRepository.__map_to_model(record) for record in records])
+
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [WarnRepository.__map_to_model(record) for record in result.records]
+                )
 
     async def add_warn(self, warn_strike: WarnStrike, decay_threshold: Optional[timedelta] = None) -> int:
         assert_not_none(warn_strike, "warn_strike")

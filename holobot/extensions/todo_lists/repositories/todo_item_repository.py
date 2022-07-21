@@ -1,11 +1,14 @@
-from .todo_item_repository_interface import TodoItemRepositoryInterface
-from ..models import TodoItem
+from typing import Optional
+
 from asyncpg.connection import Connection
+
+from .todo_item_repository_interface import TodoItemRepositoryInterface
+from holobot.extensions.todo_lists.models import TodoItem
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
-from typing import Optional, Tuple
+from holobot.sdk.queries import PaginationResult
 
 @injectable(TodoItemRepositoryInterface)
 class TodoItemRepository(TodoItemRepositoryInterface):
@@ -31,16 +34,27 @@ class TodoItemRepository(TodoItemRepositoryInterface):
                 ).compile().fetchrow(connection)
                 return TodoItemRepository.__parse_todo_item(record) if record is not None else None
     
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> Tuple[TodoItem, ...]:
+    async def get_many(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[TodoItem]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await Query.select().columns(
-                    "id", "user_id", "created_at", "message"
-                ).from_table("todo_lists").where().field(
-                    "user_id", Equality.EQUAL, user_id
-                ).limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
-                return tuple([TodoItemRepository.__parse_todo_item(record) for record in records])
+                result = await (Query
+                    .select()
+                    .columns("id", "user_id", "created_at", "message")
+                    .from_table("todo_lists")
+                    .where()
+                    .field("user_id", Equality.EQUAL, user_id)
+                    .paginate("id", page_index, page_size)
+                    .compile()
+                    .fetch(connection)
+                )
+
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [TodoItemRepository.__parse_todo_item(record) for record in result.records]
+                )
     
     async def store(self, todo_item: TodoItem) -> None:
         async with self.__database_manager.acquire_connection() as connection:

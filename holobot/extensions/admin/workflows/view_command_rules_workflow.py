@@ -4,14 +4,14 @@ from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import Paginator
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Paginator, Layout
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Tuple, Union
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -44,15 +44,14 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             )
 
         return InteractionResponse(ReplyAction(
-            await self.__create_page_content(
+            *await self.__create_page_content(
                 context.server_id,
                 context.author_id,
                 group,
                 subgroup,
                 0,
                 DEFAULT_PAGE_SIZE
-            ),
-            Paginator("avrc_paginator", current_page=0)
+            )
         ))
 
     @component(
@@ -76,15 +75,14 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         subgroup = state.custom_data.get("subgroup")
         return InteractionResponse(
             EditMessageAction(
-                await self.__create_page_content(
+                *await self.__create_page_content(
                     context.server_id,
                     context.author_id,
                     group,
                     subgroup if group else None,
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
-                ),
-                Paginator("avrc_paginator", current_page=max(state.current_page, 0))
+                )
             )
         )
 
@@ -96,14 +94,13 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         subgroup: Optional[str],
         page_index: int,
         page_size: int
-    ) -> Union[str, Embed]:
+    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
         self.__log.trace(f"User requested command rule list page. {{ UserId = {user_id}, Page = {page_index} }}")
-        start_offset = page_index * page_size
-        items = await self.__command_manager.get_rules_by_server(server_id, start_offset, page_size, group, subgroup)
-        if len(items) == 0:
-            return "No command rules matching the query have been configured for the server."
+        result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
+        if len(result.items) == 0:
+            return ("No command rules matching the query have been configured for the server.", [])
 
-        return Embed(
+        content = Embed(
             title="Command rules",
             description="The list of command rules set on this server.",
             color=0xeb7d00,
@@ -111,5 +108,14 @@ class ViewCommandRulesWorkflow(WorkflowBase):
                 name=f"Rule #{rule.id}",
                 value=rule.textify(),
                 is_inline=False
-            ) for rule in items]
+            ) for rule in result.items]
         )
+
+        component = Paginator(
+            "avrc_paginator",
+            current_page=page_index,
+            page_size=page_size,
+            total_count=result.total_count
+        )
+        
+        return (content, component)

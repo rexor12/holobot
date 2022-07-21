@@ -1,15 +1,17 @@
-from .models import TodoItem
-from typing import Tuple
+from typing import Protocol
 
-class TodoItemManagerInterface:
-    async def get_by_user(self, user_id: str, offset: int, page_size: int) -> Tuple[TodoItem, ...]:
-        raise NotImplementedError
+from .models import TodoItem
+from holobot.sdk.queries import PaginationResult
+
+class TodoItemManagerInterface(Protocol):
+    async def get_by_user(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[TodoItem]:
+        ...
 
     async def add_todo_item(self, todo_item: TodoItem) -> None:
-        raise NotImplementedError
+        ...
     
     async def delete_by_user(self, user_id: str, todo_item_id: int) -> None:
-        raise NotImplementedError
+        ...
     
     async def delete_all(self, user_id: str) -> int:
-        raise NotImplementedError
+        ...

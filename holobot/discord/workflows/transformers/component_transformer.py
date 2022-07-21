@@ -191,12 +191,14 @@ class ComponentTransformer(IComponentTransformer):
                     Button(
                         f"{component.id}~{component.current_page - 1};{custom_data}",
                         "Previous",
-                        ComponentStyle.SECONDARY
+                        ComponentStyle.SECONDARY,
+                        is_enabled=not component.is_first_page()
                     ),
                     Button(
                         f"{component.id}~{component.current_page + 1};{custom_data}",
                         "Next",
-                        ComponentStyle.SECONDARY
+                        ComponentStyle.SECONDARY,
+                        is_enabled=not component.is_last_page()
                     )
                 ]
             ),

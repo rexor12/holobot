@@ -1,13 +1,16 @@
+from typing import Any, Dict, Optional, Sequence
+
+from asyncpg.connection import Connection
+
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
 from .enums.rule_state import RuleState
 from .models import CommandRule
-from asyncpg.connection import Connection
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import column_expression, and_expression, or_expression
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.ioc.decorators import injectable
-from typing import Any, Dict, Optional, Tuple
+from holobot.sdk.queries import PaginationResult
 
 TABLE_NAME = "admin_rules"
 
@@ -61,7 +64,14 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 ).compile().fetchrow(connection)
                 return CommandRuleRepository.__record_to_entity(record) if record is not None else None
     
-    async def get_many(self, server_id: str, group: Optional[str], subgroup: Optional[str], start_offset: int, page_size: int) -> Tuple[CommandRule, ...]:
+    async def get_many(
+        self,
+        server_id: str,
+        group: Optional[str],
+        subgroup: Optional[str],
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[CommandRule]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -74,10 +84,27 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                     query = query.and_field("command_group", Equality.EQUAL, group)
                     if subgroup is not None:
                         query = query.and_field("command_subgroup", Equality.EQUAL, subgroup)
-                records = await query.order_by().column("id").limit().start_index(start_offset).max_count(page_size).compile().fetch(connection)
-                return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
+                result = await (query
+                    .paginate("id", page_index, page_size)
+                    .compile()
+                    .fetch(connection)
+                )
+                
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [CommandRuleRepository.__record_to_entity(record) for record in result.records]
+                )
     
-    async def get_relevant(self, server_id: str, channel_id: str, group: Optional[str], subgroup: Optional[str], command: Optional[str]) -> Tuple[CommandRule, ...]:
+    async def get_relevant(
+        self,
+        server_id: str,
+        channel_id: str,
+        group: Optional[str],
+        subgroup: Optional[str],
+        command: Optional[str]
+    ) -> Sequence[CommandRule]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():

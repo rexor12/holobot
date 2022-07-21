@@ -3,6 +3,7 @@ from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
+from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
 from .constraints import ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
@@ -43,6 +44,14 @@ class WhereBuilder(IWhereBuilder):
     
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)
+
+    def paginate(
+        self,
+        ordering_column: str,
+        page_index: int,
+        page_size: int
+    ) -> PaginateBuilder:
+        return PaginateBuilder(self, ordering_column, page_index, page_size)
 
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())

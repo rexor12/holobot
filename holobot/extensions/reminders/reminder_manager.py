@@ -1,13 +1,15 @@
+from datetime import datetime, timedelta
+from typing import Optional
+
 from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
 from .models import Reminder, ReminderConfig
 from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import ReminderRepositoryInterface
-from datetime import datetime, timedelta
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Optional, Tuple
+from holobot.sdk.queries import PaginationResult
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
@@ -50,8 +52,8 @@ class ReminderManager(ReminderManagerInterface):
         if deleted_count == 0:
             raise InvalidReminderError("The specified reminder doesn't exist or belong to the specified user.")
 
-    async def get_by_user(self, user_id: str, offset: int, page_size: int) -> Tuple[Reminder, ...]:
-        return await self.__reminder_repository.get_many(user_id, offset, page_size)
+    async def get_by_user(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[Reminder]:
+        return await self.__reminder_repository.get_many(user_id, page_index, page_size)
 
     async def __assert_reminder_count(self, user_id: str) -> None:
         count = await self.__reminder_repository.count(user_id)

@@ -1,14 +1,19 @@
+from decimal import Decimal
+from typing import List
+
+from asyncpg.connection import Connection
+
 from .alert_manager_interface import AlertManagerInterface
 from .enums import FrequencyType, PriceDirection
 from .models import Alert, SymbolUpdateEvent
-from asyncpg.connection import Connection
-from decimal import Decimal
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database.queries import Query
+from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.reactive import IListener
-from typing import List
 
 @injectable(AlertManagerInterface)
 @injectable(IListener[SymbolUpdateEvent])
@@ -41,16 +46,38 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                 )
         self.__log.debug(f"Added alert. {{ UserId = {user_id}, Symbol = {symbol} }}")
 
-    async def get_many(self, user_id: str, start_offset: int, page_size: int) -> List[Alert]:
+    async def get_many(
+        self,
+        user_id: str,
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[Alert]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                records = await connection.fetch("SELECT symbol, direction, price FROM crypto_alerts WHERE user_id = $1 LIMIT $3 OFFSET $2", str(user_id), start_offset, page_size)
-                return [Alert(
-                    record["symbol"],
-                    PriceDirection(record["direction"]),
-                    Decimal(record["price"])
-                ) for record in records]
+                result = await (Query
+                    .select()
+                    .columns("symbol", "direction", "price")
+                    .from_table("crypto_alerts")
+                    .where()
+                    .field("user_id", Equality.EQUAL, user_id)
+                    .paginate("id", page_index, page_size)
+                    .compile()
+                    .fetch(connection)
+                )
+
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [
+                        Alert(
+                            record["symbol"],
+                            PriceDirection(record["direction"]),
+                            Decimal(record["price"])
+                        ) for record in result.records
+                    ]
+                )
 
     async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
         self.__log.debug(f"Deleting alerts... {{ UserId = {user_id}, Symbol = {symbol} }}")

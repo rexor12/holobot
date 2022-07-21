@@ -1,17 +1,18 @@
+from typing import Any, List, Tuple, Union
+
 from .. import AlertManagerInterface
 from ..enums import PriceDirection
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import Paginator
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Any, Union
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -30,12 +31,11 @@ class ViewAlarmsWorkflow(WorkflowBase):
     )
     async def view_alarms(self, context: ServerChatInteractionContext) -> InteractionResponse:
         return InteractionResponse(ReplyAction(
-            await self.__create_page_content(context.author_id, 0, DEFAULT_PAGE_SIZE),
-            Paginator("crypto_alarm_paginator", current_page=0)
+            *await self.__create_page_content(context.author_id, 0, DEFAULT_PAGE_SIZE)
         ))
 
     @component(
-        identifier="crypto_alarm_paginator",
+        identifier="crya_paginator",
         component_type=Paginator,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
     )
@@ -46,12 +46,11 @@ class ViewAlarmsWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         return InteractionResponse(
             EditMessageAction(
-                await self.__create_page_content(
+                *await self.__create_page_content(
                     context.author_id,
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
-                ),
-                Paginator("crypto_alarm_paginator", current_page=max(state.current_page, 0))
+                )
             )
             if isinstance(state, PagerState)
             else EditMessageAction("An internal error occurred while processing the interaction.")
@@ -62,22 +61,29 @@ class ViewAlarmsWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> Union[str, Embed]:
+    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
         self.__log.trace(f"User requested crypto alarm page. {{ UserId = {user_id}, Page = {page_index} }}")
-        start_offset = page_index * page_size
-        alerts = await self.__alert_manager.get_many(user_id, start_offset, page_size)
-        if len(alerts) == 0:
-            return "The user has no crypto alarms."
+        result = await self.__alert_manager.get_many(user_id, page_index, page_size)
+        if len(result.items) == 0:
+            return ("The user has no crypto alarms.", [])
         
         embed = Embed(
             title="Crypto alarms",
             description=f"Cryptocurrency alarms of <@{user_id}>."
         )
-        for alert in alerts:
+        for alert in result.items:
             arrow = "🔼" if alert.direction == PriceDirection.ABOVE else "🔽"
             embed.fields.append(EmbedField(
                 name=alert.symbol,
                 value=f"{arrow} {alert.price:,.8f}",
                 is_inline=False
             ))
-        return embed
+
+        component = Paginator(
+            "crya_paginator",
+            current_page=page_index,
+            page_size=page_size,
+            total_count=result.total_count
+        )
+        
+        return (embed, component)

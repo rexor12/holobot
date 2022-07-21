@@ -6,7 +6,8 @@ from .exceptions import InvalidCommandError
 from .models import CommandRule
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.exception_utils import assert_not_none
-from typing import Optional, Tuple
+from typing import Optional
+from holobot.sdk.queries import PaginationResult
 
 @injectable(CommandRuleManagerInterface)
 class CommandRuleManager(CommandRuleManagerInterface):
@@ -15,12 +16,12 @@ class CommandRuleManager(CommandRuleManagerInterface):
         self.__repository: CommandRuleRepositoryInterface = rule_repository
         self.__registry: CommandRegistryInterface = command_registry
         
-    async def get_rules_by_server(self, server_id: str, start_offset: int, page_size: int, group: Optional[str] = None, subgroup: Optional[str] = None) -> Tuple[CommandRule, ...]:
+    async def get_rules_by_server(self, server_id: str, page_index: int, page_size: int, group: Optional[str] = None, subgroup: Optional[str] = None) -> PaginationResult[CommandRule]:
         assert_not_none(server_id, "server_id")
         if subgroup is not None:
             assert_not_none(group, "group")
 
-        return await self.__repository.get_many(server_id, group, subgroup, start_offset, page_size)
+        return await self.__repository.get_many(server_id, group, subgroup, page_index, page_size)
         
     async def set_rule(self, rule: CommandRule) -> int:
         assert_not_none(rule.server_id, "rule.server_id")

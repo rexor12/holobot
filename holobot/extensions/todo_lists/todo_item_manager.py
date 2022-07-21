@@ -6,7 +6,7 @@ from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import LogInterface
-from typing import Tuple
+from holobot.sdk.queries import PaginationResult
 
 @injectable(TodoItemManagerInterface)
 class TodoItemManager(TodoItemManagerInterface):
@@ -19,8 +19,8 @@ class TodoItemManager(TodoItemManagerInterface):
         self.__message_length_min: int = self.__configurator.get("TodoLists", "MessageLengthMin", 10)
         self.__message_length_max: int = self.__configurator.get("TodoLists", "MessageLengthMax", 192)
         
-    async def get_by_user(self, user_id: str, offset: int, page_size: int) -> Tuple[TodoItem, ...]:
-        return await self.__todo_item_repository.get_many(user_id, offset, page_size)
+    async def get_by_user(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[TodoItem]:
+        return await self.__todo_item_repository.get_many(user_id, page_index, page_size)
 
     async def add_todo_item(self, todo_item: TodoItem) -> None:
         if not (self.__message_length_min <= len(todo_item.message) <= self.__message_length_max):

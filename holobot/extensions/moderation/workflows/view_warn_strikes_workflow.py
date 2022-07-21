@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, List, Tuple, Union
 
 from .interactables.decorators import moderation_command, moderation_component
 from ..enums import ModeratorPermission
@@ -9,7 +9,7 @@ from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import Paginator
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -58,8 +58,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             )
 
         return InteractionResponse(ReplyAction(
-            await self.__create_page_content(context.server_id, user_id, 0, DEFAULT_PAGE_SIZE),
-            Paginator("warn_paginator", current_page=0)
+            *await self.__create_page_content(context.server_id, user_id, 0, DEFAULT_PAGE_SIZE)
         ))
 
     @moderation_component(
@@ -78,13 +77,12 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
 
         return InteractionResponse(
             EditMessageAction(
-                await self.__create_page_content(
+                *await self.__create_page_content(
                     context.server_id,
                     context.author_id,
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
-                ),
-                Paginator("warn_paginator", current_page=max(state.current_page, 0))
+                )
             )
             if isinstance(state, PagerState)
             else EditMessageAction("An internal error occurred while processing the interaction.")
@@ -96,18 +94,18 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> Union[str, Embed]:
+    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
         self.__log.trace(f"User requested warn strike page. {{ ServerId = {server_id}, UserId = {user_id}, Page = {page_index} }}")
-        warn_strikes = await self.__warn_manager.get_warns(server_id, user_id, page_index, page_size)
-        if len(warn_strikes) == 0:
-            return "The user has no warn strikes."
+        result = await self.__warn_manager.get_warns(server_id, user_id, page_index, page_size)
+        if len(result.items) == 0:
+            return ("The user has no warn strikes.", [])
 
         embed = Embed(
             title="Warn strikes",
             description=f"The list of warn strikes of <@{user_id}>."
         )
 
-        for warn_strike in warn_strikes:
+        for warn_strike in result.items:
             embed.fields.append(EmbedField(
                 name=f"Strike #{warn_strike.id}",
                 value=(
@@ -117,4 +115,11 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 is_inline=False
             ))
 
-        return embed
+        component = Paginator(
+            "warn_paginator",
+            current_page=page_index,
+            page_size=page_size,
+            total_count=result.total_count
+        )
+
+        return (embed, component)

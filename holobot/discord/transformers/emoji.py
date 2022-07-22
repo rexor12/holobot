@@ -22,5 +22,6 @@ def to_model(dto: TEmoji) -> Emoji:
     return Emoji(
         identifier=str(identifier) if identifier else None,
         url=url,
-        mention=dto.mention
+        mention=dto.mention,
+        is_known=True
     )

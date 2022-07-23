@@ -5,6 +5,7 @@ from hikari import ComponentInteraction
 from hikari.api.special_endpoints import ComponentBuilder
 
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase
+from holobot.discord.sdk.workflows.interactables.components.models import ComponentStateBase
 
 class IComponentTransformer(metaclass=ABCMeta):
     @abstractmethod
@@ -16,5 +17,5 @@ class IComponentTransformer(metaclass=ABCMeta):
         self,
         component_type: Type[ComponentBase],
         interaction: ComponentInteraction
-    ) -> Any:
+    ) -> ComponentStateBase:
         ...

@@ -48,7 +48,7 @@ class ViewRemindersWorkflow(WorkflowBase):
         return InteractionResponse(
             EditMessageAction(
                 *await self.__create_page_content(
-                    context.author_id,
+                    state.owner_id,
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
                 )
@@ -70,7 +70,7 @@ class ViewRemindersWorkflow(WorkflowBase):
 
         embed = Embed(
             title="Reminders",
-            description=f"Reminders of {user_id}.",
+            description=f"Reminders of <@{user_id}>.",
             footer=EmbedFooter("Use the reminder's number for removal.")
         )
         for reminder in result.items:
@@ -85,7 +85,8 @@ class ViewRemindersWorkflow(WorkflowBase):
             ))
 
         component = Paginator(
-            "reminder_paginator",
+            id="reminder_paginator",
+            owner_id=user_id,
             current_page=page_index,
             page_size=page_size,
             total_count=result.total_count

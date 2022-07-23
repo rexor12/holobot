@@ -64,6 +64,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
     @moderation_component(
         identifier="warn_paginator",
         component_type=Paginator,
+        is_bound=True,
         required_moderator_permissions=ModeratorPermission.WARN_USERS,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
     )
@@ -79,7 +80,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             EditMessageAction(
                 *await self.__create_page_content(
                     context.server_id,
-                    context.author_id,
+                    state.owner_id,
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
                 )
@@ -116,7 +117,8 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             ))
 
         component = Paginator(
-            "warn_paginator",
+            id="warn_paginator",
+            owner_id=user_id,
             current_page=page_index,
             page_size=page_size,
             total_count=result.total_count

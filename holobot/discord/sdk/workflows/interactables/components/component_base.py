@@ -1,5 +1,5 @@
 from dataclasses import dataclass
 
-@dataclass
+@dataclass(kw_only=True)
 class ComponentBase:
     id: str

@@ -77,7 +77,7 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             EditMessageAction(
                 *await self.__create_page_content(
                     context.server_id,
-                    context.author_id,
+                    state.owner_id,
                     group,
                     subgroup if group else None,
                     max(state.current_page, 0),
@@ -112,7 +112,8 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         )
 
         component = Paginator(
-            "avrc_paginator",
+            id="avrc_paginator",
+            owner_id=user_id,
             current_page=page_index,
             page_size=page_size,
             total_count=result.total_count

@@ -60,7 +60,9 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
         return InteractionDescriptor(
             workflow=invocation_target[0] if invocation_target else None,
             interactable=invocation_target[1] if invocation_target else None,
-            arguments=arguments
+            arguments=arguments,
+            initiator_id=str(interaction.user.id),
+            bound_user_id=str(interaction.user.id)
         )
 
     def _get_interaction_context(

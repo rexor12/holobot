@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-@dataclass
-class EmptyState:
-    pass
+from .component_state_base import ComponentStateBase
 
-DEFAULT_EMPTY_STATE: EmptyState = EmptyState()
+@dataclass
+class EmptyState(ComponentStateBase):
+    pass

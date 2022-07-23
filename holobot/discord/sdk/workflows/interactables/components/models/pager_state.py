@@ -1,7 +1,12 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-@dataclass
-class PagerState:
+from .component_state_base import ComponentStateBase
+
+@dataclass(kw_only=True)
+class PagerState(ComponentStateBase):
     current_page: int
+    """The index of the currently selected page."""
+
     custom_data: Dict[str, Any]
+    """Additional data used by extensions."""

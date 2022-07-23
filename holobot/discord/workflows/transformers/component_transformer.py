@@ -11,7 +11,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
 )
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import (
-    ComboBoxState, PagerState, DEFAULT_EMPTY_STATE
+    ComboBoxState, ComponentStateBase, EmptyState, PagerState
 )
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
@@ -46,9 +46,9 @@ class ComponentTransformer(IComponentTransformer):
             ComboBox: self.__transform_combo_box,
             Paginator: self.__transform_pager
         }
-        self.__state_transformers: Dict[Type[ComponentBase], Callable[[hikari.ComponentInteraction], Any]] = {
-            StackLayout: lambda _: DEFAULT_EMPTY_STATE,
-            Button: lambda _: DEFAULT_EMPTY_STATE,
+        self.__state_transformers: Dict[Type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
+            StackLayout: lambda i: EmptyState(owner_id=str(i.user.id)),
+            Button: lambda i: EmptyState(owner_id=str(i.user.id)),
             ComboBox: self.__transform_combo_box_state,
             Paginator: self.__transform_pager_state
         }
@@ -60,7 +60,7 @@ class ComponentTransformer(IComponentTransformer):
         self,
         component_type: Type[ComponentBase],
         interaction: hikari.ComponentInteraction
-    ) -> Any:
+    ) -> ComponentStateBase:
         assert_not_none(component_type, "component_type")
         assert_not_none(interaction, "interaction")
 
@@ -157,7 +157,7 @@ class ComponentTransformer(IComponentTransformer):
         builder.set_max_values(component.selection_count_max)
         builder.set_is_disabled(not component.is_enabled)
         for item in component.items:
-            option_builder = builder.add_option(item.text, item.value)
+            option_builder = builder.add_option(item.text, f"{item.value};{component.owner_id}")
             if item.description:
                 option_builder.set_description(item.description)
             option_builder.add_to_menu()
@@ -169,8 +169,22 @@ class ComponentTransformer(IComponentTransformer):
         self,
         interaction: hikari.ComponentInteraction
     ) -> ComboBoxState:
+        selected_values = []
+        owner_id = None
+        for value in interaction.values:
+            parts = value.split(";")
+            if len(parts) < 2:
+                raise ValueError("Invalid component state. Required 'owner_id' is missing for the combo box.")
+
+            owner_id = parts[1]
+            selected_values.append(parts[0])
+
+        if not owner_id:
+            raise ValueError("Invalid component state. Required 'owner_id' is missing for the combo box.")
+
         return ComboBoxState(
-            selected_values=interaction.values
+            owner_id=owner_id,
+            selected_values=selected_values
         )
 
     def __transform_pager(
@@ -185,19 +199,21 @@ class ComponentTransformer(IComponentTransformer):
         custom_data = ";".join((f"{key}={value}" for key, value in component.custom_data.items()))
         return self.__transform_component(
             StackLayout(
-                component.id,
-                [
+                id=component.id,
+                children=[
                     # TODO Dedicated data field (implemented on the main/FreeEpicGamesCommand branch).
                     Button(
-                        f"{component.id}~{component.current_page - 1};{custom_data}",
-                        "Previous",
-                        ComponentStyle.SECONDARY,
+                        id=f"{component.id}~{component.current_page - 1};{component.owner_id};{custom_data}",
+                        owner_id=component.owner_id,
+                        text="Previous",
+                        style=ComponentStyle.SECONDARY,
                         is_enabled=not component.is_first_page()
                     ),
                     Button(
-                        f"{component.id}~{component.current_page + 1};{custom_data}",
-                        "Next",
-                        ComponentStyle.SECONDARY,
+                        id=f"{component.id}~{component.current_page + 1};{component.owner_id};{custom_data}",
+                        owner_id=component.owner_id,
+                        text="Next",
+                        style=ComponentStyle.SECONDARY,
                         is_enabled=not component.is_last_page()
                     )
                 ]
@@ -211,11 +227,17 @@ class ComponentTransformer(IComponentTransformer):
     ) -> PagerState:
         _, data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
         data_parts = data.split(";")
-        current_page = data_parts[0] if len(data_parts) > 0 else None
+        if len(data_parts) < 2:
+            raise ValueError("Invalid component state. Required 'current_page' and 'owner_id' are missing for the paginator.")
+
         custom_data = {}
         for data_part in data_parts:
             custom_data_parts = data_part.split("=", 1)
             if len(custom_data_parts) == 2:
                 custom_data[custom_data_parts[0]] = custom_data_parts[1]
 
-        return PagerState(try_parse_int(current_page) or 0, custom_data)
+        return PagerState(
+            owner_id=data_parts[1],
+            current_page=try_parse_int(data_parts[0]) or 0,
+            custom_data=custom_data
+        )

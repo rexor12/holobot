@@ -37,6 +37,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
     @component(
         identifier="crya_paginator",
         component_type=Paginator,
+        is_bound=True,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
     )
     async def change_page(
@@ -47,7 +48,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
         return InteractionResponse(
             EditMessageAction(
                 *await self.__create_page_content(
-                    context.author_id,
+                    state.owner_id,
                     max(state.current_page, 0),
                     DEFAULT_PAGE_SIZE
                 )
@@ -80,7 +81,8 @@ class ViewAlarmsWorkflow(WorkflowBase):
             ))
 
         component = Paginator(
-            "crya_paginator",
+            id="crya_paginator",
+            owner_id=user_id,
             current_page=page_index,
             page_size=page_size,
             total_count=result.total_count

@@ -6,8 +6,14 @@ from holobot.discord.sdk.workflows.interactables import Interactable
 
 TInteractable = TypeVar("TInteractable", bound=Interactable)
 
-@dataclass
+@dataclass(kw_only=True)
 class InteractionDescriptor(Generic[TInteractable]):
     workflow: Optional[IWorkflow]
     interactable: Optional[TInteractable]
     arguments: Dict[str, Any] = field(default_factory=dict)
+
+    initiator_id: str
+    """The identifier of the user who initiated this interaction."""
+
+    bound_user_id: str
+    """The identifier of the user who initiated the workflow."""

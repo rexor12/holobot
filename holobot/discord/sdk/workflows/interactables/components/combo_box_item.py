@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-@dataclass
+@dataclass(kw_only=True)
 class ComboBoxItem:
     text: str
     value: str

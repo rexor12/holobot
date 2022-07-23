@@ -38,10 +38,8 @@ class InteractionProcessorBase(
         self.__workflow_execution_rules = workflow_execution_rules
 
     async def process(self, interaction: TInteraction) -> None:
-        workflow, interactable, arguments = InteractionProcessorBase.__unpack_descriptor(
-            self._get_interactable_descriptor(interaction)
-        )
-        if not workflow or not interactable:
+        descriptor = self._get_interactable_descriptor(interaction)
+        if not descriptor.workflow or not descriptor.interactable:
             await self.__action_processor.process(
                 interaction,
                 ReplyAction(content="I couldn't execute your command, because it's invalid."),
@@ -50,30 +48,41 @@ class InteractionProcessorBase(
             )
             return
 
-        self.__log.trace(f"Processing interactable... {{ Interactable = {interactable.describe()} }}")
+        self.__log.trace(f"Processing interactable... {{ Interactable = {descriptor.interactable.describe()} }}")
         start_time = time.perf_counter()
 
         context = self._get_interaction_context(interaction)
-        if await self.__try_halt_interactable(interaction, workflow, interactable, context):
+        if await self.__try_halt_interactable(
+            interaction,
+            descriptor.workflow,
+            descriptor.interactable,
+            descriptor.initiator_id,
+            descriptor.bound_user_id,
+            context
+        ):
             return
 
-        if interactable.defer_type == DeferType.DEFER_MESSAGE_CREATION:
+        if descriptor.interactable.defer_type == DeferType.DEFER_MESSAGE_CREATION:
             await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
-        elif interactable.defer_type == DeferType.DEFER_MESSAGE_UPDATE:
+        elif descriptor.interactable.defer_type == DeferType.DEFER_MESSAGE_UPDATE:
             await interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
 
-        response = await interactable.callback(workflow, context, **arguments)
+        response = await descriptor.interactable.callback(
+            descriptor.workflow,
+            context,
+            **descriptor.arguments
+        )
         await self.__action_processor.process(
             interaction,
             response.action,
-            interactable.defer_type,
-            interactable.is_ephemeral
+            descriptor.interactable.defer_type,
+            descriptor.interactable.is_ephemeral
         )
 
-        await self._on_interaction_processed(interaction, interactable, response)
+        await self._on_interaction_processed(interaction, descriptor.interactable, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
-        self.__log.debug(f"Processed command. {{ Interactable = {interactable.describe()}, Elapsed = {elapsed_time} }}")
+        self.__log.debug(f"Processed command. {{ Interactable = {descriptor.interactable.describe()}, Elapsed = {elapsed_time} }}")
 
     @abstractmethod
     def _get_interactable_descriptor(
@@ -98,23 +107,27 @@ class InteractionProcessorBase(
     ) -> Coroutine[Any, Any, None]:
         ...
 
-    @staticmethod
-    def __unpack_descriptor(
-        descriptor: InteractionDescriptor[TInteractable]
-    ) -> Tuple[Optional[IWorkflow], Optional[TInteractable], Dict[str, Any]]:
-        return (
-            descriptor.workflow,
-            descriptor.interactable,
-            descriptor.arguments
-        )
-
     async def __try_halt_interactable(
         self,
         interaction: TInteraction,
         workflow: IWorkflow,
         interactable: TInteractable,
+        initiator_id: str,
+        bound_user_id: str,
         context: InteractionContext
     ) -> bool:
+        if interactable.is_bound and initiator_id != bound_user_id:
+            self.__log.debug(f"Interactable has been halted. {{ Interactable = {interactable}, UserId = {context.author_id}, Reason = BoundUserMismatch }}")
+            await self.__action_processor.process(
+                interaction,
+                ReplyAction(
+                    content="You're not allowed to interact with that message."
+                ),
+                DeferType.NONE,
+                True
+            )
+            return True
+
         for rule in self.__workflow_execution_rules:
             if await rule.should_halt(workflow, interactable, context):
                 self.__log.debug(f"Interactable has been halted. {{ Interactable = {interactable}, UserId = {context.author_id}, Rule = {type(rule).__name__} }}")
@@ -127,4 +140,5 @@ class InteractionProcessorBase(
                     True
                 )
                 return True
+
         return False

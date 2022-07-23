@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from math import ceil
 from typing import Any, Dict, Optional
 
-from .layout import Layout
+from .interactable_layout_base import InteractableLayoutBase
 
-@dataclass
-class Paginator(Layout):
+@dataclass(kw_only=True)
+class Paginator(InteractableLayoutBase):
     current_page: int = 0
     page_size: Optional[int] = None
     total_count: Optional[int] = None

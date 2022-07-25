@@ -1,16 +1,17 @@
+from json import dumps
+from typing import Any, Dict
+
 from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
 from .models import WeatherData
 from .weather_client_interface import WeatherClientInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
-from json import dumps
-from typing import Any, Dict
 
 CONFIG_SECTION = "OpenWeather"
 API_GATEWAY_PARAMETER = "ApiGatewayBaseUrl"
@@ -21,11 +22,16 @@ CONDITION_IMAGE_BASE_URL_PARAMETER = "ConditionImageBaseUrl"
 
 @injectable(WeatherClientInterface)
 class WeatherClient(WeatherClientInterface):
-    def __init__(self, configurator: ConfiguratorInterface, http_client_pool: HttpClientPoolInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        configurator: ConfiguratorInterface,
+        http_client_pool: HttpClientPoolInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
-        self.__log: LogInterface = log.with_name("Weather", "WeatherClient")
+        self.__logger = logger_factory.create(WeatherClient)
         self.__api_gateway: str = self.__configurator.get(CONFIG_SECTION, API_GATEWAY_PARAMETER, "")
         self.__api_key: str = self.__configurator.get(CONFIG_SECTION, API_KEY_PARAMETER, "")
         self.__condition_image_base_url: str = self.__configurator.get(CONFIG_SECTION, CONDITION_IMAGE_BASE_URL_PARAMETER, "")
@@ -51,12 +57,12 @@ class WeatherClient(WeatherClientInterface):
         except TooManyRequestsError:
             raise QueryQuotaExhaustedError
         except HttpStatusError as error:
-            self.__log.error("An HTTP error has occurred during an OpenWeather request.", error)
+            self.__logger.error("An HTTP error has occurred during an OpenWeather request.", error)
             raise
         except CircuitBrokenError:
             raise
         except Exception as error:
-            self.__log.error(f"An unexpected error has occurred during an OpenWeather request. ({type(error)})", error)
+            self.__logger.error(f"An unexpected error has occurred during an OpenWeather request. ({type(error)})", error)
             raise
         
         self.__assert_result_code(location, response)
@@ -83,15 +89,15 @@ class WeatherClient(WeatherClientInterface):
     def __assert_result_code(self, location: str, response: Dict[str, Any]) -> None:
         result_code = response.get("cod", None)
         if result_code is None:
-            self.__log.trace(dumps(response))
-            self.__log.error(f"Received a response with no result code. The response has been traced. {{ Location = {location} }}")
+            self.__logger.trace(dumps(response))
+            self.__logger.error(f"Received a response with no result code. The response has been traced. {{ Location = {location} }}")
             raise OpenWeatherError("N/A", location)
         result_code = str(result_code)
         if result_code == "404":
             raise InvalidLocationError(location)
         if result_code != "200":
-            self.__log.trace(dumps(response))
-            self.__log.warning(f"Received a response with an unexpected non-success code. {{ Code = {result_code}, Location = {location} }}")
+            self.__logger.trace(dumps(response))
+            self.__logger.warning(f"Received a response with an unexpected non-success code. {{ Code = {result_code}, Location = {location} }}")
             raise OpenWeatherError(result_code, location)
     
     def __set_condition_image(self, weather_data: WeatherData) -> None:

@@ -14,7 +14,7 @@ from holobot.discord.sdk.workflows.interactables.components.models import PagerS
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -22,12 +22,12 @@ DEFAULT_PAGE_SIZE = 5
 class ViewWarnStrikesWorkflow(WorkflowBase):
     def __init__(
         self,
-        log: LogInterface,
+        logger_factory: ILoggerFactory,
         member_data_provider: IMemberDataProvider,
         warn_manager: IWarnManager
     ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Moderation", "ViewWarnStrikesWorkflow")
+        self.__logger = logger_factory.create(ViewWarnStrikesWorkflow)
         self.__member_data_provider: IMemberDataProvider = member_data_provider
         self.__warn_manager: IWarnManager = warn_manager
 
@@ -96,7 +96,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested warn strike page. {{ ServerId = {server_id}, UserId = {user_id}, Page = {page_index} }}")
+        self.__logger.trace(f"User requested warn strike page. {{ ServerId = {server_id}, UserId = {user_id}, Page = {page_index} }}")
         result = await self.__warn_manager.get_warns(server_id, user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no warn strikes.", [])

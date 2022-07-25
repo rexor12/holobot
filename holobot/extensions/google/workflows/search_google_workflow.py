@@ -10,7 +10,7 @@ from holobot.discord.sdk.workflows.interactables.models import Choice, Interacti
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.exceptions import HttpStatusError
 
 @injectable(IWorkflow)
@@ -18,11 +18,11 @@ class SearchGoogleWorkflow(WorkflowBase):
     def __init__(
         self,
         google_client: IGoogleClient,
-        log: LogInterface
+        logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
         self.__google_client: IGoogleClient = google_client
-        self.__log: LogInterface = log.with_name("Google", "SearchGoogleWorkflow")
+        self.__logger = logger_factory.create(SearchGoogleWorkflow)
 
     @command(
         description="Searches Google with a specific query.",
@@ -65,7 +65,7 @@ class SearchGoogleWorkflow(WorkflowBase):
                 ))
             )
         except HttpStatusError as error:
-            self.__log.error("An error has occurred during a Google search HTTP request.", error)
+            self.__logger.error("An error has occurred during a Google search HTTP request.", error)
             return InteractionResponse(
                 action=ReplyAction(content="An unexpected Google error has occurred. Please, try again later.")
             )

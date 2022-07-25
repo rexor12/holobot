@@ -15,7 +15,7 @@ from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 TInteractable = TypeVar("TInteractable", bound=Interactable, contravariant=True)
 
@@ -29,12 +29,12 @@ class InteractionProcessorBase(
     def __init__(
         self,
         action_processor: IActionProcessor,
-        log: LogInterface,
+        logger_factory: ILoggerFactory,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...]
     ) -> None:
         super().__init__()
         self.__action_processor = action_processor
-        self.__log = log.with_name("Discord", type(self).__name__)
+        self.__log = logger_factory.create(type(self))
         self.__workflow_execution_rules = workflow_execution_rules
 
     async def process(self, interaction: TInteraction) -> None:

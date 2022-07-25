@@ -13,7 +13,7 @@ from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
 @injectable(IInteractionProcessor[CommandInteraction])
@@ -22,7 +22,7 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
         self,
         action_processor: IActionProcessor,
         event_listeners: Tuple[IListener[CommandProcessedEvent], ...],
-        log: LogInterface,
+        log: ILoggerFactory,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:

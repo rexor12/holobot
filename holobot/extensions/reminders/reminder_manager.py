@@ -8,14 +8,19 @@ from .repositories import ReminderRepositoryInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
-    def __init__(self, log: LogInterface, reminder_repository: ReminderRepositoryInterface, configurator: ConfiguratorInterface) -> None:
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        reminder_repository: ReminderRepositoryInterface,
+        configurator: ConfiguratorInterface
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Reminders", "ReminderManager")
+        self.__logger = logger_factory.create(ReminderManager)
         self.__reminder_repository: ReminderRepositoryInterface = reminder_repository
         self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
         self.__message_length_min: int = configurator.get("Reminders", "MessageLengthMin", 10)
@@ -41,7 +46,7 @@ class ReminderManager(ReminderManagerInterface):
         else:
             raise ArgumentError("occurrence", "Either the frequency or the specific time of the occurrence must be specified.")
 
-        self.__log.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger}, BaseTrigger = {reminder.base_trigger}, IsRepeating = {reminder.is_repeating} }}")
+        self.__logger.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger}, BaseTrigger = {reminder.base_trigger}, IsRepeating = {reminder.is_repeating} }}")
         return reminder
     
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:

@@ -11,17 +11,22 @@ from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.reactive import IListener
 
 @injectable(AlertManagerInterface)
 @injectable(IListener[SymbolUpdateEvent])
 class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
-    def __init__(self, database_manager: DatabaseManagerInterface, messaging: IMessaging, log: LogInterface):
+    def __init__(
+        self,
+        database_manager: DatabaseManagerInterface,
+        messaging: IMessaging,
+        logger_factory: ILoggerFactory
+    ) -> None:
         self.__database_manager = database_manager
         self.__messaging = messaging
-        self.__log = log.with_name("Crypto", "AlertManager")
+        self.__log = logger_factory.create(AlertManager)
     
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
         frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):

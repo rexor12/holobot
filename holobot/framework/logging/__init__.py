@@ -1,1 +1,2 @@
-from .console_log import ConsoleLog
+from .default_logger import DefaultLogger
+from .default_logger_factory import DefaultLoggerFactory

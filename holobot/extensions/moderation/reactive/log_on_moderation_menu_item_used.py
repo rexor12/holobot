@@ -9,14 +9,18 @@ from holobot.extensions.moderation.workflows.responses.menu_item_responses impor
     UserUnmutedResponse, UserWarnedResponse
 )
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
 @injectable(IListener[MenuItemProcessedEvent])
 class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
-    def __init__(self, log: LogInterface, log_manager: ILogManager) -> None:
+    def __init__(
+        self,
+        log_manager: ILogManager,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Moderation", "LogOnModerationMenuItemUsed")
+        self.__logger = logger_factory.create(LogOnModerationMenuItemUsed)
         self.__log_manager: ILogManager = log_manager
 
     async def on_event(self, event: MenuItemProcessedEvent):
@@ -33,7 +37,7 @@ class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
             # TODO Notify the administrator.
             return
 
-        self.__log.trace(f"A loggable moderation menu item has been used. {{ Type = {event.menu_item_type}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
+        self.__logger.trace(f"A loggable moderation menu item has been used. {{ Type = {event.menu_item_type}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
 
     @staticmethod
     def __create_event_message(event: MenuItemProcessedEvent) -> Optional[str]:

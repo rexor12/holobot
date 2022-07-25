@@ -12,16 +12,20 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 DEFAULT_PAGE_SIZE = 5
 
 @injectable(IWorkflow)
 class ViewAlarmsWorkflow(WorkflowBase):
-    def __init__(self, alert_manager: AlertManagerInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        alert_manager: AlertManagerInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
         self.__alert_manager: AlertManagerInterface = alert_manager
-        self.__log: LogInterface = log.with_name("Crypto", "ViewAlarmsWorkflow")
+        self.__log = logger_factory.create(ViewAlarmsWorkflow)
 
     @command(
         description="Displays your currently set alarms.",

@@ -1,13 +1,29 @@
-from holobot.framework import Kernel
-from kanata import InjectableCatalog, LifetimeScope, find_injectables
-from kanata.graphs.exceptions import CyclicGraphException
+import logging
 
 import structlog
 
+from kanata import InjectableCatalog, LifetimeScope, find_injectables
+from kanata.graphs.exceptions import CyclicGraphException
+
+from holobot.framework import Kernel
+
 if __name__ == "__main__":
-    # TODO Temporarily disabled, incorporate structlog later.
-    structlog.configure_once(logger_factory=structlog.ReturnLoggerFactory())
-    
+
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.add_log_level,
+            structlog.processors.StackInfoRenderer(),
+            structlog.dev.set_exc_info,
+            structlog.processors.TimeStamper("iso"),
+            structlog.dev.ConsoleRenderer()
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+        cache_logger_on_first_use=True
+    )
+
     # The idea here is to register the services for each extension independently,
     # however, today it doesn't make sense as they're still in the same package.
     # Therefore, for now we just register everything from the entire package.

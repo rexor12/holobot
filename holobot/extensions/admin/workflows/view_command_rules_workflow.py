@@ -10,17 +10,21 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from typing import Any, List, Optional, Tuple, Union
 
 DEFAULT_PAGE_SIZE = 5
 
 @injectable(IWorkflow)
 class ViewCommandRulesWorkflow(WorkflowBase):
-    def __init__(self, command_manager: CommandRuleManagerInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        command_manager: CommandRuleManagerInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__(required_permissions=Permission.ADMINISTRATOR)
         self.__command_manager: CommandRuleManagerInterface = command_manager
-        self.__log: LogInterface = log.with_name("Admin", "ViewCommandRulesWorkflow")
+        self.__log = logger_factory.create(ViewCommandRulesWorkflow)
 
     @command(
         description="Lists the rules set on this server.",

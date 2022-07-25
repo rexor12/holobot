@@ -9,16 +9,20 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from typing import Any, List, Tuple, Union
 
 DEFAULT_PAGE_SIZE = 5
 
 @injectable(IWorkflow)
 class ViewRemindersWorkflow(WorkflowBase):
-    def __init__(self, log: LogInterface, reminder_manager: ReminderManagerInterface) -> None:
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        reminder_manager: ReminderManagerInterface
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Reminders", "ViewRemindersWorkflow")
+        self.__logger = logger_factory.create(ViewRemindersWorkflow)
         self.__reminder_manager: ReminderManagerInterface = reminder_manager
 
     @command(
@@ -63,7 +67,7 @@ class ViewRemindersWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested to-do list page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__logger.trace(f"User requested to-do list page. {{ UserId = {user_id}, Page = {page_index} }}")
         result = await self.__reminder_manager.get_by_user(user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no reminders.", [])

@@ -5,7 +5,7 @@ from .models import SearchResult
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
@@ -26,11 +26,16 @@ class GoogleClient(IGoogleClient):
         SearchType.IMAGE: "IMAGE"
     }
 
-    def __init__(self, configurator: ConfiguratorInterface, http_client_pool: HttpClientPoolInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        configurator: ConfiguratorInterface,
+        http_client_pool: HttpClientPoolInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
-        self.__log: LogInterface = log.with_name("Google", "GoogleClient")
+        self.__log = logger_factory.create(GoogleClient)
         self.__api_key: str = self.__configurator.get(CONFIG_SECTION, GCS_API_KEY, "")
         self.__engine_id: str = self.__configurator.get(CONFIG_SECTION, GCS_ENGINE_ID, "")
         self.__circuit_breaker: AsyncCircuitBreaker = GoogleClient.__create_circuit_breaker(self.__configurator)

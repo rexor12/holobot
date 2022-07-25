@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..managers import ILogManager
 from ..workflows.interactables import ModerationCommand
 from ..workflows.responses import (
@@ -9,17 +11,20 @@ from ..workflows.responses import (
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.sdk.events import CommandProcessedEvent
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 from holobot.sdk.utils import textify_timedelta
-from typing import Optional
 
 @injectable(IListener[CommandProcessedEvent])
 class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
-    def __init__(self, log: LogInterface, log_manager: ILogManager) -> None:
+    def __init__(
+        self,
+        log_manager: ILogManager,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Moderation", "LogOnModerationCommandUsed")
         self.__log_manager: ILogManager = log_manager
+        self.__logger = logger_factory.create(LogOnModerationCommandUsed)
 
     async def on_event(self, event: CommandProcessedEvent):
         if (not issubclass(event.command_type, ModerationCommand)
@@ -34,7 +39,7 @@ class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
             # TODO Notify the administrator.
             return
 
-        self.__log.trace(f"A loggable moderation command has been used. {{ Name = {event.command}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
+        self.__logger.trace(f"A loggable moderation command has been used. {{ Name = {event.command}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
 
     @staticmethod
     def __create_event_message(event: CommandProcessedEvent) -> Optional[str]:

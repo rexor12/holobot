@@ -11,7 +11,7 @@ from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.workflows.builders import CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 TCommandGroup = Dict[str, Tuple[IWorkflow, Command]]
 TSubGroup = Dict[str, TCommandGroup]
@@ -22,11 +22,11 @@ class WorkflowRegistry(IWorkflowRegistry):
     def __init__(
         self,
         debugger: DebuggerInterface,
-        log: LogInterface,
+        logger_factory: ILoggerFactory,
         workflows: Tuple[IWorkflow, ...]
     ) -> None:
         super().__init__()
-        self.__log = log.with_name("Discord", WorkflowRegistry.__name__)
+        self.__log = logger_factory.create(WorkflowRegistry)
         self.__initialize_groups(workflows, debugger)
 
     def get_command(

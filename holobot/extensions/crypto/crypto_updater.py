@@ -8,7 +8,7 @@ from decimal import Decimal
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
@@ -38,11 +38,12 @@ class CryptoUpdater(StartableInterface):
         http_client_pool: HttpClientPoolInterface,
         crypto_repository: CryptoRepositoryInterface,
         configurator: ConfiguratorInterface,
-        log: LogInterface):
+        logger_factory: ILoggerFactory
+    ) -> None:
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__crypto_repository: CryptoRepositoryInterface = crypto_repository
         self.__configurator: ConfiguratorInterface = configurator
-        self.__log: LogInterface = log.with_name("Crypto", "CryptoUpdater")
+        self.__log = logger_factory.create(CryptoUpdater)
         self.__token_source: Optional[CancellationTokenSource] = None
         self.__background_task: Optional[Awaitable[None]] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(

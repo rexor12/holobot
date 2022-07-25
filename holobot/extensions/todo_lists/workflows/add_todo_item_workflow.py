@@ -8,13 +8,17 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 @injectable(IWorkflow)
 class AddTodoItemWorkflow(WorkflowBase):
-    def __init__(self, log: LogInterface, todo_item_manager: TodoItemManagerInterface) -> None:
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        todo_item_manager: TodoItemManagerInterface
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("TodoLists", "AddTodoItemWorkflow")
+        self.__logger = logger_factory.create(AddTodoItemWorkflow)
         self.__todo_item_manager: TodoItemManagerInterface = todo_item_manager
 
     @command(

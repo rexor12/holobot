@@ -18,18 +18,18 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, S
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 @injectable(IWorkflow)
 class MuteUserWorkflow(WorkflowBase):
     def __init__(
         self,
-        log: LogInterface,
+        logger_factory: ILoggerFactory,
         messaging: IMessaging,
         mute_manager: IMuteManager
     ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Moderation", "MuteUserWorkflow")
+        self.__logger = logger_factory.create(MuteUserWorkflow)
         self.__messaging: IMessaging = messaging
         self.__mute_manager: IMuteManager = mute_manager
 
@@ -74,7 +74,7 @@ class MuteUserWorkflow(WorkflowBase):
                 action=ReplyAction(content="The user you mentioned cannot be found.")
             )
         except ForbiddenError as error:
-            self.__log.error("Failed to mute user.", error)
+            self.__logger.error("Failed to mute user.", error)
             return InteractionResponse(
                 action=ReplyAction(content=(
                     "I cannot assign/create a 'Muted' role.\n"

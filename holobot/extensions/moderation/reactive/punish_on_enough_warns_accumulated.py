@@ -45,10 +45,19 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         warn_count = await self.__warn_repository.get_warn_count_by_user(event.server_id, event.response.user_id)
         is_punished, operation, icon = await self.__try_punish(event.server_id, event.response.user_id, warn_count, warn_settings)
         if not is_punished:
-            self.__logger.trace(f"User has not been punished. {{ ServerId = {event.server_id}, UserId = {event.response.user_id} }}")
+            self.__logger.trace(
+                "User has not been punished",
+                server_id=event.server_id,
+                user_id=event.response.user_id
+            )
             return
 
-        self.__logger.trace(f"User has been punished. {{ ServerId = {event.server_id}, UserId = {event.response.user_id}, Punishment = {operation} }}")
+        self.__logger.trace(
+            "User has been punished",
+            server_id=event.server_id,
+            user_id=event.response.user_id,
+            punishment=operation
+        )
         log_channel = await self.__log_settings_repository.get_log_channel(event.server_id)
         
         if not log_channel:
@@ -80,13 +89,13 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             await action()
             return True
         except ForbiddenError:
-            self.__logger.error("Failed to execute punishment as access was forbidden.")
+            self.__logger.error("Failed to execute punishment as access was forbidden")
             return False
         except ServerNotFoundError:
-            self.__logger.error("Failed to execute punishment as the server was not found.")
+            self.__logger.error("Failed to execute punishment as the server was not found")
             return False
         except UserNotFoundError:
-            self.__logger.error("Failed to execute punishment as the user was not found.")
+            self.__logger.error("Failed to execute punishment as the user was not found")
             return False
     
     @staticmethod

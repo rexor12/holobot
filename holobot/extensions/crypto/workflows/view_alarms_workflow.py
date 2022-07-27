@@ -67,7 +67,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested crypto alarm page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__log.trace("User requested crypto alarm page", user_id=user_id, page_index=page_index)
         result = await self.__alert_manager.get_many(user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no crypto alarms.", [])

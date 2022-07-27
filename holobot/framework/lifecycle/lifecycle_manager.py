@@ -24,7 +24,7 @@ class LifecycleManager(LifecycleManagerInterface):
                 errors.append(error)
         if len(errors) > 0:
             raise AggregateError(errors)
-        self.__logger.info("Successfully started all services.")
+        self.__logger.info("Successfully started all services")
     
     async def stop_all(self):
         errors = []
@@ -35,4 +35,4 @@ class LifecycleManager(LifecycleManagerInterface):
                 errors.append(error)
         if len(errors) > 0:
             raise AggregateError(errors)
-        self.__logger.info("Successfully stopped all services.")
+        self.__logger.info("Successfully stopped all services")

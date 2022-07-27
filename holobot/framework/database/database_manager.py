@@ -28,7 +28,7 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
     
     async def stop(self):
         await self.__connection_pool.close()
-        self.__logger.info("Successfully shut down.")
+        self.__logger.info("Successfully shut down")
 
     async def upgrade_all(self):
         self.__logger.info("Upgrading the database...")
@@ -37,7 +37,7 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
             async with connection.transaction():
                 for migration in self.__migrations:
                     await self.__upgrade_table(connection, migration)
-        self.__logger.info("Successfully upgraded the database.")
+        self.__logger.info("Successfully upgraded the database")
 
     async def downgrade_many(self, version_by_table: Tuple[str, int]):
         self.__logger.info("Rolling back the database...")
@@ -47,7 +47,7 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
                 for migration in self.__migrations:
                     # TODO Find the migration by the version_by_table.
                     await self.__downgrade_table(connection, migration)
-        self.__logger.info("Successfully rolled back the database.")
+        self.__logger.info("Successfully rolled back the database")
 
     def acquire_connection(self) -> PoolAcquireContext:
         return self.__connection_pool.acquire()
@@ -64,7 +64,7 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
             self.__logger.debug("Connecting to the database 'postgres'...")
             postgres_dsn = f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/postgres"
             connection = await asyncpg.connect(postgres_dsn,ssl=ssl_object)
-            self.__logger.debug("Successfully connected to the database.")
+            self.__logger.debug("Successfully connected to the database")
             try:
                 await self.__try_create_database(connection, database_name)
             finally:
@@ -76,7 +76,7 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
             ssl=ssl_object)
         if not pool:
             raise Exception("Failed to initialize the database connection pool.")
-        self.__logger.debug("Successfully initialized the connection pool.")
+        self.__logger.debug("Successfully initialized the connection pool")
 
         async with pool.acquire() as connection:
             await connection.execute((
@@ -99,16 +99,21 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
     
     async def __try_create_database(self, connection: Connection, name: str):
         if await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name) != 1:
-            self.__logger.debug(f"Creating the database '{name}'...")
+            self.__logger.debug("Creating a new database", name=name)
             await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0") # TODO Check why args isn't working.
-            self.__logger.debug("Successfully created the database.")
+            self.__logger.debug("Successfully created the database")
 
     async def __upgrade_table(self, connection: Connection, migration: MigrationInterface):
         current_version = await self.__get_current_table_version(connection, migration.table_name)
         new_version = await migration.upgrade(connection, current_version)
         await self.__update_current_table_version(connection, migration.table_name, new_version)
         if new_version != current_version:
-            self.__logger.debug(f"Upgraded table '{migration.table_name}' from version {current_version} to version {new_version}.")
+            self.__logger.debug(
+                "Successfully upgraded table",
+                name=migration.table_name,
+                old_version=current_version,
+                new_version=new_version
+            )
 
     async def __downgrade_table(self, connection: Connection, migration: MigrationInterface):
         # TODO Implement database rollbacks.

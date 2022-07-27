@@ -46,7 +46,7 @@ class ReminderManager(ReminderManagerInterface):
         else:
             raise ArgumentError("occurrence", "Either the frequency or the specific time of the occurrence must be specified.")
 
-        self.__logger.debug(f"Set new reminder. {{ UserId = {user_id}, NextTrigger = {reminder.next_trigger}, BaseTrigger = {reminder.base_trigger}, IsRepeating = {reminder.is_repeating} }}")
+        self.__logger.debug("Set new reminder", user_id=user_id, next_trigger=reminder.next_trigger, base_trigger=reminder.base_trigger, repeats=reminder.is_repeating)
         return reminder
     
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:

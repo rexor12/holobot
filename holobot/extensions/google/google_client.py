@@ -65,7 +65,7 @@ class GoogleClient(IGoogleClient):
         except CircuitBrokenError:
             raise
         except Exception as error:
-            self.__log.error(f"An unexpected error has occurred during a Google request. ({type(error)})", error)
+            self.__log.error("An unexpected error has occurred during a Google request", error)
             raise
 
         if len(results := response.get("items", [])) == 0:

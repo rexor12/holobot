@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 import structlog
 
@@ -12,31 +12,32 @@ class DefaultLogger(ILogger):
         super().__init__()
         self.__logger = structlog.get_logger(logger_name=name)
 
-    def trace(self, message: str, **kwargs) -> None:
-        self.__logger.trace(message, **kwargs)
-
-    def debug(self, message: str, **kwargs) -> None:
+    def trace(self, message: str, **kwargs: Any) -> None:
+        # Forwarding to debug, because trace is not a valid structlog log level.
         self.__logger.debug(message, **kwargs)
 
-    def info(self, message: str, **kwargs) -> None:
+    def debug(self, message: str, **kwargs: Any) -> None:
+        self.__logger.debug(message, **kwargs)
+
+    def info(self, message: str, **kwargs: Any) -> None:
         self.__logger.info(message, **kwargs)
 
-    def warning(self, message: str, **kwargs) -> None:
+    def warning(self, message: str, **kwargs: Any) -> None:
         self.__logger.warning(message, **kwargs)
 
     def error(
         self,
         message: str,
         exception: Optional[Exception] = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         self.__logger.error(
             message,
             exception=format_exception(exception) if exception else None,
             **kwargs)
 
-    def critical(self, message: str, **kwargs) -> None:
+    def critical(self, message: str, **kwargs: Any) -> None:
         self.__logger.critical(message, **kwargs)
 
-    def exception(self, message: str) -> None:
-        self.__logger.exception(message)
+    def exception(self, message: str, **kwargs: Any) -> None:
+        self.__logger.exception(message, **kwargs)

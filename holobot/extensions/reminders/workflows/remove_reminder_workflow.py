@@ -35,7 +35,7 @@ class RemoveReminderWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         try:
             await self.__reminder_manager.delete_reminder(context.author_id, id)
-            self.__logger.debug(f"Deleted a reminder. {{ UserId = {context.author_id}, ReminderId = {id} }}")
+            self.__logger.debug("Deleted a reminder", user_id=context.author_id, reminder_id=id)
             return InteractionResponse(
                 action=ReplyAction(
                     content="The reminder has been deleted."

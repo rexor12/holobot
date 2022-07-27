@@ -1,4 +1,4 @@
-from typing import Optional, Protocol
+from typing import Any, Optional, Protocol
 
 class ILogger(Protocol):
     """Interface for a service used for writing logs.
@@ -7,28 +7,28 @@ class ILogger(Protocol):
     of the interface (such as the console or a file).
     """
 
-    def trace(self, message: str, **kwargs) -> None:
+    def trace(self, message: str, **kwargs: Any) -> None:
         ...
 
-    def debug(self, message: str, **kwargs) -> None:
+    def debug(self, message: str, **kwargs: Any) -> None:
         ...
 
-    def info(self, message: str, **kwargs) -> None:
+    def info(self, message: str, **kwargs: Any) -> None:
         ...
 
-    def warning(self, message: str, **kwargs) -> None:
+    def warning(self, message: str, **kwargs: Any) -> None:
         ...
 
     def error(
         self,
         message: str,
         exception: Optional[Exception] = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         ...
 
-    def critical(self, message: str, **kwargs) -> None:
+    def critical(self, message: str, **kwargs: Any) -> None:
         ...
 
-    def exception(self, message: str) -> None:
+    def exception(self, message: str, **kwargs: Any) -> None:
         ...

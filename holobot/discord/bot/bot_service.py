@@ -66,12 +66,6 @@ class BotService(BotServiceInterface):
         await self.__bot_task
         self.__bot_task = None
 
-    async def send_dm(self, user_id: str, message: str) -> None:
-        if not (user := self.__bot.get_user_by_id(int(user_id))):
-            self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
-            return
-        await user.send(message)
-
     def __initialize_bot(self, configurator: ConfiguratorInterface) -> Bot:
         if not (discord_token := configurator.get("General", "DiscordToken", "")):
             raise ValueError("The Discord token is not configured.")
@@ -101,7 +95,7 @@ class BotService(BotServiceInterface):
             commands=command_builders,
             guild=self.__developer_server_id if self.__debugger.is_debug_mode_enabled() else hikari.UNDEFINED
         )
-        self.__log.info("The bot has just started.")
+        self.__log.info("The bot has just started")
 
     async def __on_interaction_created(self, event: hikari.InteractionCreateEvent) -> None:
         if isinstance(event.interaction, hikari.CommandInteraction):

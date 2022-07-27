@@ -30,7 +30,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
     
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
         frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):
-        self.__log.debug(f"Adding alert... {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug("Adding alert...", user_id=user_id, symbol=symbol)
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -49,7 +49,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                     "INSERT INTO crypto_alerts (user_id, symbol, direction, price, frequency_type, frequency) VALUES ($1, $2, $3, $4, $5, $6)",
                     user_id, symbol, direction, value, frequency_type, frequency
                 )
-        self.__log.debug(f"Added alert. {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug("Added alert", user_id=user_id, symbol=symbol)
 
     async def get_many(
         self,
@@ -85,7 +85,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                 )
 
     async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
-        self.__log.debug(f"Deleting alerts... {{ UserId = {user_id}, Symbol = {symbol} }}")
+        self.__log.debug("Deleting alerts...", user_id=user_id, symbol=symbol)
         deleted_alerts = []
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -93,11 +93,11 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                 records = await connection.fetch("DELETE FROM crypto_alerts WHERE user_id = $1 AND symbol = $2 RETURNING direction, price", user_id, symbol)
                 for record in records:
                     deleted_alerts.append(Alert(symbol, PriceDirection(record["direction"]), Decimal(record["price"])))
-        self.__log.debug(f"Deleted alerts. {{ UserId = {user_id}, Symbol = {symbol}, Count = {len(deleted_alerts)} }}")
+        self.__log.debug("Deleted alerts", user_id=user_id, symbol=symbol, count=len(deleted_alerts))
         return deleted_alerts
 
     async def remove_all(self, user_id: str) -> List[Alert]:
-        self.__log.debug(f"Deleting all alerts... {{ UserId = {user_id} }}")
+        self.__log.debug("Deleting all alerts...", user_id=user_id)
         deleted_alerts = []
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -105,7 +105,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                 records = await connection.fetch("DELETE FROM crypto_alerts WHERE user_id = $1 RETURNING symbol, direction, price", user_id)
                 for record in records:
                     deleted_alerts.append(Alert(record["symbol"], PriceDirection(record["direction"]), Decimal(record["price"])))
-        self.__log.debug(f"Deleted all alerts. {{ UserId = {user_id}, Count = {len(deleted_alerts)} }}")
+        self.__log.debug("Deleted all alerts", user_id=user_id, count=len(deleted_alerts))
         return deleted_alerts
 
     # TODO Use an "INNER JOIN" instead of processing these events one by one.
@@ -139,10 +139,10 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                 await connection.execute("UPDATE crypto_alerts SET notified_at = NOW() WHERE id IN ({})".format(
                     ",".join(record_ids)
                 ))
-                self.__log.debug(f"Notified users. {{ AlertCount = {len(record_ids)}, Symbol = {event.symbol} }}")
+                self.__log.debug("Notified users", alert_count=len(record_ids), symbol=event.symbol)
     
     async def __try_notify(self, user_id: str, event: SymbolUpdateEvent):
         try:
             await self.__messaging.send_private_message(user_id, f"{event.symbol} price is {event.price:,.8f}.")
         except Exception as error:
-            self.__log.error(f"Failed to notify a user. {{ UserId = {user_id} }}", error)
+            self.__log.error("Failed to notify a user", error, user_id=user_id)

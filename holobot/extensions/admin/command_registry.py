@@ -73,6 +73,6 @@ class CommandRegistry(CommandRegistryInterface):
         for name, group_json in configurator.get("Admin", "CommandGroups", {}).items():
             group = GroupConfiguration.from_json(name, group_json)
             configs[group.name] = group
-            self.__log.debug(f"Registered command group configuration. {{ Group = {group.name} }}")
-        self.__log.debug("Command group parsed.")
+            self.__log.debug("Registered command group configuration", group=group.name)
+        self.__log.debug("Command group parsed")
         return configs

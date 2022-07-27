@@ -30,7 +30,7 @@ class WarnCleanupProcessor(StartableInterface):
         self.__background_task = asyncio.create_task(
             self.__process_async(self.__token_source.token)
         )
-        self.__logger.info(f"Warn cleanup processor started. {{ Delay = {self.__cleanup_delay}, Interval = {self.__cleanup_interval} }}")
+        self.__logger.info("Warn cleanup processor started", delay=self.__cleanup_delay, interval=self.__cleanup_interval)
     
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()
@@ -39,7 +39,7 @@ class WarnCleanupProcessor(StartableInterface):
                 await self.__background_task
             except asyncio.exceptions.CancelledError:
                 pass
-        self.__logger.debug("Stopped background task.")
+        self.__logger.debug("Stopped background task")
 
     async def __process_async(self, token: CancellationToken):
         await wait(int(self.__cleanup_delay.total_seconds()), token)
@@ -50,8 +50,8 @@ class WarnCleanupProcessor(StartableInterface):
             try:
                 cleared_warn_count = await self.__warn_repository.clear_expired_warns()
             except Exception as error:
-                self.__logger.error(f"Processing failed. Further processing will stop. {{ Reason = UnexpectedError }}", error)
+                self.__logger.error("Unexpected failure, processing will stop", error)
                 raise
             finally:
-                self.__logger.trace(f"Processed warn strikes. {{ Count = {cleared_warn_count} }}")
+                self.__logger.trace("Processed warn strikes", count=cleared_warn_count)
             await wait(interval, token)

@@ -54,7 +54,7 @@ class SetReminderWorkflow(WorkflowBase):
 
         try:
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)
-            self.__logger.debug(f"Set new reminder. {{ UserId = {context.author_id}, ReminderId = {reminder.id} }}")
+            self.__logger.debug("Set new reminder", user_id=context.author_id, reminder_id=reminder.id)
             return InteractionResponse(
                 action=ReplyAction(content=f"I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC.")
             )

@@ -96,7 +96,12 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__logger.trace(f"User requested warn strike page. {{ ServerId = {server_id}, UserId = {user_id}, Page = {page_index} }}")
+        self.__logger.trace(
+            "User requested warn strike page",
+            server_id=server_id,
+            user_id=user_id,
+            page_index=page_index
+        )
         result = await self.__warn_manager.get_warns(server_id, user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no warn strikes.", [])

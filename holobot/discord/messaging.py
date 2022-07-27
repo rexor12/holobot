@@ -22,9 +22,9 @@ class Messaging(IMessaging):
         assert_not_none(message, "message")
 
         if not (user := BotAccessor.get_bot().get_user_by_id(int(user_id))):
-            self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
+            self.__log.warning("Failed to DM invalid user", user_id=user_id)
             return
-        self.__log.trace(f"Sending DM... {{ UserId = {user_id} }}")
+        self.__log.trace("Sending DM...", user_id=user_id)
         try:
             await user.send(message)
         except HikariForbiddenError as error:
@@ -36,7 +36,11 @@ class Messaging(IMessaging):
 
         channel = get_guild_channel(server_id, channel_id)
         if not channel or not isinstance(channel, TextableGuildChannel):
-            self.__log.trace(f"Tried to send a guild message to a non-messageable channel. {{ ChannelId = {channel_id}, ChannelType = {type(channel)} }}")
+            self.__log.trace(
+                "Tried to send a guild message to a non-messageable channel",
+                channel_id=channel_id,
+                channel_type=type(channel)
+            )
             raise ChannelNotFoundError(channel_id)
 
         try:

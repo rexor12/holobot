@@ -21,5 +21,5 @@ class MenuItem(Interactable):
     than those with lower values.
     """
     
-    def describe(self) -> str:
-        return f"MenuItem(title={self.title})"
+    def __repr__(self) -> str:
+        return f"MenuItem({self.title})"

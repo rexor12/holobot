@@ -39,7 +39,12 @@ class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
             # TODO Notify the administrator.
             return
 
-        self.__logger.trace(f"A loggable moderation command has been used. {{ Name = {event.command}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
+        self.__logger.trace(
+            "A loggable moderation command has been used",
+            name=event.command,
+            user_id=event.user_id,
+            server_id=event.server_id
+        )
 
     @staticmethod
     def __create_event_message(event: CommandProcessedEvent) -> Optional[str]:

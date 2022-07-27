@@ -57,12 +57,12 @@ class WeatherClient(WeatherClientInterface):
         except TooManyRequestsError:
             raise QueryQuotaExhaustedError
         except HttpStatusError as error:
-            self.__logger.error("An HTTP error has occurred during an OpenWeather request.", error)
+            self.__logger.error("An HTTP error has occurred during an OpenWeather request", error)
             raise
         except CircuitBrokenError:
             raise
         except Exception as error:
-            self.__logger.error(f"An unexpected error has occurred during an OpenWeather request. ({type(error)})", error)
+            self.__logger.error("An unexpected error has occurred during an OpenWeather request", error)
             raise
         
         self.__assert_result_code(location, response)
@@ -89,15 +89,19 @@ class WeatherClient(WeatherClientInterface):
     def __assert_result_code(self, location: str, response: Dict[str, Any]) -> None:
         result_code = response.get("cod", None)
         if result_code is None:
-            self.__logger.trace(dumps(response))
-            self.__logger.error(f"Received a response with no result code. The response has been traced. {{ Location = {location} }}")
+            # self.__logger.trace(dumps(response))
+            self.__logger.error("Received a response with no result code", location=location)
             raise OpenWeatherError("N/A", location)
         result_code = str(result_code)
         if result_code == "404":
             raise InvalidLocationError(location)
         if result_code != "200":
-            self.__logger.trace(dumps(response))
-            self.__logger.warning(f"Received a response with an unexpected non-success code. {{ Code = {result_code}, Location = {location} }}")
+            # self.__logger.trace(dumps(response))
+            self.__logger.warning(
+                "Received a response with an unexpected non-success code",
+                code=result_code,
+                location=location
+            )
             raise OpenWeatherError(result_code, location)
     
     def __set_condition_image(self, weather_data: WeatherData) -> None:

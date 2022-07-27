@@ -33,10 +33,10 @@ class ReminderProcessor(StartableInterface):
     
     async def start(self):
         if not self.__configurator.get("Reminders", "Enable", True):
-            self.__logger.info("Reminders are disabled by configuration.")
+            self.__logger.info("Reminders are disabled by configuration")
             return
         
-        self.__logger.info(f"Reminders are enabled. {{ Delay = {self.__process_delay}, Resolution = {self.__process_resolution} }}")
+        self.__logger.info("Reminders are enabled", delay=self.__process_delay, resolution=self.__process_resolution)
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
             self.__process_reminders_async(self.__token_source.token)
@@ -49,7 +49,7 @@ class ReminderProcessor(StartableInterface):
                 await self.__background_task
             except asyncio.exceptions.CancelledError:
                 pass
-        self.__logger.debug("Stopped background task.")
+        self.__logger.debug("Stopped background task")
     
     async def __process_reminders_async(self, token: CancellationToken):
         await wait(self.__process_delay, token)
@@ -65,13 +65,17 @@ class ReminderProcessor(StartableInterface):
                         reminder.last_trigger = datetime.utcnow()
                         reminder.recalculate_next_trigger()
                         await self.__reminder_repository.update_next_trigger(reminder.id, reminder.next_trigger)
-                        self.__logger.trace(f"Processed reminder. {{ ReminderId = {reminder.id}, NextTrigger = {reminder.next_trigger} }}")
+                        self.__logger.trace(
+                            "Processed reminder",
+                            reminder_id=reminder.id,
+                            next_trigger=reminder.next_trigger
+                        )
                     else:
                         await self.__reminder_repository.delete(reminder.id)
                     processed_reminders += 1
             except Exception as error:
-                self.__logger.error(f"Processing failed. Further processing will stop. {{ Reason = UnexpectedError }}", error)
+                self.__logger.error("Unexpected failure, processing will stop", error)
                 raise
             finally:
-                self.__logger.trace(f"Processed reminders. {{ Count = {processed_reminders} }}")
+                self.__logger.trace("Processed reminders", count=processed_reminders)
             await wait(self.__process_resolution, token)

@@ -99,7 +99,7 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested command rule list page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__log.trace("User requested command rule list page", user_id=user_id, page_index=page_index)
         result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
         if len(result.items) == 0:
             return ("No command rules matching the query have been configured for the server.", [])

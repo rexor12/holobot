@@ -67,7 +67,7 @@ class ViewRemindersWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__logger.trace(f"User requested to-do list page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__reminder_manager.get_by_user(user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no reminders.", [])

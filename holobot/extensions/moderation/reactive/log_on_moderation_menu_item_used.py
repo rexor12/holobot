@@ -37,7 +37,12 @@ class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
             # TODO Notify the administrator.
             return
 
-        self.__logger.trace(f"A loggable moderation menu item has been used. {{ Type = {event.menu_item_type}, UserId = {event.user_id}, ServerId = {event.server_id} }}")
+        self.__logger.trace(
+            "A loggable moderation menu item has been used",
+            type=event.menu_item_type,
+            user_id=event.user_id,
+            server_id=event.server_id
+        )
 
     @staticmethod
     def __create_event_message(event: MenuItemProcessedEvent) -> Optional[str]:

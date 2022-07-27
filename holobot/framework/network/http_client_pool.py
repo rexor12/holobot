@@ -29,7 +29,7 @@ class HttpClientPool(HttpClientPoolInterface, StartableInterface):
     async def stop(self):
         self.__logger.debug("Closing session...")
         await self.__session.close()
-        self.__logger.debug("Successfully closed session.")
+        self.__logger.debug("Successfully closed session")
 
     async def get(self, url: str, query_parameters: Optional[Dict[str, Any]] = None) -> Any:
         try:

@@ -72,10 +72,10 @@ class WorkflowRegistry(IWorkflowRegistry):
                     else:
                         builders.append(WorkflowRegistry.__create_command(bot, command[1], command_name))
                     total_command_count = total_command_count + 1
-                    self.__log.debug(f"Registered command. {{ Group = {command[1].group_name}, SubGroup = {command[1].subgroup_name}, Name = {command_name} }}")
+                    self.__log.debug("Registered command", group=command[1].group_name, subgroup=command[1].subgroup_name, name=command_name)
             if group_builder:
                 builders.append(group_builder.build())
-        self.__log.info(f"Successfully registered commands. {{ Count = {total_command_count} }}")
+        self.__log.info("Successfully registered commands", count=total_command_count)
         return builders
 
     def get_menu_item_builders(self, bot: Bot) -> Sequence[ContextMenuCommandBuilder]:
@@ -85,7 +85,7 @@ class WorkflowRegistry(IWorkflowRegistry):
             if isinstance(menu_item[1], MenuItem):
                 context_menu_item_builders.append(self.__get_user_menu_item_builder(bot, menu_item[1]))
             else: raise TypeError(f"Unexpected menu item type '{type(menu_item)}'.")
-        self.__log.info(f"Successfully registered user menu items. {{ Count = {len(self.__menu_items)} }}")
+        self.__log.info("Successfully registered user menu items", count=len(self.__menu_items))
         return context_menu_item_builders
 
     @staticmethod
@@ -159,5 +159,5 @@ class WorkflowRegistry(IWorkflowRegistry):
             type=CommandType.USER if menu_item.menu_type == MenuType.USER else CommandType.MESSAGE,
             name=menu_item.title
         )
-        self.__log.debug(f"Registered menu item. {{ Name = {menu_item.title}, Type = {menu_item.menu_type} }}")
+        self.__log.debug("Registered menu item", name=menu_item.title, type=menu_item.menu_type.value)
         return builder

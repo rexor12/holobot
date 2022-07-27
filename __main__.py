@@ -7,6 +7,7 @@ import structlog
 
 from holobot.framework import Kernel
 from holobot.framework.configs import Configurator
+from holobot.framework.logging.handlers import ForwardEntryHandler
 from holobot.framework.logging.processors import ignore_loggers_by_name
 from holobot.framework.system import Environment
 from holobot.sdk.logging.enums import LogLevel
@@ -47,14 +48,15 @@ structlog.configure(
     cache_logger_on_first_use=True
 )
 
+logger = structlog.get_logger("Holobot")
+
 logging.basicConfig(
-    level=LOG_LEVEL_MAP[log_level],
+    level=logging.INFO,
     handlers=[
-        
+        ForwardEntryHandler(logger)
     ]
 )
 
-logger = structlog.get_logger("main")
 logger.info("Configured logging", log_level=log_level.name or log_level.value)
 
 # The idea here is to register the services for each extension independently,

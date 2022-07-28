@@ -8,7 +8,7 @@ from holobot.discord.sdk.events import CommandProcessedEvent
 from holobot.discord.sdk.exceptions import ForbiddenError, ServerNotFoundError, UserNotFoundError
 from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 from typing import Any, Callable, Coroutine, Tuple
 
@@ -17,15 +17,15 @@ from typing import Any, Callable, Coroutine, Tuple
 @injectable(IListener[CommandProcessedEvent])
 class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
     def __init__(self,
-        log: LogInterface,
         log_settings_repository: ILogSettingsRepository,
+        logger_factory: ILoggerFactory,
         messaging: IMessaging,
         mute_manager: IMuteManager,
         user_manager: IUserManager,
         warn_repository: IWarnRepository,
         warn_settings_repository: IWarnSettingsRepository) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Moderation", "PunishOnEnoughWarnsAccumulated")
+        self.__logger = logger_factory.create(PunishOnEnoughWarnsAccumulated)
         self.__log_settings_repository: ILogSettingsRepository = log_settings_repository
         self.__messaging: IMessaging = messaging
         self.__mute_manager: IMuteManager = mute_manager
@@ -45,10 +45,19 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         warn_count = await self.__warn_repository.get_warn_count_by_user(event.server_id, event.response.user_id)
         is_punished, operation, icon = await self.__try_punish(event.server_id, event.response.user_id, warn_count, warn_settings)
         if not is_punished:
-            self.__log.trace(f"User has not been punished. {{ ServerId = {event.server_id}, UserId = {event.response.user_id} }}")
+            self.__logger.trace(
+                "User has not been punished",
+                server_id=event.server_id,
+                user_id=event.response.user_id
+            )
             return
 
-        self.__log.trace(f"User has been punished. {{ ServerId = {event.server_id}, UserId = {event.response.user_id}, Punishment = {operation} }}")
+        self.__logger.trace(
+            "User has been punished",
+            server_id=event.server_id,
+            user_id=event.response.user_id,
+            punishment=operation
+        )
         log_channel = await self.__log_settings_repository.get_log_channel(event.server_id)
         
         if not log_channel:
@@ -80,13 +89,13 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             await action()
             return True
         except ForbiddenError:
-            self.__log.error("Failed to execute punishment as access was forbidden.")
+            self.__logger.error("Failed to execute punishment as access was forbidden")
             return False
         except ServerNotFoundError:
-            self.__log.error("Failed to execute punishment as the server was not found.")
+            self.__logger.error("Failed to execute punishment as the server was not found")
             return False
         except UserNotFoundError:
-            self.__log.error("Failed to execute punishment as the user was not found.")
+            self.__logger.error("Failed to execute punishment as the user was not found")
             return False
     
     @staticmethod

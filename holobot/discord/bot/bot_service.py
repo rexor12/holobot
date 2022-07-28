@@ -2,23 +2,21 @@ from asyncio.tasks import Task
 from typing import List, Optional
 
 import asyncio
-
 import hikari
 
 from hikari import CommandInteraction, ComponentInteraction
 from hikari.api.special_endpoints import CommandBuilder
 
-from holobot.discord.workflows.processors.imenu_item_processor import IMenuItemProcessor
-
 from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 from holobot.discord.workflows import IInteractionProcessor, IWorkflowRegistry
+from holobot.discord.workflows.processors import IMenuItemProcessor
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"
@@ -37,7 +35,7 @@ class BotService(BotServiceInterface):
         debugger: DebuggerInterface,
         command_processor: IInteractionProcessor[CommandInteraction],
         component_processor: IInteractionProcessor[ComponentInteraction],
-        log: LogInterface,
+        logger_factory: ILoggerFactory,
         menu_item_processor: IMenuItemProcessor,
         workflow_registry: IWorkflowRegistry
     ) -> None:
@@ -45,7 +43,7 @@ class BotService(BotServiceInterface):
         self.__debugger: DebuggerInterface = debugger
         self.__command_processor = command_processor
         self.__component_processor = component_processor
-        self.__log: LogInterface = log.with_name("Discord", "BotService")
+        self.__log = logger_factory.create(BotService)
         self.__menu_item_processor = menu_item_processor
         self.__workflow_registry = workflow_registry
         self.__developer_server_id: int = configurator.get("Development", "DevelopmentServerId", 0)
@@ -67,12 +65,6 @@ class BotService(BotServiceInterface):
         await self.__bot.close()
         await self.__bot_task
         self.__bot_task = None
-
-    async def send_dm(self, user_id: str, message: str) -> None:
-        if not (user := self.__bot.get_user_by_id(int(user_id))):
-            self.__log.warning(f"Inexistent user. {{ UserId = {user_id}, Operation = DM }}")
-            return
-        await user.send(message)
 
     def __initialize_bot(self, configurator: ConfiguratorInterface) -> Bot:
         if not (discord_token := configurator.get("General", "DiscordToken", "")):
@@ -103,7 +95,7 @@ class BotService(BotServiceInterface):
             commands=command_builders,
             guild=self.__developer_server_id if self.__debugger.is_debug_mode_enabled() else hikari.UNDEFINED
         )
-        self.__log.info("The bot has just started.")
+        self.__log.info("The bot has just started")
 
     async def __on_interaction_created(self, event: hikari.InteractionCreateEvent) -> None:
         if isinstance(event.interaction, hikari.CommandInteraction):
@@ -115,7 +107,9 @@ class BotService(BotServiceInterface):
             await self.__component_processor.process(event.interaction)
 
     async def __on_error_event(self, event: hikari.ExceptionEvent) -> None:
-        self.__log.error((
-            "An error has occurred while processing a slash command. "
-            f"{{ Type = {type(event.exception).__name__}, FailedEvent = {event.failed_event} }}"
-            ), event.exception)
+        self.__log.error(
+            "An error has occurred while processing a slash command. ",
+            event.exception,
+            exception_type=type(event.exception).__name__,
+            failed_event=event.failed_event
+        )

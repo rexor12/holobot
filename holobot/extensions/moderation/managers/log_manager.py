@@ -2,18 +2,19 @@ from .ilog_manager import ILogManager
 from ..repositories import ILogSettingsRepository
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
 from typing import Optional
 
 @injectable(ILogManager)
 class LogManager(ILogManager):
     def __init__(self,
-        log: LogInterface,
         log_settings_repository: ILogSettingsRepository,
-        messaging: IMessaging) -> None:
+        logger_factory: ILoggerFactory,
+        messaging: IMessaging
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Moderation", "LogManager")
+        self.__log = logger_factory.create(LogManager)
         self.__log_settings_repository: ILogSettingsRepository = log_settings_repository
         self.__messaging: IMessaging = messaging
 

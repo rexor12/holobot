@@ -38,12 +38,3 @@ class Interactable:
 
     defer_type: DeferType = DeferType.NONE
     """Determines the type of deferral of the response."""
-    
-    def describe(self) -> str:
-        """Returns a short description of the interactable, mainly for logging purposes.
-
-        :return: The short description of the interactable.
-        :rtype: str
-        """
-
-        return self.__str__()

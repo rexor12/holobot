@@ -10,17 +10,21 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from typing import Any, List, Optional, Tuple, Union
 
 DEFAULT_PAGE_SIZE = 5
 
 @injectable(IWorkflow)
 class ViewCommandRulesWorkflow(WorkflowBase):
-    def __init__(self, command_manager: CommandRuleManagerInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        command_manager: CommandRuleManagerInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__(required_permissions=Permission.ADMINISTRATOR)
         self.__command_manager: CommandRuleManagerInterface = command_manager
-        self.__log: LogInterface = log.with_name("Admin", "ViewCommandRulesWorkflow")
+        self.__log = logger_factory.create(ViewCommandRulesWorkflow)
 
     @command(
         description="Lists the rules set on this server.",
@@ -95,7 +99,7 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested command rule list page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__log.trace("User requested command rule list page", user_id=user_id, page_index=page_index)
         result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
         if len(result.items) == 0:
             return ("No command rules matching the query have been configured for the server.", [])

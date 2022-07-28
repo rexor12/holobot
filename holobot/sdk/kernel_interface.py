@@ -1,3 +1,5 @@
-class KernelInterface:
-    def run(self):
-        raise NotImplementedError
+from typing import Protocol
+
+class KernelInterface(Protocol):
+    def run(self) -> None:
+        ...

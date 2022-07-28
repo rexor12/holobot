@@ -8,7 +8,7 @@ from decimal import Decimal
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
@@ -38,11 +38,12 @@ class CryptoUpdater(StartableInterface):
         http_client_pool: HttpClientPoolInterface,
         crypto_repository: CryptoRepositoryInterface,
         configurator: ConfiguratorInterface,
-        log: LogInterface):
+        logger_factory: ILoggerFactory
+    ) -> None:
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__crypto_repository: CryptoRepositoryInterface = crypto_repository
         self.__configurator: ConfiguratorInterface = configurator
-        self.__log: LogInterface = log.with_name("Crypto", "CryptoUpdater")
+        self.__log = logger_factory.create(CryptoUpdater)
         self.__token_source: Optional[CancellationTokenSource] = None
         self.__background_task: Optional[Awaitable[None]] = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(
@@ -51,14 +52,14 @@ class CryptoUpdater(StartableInterface):
 
     async def start(self):
         if not self.__configurator.get("Crypto", "EnableUpdates", False):
-            self.__log.info("Updates are disabled by configuration.")
+            self.__log.info("Crypto updates are disabled by configuration")
             return
 
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
             self.__update_prices(self.__token_source.token)
         )
-        self.__log.info(f"Started background task. {{ Delay = {INITIAL_UPDATE_DELAY}, Interval = {UPDATE_INTERVAL} }}")
+        self.__log.info("Started background task", delay=INITIAL_UPDATE_DELAY, interval=UPDATE_INTERVAL)
         
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()
@@ -67,7 +68,7 @@ class CryptoUpdater(StartableInterface):
                 await self.__background_task
             except asyncio.exceptions.CancelledError:
                 pass
-        self.__log.debug("Stopped background task.")
+        self.__log.debug("Stopped background task")
     
     # TODO Automatic detection of the addition/removal of a symbol.
     async def __update_prices(self, token: CancellationToken) -> None:
@@ -78,18 +79,33 @@ class CryptoUpdater(StartableInterface):
                 prices = await self.__circuit_breaker(self.__get_symbol_prices)
                 if len(prices) > 0:
                     await self.__crypto_repository.update_prices(prices)
-                    self.__log.debug(f"Updated prices. {{ SymbolCount = {len(prices)} }}")
-                else: self.__log.warning(f"Got no symbol data.")
+                    self.__log.debug("Updated prices", symbol_count=len(prices))
+                else: self.__log.warning("Got no symbol data")
             except (TooManyRequestsError, ImATeapotError) as error:
-                self.__log.error(f"Update failed. {{ Reason = RateLimit, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
+                self.__log.error(
+                    "Update failed",
+                    error,
+                    reason="RateLimit",
+                    retry_in=self.__circuit_breaker.time_to_recover
+                )
             except HttpStatusError as error:
-                self.__log.error(f"Update failed. {{ Reason = ServerError, RetryIn = {self.__circuit_breaker.time_to_recover} }}\n", error)
+                self.__log.error(
+                    "Update failed",
+                    error,
+                    reason="ServerError",
+                    retry_in=self.__circuit_breaker.time_to_recover
+                )
             except (ClientConnectionError, ClientConnectorError, ConnectionRefusedError, ConnectionResetError, TimeoutError, AsyncIoTimeoutError) as error:
-                self.__log.error(f"Update failed. {{ Reason = ConnectionError, RetryIn = {self.__circuit_breaker.time_to_recover} }}", error)
+                self.__log.error(
+                    "Update failed",
+                    error,
+                    reason="ConnectionError",
+                    retry_in=self.__circuit_breaker.time_to_recover
+                )
             except CircuitBrokenError:
                 pass
             except Exception as error:
-                self.__log.error(f"Update failed. Updates will stop. {{ Reason = UnexpectedError }}", error)
+                self.__log.error("Unexpected failure, updates will stop", error)
                 raise
             await wait(UPDATE_INTERVAL, token)
 

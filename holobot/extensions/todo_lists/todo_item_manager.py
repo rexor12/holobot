@@ -5,15 +5,20 @@ from .todo_item_manager_interface import TodoItemManagerInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 
 @injectable(TodoItemManagerInterface)
 class TodoItemManager(TodoItemManagerInterface):
-    def __init__(self, configurator: ConfiguratorInterface, log: LogInterface, todo_item_repository: TodoItemRepositoryInterface) -> None:
+    def __init__(
+        self,
+        configurator: ConfiguratorInterface,
+        logger_factory: ILoggerFactory,
+        todo_item_repository: TodoItemRepositoryInterface
+    ) -> None:
         super().__init__()
         self.__configurator = configurator
-        self.__log = log.with_name("TodoLists", "TodoItemManager")
+        self.__logger = logger_factory.create(TodoItemManager)
         self.__todo_item_repository: TodoItemRepositoryInterface = todo_item_repository
         self.__todo_items_per_user_max: int = self.__configurator.get("TodoLists", "TodoItemsPerUserMax", 5)
         self.__message_length_min: int = self.__configurator.get("TodoLists", "MessageLengthMin", 10)
@@ -28,7 +33,7 @@ class TodoItemManager(TodoItemManagerInterface):
 
         await self.__assert_todo_item_count(todo_item.user_id)
         await self.__todo_item_repository.store(todo_item)
-        self.__log.debug(f"Set new to-do item. {{ UserId = {todo_item.user_id} }}")
+        self.__logger.debug("Set new to-do item", user_id=todo_item.user_id)
     
     async def delete_by_user(self, user_id: str, todo_item_id: int) -> None:
         if not user_id:

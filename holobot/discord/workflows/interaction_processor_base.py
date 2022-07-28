@@ -15,7 +15,7 @@ from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 TInteractable = TypeVar("TInteractable", bound=Interactable, contravariant=True)
 
@@ -29,12 +29,12 @@ class InteractionProcessorBase(
     def __init__(
         self,
         action_processor: IActionProcessor,
-        log: LogInterface,
+        logger_factory: ILoggerFactory,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...]
     ) -> None:
         super().__init__()
         self.__action_processor = action_processor
-        self.__log = log.with_name("Discord", type(self).__name__)
+        self.__log = logger_factory.create(type(self))
         self.__workflow_execution_rules = workflow_execution_rules
 
     async def process(self, interaction: TInteraction) -> None:
@@ -48,7 +48,7 @@ class InteractionProcessorBase(
             )
             return
 
-        self.__log.trace(f"Processing interactable... {{ Interactable = {descriptor.interactable.describe()} }}")
+        self.__log.trace("Processing interactable...", interactable=descriptor.interactable)
         start_time = time.perf_counter()
 
         context = self._get_interaction_context(interaction)
@@ -82,7 +82,7 @@ class InteractionProcessorBase(
         await self._on_interaction_processed(interaction, descriptor.interactable, response)
 
         elapsed_time = int((time.perf_counter() - start_time) * 1000)
-        self.__log.debug(f"Processed command. {{ Interactable = {descriptor.interactable.describe()}, Elapsed = {elapsed_time} }}")
+        self.__log.debug("Processed command", interactable=descriptor.interactable, elapsed=elapsed_time)
 
     @abstractmethod
     def _get_interactable_descriptor(
@@ -117,7 +117,12 @@ class InteractionProcessorBase(
         context: InteractionContext
     ) -> bool:
         if interactable.is_bound and initiator_id != bound_user_id:
-            self.__log.debug(f"Interactable has been halted. {{ Interactable = {interactable}, UserId = {context.author_id}, Reason = BoundUserMismatch }}")
+            self.__log.debug(
+                "Interactable has been halted",
+                interactable=interactable,
+                user_id=context.author_id,
+                reason="BoundUserMismatch"
+            )
             await self.__action_processor.process(
                 interaction,
                 ReplyAction(
@@ -130,7 +135,12 @@ class InteractionProcessorBase(
 
         for rule in self.__workflow_execution_rules:
             if await rule.should_halt(workflow, interactable, context):
-                self.__log.debug(f"Interactable has been halted. {{ Interactable = {interactable}, UserId = {context.author_id}, Rule = {type(rule).__name__} }}")
+                self.__log.debug(
+                    "Interactable has been halted",
+                    interactable=interactable,
+                    user_id=context.author_id,
+                    rule=type(rule).__name__
+                )
                 await self.__action_processor.process(
                     interaction,
                     ReplyAction(

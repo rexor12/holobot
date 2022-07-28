@@ -5,7 +5,7 @@ from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import StartableInterface
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from typing import Tuple
 
 import asyncio
@@ -15,34 +15,39 @@ import ssl
 @injectable(StartableInterface)
 @injectable(DatabaseManagerInterface)
 class DatabaseManager(DatabaseManagerInterface, StartableInterface):
-    def __init__(self, configurator: ConfiguratorInterface, migrations: Tuple[MigrationInterface, ...], log: LogInterface):
+    def __init__(
+        self,
+        configurator: ConfiguratorInterface,
+        migrations: Tuple[MigrationInterface, ...],
+        logger_factory: ILoggerFactory
+    ) -> None:
         self.__configurator: ConfiguratorInterface = configurator
         self.__migrations: Tuple[MigrationInterface, ...] = migrations
-        self.__log = log.with_name("Framework", "DatabaseManager")
+        self.__logger = logger_factory.create(DatabaseManager)
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
     
     async def stop(self):
         await self.__connection_pool.close()
-        self.__log.info("Successfully shut down.")
+        self.__logger.info("Successfully shut down")
 
     async def upgrade_all(self):
-        self.__log.info("Upgrading the database...")
+        self.__logger.info("Upgrading the database...")
         async with self.__connection_pool.acquire() as connection:
             connection: Connection
             async with connection.transaction():
                 for migration in self.__migrations:
                     await self.__upgrade_table(connection, migration)
-        self.__log.info("Successfully upgraded the database.")
+        self.__logger.info("Successfully upgraded the database")
 
     async def downgrade_many(self, version_by_table: Tuple[str, int]):
-        self.__log.info("Rolling back the database...")
+        self.__logger.info("Rolling back the database...")
         async with self.__connection_pool.acquire() as connection:
             connection: Connection
             async with connection.transaction():
                 for migration in self.__migrations:
                     # TODO Find the migration by the version_by_table.
                     await self.__downgrade_table(connection, migration)
-        self.__log.info("Successfully rolled back the database.")
+        self.__logger.info("Successfully rolled back the database")
 
     def acquire_connection(self) -> PoolAcquireContext:
         return self.__connection_pool.acquire()
@@ -56,22 +61,22 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
 
         ssl_object = self.__create_ssl_context()
         if self.__configurator.get("Database", "AutoCreateDatabase", False):
-            self.__log.debug("Connecting to the database 'postgres'...")
+            self.__logger.debug("Connecting to the database 'postgres'...")
             postgres_dsn = f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/postgres"
             connection = await asyncpg.connect(postgres_dsn,ssl=ssl_object)
-            self.__log.debug("Successfully connected to the database.")
+            self.__logger.debug("Successfully connected to the database")
             try:
                 await self.__try_create_database(connection, database_name)
             finally:
                 await connection.close()
 
-        self.__log.debug("Initializing the connection pool...")
+        self.__logger.debug("Initializing the connection pool...")
         pool = await asyncpg.create_pool(
             f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/{database_name}",
             ssl=ssl_object)
         if not pool:
             raise Exception("Failed to initialize the database connection pool.")
-        self.__log.debug("Successfully initialized the connection pool.")
+        self.__logger.debug("Successfully initialized the connection pool")
 
         async with pool.acquire() as connection:
             await connection.execute((
@@ -94,16 +99,21 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
     
     async def __try_create_database(self, connection: Connection, name: str):
         if await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name) != 1:
-            self.__log.debug(f"Creating the database '{name}'...")
+            self.__logger.debug("Creating a new database", name=name)
             await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0") # TODO Check why args isn't working.
-            self.__log.debug("Successfully created the database.")
+            self.__logger.debug("Successfully created the database")
 
     async def __upgrade_table(self, connection: Connection, migration: MigrationInterface):
         current_version = await self.__get_current_table_version(connection, migration.table_name)
         new_version = await migration.upgrade(connection, current_version)
         await self.__update_current_table_version(connection, migration.table_name, new_version)
         if new_version != current_version:
-            self.__log.debug(f"Upgraded table '{migration.table_name}' from version {current_version} to version {new_version}.")
+            self.__logger.debug(
+                "Successfully upgraded table",
+                name=migration.table_name,
+                old_version=current_version,
+                new_version=new_version
+            )
 
     async def __downgrade_table(self, connection: Connection, migration: MigrationInterface):
         # TODO Implement database rollbacks.

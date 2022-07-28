@@ -1,13 +1,14 @@
 from aiohttp import ClientSession
 from aiohttp.client import ClientTimeout
 from aiohttp.web_exceptions import HTTPError, HTTPForbidden, HTTPNotFound
-from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import StartableInterface
-from holobot.sdk.logging import LogInterface
-from holobot.sdk.network import HttpClientPoolInterface
-from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
 from multidict import CIMultiDict
 from typing import Any, Callable, Dict, Optional
+
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
 
 DEFAULT_TIMEOUT = ClientTimeout(total=5)
 
@@ -15,7 +16,7 @@ DEFAULT_TIMEOUT = ClientTimeout(total=5)
 @injectable(StartableInterface)
 @injectable(HttpClientPoolInterface)
 class HttpClientPool(HttpClientPoolInterface, StartableInterface):
-    def __init__(self, log: LogInterface):
+    def __init__(self, logger_factory: ILoggerFactory):
         self.__error_map: Dict[int, Callable[[CIMultiDict], Exception]] = {
             403: lambda _: HTTPForbidden(),
             404: lambda _: HTTPNotFound(),
@@ -23,12 +24,12 @@ class HttpClientPool(HttpClientPoolInterface, StartableInterface):
             TooManyRequestsError.STATUS_CODE: TooManyRequestsError.from_headers
         }
         self.__session: ClientSession = ClientSession()
-        self.__log = log.with_name("Framework", "HttpClientPool")
+        self.__logger = logger_factory.create(HttpClientPool)
 
     async def stop(self):
-        self.__log.debug("Closing session...")
+        self.__logger.debug("Closing session...")
         await self.__session.close()
-        self.__log.debug("Successfully closed session.")
+        self.__logger.debug("Successfully closed session")
 
     async def get(self, url: str, query_parameters: Optional[Dict[str, Any]] = None) -> Any:
         try:

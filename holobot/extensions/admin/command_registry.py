@@ -2,7 +2,7 @@ from .command_registry_interface import CommandRegistryInterface
 from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
 from typing import Dict, Optional
 
@@ -10,9 +10,13 @@ DEFAULT_GROUP_NAME = ""
 
 @injectable(CommandRegistryInterface)
 class CommandRegistry(CommandRegistryInterface):
-    def __init__(self, configurator: ConfiguratorInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        configurator: ConfiguratorInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Admin", "CommandRegistry")
+        self.__log = logger_factory.create(CommandRegistry)
         self.__registry: Dict[str, GroupConfiguration] = self.__parse_command_configs(configurator)
 
     def command_exists(self, command_name: str, group_name: Optional[str] = None, subgroup_name: Optional[str] = None) -> bool:
@@ -69,6 +73,6 @@ class CommandRegistry(CommandRegistryInterface):
         for name, group_json in configurator.get("Admin", "CommandGroups", {}).items():
             group = GroupConfiguration.from_json(name, group_json)
             configs[group.name] = group
-            self.__log.debug(f"Registered command group configuration. {{ Group = {group.name} }}")
-        self.__log.debug("Command group parsed.")
+            self.__log.debug("Registered command group configuration", group=group.name)
+        self.__log.debug("Command group parsed")
         return configs

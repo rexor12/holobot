@@ -7,13 +7,17 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 @injectable(IWorkflow)
 class RemoveReminderWorkflow(WorkflowBase):
-    def __init__(self, log: LogInterface, reminder_manager: ReminderManagerInterface) -> None:
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        reminder_manager: ReminderManagerInterface
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Reminders", "RemoveReminderWorkflow")
+        self.__logger = logger_factory.create(RemoveReminderWorkflow)
         self.__reminder_manager: ReminderManagerInterface = reminder_manager
 
     @command(
@@ -31,7 +35,7 @@ class RemoveReminderWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         try:
             await self.__reminder_manager.delete_reminder(context.author_id, id)
-            self.__log.debug(f"Deleted a reminder. {{ UserId = {context.author_id}, ReminderId = {id} }}")
+            self.__logger.debug("Deleted a reminder", user_id=context.author_id, reminder_id=id)
             return InteractionResponse(
                 action=ReplyAction(
                     content="The reminder has been deleted."

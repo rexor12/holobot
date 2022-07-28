@@ -12,16 +12,20 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 DEFAULT_PAGE_SIZE = 5
 
 @injectable(IWorkflow)
 class ViewAlarmsWorkflow(WorkflowBase):
-    def __init__(self, alert_manager: AlertManagerInterface, log: LogInterface) -> None:
+    def __init__(
+        self,
+        alert_manager: AlertManagerInterface,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
         self.__alert_manager: AlertManagerInterface = alert_manager
-        self.__log: LogInterface = log.with_name("Crypto", "ViewAlarmsWorkflow")
+        self.__log = logger_factory.create(ViewAlarmsWorkflow)
 
     @command(
         description="Displays your currently set alarms.",
@@ -63,7 +67,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested crypto alarm page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__log.trace("User requested crypto alarm page", user_id=user_id, page_index=page_index)
         result = await self.__alert_manager.get_many(user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no crypto alarms.", [])

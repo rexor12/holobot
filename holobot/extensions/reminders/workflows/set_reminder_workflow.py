@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .. import ReminderManagerInterface
 from ..exceptions import InvalidReminderConfigError, TooManyRemindersError
 from ..models import ReminderConfig
@@ -9,14 +11,17 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
-from typing import Optional
+from holobot.sdk.logging import ILoggerFactory
 
 @injectable(IWorkflow)
 class SetReminderWorkflow(WorkflowBase):
-    def __init__(self, log: LogInterface, reminder_manager: ReminderManagerInterface) -> None:
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        reminder_manager: ReminderManagerInterface
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Reminders", "SetReminderWorkflow")
+        self.__logger = logger_factory.create(SetReminderWorkflow)
         self.__reminder_manager: ReminderManagerInterface = reminder_manager
 
     @command(
@@ -49,7 +54,7 @@ class SetReminderWorkflow(WorkflowBase):
 
         try:
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)
-            self.__log.debug(f"Set new reminder. {{ UserId = {context.author_id}, ReminderId = {reminder.id} }}")
+            self.__logger.debug("Set new reminder", user_id=context.author_id, reminder_id=reminder.id)
             return InteractionResponse(
                 action=ReplyAction(content=f"I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC.")
             )

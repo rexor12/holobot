@@ -11,15 +11,19 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 
 DEFAULT_PAGE_SIZE = 5
 
 @injectable(IWorkflow)
 class ViewTodoItemsWorkflow(WorkflowBase):
-    def __init__(self, log: LogInterface, todo_item_manager: TodoItemManagerInterface) -> None:
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        todo_item_manager: TodoItemManagerInterface
+    ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("TodoLists", "ViewTodoItemsWorkflow")
+        self.__logger = logger_factory.create(ViewTodoItemsWorkflow)
         self.__todo_item_manager: TodoItemManagerInterface = todo_item_manager
 
     @command(
@@ -68,7 +72,7 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         page_index: int,
         page_size: int
     ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
-        self.__log.trace(f"User requested to-do list page. {{ UserId = {user_id}, Page = {page_index} }}")
+        self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__todo_item_manager.get_by_user(user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("There are no to-do items on this page.", [])

@@ -1,2 +1,2 @@
-from .log_base import LogBase
-from .log_interface import LogInterface
+from .ilogger_factory import ILoggerFactory
+from .ilogger import ILogger

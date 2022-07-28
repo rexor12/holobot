@@ -25,7 +25,8 @@ LOG_LEVEL_MAP = {
     LogLevel.CRITICAL: logging.CRITICAL
 }
 
-# TODO Register the Environment/Configurator as instances in Kanata (not supported now).
+# TODO Register the Environment/Configurator as instances in Kanata.
+# https://github.com/rexor12/kanata/issues/11
 environment = Environment()
 configurator = Configurator(environment)
 log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
@@ -48,7 +49,7 @@ structlog.configure(
     cache_logger_on_first_use=True
 )
 
-logger = structlog.get_logger("Holobot")
+logger = structlog.get_logger(logger_name="Holobot")
 
 logging.basicConfig(
     level=logging.INFO,

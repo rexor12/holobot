@@ -9,3 +9,6 @@ class ModerationCommand(Command):
 
     required_moderator_permissions: ModeratorPermission = ModeratorPermission.NONE
     """Permissions that are required for the invocation."""
+
+    def __str__(self) -> str:
+        return f"ModerationCommand({self.group_name}, {self.subgroup_name}, {self.name})"

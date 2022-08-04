@@ -14,6 +14,7 @@ from holobot.discord.workflows import IInteractionProcessor, InteractionProcesso
 from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.diagnostics import IExecutionContextFactory
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
@@ -25,10 +26,11 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
         component_transformer: IComponentTransformer,
         event_listeners: Tuple[IListener[ComponentProcessedEvent], ...],
         log: ILoggerFactory,
+        measurement_context_factory: IExecutionContextFactory,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
-        super().__init__(action_processor, log, workflow_execution_rules)
+        super().__init__(action_processor, log, measurement_context_factory, workflow_execution_rules)
         self.__component_transformer = component_transformer
         self.__event_listeners = event_listeners
         self.__workflow_registry = workflow_registry

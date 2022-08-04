@@ -5,7 +5,7 @@ from asyncio.tasks import Task
 from datetime import timedelta
 from holobot.discord.sdk.exceptions import ForbiddenError, ServerNotFoundError, UserNotFoundError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
@@ -13,8 +13,8 @@ from typing import Awaitable, Optional
 
 import asyncio
 
-@injectable(StartableInterface)
-class MuteCleanupProcessor(StartableInterface):
+@injectable(IStartable)
+class MuteCleanupProcessor(IStartable):
     def __init__(self,
         config_provider: IConfigProvider,
         log_manager: ILogManager,
@@ -36,7 +36,11 @@ class MuteCleanupProcessor(StartableInterface):
         self.__background_task = asyncio.create_task(
             self.__process_async(self.__token_source.token)
         )
-        self.__logger.info("Mute cleanup processor started", delay=self.__cleanup_delay, interval=self.__cleanup_interval)
+        self.__logger.info(
+            "Mute cleanup processor started",
+            delay=self.__cleanup_delay.total_seconds() * 1000,
+            interval=self.__cleanup_interval.total_seconds() * 1000
+        )
     
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()

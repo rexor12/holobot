@@ -14,6 +14,6 @@ class Component(Interactable):
 
     component_type: Type[ComponentBase]
     """The type of the component."""
-    
-    def __repr__(self) -> str:
+
+    def __str__(self) -> str:
         return f"Component({self.identifier})"

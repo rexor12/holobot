@@ -7,7 +7,7 @@ from .enums import MenuType
 class MenuItem(Interactable):
     title: str
     """The globally unique user-friendly title of the context menu item.
-    
+
     This also serves as the identifier of the menu item.
     """
 
@@ -16,10 +16,10 @@ class MenuItem(Interactable):
 
     priority: int
     """The priority of the menu item in the context menu.
-    
+
     A higher value means the item will appear earlier
     than those with lower values.
     """
-    
-    def __repr__(self) -> str:
+
+    def __str__(self) -> str:
         return f"MenuItem({self.title})"

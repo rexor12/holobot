@@ -1,6 +1,6 @@
 from holobot.sdk.configs import ConfiguratorInterface, TValue
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.system import EnvironmentInterface
+from holobot.sdk.system import IEnvironment
 from json import load
 from typing import Optional
 
@@ -10,7 +10,7 @@ CONFIG_FILE_NAME = "config.json"
 
 @injectable(ConfiguratorInterface)
 class Configurator(ConfiguratorInterface):
-    def __init__(self, environment: EnvironmentInterface) -> None:
+    def __init__(self, environment: IEnvironment) -> None:
         self.__configs = Configurator.__load_config(environment)
 
     def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
@@ -23,7 +23,7 @@ class Configurator(ConfiguratorInterface):
         return parameters.get(parameter_name, default_value)
 
     @staticmethod
-    def __load_config(environment: EnvironmentInterface):
+    def __load_config(environment: IEnvironment):
         config_file_path = os.path.join(environment.root_path, CONFIG_FILE_NAME)
         with open(config_file_path) as config_file:
             return load(config_file)

@@ -8,7 +8,7 @@ from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.integration import IntegrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.system import EnvironmentInterface
+from holobot.sdk.system import IEnvironment
 from holobot.sdk.utils import when_all
 
 @injectable(KernelInterface)
@@ -16,7 +16,7 @@ class Kernel(KernelInterface):
     def __init__(self,
         logger_factory: ILoggerFactory,
         database_manager: DatabaseManagerInterface,
-        environment: EnvironmentInterface,
+        environment: IEnvironment,
         integrations: Tuple[IntegrationInterface, ...],
         lifecycle_manager: LifecycleManagerInterface
     ) -> None:
@@ -28,7 +28,7 @@ class Kernel(KernelInterface):
         self.__lifecycle_manager = lifecycle_manager
 
     def run(self):
-        self.__logger.info("Starting application...", version=self.__environment.version)
+        self.__logger.info("Starting application...", version=str(self.__environment.version))
 
         event_loop = asyncio.get_event_loop()
         event_loop.run_until_complete(self.__database_manager.upgrade_all())

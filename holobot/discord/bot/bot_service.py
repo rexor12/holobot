@@ -17,6 +17,7 @@ from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.system import IEnvironment
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"
@@ -33,6 +34,7 @@ class BotService(BotServiceInterface):
     def __init__(self,
         configurator: ConfiguratorInterface,
         debugger: DebuggerInterface,
+        environment: IEnvironment,
         command_processor: IInteractionProcessor[CommandInteraction],
         component_processor: IInteractionProcessor[ComponentInteraction],
         logger_factory: ILoggerFactory,
@@ -41,6 +43,7 @@ class BotService(BotServiceInterface):
     ) -> None:
         super().__init__()
         self.__debugger: DebuggerInterface = debugger
+        self.__environment = environment
         self.__command_processor = command_processor
         self.__component_processor = component_processor
         self.__log = logger_factory.create(BotService)
@@ -78,7 +81,11 @@ class BotService(BotServiceInterface):
         async def on_bot_starting(event: hikari.StartingEvent) -> None:
             await self.__on_bot_starting(bot, event)
 
+        async def on_bot_started(event: hikari.StartedEvent) -> None:
+            await self.__on_bot_started(bot, event)
+
         bot.subscribe(hikari.StartingEvent, on_bot_starting)
+        bot.subscribe(hikari.StartedEvent, on_bot_started)
         bot.subscribe(hikari.ExceptionEvent, self.__on_error_event)
         bot.subscribe(hikari.InteractionCreateEvent, self.__on_interaction_created)
 
@@ -96,6 +103,15 @@ class BotService(BotServiceInterface):
             guild=self.__developer_server_id if self.__debugger.is_debug_mode_enabled() else hikari.UNDEFINED
         )
         self.__log.info("The bot has just started")
+
+    async def __on_bot_started(self, bot: Bot, _: hikari.StartedEvent) -> None:
+        await bot.update_presence(
+            status=hikari.Status.ONLINE,
+            activity=hikari.Activity(
+                name=f"v{self.__environment.version}",
+                type=hikari.ActivityType.PLAYING
+            )
+        )
 
     async def __on_interaction_created(self, event: hikari.InteractionCreateEvent) -> None:
         if isinstance(event.interaction, hikari.CommandInteraction):

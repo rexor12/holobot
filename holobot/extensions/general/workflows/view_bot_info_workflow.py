@@ -10,14 +10,14 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.system import EnvironmentInterface
+from holobot.sdk.system import IEnvironment
 
 @injectable(IWorkflow)
 class ViewBotInfoWorkflow(WorkflowBase):
     def __init__(
         self,
         bot_data_provider: IBotDataProvider,
-        environment: EnvironmentInterface
+        environment: IEnvironment
     ) -> None:
         super().__init__()
         self.__bot_data_provider: IBotDataProvider = bot_data_provider

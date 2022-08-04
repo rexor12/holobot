@@ -1,1 +1,1 @@
-from .startable_interface import StartableInterface
+from .istartable import IStartable

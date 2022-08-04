@@ -1,7 +1,8 @@
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 import structlog
 
+from holobot.sdk.diagnostics import ExecutionContextData
 from holobot.sdk.logging import ILogger
 from holobot.sdk.utils import format_exception
 
@@ -34,10 +35,21 @@ class DefaultLogger(ILogger):
         self.__logger.error(
             message,
             exception=format_exception(exception) if exception else None,
-            **kwargs)
+            **kwargs
+        )
 
     def critical(self, message: str, **kwargs: Any) -> None:
         self.__logger.critical(message, **kwargs)
 
     def exception(self, message: str, **kwargs: Any) -> None:
         self.__logger.exception(message, **kwargs)
+
+    def diagnostics(self, message:str, events: Sequence[ExecutionContextData]) -> None:
+        arguments = {}
+        for index, event in enumerate(events):
+            arguments[f"event_{index}"] = event.event_name
+            arguments[f"elapsed_{index}"] = int(event.elapsed_milliseconds)
+            for extra_info_name, extra_info_value in event.extra_infos.items():
+                arguments[extra_info_name] = extra_info_value
+
+        self.__logger.debug(message, **arguments)

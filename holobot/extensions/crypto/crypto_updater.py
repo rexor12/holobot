@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
@@ -32,8 +32,8 @@ async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception)
         return error.retry_after
     return circuit_breaker.recovery_timeout
 
-@injectable(StartableInterface)
-class CryptoUpdater(StartableInterface):
+@injectable(IStartable)
+class CryptoUpdater(IStartable):
     def __init__(self,
         http_client_pool: HttpClientPoolInterface,
         crypto_repository: CryptoRepositoryInterface,

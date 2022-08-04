@@ -9,3 +9,6 @@ class ModerationMenuItem(MenuItem):
 
     required_moderator_permissions: ModeratorPermission = ModeratorPermission.NONE
     """Permissions that are required for the invocation."""
+
+    def __str__(self) -> str:
+        return f"ModerationMenuItem({self.title})"

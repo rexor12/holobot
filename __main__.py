@@ -64,7 +64,7 @@ logger.info("Configured logging", log_level=log_level.name or log_level.value)
 # however, today it doesn't make sense as they're still in the same package.
 # Therefore, for now we just register everything from the entire package.
 registrations = find_injectables("holobot")
-logger.info("Loaded all extensions")
+logger.info("Loaded all modules")
 
 catalog = InjectableCatalog(registrations)
 scope = LifetimeScope(catalog)

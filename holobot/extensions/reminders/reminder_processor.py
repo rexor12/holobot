@@ -3,7 +3,7 @@ from datetime import datetime
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
@@ -14,8 +14,8 @@ import asyncio
 DEFAULT_RESOLUTION: int = 60
 DEFAULT_DELAY: int = 30
 
-@injectable(StartableInterface)
-class ReminderProcessor(StartableInterface):
+@injectable(IStartable)
+class ReminderProcessor(IStartable):
     def __init__(self,
         configurator: ConfiguratorInterface,
         messaging: IMessaging,
@@ -36,7 +36,11 @@ class ReminderProcessor(StartableInterface):
             self.__logger.info("Reminders are disabled by configuration")
             return
         
-        self.__logger.info("Reminders are enabled", delay=self.__process_delay, resolution=self.__process_resolution)
+        self.__logger.info(
+            "Reminders are enabled",
+            delay=self.__process_delay,
+            resolution=self.__process_resolution
+        )
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
             self.__process_reminders_async(self.__token_source.token)

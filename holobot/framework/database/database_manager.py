@@ -1,20 +1,24 @@
+from types import coroutine
+from typing import Generator, Tuple
+
+import asyncio
+import ssl
+
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
+
+import asyncpg
+
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
-from typing import Tuple
 
-import asyncio
-import asyncpg
-import ssl
-
-@injectable(StartableInterface)
+@injectable(IStartable)
 @injectable(DatabaseManagerInterface)
-class DatabaseManager(DatabaseManagerInterface, StartableInterface):
+class DatabaseManager(DatabaseManagerInterface, IStartable):
     def __init__(
         self,
         configurator: ConfiguratorInterface,
@@ -25,7 +29,11 @@ class DatabaseManager(DatabaseManagerInterface, StartableInterface):
         self.__migrations: Tuple[MigrationInterface, ...] = migrations
         self.__logger = logger_factory.create(DatabaseManager)
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
-    
+
+    @coroutine
+    def start(self) -> Generator[None, None, None]:
+        yield
+
     async def stop(self):
         await self.__connection_pool.close()
         self.__logger.info("Successfully shut down")

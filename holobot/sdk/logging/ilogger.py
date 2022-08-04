@@ -1,4 +1,6 @@
-from typing import Any, Optional, Protocol
+from typing import Any, Dict, Optional, Protocol, Sequence
+
+from holobot.sdk.diagnostics import ExecutionContextData
 
 class ILogger(Protocol):
     """Interface for a service used for writing logs.
@@ -31,4 +33,14 @@ class ILogger(Protocol):
         ...
 
     def exception(self, message: str, **kwargs: Any) -> None:
+        ...
+
+    def diagnostics(self, message:str, events: Sequence[ExecutionContextData]) -> None:
+        """Logs the diagnostics information of the specified events.
+
+        :param message: The message to be logged.
+        :type message: str
+        :param events: A sequence of execution context data associated to each event.
+        :type events: Sequence[ExecutionContextData]
+        """
         ...

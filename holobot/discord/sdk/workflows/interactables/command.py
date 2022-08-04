@@ -25,6 +25,6 @@ class Command(Interactable):
 
     options: Tuple[Option, ...] = field(default_factory=tuple)
     """The list of arguments the command takes."""
-    
-    def __repr__(self) -> str:
+
+    def __str__(self) -> str:
         return f"Command({self.group_name}, {self.subgroup_name}, {self.name})"

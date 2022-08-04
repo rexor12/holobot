@@ -2,10 +2,11 @@ from aiohttp import ClientSession
 from aiohttp.client import ClientTimeout
 from aiohttp.web_exceptions import HTTPError, HTTPForbidden, HTTPNotFound
 from multidict import CIMultiDict
-from typing import Any, Callable, Dict, Optional
+from types import coroutine
+from typing import Any, Callable, Dict, Generator, Optional
 
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import StartableInterface
+from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
@@ -13,9 +14,9 @@ from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooM
 DEFAULT_TIMEOUT = ClientTimeout(total=5)
 
 # https://julien.danjou.info/python-and-fast-http-clients/
-@injectable(StartableInterface)
+@injectable(IStartable)
 @injectable(HttpClientPoolInterface)
-class HttpClientPool(HttpClientPoolInterface, StartableInterface):
+class HttpClientPool(HttpClientPoolInterface, IStartable):
     def __init__(self, logger_factory: ILoggerFactory):
         self.__error_map: Dict[int, Callable[[CIMultiDict], Exception]] = {
             403: lambda _: HTTPForbidden(),
@@ -25,6 +26,10 @@ class HttpClientPool(HttpClientPoolInterface, StartableInterface):
         }
         self.__session: ClientSession = ClientSession()
         self.__logger = logger_factory.create(HttpClientPool)
+
+    @coroutine
+    def start(self) -> Generator[None, None, None]:
+        yield
 
     async def stop(self):
         self.__logger.debug("Closing session...")

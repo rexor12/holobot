@@ -38,3 +38,6 @@ class WorkflowBase(IWorkflow, metaclass=WorkflowMeta):
 
     def add_registration(self, registration: Interactable) -> None:
         self.__interactables.append(registration)
+
+    def __str__(self) -> str:
+        return type(self).__name__

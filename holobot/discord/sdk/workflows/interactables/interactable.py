@@ -13,7 +13,7 @@ class Interactable:
     callback: Callable[..., Coroutine[Any, Any, InteractionResponse]]
     """Determines the method that is called when
     the interaction needs to be processed.
-    
+
     The arguments passed to this callback are the workflow, the interaction
     context and any custom arguments in this order.
     """

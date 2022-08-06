@@ -1,5 +1,5 @@
 from asyncio.tasks import Task
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Tuple, Type
 
 import asyncio
 import hikari
@@ -10,6 +10,7 @@ from hikari.api.special_endpoints import CommandBuilder
 from .bot_accessor import BotAccessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
+from holobot.discord.events import IGenericDiscordEventListener
 from holobot.discord.workflows import IInteractionProcessor, IWorkflowRegistry
 from holobot.discord.workflows.processors import IMenuItemProcessor
 from holobot.sdk.configs import ConfiguratorInterface
@@ -35,6 +36,7 @@ class BotService(BotServiceInterface):
     def __init__(self,
         configurator: ConfiguratorInterface,
         debugger: DebuggerInterface,
+        discord_event_listeners: Tuple[IGenericDiscordEventListener, ...],
         environment: IEnvironment,
         command_processor: IInteractionProcessor[CommandInteraction],
         component_processor: IInteractionProcessor[ComponentInteraction],
@@ -43,7 +45,8 @@ class BotService(BotServiceInterface):
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__()
-        self.__debugger: DebuggerInterface = debugger
+        self.__debugger = debugger
+        self.__discord_event_listeners = discord_event_listeners
         self.__environment = environment
         self.__command_processor = command_processor
         self.__component_processor = component_processor
@@ -79,16 +82,30 @@ class BotService(BotServiceInterface):
             intents = REQUIRED_INTENTS
         )
 
+        event_listeners: Dict[Type[hikari.Event], List[IGenericDiscordEventListener]] = {}
+        for listener in self.__discord_event_listeners:
+            listeners = get_or_add(event_listeners, listener.event_type, lambda _: [], None)
+            listeners.append(listener)
+
         async def on_bot_starting(event: hikari.StartingEvent) -> None:
             await self.__on_bot_starting(bot, event)
 
         async def on_bot_started(event: hikari.StartedEvent) -> None:
             await self.__on_bot_started(bot, event)
 
+        def process_event_wrapper(b: Bot, l: Sequence[IGenericDiscordEventListener]):
+            async def process_event(e: hikari.Event) -> None:
+                await self.__process_event(b, l, e)
+            return process_event
+
+        # TODO Transform these into event listeners.
         bot.subscribe(hikari.StartingEvent, on_bot_starting)
         bot.subscribe(hikari.StartedEvent, on_bot_started)
         bot.subscribe(hikari.ExceptionEvent, self.__on_error_event)
         bot.subscribe(hikari.InteractionCreateEvent, self.__on_interaction_created)
+
+        for event_type, listeners in event_listeners.items():
+            bot.subscribe(event_type, process_event_wrapper(bot, listeners))
 
         return bot
 
@@ -138,8 +155,17 @@ class BotService(BotServiceInterface):
 
     async def __on_error_event(self, event: hikari.ExceptionEvent) -> None:
         self.__log.error(
-            "An error has occurred while processing a slash command. ",
+            "An event handler has raised an error.",
             event.exception,
             exception_type=type(event.exception).__name__,
             failed_event=event.failed_event
         )
+
+    async def __process_event(
+        self,
+        bot: Bot,
+        listeners: Sequence[IGenericDiscordEventListener],
+        event: hikari.Event
+    ) -> None:
+        for listener in listeners:
+            await listener.process(bot, event)

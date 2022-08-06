@@ -1,0 +1,34 @@
+from typing import Any, Tuple, Type
+
+import hikari
+
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
+from holobot.discord.bot import Bot
+from holobot.discord.sdk.events import ServerMemberLeftEvent
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.reactive import IListener
+
+_EVENT_TYPE = hikari.MemberDeleteEvent
+
+@injectable(IGenericDiscordEventListener)
+class MemberDeletedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
+    def __init__(
+        self,
+        listeners: Tuple[IListener[ServerMemberLeftEvent], ...]
+    ) -> None:
+        super().__init__()
+        self.__listeners = listeners
+
+    @property
+    def event_type(self) -> Type[Any]:
+        return _EVENT_TYPE
+
+    async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
+        local_event = ServerMemberLeftEvent(
+            server_id=str(event.guild_id),
+            user_id=str(event.user_id)
+        )
+
+        for listener in self.__listeners:
+            await listener.on_event(local_event)

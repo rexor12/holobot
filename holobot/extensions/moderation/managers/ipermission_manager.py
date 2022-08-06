@@ -1,15 +1,35 @@
-from ..enums import ModeratorPermission
-from abc import ABCMeta, abstractmethod
+from typing import Protocol
 
-class IPermissionManager(metaclass=ABCMeta):
-    @abstractmethod
-    async def add_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> None:
+from holobot.extensions.moderation.enums import ModeratorPermission
+
+class IPermissionManager(Protocol):
+    async def add_permissions(
+        self,
+        server_id: str,
+        user_id: str,
+        permissions: ModeratorPermission
+    ) -> None:
         ...
-    
-    @abstractmethod
-    async def remove_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> None:
+
+    async def remove_permissions(
+        self,
+        server_id: str,
+        user_id: str,
+        permissions: ModeratorPermission
+    ) -> None:
         ...
-    
-    @abstractmethod
-    async def has_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> bool:
+
+    async def remove_all_permissions(
+        self,
+        server_id: str,
+        user_id: str
+    ) -> None:
+        ...
+
+    async def has_permissions(
+        self,
+        server_id: str,
+        user_id: str,
+        permissions: ModeratorPermission
+    ) -> bool:
         ...

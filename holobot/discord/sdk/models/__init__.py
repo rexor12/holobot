@@ -7,3 +7,4 @@ from .interaction_context import InteractionContext
 from .message import Message
 from .reaction import Reaction
 from .role import Role
+from .server import Server

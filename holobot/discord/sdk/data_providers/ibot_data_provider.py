@@ -1,12 +1,19 @@
-class IBotDataProvider:
+from typing import Protocol, Sequence, Tuple
+
+from holobot.discord.sdk.models import Server
+
+class IBotDataProvider(Protocol):
     def get_user_id(self) -> str:
-        raise NotImplementedError
+        ...
 
     def get_avatar_url(self) -> str:
-        raise NotImplementedError
+        ...
 
     def get_latency(self) -> float:
-        raise NotImplementedError
+        ...
 
     def get_server_count(self) -> int:
-        raise NotImplementedError
+        ...
+
+    def get_servers(self, page_index: int, page_size: int) -> Tuple[int, Sequence[Server]]:
+        ...

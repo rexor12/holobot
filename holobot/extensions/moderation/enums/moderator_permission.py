@@ -1,4 +1,8 @@
+from __future__ import annotations
 from enum import IntFlag, unique
+
+import functools
+import operator
 
 @unique
 class ModeratorPermission(IntFlag):
@@ -7,6 +11,10 @@ class ModeratorPermission(IntFlag):
     KICK_USERS = 1 << 1
     BAN_USERS = 1 << 2
     WARN_USERS = 1 << 3
+
+    @classmethod
+    def all_permissions(cls) -> ModeratorPermission:
+        return functools.reduce(operator.ior, ModeratorPermission)
 
     def textify(self) -> str:
         if self == ModeratorPermission.NONE:

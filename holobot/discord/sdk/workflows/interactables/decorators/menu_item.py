@@ -1,4 +1,4 @@
-from typing import Any, Callable, Coroutine
+from typing import Any, Callable, Coroutine, Optional, Set
 
 from ..enums import MenuType
 from holobot.discord.sdk.actions.enums import DeferType
@@ -15,7 +15,8 @@ def menu_item(
     is_bound: bool = False,
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
-    defer_type: DeferType = DeferType.NONE
+    defer_type: DeferType = DeferType.NONE,
+    server_ids: Optional[Set[str]] = None
 ):
     """A decorator that can be used to conveniently turn a function
     of a workflow into a context menu item interaction.
@@ -34,6 +35,8 @@ def menu_item(
     :type required_permissions: Permission, optional
     :param defer_type: The ype of the deferral of the response, defaults to DeferType.NONE
     :type defer_type: DeferType, optional
+    :param server_ids: The identifiers of the servers the command is available in, defaults to None
+    :type server_ids: Optional[Set[str]], optional
     """
 
     def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
@@ -45,7 +48,8 @@ def menu_item(
             is_bound=is_bound,
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,
-            defer_type=defer_type
+            defer_type=defer_type,
+            server_ids=server_ids if server_ids else set()
         ))
         return target
     return wrapper

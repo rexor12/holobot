@@ -12,6 +12,7 @@ from holobot.discord.workflows.builders import CommandBuilder, CommandGroupBuild
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.utils import get_or_add
 
 TCommandGroup = Dict[str, Tuple[IWorkflow, Command]]
 TSubGroup = Dict[str, TCommandGroup]
@@ -53,51 +54,72 @@ class WorkflowRegistry(IWorkflowRegistry):
     ) -> Optional[Tuple[IWorkflow, MenuItem]]:
         return self.__menu_items.get(name)
 
-    def get_command_builders(self, bot: Bot) -> Sequence[SlashCommandBuilder]:
+    def get_command_builders(self, bot: Bot) -> Dict[str, Sequence[SlashCommandBuilder]]:
         self.__log.info("Registering commands...")
-        builders = []
+        builders_by_servers: Dict[str, Dict[str, CommandGroupBuilder | CommandBuilder]] = {}
+        subgroup_builders_by_servers: Dict[str, Dict[str, CommandSubGroupBuilder]] = {}
         total_command_count = 0
         for group_name, group in self.__commands.items():
-            group_builder = CommandGroupBuilder(group_name, group_name, bot.rest.slash_command_builder) if group_name else None
             for subgroup_name, subgroup in group.items():
-                if subgroup_name and group_builder:
-                    subgroup_builder = group_builder.with_sub_group(subgroup_name, subgroup_name)
-                else: subgroup_builder = None
-
                 for command_name, command in subgroup.items():
-                    if subgroup_builder:
-                        WorkflowRegistry.__add_child_command(subgroup_builder, command[1], command_name)
-                    elif group_builder:
-                        WorkflowRegistry.__add_child_command(group_builder, command[1], command_name)
-                    else:
-                        builders.append(WorkflowRegistry.__create_command(bot, command[1], command_name))
-                    total_command_count = total_command_count + 1
-                    self.__log.debug("Registered command", group=command[1].group_name, subgroup=command[1].subgroup_name, name=command_name)
-            if group_builder:
-                builders.append(group_builder.build())
-        self.__log.info("Successfully registered commands", count=total_command_count)
-        return builders
+                    total_command_count += 1
+                    for server_id in command[1].server_ids or ("",):
+                        builders_by_server = get_or_add(builders_by_servers, server_id, lambda _: dict[str, CommandGroupBuilder | CommandBuilder](), None)
+                        subgroup_builders_by_server = get_or_add(subgroup_builders_by_servers, server_id, lambda _: dict[str, CommandSubGroupBuilder](), None)
+                        group_builder = None
+                        subgroup_builder = None
+                        if group_name:
+                            group_builder = get_or_add(
+                                builders_by_server,
+                                group_name,
+                                lambda state: CommandGroupBuilder(state, state, bot.rest.slash_command_builder),
+                                group_name
+                            )
+                            if subgroup_name and isinstance(group_builder, CommandGroupBuilder):
+                                subgroup_builder = get_or_add(
+                                    subgroup_builders_by_server,
+                                    subgroup_name,
+                                    lambda state: state[0].with_sub_group(state[1], state[1]),
+                                    (group_builder, subgroup_name)
+                                )
 
-    def get_menu_item_builders(self, bot: Bot) -> Sequence[ContextMenuCommandBuilder]:
+                        if subgroup_builder:
+                            WorkflowRegistry.__add_child_command(subgroup_builder, command[1], command_name)
+                        elif isinstance(group_builder, CommandGroupBuilder):
+                            WorkflowRegistry.__add_child_command(group_builder, command[1], command_name)
+                        else:
+                            builders_by_server[command_name] = WorkflowRegistry.__create_command(bot, command[1], command_name)
+
+        self.__log.info("Successfully registered commands", count=total_command_count)
+        return {
+            server_id: [
+                builder.build() for builder in builders.values()
+            ]
+            for server_id, builders in builders_by_servers.items()
+        }
+
+    def get_menu_item_builders(self, bot: Bot) -> Dict[str, Sequence[ContextMenuCommandBuilder]]:
         self.__log.info("Registering user menu items...")
-        context_menu_item_builders = []
+        builders = {}
         for menu_item in sorted(self.__menu_items.values(), key=lambda i: i[1].priority, reverse=True):
-            if isinstance(menu_item[1], MenuItem):
-                context_menu_item_builders.append(self.__get_user_menu_item_builder(bot, menu_item[1]))
-            else: raise TypeError(f"Unexpected menu item type '{type(menu_item)}'.")
+            for server_id in menu_item[1].server_ids or ("",):
+                server_builders = get_or_add(builders, server_id, lambda _: list(), None)
+                if (server_builders := builders.get(server_id)) is None:
+                    builders[server_id] = server_builders = []
+                server_builders.append(self.__get_user_menu_item_builder(bot, menu_item[1]))
         self.__log.info("Successfully registered user menu items", count=len(self.__menu_items))
-        return context_menu_item_builders
+        return builders
 
     @staticmethod
     def __create_command(
         bot: Bot,
         command: Command,
         command_name: str
-    ) -> SlashCommandBuilder:
+    ) -> CommandBuilder:
         builder = CommandBuilder(command_name, command.description or command.name, bot.rest.slash_command_builder)
         for option in command.options:
             builder.with_option(option)
-        return builder.build()
+        return builder
 
     @staticmethod
     def __add_child_command(

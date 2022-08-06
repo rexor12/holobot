@@ -1,5 +1,5 @@
 from asyncio.tasks import Task
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import asyncio
 import hikari
@@ -18,6 +18,7 @@ from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.system import IEnvironment
+from holobot.sdk.utils import get_or_add
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"
@@ -93,15 +94,28 @@ class BotService(BotServiceInterface):
 
     async def __on_bot_starting(self, bot: Bot, _: hikari.StartingEvent) -> None:
         application = await bot.rest.fetch_application()
-        command_builders: List[CommandBuilder] = []
-        command_builders.extend(self.__workflow_registry.get_command_builders(bot))
-        command_builders.extend(self.__workflow_registry.get_menu_item_builders(bot))
+        command_builders: Dict[str, List[CommandBuilder]] = {}
+        for server_id, builders in self.__workflow_registry.get_command_builders(bot).items():
+            cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
+            cb.extend(builders)
+        for server_id, builders in self.__workflow_registry.get_menu_item_builders(bot).items():
+            cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
+            cb.extend(builders)
 
-        await bot.rest.set_application_commands(
-            application=application.id,
-            commands=command_builders,
-            guild=self.__developer_server_id if self.__debugger.is_debug_mode_enabled() else hikari.UNDEFINED
-        )
+        if self.__debugger.is_debug_mode_enabled():
+            if str(self.__developer_server_id) in command_builders:
+                cb = get_or_add(command_builders, "", lambda _: list[CommandBuilder](), None)
+                cb.extend(command_builders.pop(str(self.__developer_server_id)))
+
+        for server_id, builders in command_builders.items():
+            await bot.rest.set_application_commands(
+                application=application.id,
+                commands=builders,
+                guild=int(server_id) if server_id != ""
+                      else self.__developer_server_id if self.__debugger.is_debug_mode_enabled()
+                      else hikari.UNDEFINED
+            )
+
         self.__log.info("The bot has just started")
 
     async def __on_bot_started(self, bot: Bot, _: hikari.StartedEvent) -> None:

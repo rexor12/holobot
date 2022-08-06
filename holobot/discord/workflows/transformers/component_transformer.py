@@ -157,7 +157,7 @@ class ComponentTransformer(IComponentTransformer):
         builder.set_max_values(component.selection_count_max)
         builder.set_is_disabled(not component.is_enabled)
         for item in component.items:
-            option_builder = builder.add_option(item.text, f"{item.value};{component.owner_id}")
+            option_builder = builder.add_option(item.text, f"{component.owner_id};{item.value}")
             if item.description:
                 option_builder.set_description(item.description)
             option_builder.add_to_menu()
@@ -172,12 +172,12 @@ class ComponentTransformer(IComponentTransformer):
         selected_values = []
         owner_id = None
         for value in interaction.values:
-            parts = value.split(";")
+            parts = value.split(";", maxsplit=1)
             if len(parts) < 2:
                 raise ValueError("Invalid component state. Required 'owner_id' is missing for the combo box.")
 
-            owner_id = parts[1]
-            selected_values.append(parts[0])
+            owner_id = parts[0]
+            selected_values.append(parts[1])
 
         if not owner_id:
             raise ValueError("Invalid component state. Required 'owner_id' is missing for the combo box.")

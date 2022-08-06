@@ -1,0 +1,154 @@
+from typing import Any, List, Tuple, Union
+
+from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
+from holobot.discord.sdk.data_providers import IBotDataProvider
+from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
+from holobot.discord.sdk.servers import IMemberDataProvider
+from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
+from holobot.discord.sdk.workflows.interactables.components import (
+    ComboBox, ComboBoxItem, ComponentBase, Layout, Paginator, StackLayout
+)
+from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
+from holobot.discord.sdk.workflows.interactables.decorators import command, component
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.ioc.decorators import injectable
+
+PAGE_SIZE = 10
+
+@injectable(IWorkflow)
+class ShowAvailableServersWorkflow(WorkflowBase):
+    def __init__(
+        self,
+        bot_data_provider: IBotDataProvider,
+        member_data_provider: IMemberDataProvider
+    ) -> None:
+        super().__init__(
+            required_permissions=Permission.ADMINISTRATOR
+        )
+        self.__bot_data_provider = bot_data_provider
+        self.__member_data_provider = member_data_provider
+
+    @command(
+        description="Displays information about the servers the bot is in.",
+        name="servers",
+        group_name="dev",
+        # TODO Provide development server ID dynamically. (#135)
+        server_ids={"999259836439081030"}
+    )
+    async def show_available_servers(
+        self,
+        context: InteractionContext,
+    ) -> InteractionResponse:
+        content, layout = await self.__create_page_content(0, PAGE_SIZE, 0, context.author_id)
+        return InteractionResponse(
+            action=ReplyAction(content=content, components=layout)
+        )
+
+    @component(
+        identifier="dev_avsrvp",
+        component_type=Paginator
+    )
+    async def change_page(
+        self,
+        context: InteractionContext,
+        state: Any
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return InteractionResponse(EditMessageAction("This interaction is available in a server only."))
+
+        return InteractionResponse(
+            EditMessageAction(
+                *await self.__create_page_content(
+                    max(state.current_page, 0),
+                    PAGE_SIZE,
+                    0,
+                    state.owner_id
+                )
+            )
+            if isinstance(state, PagerState)
+            else EditMessageAction("This interaction isn't valid anymore.")
+        )
+
+    @component(
+        identifier="dev_avsrvcb",
+        component_type=ComboBox
+    )
+    async def change_server(
+        self,
+        context: InteractionContext,
+        state: Any
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return InteractionResponse(EditMessageAction("This interaction is available in a server only."))
+
+        if not isinstance(state, ComboBoxState):
+            return InteractionResponse(EditMessageAction("This interaction isn't valid anymore."))
+
+        page_index, server_index = state.selected_values[0].split(";")
+        return InteractionResponse(
+            EditMessageAction(
+                *await self.__create_page_content(
+                    max(int(page_index), 0),
+                    PAGE_SIZE,
+                    int(server_index),
+                    state.owner_id
+                )
+            )
+        )
+
+    async def __create_page_content(
+        self,
+        page_index: int,
+        page_size: int,
+        server_index: int,
+        initiator_id: str
+    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+        server_count, servers = self.__bot_data_provider.get_servers(page_index, page_size)
+        if not servers:
+            return ("The bot isn't part of any servers.", [])
+
+        if server_index >= len(servers):
+            return ("You selected an inexistent server.", [])
+
+        server = servers[server_index]
+        owner_name = server.owner_name
+        owner = None
+        if not owner_name and server.owner_id:
+            owner = self.__member_data_provider.get_basic_data_by_id(server.identifier, server.owner_id)
+            owner_name = owner.name if owner else "N/A"
+
+        return (
+            Embed(
+                title=server.name,
+                thumbnail_url=server.icon_url,
+                fields=[
+                    EmbedField("Owner", f"{owner_name} ({server.owner_id})", is_inline=False),
+                    EmbedField("Members", str(server.member_count) if server.member_count else "N/A", is_inline=False),
+                    EmbedField("Size", "Large" if server.is_large == True else "Small" if server.is_large == False else "N/A", is_inline=False),
+                    EmbedField("Joined at", f"{server.joined_at:%I:%M:%S %p, %m/%d/%Y} UTC" if server.joined_at else "N/A", is_inline=False),
+                    EmbedField("Shard ID", str(server.shard_id) if server.shard_id is not None else "N/A", is_inline=False)
+                ]
+            ),
+            [
+                StackLayout(id="dev_avsrvs1", children=[
+                    ComboBox(
+                        id="dev_avsrvcb",
+                        owner_id=initiator_id,
+                        placeholder="Choose a server",
+                        items=[
+                            ComboBoxItem(text=server.name, value=f"{page_index};{index}")
+                            for index, server in enumerate(servers)
+                        ]
+                    )
+                ]),
+                Paginator(
+                    id="dev_avsrvp",
+                    owner_id=initiator_id,
+                    current_page=page_index,
+                    page_size=page_size,
+                    total_count=server_count
+                )
+            ]
+        )

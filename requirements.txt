@@ -1,6 +1,7 @@
 asyncpg==0.24.0                     # Used for working with PostgreSQL databases.
 hikari==2.0.0.dev109                # Discord bot framework.
 kanata==1.1.1.0                     # Dependency injection framework.
+python-dateutil==2.8.2              # Utilities for date and time.
 pytz==2021.1                        # Used for working with timezones.
 structlog==22.1.0                   # Used for structured logging.
 tzlocal==3.0                        # Used for determining the current system timezone.

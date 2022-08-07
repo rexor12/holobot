@@ -49,7 +49,7 @@ def menu_item(
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,
             defer_type=defer_type,
-            server_ids=server_ids if server_ids else set()
+            server_ids=server_ids or set()
         ))
         return target
     return wrapper

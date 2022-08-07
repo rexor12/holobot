@@ -200,5 +200,16 @@
             "MuteCleanupInterval": 60,
             "MuteCleanupDelay": 60
         }
+    },
+    "Giveaways": {
+        "parameters": {
+            "EnableScrapers": true,
+            "RunnerResolution": 60,
+            "RunnerDelay": 40,
+            "EpicScraperCircuitBreakerFailureThreshold": 1,
+            "EpicScraperCircuitBreakerRecoveryTime": 300,
+            "EpicScraperUrl": "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions",
+            "EpicScraperCountryCode": "US"
+        }
     }
 }

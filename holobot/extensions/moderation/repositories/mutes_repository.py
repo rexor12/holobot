@@ -76,9 +76,10 @@ class MutesRepository(IMutesRepository):
                     "server_id", "user_id"
                 ).compile().fetch(connection)
 
-                return tuple([
+                return tuple(
                     Mute(
                         server_id=record["server_id"],
                         user_id=record["user_id"]
-                    ) for record in records
-                ])
+                    )
+                    for record in records
+                )

@@ -18,7 +18,7 @@ TABLE_NAME = "reminders"
 class ReminderRepository(ReminderRepositoryInterface):
     def __init__(self, database_manager: DatabaseManagerInterface) -> None:
         self.__database_manager: DatabaseManagerInterface = database_manager
-        
+
     async def count(self, user_id: str) -> int:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -37,7 +37,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     "day_of_week", "until_date", "base_trigger", "last_trigger", "next_trigger"
                 ).from_table(TABLE_NAME).where().field("id", Equality.EQUAL, id).compile().fetchrow(connection)
                 return ReminderRepository.__parse_reminder(record) if record else None
-    
+
     async def get_many(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[Reminder]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -73,7 +73,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                 ).from_table(TABLE_NAME).where().field(
                     "next_trigger", Equality.LESS | Equality.EQUAL, "(NOW() AT TIME ZONE 'utc')", True
                 ).compile().fetch(connection)
-                return tuple([ReminderRepository.__parse_reminder(record) for record in records])
+                return tuple(ReminderRepository.__parse_reminder(record) for record in records)
 
     async def store(self, reminder: Reminder) -> None:
         async with self.__database_manager.acquire_connection() as connection:
@@ -90,7 +90,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     ("last_trigger", reminder.last_trigger),
                     ("next_trigger", reminder.next_trigger)
                 ).compile().execute(connection)
-    
+
     async def update_next_trigger(self, reminder_id: int, next_trigger: datetime) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -106,7 +106,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                 await Query.delete().from_table(TABLE_NAME).where().field(
                     "id", Equality.EQUAL, reminder_id
                 ).compile().execute(connection)
-    
+
     async def delete_by_user(self, user_id: str, reminder_id: int) -> int:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -117,7 +117,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     " SELECT COUNT(*) AS deleted_count FROM deleted"
                 ), user_id, reminder_id)
                 return record["deleted_count"] if record is not None else 0
-    
+
     @staticmethod
     def __parse_reminder(record) -> Reminder:
         reminder = Reminder()

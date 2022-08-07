@@ -18,7 +18,7 @@ class MemberDeletedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         listeners: Tuple[IListener[ServerMemberLeftEvent], ...]
     ) -> None:
         super().__init__()
-        self.__listeners = listeners
+        self.__listeners = sorted(listeners, key=lambda i: i.priority)
 
     @property
     def event_type(self) -> Type[Any]:

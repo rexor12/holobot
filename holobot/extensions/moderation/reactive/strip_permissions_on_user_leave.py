@@ -18,6 +18,11 @@ class StripPermissionsOnUserLeave(IListener[ServerMemberLeftEvent]):
         self.__logger = logger_factory.create(StripPermissionsOnUserLeave)
         self.__permission_manager = permission_manager
 
+    @property
+    def priority(self) -> int:
+        # This should happen after moderation log entries are written. (#82)
+        return 1
+
     async def on_event(self, event: ServerMemberLeftEvent) -> None:
         try:
             await self.__permission_manager.remove_all_permissions(event.server_id, event.user_id)

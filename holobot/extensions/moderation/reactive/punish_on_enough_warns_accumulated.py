@@ -33,6 +33,11 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         self.__warn_repository: IWarnRepository = warn_repository
         self.__warn_settings_repository: IWarnSettingsRepository = warn_settings_repository
 
+    @property
+    def priority(self) -> int:
+        # This should happen after moderation log entries are written. (#82)
+        return 1
+
     async def on_event(self, event: CommandProcessedEvent):
         if (not issubclass(event.command_type, ModerationCommand)
             or not isinstance(event.response, UserWarnedResponse)):

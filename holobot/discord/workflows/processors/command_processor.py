@@ -29,7 +29,7 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, log, measurement_context_factory, workflow_execution_rules)
-        self.__event_listeners = event_listeners
+        self.__event_listeners = sorted(event_listeners, key=lambda i: i.priority)
         self.__workflow_registry = workflow_registry
 
     def _get_interactable_descriptor(

@@ -44,14 +44,16 @@ class ChannelManager(IChannelManager):
             elif status is False:
                 denied_permissions |= permission_dto
 
+        new_permission_overwrites = [*channel.permission_overwrites.values()]
+        new_permission_overwrites.append(
+            PermissionOverwrite(
+                id=Snowflake(role_id),
+                type=PermissionOverwriteType.ROLE,
+                allow=allowed_permissions,
+                deny=denied_permissions
+            )
+        )
         try:
-            await channel.edit(permission_overwrites=[
-                PermissionOverwrite(
-                    id=Snowflake(role_id),
-                    type=PermissionOverwriteType.ROLE,
-                    allow=allowed_permissions,
-                    deny=denied_permissions
-                )
-            ])
+            await channel.edit(permission_overwrites=new_permission_overwrites)
         except HikariForbiddenError as error:
             raise ForbiddenError(f"Cannot set permissions for role '{role_id}' and channel '{channel_id}'.") from error

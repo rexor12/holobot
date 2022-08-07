@@ -27,6 +27,15 @@ class CustomAttribute:
     value: str
 
 @dataclass
+class CatalogNsEntry:
+    pageSlug: str
+    pageType: str
+
+@dataclass
+class CatalogNs:
+    mappings: List[CatalogNsEntry] = field(default_factory=list)
+
+@dataclass
 class Image:
     type: str
     url: str
@@ -36,6 +45,7 @@ class Offer:
     title: str
     promotions: Promotions = field(default_factory=Promotions)
     keyImages: List[Image] = field(default_factory=list)
+    catalogNs: CatalogNs = field(default_factory=CatalogNs)
     customAttributes: List[CustomAttribute] = field(default_factory=list)
 
 @dataclass

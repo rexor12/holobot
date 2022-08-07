@@ -41,6 +41,8 @@ class ScraperInfoRepository(IScraperInfoRepository):
                     ("id", item.identifier),
                     ("scraper_name", item.scraper_name),
                     ("last_scrape_time", set_time_zone(item.last_scrape_time, None))
+                ).on_conflict("id").update().field(
+                    "last_scrape_time", set_time_zone(item.last_scrape_time, None)
                 ).compile().execute(connection)
 
     async def delete(self, item_id: int) -> None:

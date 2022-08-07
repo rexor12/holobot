@@ -1,12 +1,15 @@
-from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
-from ..models import ExternalGiveawayItem
+from typing import Optional
+
 from asyncpg.connection import Connection
+
+from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
+from holobot.extensions.giveaways.models import ExternalGiveawayItem
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import set_time_zone, set_time_zone_nullable, UTC
-from typing import Optional, Tuple
 
 TABLE_NAME = "external_giveaway_items"
 
@@ -30,26 +33,35 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
 
     async def get_many(
         self,
-        start_offset: int,
+        page_index: int,
         page_size: int,
         item_type: str,
-        active_only: bool = True) -> Tuple[ExternalGiveawayItem, ...]:
+        active_only: bool = True
+    ) -> PaginationResult[ExternalGiveawayItem]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                query = Query.select().columns(
-                    "id", "created_at", "start_time", "end_time", "source_name",
-                    "item_type", "url", "preview_url", "title"
-                ).from_table(TABLE_NAME).where().field(
-                    "item_type", Equality.EQUAL, item_type
+                query = (Query
+                    .select()
+                    .columns(
+                        "id", "created_at", "start_time", "end_time", "source_name",
+                        "item_type", "url", "preview_url", "title"
+                    )
+                    .from_table(TABLE_NAME)
+                    .where()
+                    .field("item_type", Equality.EQUAL, item_type)
                 )
                 if active_only:
                     query = query.and_field(
                         "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
                     )
-                query = query.limit().max_count(page_size).start_index(start_offset).compile().fetch(connection)
-                records = await query
-                return tuple(ExternalGiveawayItemRepository.__parse_record(record) for record in records)
+                result = await query.paginate("id", page_index, page_size).compile().fetch(connection)
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [ExternalGiveawayItemRepository.__parse_record(record) for record in result.records]
+                )
 
     async def exists(self, url: str, active_only: bool = True) -> bool:
         async with self.__database_manager.acquire_connection() as connection:

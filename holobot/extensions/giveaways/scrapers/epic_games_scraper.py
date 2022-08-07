@@ -1,18 +1,19 @@
+from datetime import datetime, time, timedelta, timezone
+from typing import List, Optional, Sequence, Tuple
+
+import zoneinfo
+
 from .iscraper import IScraper
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
-from ..models import ExternalGiveawayItem
-from datetime import datetime, time, timedelta, timezone
+from holobot.extensions.giveaways.models import ExternalGiveawayItem
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import LogInterface
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.utils import first_or_default
-from typing import List, Optional, Sequence, Tuple
-
-import zoneinfo
 
 CONFIG_SECTION = "Giveaways"
 CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "EpicScraperCircuitBreakerFailureThreshold"
@@ -24,16 +25,20 @@ OFFER_IMAGE_TYPES: Tuple[str, ...] = (
     "OfferImageWide", "DieselStoreFrontWide", "OfferImageTall", "Thumbnail"
 )
 
+# Epic Games always updates the free games on Thursdays at 10 PM CT.
+EPIC_UPDATE_TIMEZONE = zoneinfo.ZoneInfo("US/Central")
+EPIC_UPDATE_TIME = time(hour=10)
+
 @injectable(IScraper)
 class EpicGamesScraper(IScraper):
     def __init__(
         self,
         configurator: ConfiguratorInterface,
         http_client_pool: HttpClientPoolInterface,
-        log: LogInterface
+        logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
-        self.__log: LogInterface = log.with_name("Giveaways", "EpicGamesScraper")
+        self.__logger = logger_factory.create(EpicGamesScraper)
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__url: str = configurator.get(CONFIG_SECTION, URL_PARAMETER, "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
         self.__country_code: str = configurator.get(CONFIG_SECTION, COUNTRY_CODE_PARAMETER, "US")
@@ -44,19 +49,17 @@ class EpicGamesScraper(IScraper):
         return "Epic Games Store"
 
     def get_next_scrape_time(self, last_scrape_time: Optional[datetime]) -> datetime:
-        # Epic Games always updates the free games on Thursdays at 3 PM PT.
-        pacific_time = zoneinfo.ZoneInfo("US/Pacific")
         if last_scrape_time is None:
             return datetime.now(timezone.utc) - timedelta(minutes=1)
 
-        today = datetime.now(pacific_time).date()
-        previous_thursday = today - timedelta(days=3 - today.weekday())
-        previous_release_time = datetime.combine(previous_thursday, time(hour=15), pacific_time)
+        today = datetime.now(EPIC_UPDATE_TIMEZONE).date()
+        previous_thursday = today - timedelta(days=abs(3 - today.weekday()))
+        previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         if last_scrape_time < previous_release_time:
             return datetime.now(timezone.utc) - timedelta(minutes=1)
 
         next_thursday = today + timedelta(days=3 - today.weekday(), weeks=1)
-        next_release_time = datetime.combine(next_thursday, time(hour=15), pacific_time)
+        next_release_time = datetime.combine(next_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         return next_release_time.astimezone(timezone.utc) + SCRAPE_DELAY
 
     async def scrape(self) -> Sequence[ExternalGiveawayItem]:
@@ -75,12 +78,12 @@ class EpicGamesScraper(IScraper):
         for item in promotions.data.Catalog.searchStore.elements:
             giveaway_time = EpicGamesScraper.__get_giveaway_data(item)
             if not giveaway_time:
-                self.__log.debug(f"Ignored item, because it has no active offer. {{ Title = {item.title} }}")
+                self.__logger.debug("Ignored item, because it has no active offer", title=item.title)
                 continue
 
             product_slug = first_or_default(item.catalogNs.mappings, lambda i: i.pageType == "productHome")
             if not product_slug or not product_slug.pageSlug:
-                self.__log.debug(f"Ignored item, because it has no product slug. {{ Title = {item.title} }}")
+                self.__logger.debug("Ignored item, because it has no product slug", title=item.title)
                 continue
 
             giveaway_items.append(ExternalGiveawayItem(

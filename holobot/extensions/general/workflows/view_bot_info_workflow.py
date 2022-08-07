@@ -35,8 +35,8 @@ class ViewBotInfoWorkflow(WorkflowBase):
                     EmbedField("Version", self.__environment.version.__str__()),
                     EmbedField("Latency", f"{self.__bot_data_provider.get_latency():,.2f} ms"),
                     EmbedField("Servers", str(self.__bot_data_provider.get_server_count())),
-                    EmbedField("Server time", f"{current_time:%I:%M:%S %p, %m/%d/%Y %Z}"),
-                    EmbedField("Repository", "https://github.com/rexor12/holobot")
+                    EmbedField("Server time", f"{current_time:%I:%M:%S %p, %m/%d/%Y %Z}", is_inline=False),
+                    EmbedField("Issues", "https://github.com/rexor12/holobot/issues", is_inline=False)
                 ],
                 footer=EmbedFooter("Brought to you by rexor12", "https://avatars.githubusercontent.com/u/15330052")
             ))

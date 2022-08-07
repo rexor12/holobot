@@ -1,17 +1,19 @@
+from datetime import datetime, timezone
+from typing import Awaitable, Optional, Tuple
+
+import contextlib
+
+import asyncio
+
 from .models import ScraperInfo
 from .repositories import IExternalGiveawayItemRepository, IScraperInfoRepository
 from .scrapers import IScraper
-from datetime import datetime, timezone
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from typing import Awaitable, Optional, Tuple
-
-import asyncio
-import contextlib
 
 DEFAULT_RESOLUTION: int = 60
 DEFAULT_DELAY: int = 40
@@ -37,14 +39,14 @@ class ScraperRunner(IStartable):
 
     async def start(self) -> None:
         if not self.__configurator.get("Giveaways", "EnableScrapers", True):
-            self.__logger.info("Giveaway scraping is disabled by configuration.")
+            self.__logger.info("Giveaway scraping is disabled by configuration")
             return
 
         if len(self.__scrapers) == 0:
-            self.__logger.info("Giveaway scraping is disabled, because there are no loaded scrapers.")
+            self.__logger.info("Giveaway scraping is disabled, because there are no loaded scrapers")
             return
 
-        self.__logger.info(f"Giveaway scraping is enabled. {{ Delay = {self.__process_delay}, Resolution = {self.__process_resolution} }}")
+        self.__logger.info("Giveaway scraping is enabled", delay=self.__process_delay, resolution=self.__process_resolution)
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
             self.__run_scrapers(self.__token_source.token)
@@ -56,7 +58,7 @@ class ScraperRunner(IStartable):
         if self.__background_task:
             with contextlib.suppress(asyncio.exceptions.CancelledError):
                 await self.__background_task
-        self.__logger.debug("Stopped background task.")
+        self.__logger.debug("Stopped background task")
 
     async def __run_scrapers(self, token: CancellationToken):
         await wait(self.__process_delay, token)
@@ -66,7 +68,7 @@ class ScraperRunner(IStartable):
                 for scraper in self.__scrapers:
                     await self.__run_scraper(scraper)
             finally:
-                self.__logger.trace("Ran giveaway scrapers.")
+                self.__logger.trace("Ran giveaway scrapers")
             await wait(self.__process_resolution, token)
 
     async def __run_scraper(self, scraper: IScraper) -> None:
@@ -79,9 +81,9 @@ class ScraperRunner(IStartable):
             if datetime.now(timezone.utc) < next_scrape_time:
                 return
 
-            self.__logger.trace(f"Running giveaway scraper... {{ Name = {scraper_name} }}")
+            self.__logger.trace("Running giveaway scraper...", name=scraper_name)
             giveaway_items = await scraper.scrape()
-            self.__logger.trace(f"Ran giveaway scraper. {{ Name = {scraper_name} }}")
+            self.__logger.trace("Ran giveaway scraper", name=scraper_name)
             for item in giveaway_items:
                 if not await self.__external_giveaway_item_repository.exists(item.url):
                     await self.__external_giveaway_item_repository.store(item)
@@ -92,4 +94,4 @@ class ScraperRunner(IStartable):
 
             await self.__scraper_info_repository.store(scraper_info)
         except Exception as error: # pylint: disable=broad-except
-            self.__logger.error("An error has occurred while running a giveaway scraper.", error)
+            self.__logger.error("An error has occurred while running a giveaway scraper", error)

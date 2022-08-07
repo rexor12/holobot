@@ -1,7 +1,10 @@
+from typing import Any, List, Optional, Tuple
+
+from .compiled_query import CompiledQuery
+from .exists_builder import ExistsBuilder
 from .join_builder import JoinBuilder, JOIN_TYPE
 from .iquery_part_builder import IQueryPartBuilder
 from .where_builder import WhereBuilder
-from typing import Any, List, Optional, Tuple
 
 class SelectBuilder(IQueryPartBuilder):
     def __init__(self) -> None:
@@ -10,19 +13,19 @@ class SelectBuilder(IQueryPartBuilder):
         self.__table_name: Optional[str] = None
         self.__table_alias: Optional[str] = None
         self.__is_count_select: bool = False
-    
+
     def column(self, column_name: str) -> 'SelectBuilder':
         if column_name in self.__columns:
             return self
-        
+
         self.__columns.append(column_name)
         return self
-    
+
     def columns(self, *column_names: str) -> 'SelectBuilder':
         for column_name in column_names:
             self.column(column_name)
         return self
-    
+
     def count(self) -> 'SelectBuilder':
         self.__is_count_select = True
         return self
@@ -52,21 +55,24 @@ class SelectBuilder(IQueryPartBuilder):
     def where(self) -> WhereBuilder:
         return WhereBuilder(self)
 
+    def exists(self) -> ExistsBuilder:
+        return ExistsBuilder(self)
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
+
     def build(self) -> Tuple[str, Tuple[Any, ...]]:
         if len(self.__columns) == 0 and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
 
         sql = ["SELECT"]
-
         if self.__is_count_select:
             sql.append("COUNT(*)")
         else: sql.append(", ".join(self.__columns))
 
         if self.__table_name:
-            sql.append("FROM")
-            sql.append(self.__table_name)
+            sql.extend(("FROM", self.__table_name))
             if self.__table_alias:
-                sql.append("AS ")
-                sql.append(self.__table_alias)
+                sql.extend(("AS ", self.__table_alias))
 
         return (" ".join(sql), ())

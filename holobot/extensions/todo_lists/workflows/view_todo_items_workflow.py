@@ -10,6 +10,7 @@ from holobot.discord.sdk.workflows.interactables.components.models import PagerS
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 
@@ -19,12 +20,14 @@ DEFAULT_PAGE_SIZE = 5
 class ViewTodoItemsWorkflow(WorkflowBase):
     def __init__(
         self,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         todo_item_manager: TodoItemManagerInterface
     ) -> None:
         super().__init__()
+        self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(ViewTodoItemsWorkflow)
-        self.__todo_item_manager: TodoItemManagerInterface = todo_item_manager
+        self.__todo_item_manager = todo_item_manager
 
     @command(
         description="Displays all your to-do items.",
@@ -35,12 +38,14 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
+        content, components = await self.__create_page_content(
+            context.author_id,
+            0,
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(ReplyAction(
-            *await self.__create_page_content(
-                context.author_id,
-                0,
-                DEFAULT_PAGE_SIZE
-            )
+            content=content,
+            components=components
         ))
 
     @component(
@@ -54,16 +59,20 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         context: InteractionContext,
         state: Any
     ) -> InteractionResponse:
+        content, components = await self.__create_page_content(
+            state.owner_id,
+            max(state.current_page, 0),
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    state.owner_id,
-                    max(state.current_page, 0),
-                    DEFAULT_PAGE_SIZE
-                )
+                content=content,
+                components=components
             )
             if isinstance(state, PagerState)
-            else EditMessageAction("An internal error occurred while processing the interaction.")
+            else EditMessageAction(content=self.__i18n_provider.get(
+                "interactions.invalid_interaction_data_error"
+            ))
         )
 
     async def __create_page_content(
@@ -75,15 +84,35 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__todo_item_manager.get_by_user(user_id, page_index, page_size)
         if len(result.items) == 0:
-            return ("There are no to-do items on this page.", [])
+            return (
+                self.__i18n_provider.get(
+                    "extensions.todo_lists.view_todo_items_workflow.no_todo_items"
+                ),
+                []
+            )
 
         content = Embed(
-            title="To-do list",
-            description=f"To-do items of <@{user_id}>.",
+            title=self.__i18n_provider.get(
+                "extensions.todo_lists.view_todo_items_workflow.embed_title"
+            ),
+            description=self.__i18n_provider.get(
+                "extensions.todo_lists.view_todo_items_workflow.embed_description",
+                { "user_id": user_id }
+            ),
             fields=[
-                EmbedField(f"#{item.id}", item.message, False) for item in result.items
+                EmbedField(
+                    self.__i18n_provider.get(
+                        "extensions.todo_lists.view_todo_items_workflow.embed_field",
+                        { "item_id": item.id }
+                    ),
+                    item.message,
+                    False
+                )
+                for item in result.items
             ],
-            footer=EmbedFooter("Use the to-do item's number for removal.")
+            footer=EmbedFooter(self.__i18n_provider.get(
+                "extensions.todo_lists.view_todo_items_workflow.embed_footer"
+            ))
         )
 
         component = Paginator(

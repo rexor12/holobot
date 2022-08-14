@@ -7,13 +7,19 @@ from holobot.discord.sdk.utils import get_channel_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
 class SetLogChannelWorkflow(WorkflowBase):
-    def __init__(self, log_manager: ILogManager) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        log_manager: ILogManager
+    ) -> None:
         super().__init__()
-        self.__log_manager: ILogManager = log_manager
+        self.__i18n_provider = i18n_provider
+        self.__log_manager = log_manager
 
     @moderation_command(
         description="Sets the channel in which moderation actions are logged.",
@@ -33,7 +39,7 @@ class SetLogChannelWorkflow(WorkflowBase):
         channel_id = get_channel_id(channel.strip())
         if not channel_id:
             return InteractionResponse(
-                action=ReplyAction(content="You must mention a channel correctly.")
+                action=ReplyAction(content=self.__i18n_provider.get("channel_not_found_error"))
             )
 
         await self.__log_manager.set_log_channel(context.server_id, channel_id)
@@ -41,5 +47,10 @@ class SetLogChannelWorkflow(WorkflowBase):
             author_id=context.author_id,
             is_enabled=True,
             channel_id=channel_id,
-            action=ReplyAction(content=f"Moderation actions will be logged in {channel}. Make sure I have the required permissions to send messages there.")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.set_log_channel_workflow.modlog_configured",
+                    { "channel_id": channel_id }
+                )
+            )
         )

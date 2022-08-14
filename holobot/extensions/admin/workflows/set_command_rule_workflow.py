@@ -1,7 +1,5 @@
-from .. import CommandRuleManagerInterface
-from ..enums import RuleState
-from ..exceptions import InvalidCommandError
-from ..models import CommandRule
+from typing import Optional
+
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import get_channel_id
@@ -9,14 +7,23 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.admin import CommandRuleManagerInterface
+from holobot.extensions.admin.enums import RuleState
+from holobot.extensions.admin.exceptions import InvalidCommandError
+from holobot.extensions.admin.models import CommandRule
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from typing import Optional
 
 @injectable(IWorkflow)
 class SetCommandRuleWorkflow(WorkflowBase):
-    def __init__(self, rule_manager: CommandRuleManagerInterface) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        rule_manager: CommandRuleManagerInterface
+    ) -> None:
         super().__init__(required_permissions=Permission.ADMINISTRATOR)
         self.__command_rule_manager: CommandRuleManagerInterface = rule_manager
+        self.__i18n_provider = i18n_provider
 
     @command(
         description="Adds a new or modifies an existing rule for one or more commands.",
@@ -45,7 +52,9 @@ class SetCommandRuleWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if context.server_id is None:
             return InteractionResponse(
-                action=ReplyAction(content="Command rules can be defined in servers only.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "interactions.server_only_interaction_error"
+                ))
             )
 
         channel_id = get_channel_id(channel) if channel is not None else None
@@ -60,9 +69,14 @@ class SetCommandRuleWorkflow(WorkflowBase):
         try:
             await self.__command_rule_manager.set_rule(rule)
             return InteractionResponse(
-                action=ReplyAction(content=f"Your rule has been set: {rule.textify()}")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.admin.set_command_rule_workflow.rule_set_successfully",
+                    { "rule_text": rule.textify() }
+                ))
             )
         except InvalidCommandError:
             return InteractionResponse(
-                action=ReplyAction(content="This command doesn't exist or rules cannot be set for it.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.admin.set_command_rule_workflow.invalid_command_error"
+                ))
             )

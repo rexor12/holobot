@@ -15,21 +15,29 @@ from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType, OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    ServerChatInteractionContext, ServerUserInteractionContext
+)
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+
+_MIN_DAYS = 0
+_MAX_DAYS = 7
 
 @injectable(IWorkflow)
 class BanUserWorkflow(WorkflowBase):
     def __init__(
         self,
         config_provider: IConfigProvider,
+        i18n_provider: II18nProvider,
         messaging: IMessaging,
         user_manager: IUserManager
     ) -> None:
         super().__init__()
-        self.__config_provider: IConfigProvider = config_provider
-        self.__messaging: IMessaging = messaging
-        self.__user_manager: IUserManager = user_manager
+        self.__config_provider = config_provider
+        self.__i18n_provider = i18n_provider
+        self.__messaging = messaging
+        self.__user_manager = user_manager
 
     @moderation_command(
         description="Bans a user from the server. The user cannot rejoin until the ban is lifted.",
@@ -53,42 +61,71 @@ class BanUserWorkflow(WorkflowBase):
         reason = reason.strip()
         if (user_id := get_user_id(user)) is None:
             return InteractionResponse(
-                action=ReplyAction(content="You must mention a user correctly.")
+                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
+
         days = days if days is not None else 0
-        if days < 0 or days > 7:
+        if days < _MIN_DAYS or days > _MAX_DAYS:
             return InteractionResponse(
-                action=ReplyAction(content="The days parameter's value must be between 0 and 7. If omitted, no messages are deleted.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.moderation.ban_user_workflow.days_out_of_range_error",
+                    { "min": _MIN_DAYS, "max": _MAX_DAYS }
+                ))
             )
+
         reason_length_range = self.__config_provider.get_reason_length_range()
         if len(reason) not in reason_length_range:
             return InteractionResponse(
-                action=ReplyAction(content=f"The reason parameter's length must be between {reason_length_range.lower_bound} and {reason_length_range.upper_bound}.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.reason_out_of_range_error",
+                        { "min": reason_length_range.lower_bound, "max": reason_length_range.upper_bound }
+                    )
+                )
             )
 
         try:
             await self.__user_manager.ban_user(context.server_id, user_id, reason, days)
         except UserNotFoundError:
-            return InteractionResponse(
-                action=ReplyAction(content="The user you mentioned cannot be found.")
-            )
+            return InteractionResponse(action=ReplyAction(
+                content=self.__i18n_provider.get("user_not_found_error")
+            ))
         except ForbiddenError:
-            return InteractionResponse(
-                action=ReplyAction(content=(
-                    "I cannot ban the user.\n"
-                    "Have you given me user management permissions?\n"
-                    "Do they have a role ranking higher than mine?"
-                ))
-            )
+            return InteractionResponse(action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.ban_user_workflow.cannot_ban_user_error",
+                    { "user_id": user_id }
+                ),
+                suppress_user_mentions=True
+            ))
 
         with contextlib.suppress(ForbiddenError):
-            await self.__messaging.send_private_message(user_id, f"You have been banned from {context.server_name} by {context.author_name} with the reason '{reason}'. I'm sorry this happened to you.")
+            await self.__messaging.send_private_message(
+                user_id,
+                self.__i18n_provider.get(
+                    "extensions.moderation.ban_user_workflow.user_banned_dm",
+                    {
+                        "user_name": context.author_name,
+                        "server_name": context.server_name,
+                        "reason": reason
+                    }
+                )
+            )
 
         return UserBannedInteractionResponse(
             author_id=context.author_id,
             user_id=user_id,
             reason=reason,
-            action=ReplyAction(content=f"<@{user_id}> has been banned. Reason: {reason}")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.ban_user_workflow.user_banned",
+                    {
+                        "user_id": user_id,
+                        "reason": reason
+                    }
+                ),
+                suppress_user_mentions=True
+            )
         )
 
     @moderation_menu_item(
@@ -106,25 +143,40 @@ class BanUserWorkflow(WorkflowBase):
         except UserNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(
-                    content="The specified user cannot be found."
+                    content=self.__i18n_provider.get("user_not_found_error")
                 )
             )
         except ForbiddenError:
             return InteractionResponse(
-                action=ReplyAction(content=(
-                    "I cannot kick the user.\n"
-                    "Have you given me user management permissions?\n"
-                    "Do they have a role ranking higher than mine?"
-                ))
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.ban_user_workflow.cannot_ban_user_error",
+                        { "user_id": context.target_user_id }
+                    ),
+                    suppress_user_mentions=True
+                )
             )
 
         with contextlib.suppress(ForbiddenError):
-            await self.__messaging.send_private_message(context.target_user_id, f"You have been banned from {context.server_name} by {context.author_name}. I'm sorry this happened to you.")
+            await self.__messaging.send_private_message(
+                context.target_user_id,
+                self.__i18n_provider.get(
+                    "extensions.moderation.ban_user_workflow.user_banned_dm_no_reason",
+                    {
+                        "user_name": context.author_name,
+                        "server_name": context.server_name
+                    }
+                )
+            )
 
         return UserBannedMenuItemResponse(
             author_id=context.author_id,
             user_id=context.target_user_id,
             action=ReplyAction(
-                content=f"<@{context.target_user_id}> has been banned."
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.ban_user_workflow.user_banned_no_reason",
+                    { "user_id": context.target_user_id }
+                ),
+                suppress_user_mentions=True
             )
         )

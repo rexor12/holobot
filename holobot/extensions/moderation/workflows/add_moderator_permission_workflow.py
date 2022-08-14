@@ -9,13 +9,19 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
 class AddModeratorPermissionWorkflow(WorkflowBase):
-    def __init__(self, permission_manager: IPermissionManager) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        permission_manager: IPermissionManager
+    ) -> None:
         super().__init__()
-        self.__permission_manager: IPermissionManager = permission_manager
+        self.__i18n_provider = i18n_provider
+        self.__permission_manager = permission_manager
 
     @moderation_command(
         description="Assign a moderator permission to a user.",
@@ -42,14 +48,29 @@ class AddModeratorPermissionWorkflow(WorkflowBase):
         user = user.strip()
         if (user_id := get_user_id(user)) is None:
             return InteractionResponse(
-                action=ReplyAction(content="You must mention a user correctly.")
+                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
+
         typed_permission = ModeratorPermission(permission)
         await self.__permission_manager.add_permissions(context.server_id, user_id, typed_permission)
+
+        permission_i18n = self.__i18n_provider.get(
+            f"extensions.moderation.permissions.{typed_permission.value}"
+        )
+
         return ModeratorPermissionsChangedResponse(
             author_id=context.author_id,
             user_id=user_id,
             permission=typed_permission,
             is_addition=True,
-            action=ReplyAction(content=f"{user} has had the permission to '{typed_permission.textify()}' _assigned_.")
+            action=ReplyAction(
+                suppress_user_mentions=True,
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.add_moderator_permission_workflow.permission_assigned",
+                    {
+                        "user_id": user_id,
+                        "permission": permission_i18n
+                    }
+                )
+            )
         )

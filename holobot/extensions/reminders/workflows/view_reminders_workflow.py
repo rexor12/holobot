@@ -8,6 +8,7 @@ from holobot.discord.sdk.workflows.interactables.components.models import PagerS
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from typing import Any, List, Tuple, Union
@@ -18,12 +19,14 @@ DEFAULT_PAGE_SIZE = 5
 class ViewRemindersWorkflow(WorkflowBase):
     def __init__(
         self,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         reminder_manager: ReminderManagerInterface
     ) -> None:
         super().__init__()
+        self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(ViewRemindersWorkflow)
-        self.__reminder_manager: ReminderManagerInterface = reminder_manager
+        self.__reminder_manager = reminder_manager
 
     @command(
         description="Displays your reminders.",
@@ -34,8 +37,14 @@ class ViewRemindersWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
+        content, components = await self.__create_page_content(
+            context.author_id,
+            0,
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(ReplyAction(
-            *await self.__create_page_content(context.author_id, 0, DEFAULT_PAGE_SIZE)
+            content=content,
+            components=components
         ))
 
     @component(
@@ -49,16 +58,20 @@ class ViewRemindersWorkflow(WorkflowBase):
         context: InteractionContext,
         state: Any
     ) -> InteractionResponse:
+        content, components = await self.__create_page_content(
+            state.owner_id,
+            max(state.current_page, 0),
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    state.owner_id,
-                    max(state.current_page, 0),
-                    DEFAULT_PAGE_SIZE
-                )
+                content=content,
+                components=components
             )
             if isinstance(state, PagerState)
-            else EditMessageAction("An internal error occurred while processing the interaction.")
+            else EditMessageAction(content=self.__i18n_provider.get(
+                "interactions.invalid_interaction_data_error"
+            ))
         )
 
     async def __create_page_content(
@@ -70,20 +83,44 @@ class ViewRemindersWorkflow(WorkflowBase):
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__reminder_manager.get_by_user(user_id, page_index, page_size)
         if len(result.items) == 0:
-            return ("The user has no reminders.", [])
+            return (
+                self.__i18n_provider.get(
+                    "extensions.reminders.view_reminders_workflow.no_reminders"
+                ),
+                []
+            )
 
         embed = Embed(
-            title="Reminders",
-            description=f"Reminders of <@{user_id}>.",
-            footer=EmbedFooter("Use the reminder's number for removal.")
+            title=self.__i18n_provider.get(
+                "extensions.reminders.view_reminders_workflow.embed_title"
+            ),
+            description=self.__i18n_provider.get(
+                "extensions.reminders.view_reminders_workflow.embed_description",
+                { "user_id": user_id }
+            ),
+            footer=EmbedFooter(
+                self.__i18n_provider.get(
+                    "extensions.reminders.view_reminders_workflow.embed_footer"
+                )
+            )
         )
         for reminder in result.items:
             embed.fields.append(EmbedField(
-                name=f"#{reminder.id}",
-                value=(
-                    f"> Message: {reminder.message}\n"
-                    f"> Next trigger: {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC\n"
-                    f"> Repeats: {'yes' if reminder.is_repeating else 'no'}"
+                name=self.__i18n_provider.get(
+                    "extensions.reminders.view_reminders_workflow.embed_field_name",
+                    { "reminder_id": reminder.id }
+                ),
+                value=self.__i18n_provider.get(
+                    "extensions.reminders.view_reminders_workflow.embed_field_value",
+                    {
+                        "message": reminder.message,
+                        "time": reminder.next_trigger,
+                        "repeats": (
+                            ":white_check_mark:"
+                            if reminder.is_repeating
+                            else ":no_entry_sign:"
+                        )
+                    }
                 ),
                 is_inline=False
             ))

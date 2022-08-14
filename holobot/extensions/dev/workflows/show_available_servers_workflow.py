@@ -56,19 +56,21 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(EditMessageAction("This interaction is available in a server only."))
+            return InteractionResponse(EditMessageAction(content="This interaction is available in a server only."))
 
+        content, components = await self.__create_page_content(
+            max(state.current_page, 0),
+            PAGE_SIZE,
+            0,
+            state.owner_id
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    max(state.current_page, 0),
-                    PAGE_SIZE,
-                    0,
-                    state.owner_id
-                )
+                content=content,
+                components=components
             )
             if isinstance(state, PagerState)
-            else EditMessageAction("This interaction isn't valid anymore.")
+            else EditMessageAction(content="This interaction isn't valid anymore.")
         )
 
     @component(
@@ -81,20 +83,22 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(EditMessageAction("This interaction is available in a server only."))
+            return InteractionResponse(EditMessageAction(content="This interaction is available in a server only."))
 
         if not isinstance(state, ComboBoxState):
-            return InteractionResponse(EditMessageAction("This interaction isn't valid anymore."))
+            return InteractionResponse(EditMessageAction(content="This interaction isn't valid anymore."))
 
         page_index, server_index = state.selected_values[0].split(";")
+        content, components = await self.__create_page_content(
+            max(int(page_index), 0),
+            PAGE_SIZE,
+            int(server_index),
+            state.owner_id
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    max(int(page_index), 0),
-                    PAGE_SIZE,
-                    int(server_index),
-                    state.owner_id
-                )
+                content=content,
+                components=components
             )
         )
 

@@ -57,8 +57,15 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 action=ReplyAction(content="The user you mentioned cannot be found.")
             )
 
+        content, components = await self.__create_page_content(
+            context.server_id,
+            user_id,
+            0,
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(ReplyAction(
-            *await self.__create_page_content(context.server_id, user_id, 0, DEFAULT_PAGE_SIZE)
+            content=content,
+            components=components
         ))
 
     @moderation_component(
@@ -74,19 +81,21 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(EditMessageAction("An internal error occurred while processing the interaction."))
+            return InteractionResponse(EditMessageAction(content="An internal error occurred while processing the interaction."))
 
+        content, components = await self.__create_page_content(
+            context.server_id,
+            state.owner_id,
+            max(state.current_page, 0),
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    context.server_id,
-                    state.owner_id,
-                    max(state.current_page, 0),
-                    DEFAULT_PAGE_SIZE
-                )
+                content=content,
+                components=components
             )
             if isinstance(state, PagerState)
-            else EditMessageAction("An internal error occurred while processing the interaction.")
+            else EditMessageAction(content="An internal error occurred while processing the interaction.")
         )
 
     async def __create_page_content(

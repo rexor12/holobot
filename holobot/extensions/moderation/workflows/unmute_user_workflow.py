@@ -13,18 +13,21 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
 class UnmuteUserWorkflow(WorkflowBase):
     def __init__(
         self,
+        i18n_provider: II18nProvider,
         messaging: IMessaging,
         mute_manager: IMuteManager
     ) -> None:
         super().__init__()
-        self.__messaging: IMessaging = messaging
-        self.__mute_manager: IMuteManager = mute_manager
+        self.__i18n_provider = i18n_provider
+        self.__messaging = messaging
+        self.__mute_manager = mute_manager
 
     @moderation_command(
         description="Removes the muting from a user.",
@@ -43,31 +46,48 @@ class UnmuteUserWorkflow(WorkflowBase):
         user = user.strip()
         if (user_id := get_user_id(user)) is None:
             return InteractionResponse(
-                action=ReplyAction(content="You must mention a user correctly.")
+                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
 
         try:
             await self.__mute_manager.unmute_user(context.server_id, user_id)
         except UserNotFoundError:
             return InteractionResponse(
-                action=ReplyAction(content="The user you mentioned cannot be found.")
+                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
         except ForbiddenError:
             return InteractionResponse(
-                action=ReplyAction(content=(
-                    "I cannot remove the 'Muted' role.\n"
-                    "Have you given me role management permissions?\n"
-                    "Do they have a role ranking higher than mine?"
-                ))
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.unmute_user_workflow.cannot_unmute_user_error",
+                        { "user_id": user_id }
+                    ),
+                    suppress_user_mentions=True
+                )
             )
 
         with contextlib.suppress(ForbiddenError):
-            await self.__messaging.send_private_message(user_id, f"You have been unmuted in {context.server_name} by {context.author_name}. Make sure you behave next time.")
+            await self.__messaging.send_private_message(
+                user_id,
+                self.__i18n_provider.get(
+                    "extensions.moderation.unmute_user_workflow.user_unmuted_dm",
+                    {
+                        "user_name": context.author_name,
+                        "server_name": context.server_name
+                    }
+                )
+            )
 
         return UserUnmutedInteractionResponse(
             author_id=context.author_id,
             user_id=user_id,
-            action=ReplyAction(content=f"<@{user_id}> has been unmuted.")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.unmute_user_workflow.user_unmuted",
+                    { "user_id": user_id }
+                ),
+                suppress_user_mentions=True
+            )
         )
 
     @moderation_menu_item(
@@ -85,26 +105,39 @@ class UnmuteUserWorkflow(WorkflowBase):
         except UserNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(
-                    content="The specified user cannot be found."
+                    content=self.__i18n_provider.get("user_not_found_error")
                 )
             )
         except ForbiddenError:
             return InteractionResponse(
                 action=ReplyAction(
-                    content=(
-                    "I cannot remove the 'Muted' role.\n"
-                    "Have you given me role management permissions?\n"
-                    "Do they have a role ranking higher than mine?"
-                ))
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.unmute_user_workflow.cannot_unmute_user_error",
+                        { "user_id": context.target_user_id }
+                    )
+                )
             )
 
         with contextlib.suppress(ForbiddenError):
-            await self.__messaging.send_private_message(context.target_user_id, f"You have been unmuted in {context.server_name} by {context.author_name}. Make sure you behave next time.")
+            await self.__messaging.send_private_message(
+                context.target_user_id,
+                self.__i18n_provider.get(
+                    "extensions.moderation.unmute_user_workflow.user_unmuted_dm",
+                    {
+                        "user_name": context.author_name,
+                        "server_name": context.server_name
+                    }
+                )
+            )
 
         return UserUnmutedMenuItemResponse(
             author_id=context.author_id,
             user_id=context.target_user_id,
             action=ReplyAction(
-                content=f"<@{context.target_user_id}> has been unmuted."
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.unmute_user_workflow.user_unmuted",
+                    { "user_id": context.target_user_id }
+                ),
+                suppress_user_mentions=True
             )
         )

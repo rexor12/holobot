@@ -17,6 +17,7 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 
@@ -24,14 +25,16 @@ from holobot.sdk.logging import ILoggerFactory
 class MuteUserWorkflow(WorkflowBase):
     def __init__(
         self,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         messaging: IMessaging,
         mute_manager: IMuteManager
     ) -> None:
         super().__init__()
+        self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(MuteUserWorkflow)
-        self.__messaging: IMessaging = messaging
-        self.__mute_manager: IMuteManager = mute_manager
+        self.__messaging = messaging
+        self.__mute_manager = mute_manager
 
     @moderation_command(
         description="Mutes a user.",
@@ -56,7 +59,7 @@ class MuteUserWorkflow(WorkflowBase):
         mute_duration = parse_interval(duration.strip()) if duration is not None else None
         if (user_id := get_user_id(user)) is None:
             return InteractionResponse(
-                action=ReplyAction(content="You must mention a user correctly.")
+                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
 
         try:
@@ -64,34 +67,65 @@ class MuteUserWorkflow(WorkflowBase):
         except ArgumentOutOfRangeError as error:
             if error.argument_name == "reason":
                 return InteractionResponse(
-                    action=ReplyAction(content=f"The reason parameter's length must be between {error.lower_bound} and {error.upper_bound}.")
+                    action=ReplyAction(
+                        content=self.__i18n_provider.get(
+                            "extensions.moderation.reason_out_of_range_error",
+                            { "min": error.lower_bound, "max": error.upper_bound }
+                        )
+                    )
                 )
             return InteractionResponse(
-                action=ReplyAction(content=f"The duration parameter's value must be between {error.lower_bound} and {error.upper_bound}.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.duration_out_of_range_error",
+                        { "min": error.lower_bound, "max": error.upper_bound }
+                    )
+                )
             )
         except UserNotFoundError:
             return InteractionResponse(
-                action=ReplyAction(content="The user you mentioned cannot be found.")
+                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
         except ForbiddenError as error:
             self.__logger.error("Failed to mute user.", error)
             return InteractionResponse(
-                action=ReplyAction(content=(
-                    "I cannot assign/create a 'Muted' role.\n"
-                    "Have you given me role management permissions?\n"
-                    "Do they have a role ranking higher than mine?"
-                ))
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.mute_user_workflow.cannot_mute_user_error",
+                        { "user_id": user_id }
+                    ),
+                    suppress_user_mentions=True
+                )
             )
 
         with contextlib.suppress(ForbiddenError):
-            await self.__messaging.send_private_message(user_id, f"You have been muted in {context.server_name} by {context.author_name} with the reason '{reason}'. I'm sorry this happened to you.")
+            await self.__messaging.send_private_message(
+                user_id,
+                self.__i18n_provider.get(
+                    "extensions.moderation.mute_user_workflow.user_muted_dm",
+                    {
+                        "user_name": context.author_name,
+                        "server_name": context.server_name,
+                        "reason": reason
+                    }
+                )
+            )
 
         return UserMutedInteractionResponse(
             author_id=context.author_id,
             user_id=user_id,
             reason=reason,
             duration=mute_duration,
-            action=ReplyAction(content=f"<@{user_id}> has been muted. Reason: {reason}")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.mute_user_workflow.user_muted",
+                    {
+                        "user_id": user_id,
+                        "reason": reason
+                    }
+                ),
+                suppress_user_mentions=True
+            )
         )
 
     @moderation_menu_item(
@@ -109,26 +143,40 @@ class MuteUserWorkflow(WorkflowBase):
         except UserNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(
-                    content="The specified user cannot be found."
+                    content=self.__i18n_provider.get("user_not_found_error")
                 )
             )
         except ForbiddenError:
             return InteractionResponse(
                 action=ReplyAction(
-                    content=(
-                    "I cannot assign/create a 'Muted' role.\n"
-                    "Have you given me role management permissions?\n"
-                    "Do they have a role ranking higher than mine?"
-                ))
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.mute_user_workflow.cannot_mute_user_error",
+                        { "user_id": context.target_user_id }
+                    ),
+                    suppress_user_mentions=True
+                )
             )
 
         with contextlib.suppress(ForbiddenError):
-            await self.__messaging.send_private_message(context.target_user_id, f"You have been muted in {context.server_name} by {context.author_name}. I'm sorry this happened to you.")
+            await self.__messaging.send_private_message(
+                context.target_user_id,
+                self.__i18n_provider.get(
+                    "extensions.moderation.mute_user_workflow.user_muted_dm_no_reason",
+                    {
+                        "user_name": context.author_name,
+                        "server_name": context.server_name
+                    }
+                )
+            )
 
         return UserMutedMenuItemResponse(
             author_id=context.author_id,
             user_id=context.target_user_id,
             action=ReplyAction(
-                content=f"<@{context.target_user_id}> has been muted."
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.mute_user_workflow.user_muted_no_reason",
+                    { "user_id": context.target_user_id }
+                ),
+                suppress_user_mentions=True
             )
         )

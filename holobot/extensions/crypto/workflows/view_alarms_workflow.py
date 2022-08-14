@@ -34,8 +34,14 @@ class ViewAlarmsWorkflow(WorkflowBase):
         subgroup_name="alarm"
     )
     async def view_alarms(self, context: ServerChatInteractionContext) -> InteractionResponse:
+        content, components = await self.__create_page_content(
+            context.author_id,
+            0,
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(ReplyAction(
-            *await self.__create_page_content(context.author_id, 0, DEFAULT_PAGE_SIZE)
+            content=content,
+            components=components
         ))
 
     @component(
@@ -49,16 +55,18 @@ class ViewAlarmsWorkflow(WorkflowBase):
         context: InteractionContext,
         state: Any
     ) -> InteractionResponse:
+        content, components = await self.__create_page_content(
+            state.owner_id,
+            max(state.current_page, 0),
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    state.owner_id,
-                    max(state.current_page, 0),
-                    DEFAULT_PAGE_SIZE
-                )
+                content=content,
+                components=components
             )
             if isinstance(state, PagerState)
-            else EditMessageAction("An internal error occurred while processing the interaction.")
+            else EditMessageAction(content="An internal error occurred while processing the interaction.")
         )
 
     async def __create_page_content(

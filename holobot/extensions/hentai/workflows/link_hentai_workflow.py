@@ -5,6 +5,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import try_parse_int
 
@@ -15,8 +16,12 @@ ehentai_regex = re.compile(r"^(?:\d+)\/(?:[a-z0-9]{10})$")
 
 @injectable(IWorkflow)
 class LinkHentaiWorkflow(WorkflowBase):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider
+    ) -> None:
         super().__init__()
+        self.__i18n_provider = i18n_provider
 
     @command(
         description="Gives you a link to a title on a specific site.",
@@ -38,13 +43,17 @@ class LinkHentaiWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if not site or not code:
             return InteractionResponse(
-                action=ReplyAction(content="You must specify both the site and the identifier.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.hentai.link_hentai_workflow.missing_site_or_code_error"
+                ))
             )
         code = code.strip()
         if site == NHENTAI_SITE_ID:
             if (value := try_parse_int(code)) is None:
                 return InteractionResponse(
-                    action=ReplyAction(content="Invalid identifier. A valid identifier, for example, is _206981_.")
+                    action=ReplyAction(content=self.__i18n_provider.get(
+                        "extensions.hentai.link_hentai_workflow.nhentai_invalid_code_error"
+                    ))
                 )
             return InteractionResponse(
                 action=ReplyAction(content=f"https://nhentai.net/g/{value}")
@@ -53,9 +62,13 @@ class LinkHentaiWorkflow(WorkflowBase):
             return InteractionResponse(action=ReplyAction(
                 content=f"https://e-hentai.org/g/{code}"
                 if ehentai_regex.match(code)
-                else "Invalid identifier. A valid identifier, for example, is _1383239/0e7abac58a_ (case-sensitive)."
+                else self.__i18n_provider.get(
+                    "extensions.hentai.link_hentai_workflow.ehentai_invalid_code_error"
+                )
             ))
 
         return InteractionResponse(
-            action=ReplyAction(content="You've specified an invalid site.")
+            action=ReplyAction(content=self.__i18n_provider.get(
+                "extensions.hentai.link_hentai_workflow.invalid_site_error"
+            ))
         )

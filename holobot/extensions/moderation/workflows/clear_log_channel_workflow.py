@@ -6,13 +6,19 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
 class ClearLogChannelWorkflow(WorkflowBase):
-    def __init__(self, log_manager: ILogManager) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        log_manager: ILogManager
+    ) -> None:
         super().__init__()
-        self.__log_manager: ILogManager = log_manager
+        self.__i18n_provider = i18n_provider
+        self.__log_manager = log_manager
     
     @moderation_command(
         description="Disables the logging of moderation actions.",
@@ -28,5 +34,9 @@ class ClearLogChannelWorkflow(WorkflowBase):
         await self.__log_manager.set_log_channel(context.server_id, None)
         return LogChannelToggledResponse(
             author_id=context.author_id,
-            action=ReplyAction(content="Moderation actions won't be logged anymore.")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.clear_log_channel_workflow.logs_disabled"
+                )
+            )
         )

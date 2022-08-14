@@ -11,13 +11,19 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
 class SetAutoMuteWorkflow(WorkflowBase):
-    def __init__(self, warn_manager: IWarnManager) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        warn_manager: IWarnManager
+    ) -> None:
         super().__init__()
-        self.__warn_manager: IWarnManager = warn_manager
+        self.__i18n_provider = i18n_provider
+        self.__warn_manager = warn_manager
 
     @moderation_command(
         description="Enables automatic muting of people with warn strikes.",
@@ -42,10 +48,20 @@ class SetAutoMuteWorkflow(WorkflowBase):
         except ArgumentOutOfRangeError as error:
             if error.argument_name == "duration":
                 return InteractionResponse(
-                    action=ReplyAction(content=f"The duration must be between {error.lower_bound} and {error.upper_bound}.")
+                    action=ReplyAction(
+                        content=self.__i18n_provider.get(
+                            "extensions.moderation.duration_out_of_range_error",
+                            { "min": error.lower_bound, "max": error.upper_bound }
+                        )
+                    )
                 )
             return InteractionResponse(
-                action=ReplyAction(content=f"The warn count must be between {error.lower_bound} and {error.upper_bound}.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.warn_count_out_of_range_error",
+                        { "min": error.lower_bound, "max": error.upper_bound }
+                    )
+                )
             )
 
         return AutoMuteToggledResponse(
@@ -53,5 +69,10 @@ class SetAutoMuteWorkflow(WorkflowBase):
             is_enabled=True,
             warn_count=warn_count,
             duration=mute_duration,
-            action=ReplyAction(content="Auto mute has been configured.")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.set_auto_mute_workflow.automute_configured",
+                    { "warns": warn_count }
+                )
+            )
         )

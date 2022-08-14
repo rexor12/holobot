@@ -16,6 +16,7 @@ from holobot.discord.workflows import InteractionProcessorBase, IWorkflowRegistr
 from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.diagnostics import IExecutionContextFactory
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
@@ -25,12 +26,13 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         self,
         action_processor: IActionProcessor,
         event_listeners: Tuple[IListener[MenuItemProcessedEvent], ...],
+        i18n_provider: II18nProvider,
         log: ILoggerFactory,
         measurement_context_factory: IExecutionContextFactory,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
-        super().__init__(action_processor, log, measurement_context_factory, workflow_execution_rules)
+        super().__init__(action_processor, i18n_provider, log, measurement_context_factory, workflow_execution_rules)
         self.__event_listeners = sorted(event_listeners, key=lambda i: i.priority)
         self.__workflow_registry = workflow_registry
 

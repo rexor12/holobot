@@ -8,13 +8,19 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
 class SetAutoBanWorkflow(WorkflowBase):
-    def __init__(self, warn_manager: IWarnManager) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        warn_manager: IWarnManager
+    ) -> None:
         super().__init__()
-        self.__warn_manager: IWarnManager = warn_manager
+        self.__i18n_provider = i18n_provider
+        self.__warn_manager = warn_manager
 
     @moderation_command(
         description="Enables automatic banning of people with warn strikes.",
@@ -35,12 +41,22 @@ class SetAutoBanWorkflow(WorkflowBase):
             await self.__warn_manager.enable_auto_ban(context.server_id, warn_count)
         except ArgumentOutOfRangeError as error:
             return InteractionResponse(
-                action=ReplyAction(content=f"The warn count must be between {error.lower_bound} and {error.upper_bound}.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.warn_count_out_of_range_error",
+                        { "min": error.lower_bound, "max": error.upper_bound }
+                    )
+                )
             )
 
         return AutoBanToggledResponse(
             author_id=context.author_id,
             is_enabled=True,
             warn_count=warn_count,
-            action=ReplyAction(content="Auto ban has been configured.")
+            action=ReplyAction(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.set_auto_ban_workflow.autoban_configured",
+                    { "warns": warn_count }
+                )
+            )
         )

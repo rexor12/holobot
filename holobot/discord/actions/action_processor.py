@@ -61,7 +61,8 @@ class ActionProcessor(IActionProcessor):
                     content=content,
                     embed=embed or UNDEFINED,
                     components=components,
-                    flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE
+                    flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE,
+                    user_mentions=not action.suppress_user_mentions or UNDEFINED
                 )
                 return
 
@@ -69,7 +70,8 @@ class ActionProcessor(IActionProcessor):
                 await interaction.edit_initial_response(
                     content=content,
                     embed=embed,
-                    components=components
+                    components=components,
+                    user_mentions=not action.suppress_user_mentions or UNDEFINED
                 )
                 return
 
@@ -95,7 +97,8 @@ class ActionProcessor(IActionProcessor):
                     content=content,
                     embed=embed or UNDEFINED,
                     components=components,
-                    flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE
+                    flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE,
+                    user_mentions=not action.suppress_user_mentions or UNDEFINED
                 )
                 return
 
@@ -103,7 +106,8 @@ class ActionProcessor(IActionProcessor):
                 await interaction.edit_initial_response(
                     content=content,
                     embed=embed,
-                    components=components
+                    components=components,
+                    user_mentions=not action.suppress_user_mentions or UNDEFINED
                 )
                 return
 

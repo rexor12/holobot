@@ -9,7 +9,8 @@ from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.chrono import parse_interval
-from holobot.sdk.exceptions import ArgumentError
+from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 
@@ -17,12 +18,14 @@ from holobot.sdk.logging import ILoggerFactory
 class SetReminderWorkflow(WorkflowBase):
     def __init__(
         self,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         reminder_manager: ReminderManagerInterface
     ) -> None:
         super().__init__()
+        self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(SetReminderWorkflow)
-        self.__reminder_manager: ReminderManagerInterface = reminder_manager
+        self.__reminder_manager = reminder_manager
 
     @command(
         description="Sets a new reminder.",
@@ -56,23 +59,46 @@ class SetReminderWorkflow(WorkflowBase):
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)
             self.__logger.debug("Set new reminder", user_id=context.author_id, reminder_id=reminder.id)
             return InteractionResponse(
-                action=ReplyAction(content=f"I'll remind you at {reminder.next_trigger:%I:%M:%S %p, %m/%d/%Y} UTC.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.reminders.set_reminder_workflow.reminder_set",
+                        { "time": reminder.next_trigger }
+                    )
+                )
+            )
+        except ArgumentOutOfRangeError as error:
+            return InteractionResponse(
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.reminders.set_reminder_workflow.message_out_of_range_error",
+                        { "min": error.lower_bound, "max": error.upper_bound }
+                    )
+                )
             )
         except ArgumentError as error:
-            if error.argument_name == "message":
+            if error.argument_name == "occurrence":
                 return InteractionResponse(
-                    action=ReplyAction(content="Your message is either too short or too long. Please, see the help for more information.")
-                )
-            elif error.argument_name == "occurrence":
-                return InteractionResponse(
-                    action=ReplyAction(content="You have to specify either the frequency of the reminder or the date/time of the occurrence. Please, see the help for more information.")
+                    action=ReplyAction(
+                        content=self.__i18n_provider.get(
+                            "extensions.reminders.set_reminder_workflow.missing_time_error"
+                        )
+                    )
                 )
             else: raise
         except InvalidReminderConfigError as error:
             return InteractionResponse(
-                action=ReplyAction(content=f"The parameters '{error.param1}' and '{error.param2}' cannot be used together.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.reminders.set_reminder_workflow.invalid_params_error",
+                        { "param1": error.param1, "param2": error.param2 }
+                    )
+                )
             )
         except TooManyRemindersError:
             return InteractionResponse(
-                action=ReplyAction(content="You have reached the maximum number of reminders. Please, remove at least one to be able to add this new one.")
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.reminders.set_reminder_workflow.too_many_reminders_error"
+                    )
+                )
             )

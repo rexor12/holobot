@@ -1,5 +1,10 @@
+from typing import List, Mapping, Tuple
+
+import hikari
+
 from ..utils import get_guild_member
 from ..utils.permission_utils import PERMISSION_TO_MODELS
+from holobot.discord.bot import BotAccessor
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
@@ -7,9 +12,6 @@ from holobot.discord.sdk.servers.models import MemberData
 from holobot.discord.utils import get_guild_channel, get_guild
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
-from typing import List, Mapping, Tuple
-
-import hikari
 
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):
@@ -93,11 +95,14 @@ class MemberDataProvider(IMemberDataProvider):
 
     @staticmethod
     def __member_to_basic_data(user: hikari.Member) -> MemberData:
+        bot_user = BotAccessor.get_bot().get_me()
         return MemberData(
             user_id=str(user.id),
             avatar_url=user.avatar_url.url if user.avatar_url else None,
             name=user.username,
-            nick_name=user.nickname
+            nick_name=user.nickname,
+            is_self=bot_user.id == user.id if bot_user else False,
+            is_bot=user.is_bot
         )
 
     @staticmethod

@@ -9,6 +9,7 @@ from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import InvalidOperationError
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.exceptions import HttpStatusError
@@ -18,10 +19,12 @@ class SearchGoogleWorkflow(WorkflowBase):
     def __init__(
         self,
         google_client: IGoogleClient,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
-        self.__google_client: IGoogleClient = google_client
+        self.__google_client = google_client
+        self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(SearchGoogleWorkflow)
 
     @command(
@@ -44,28 +47,32 @@ class SearchGoogleWorkflow(WorkflowBase):
         search_type = SearchType.IMAGE if type == "image" else SearchType.TEXT
         try:
             results = await self.__google_client.search(search_type, query)
-            if len(results) == 0:
+            if len(results) == 0 or not results[0].link:
                 return InteractionResponse(
-                    action=ReplyAction(content="There are no good results for your query. Please, try something else in a bit.")
+                    action=ReplyAction(content=self.__i18n_provider.get(
+                        "extensions.google.search_google_workflow.no_results"
+                    ))
                 )
 
             link = results[0].link
-            return InteractionResponse(action=ReplyAction(
-                content=link or "An unexpected Google error has occurred. Please, try again later."
-            ))
+            return InteractionResponse(action=ReplyAction(content=link))
         except InvalidOperationError:
             return InteractionResponse(
-                action=ReplyAction(content="Google Search isn't configured. Please, contact your server administrator.")
+                action=ReplyAction(content=self.__i18n_provider.get("feature_disabled_error"))
             )
         except SearchQuotaExhaustedError:
             return InteractionResponse(
-                action=ReplyAction(content=(
-                    "The daily search quota has been used up for the bot."
-                    " Please, try again later or contact your server administrator."
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "feature_quota_exhausted_error"
                 ))
             )
         except HttpStatusError as error:
-            self.__logger.error("An error has occurred during a Google search HTTP request.", error)
+            self.__logger.error(
+                "An error has occurred during a Google search HTTP request.",
+                error
+            )
             return InteractionResponse(
-                action=ReplyAction(content="An unexpected Google error has occurred. Please, try again later.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.google.search_google_workflow.google_error"
+                ))
             )

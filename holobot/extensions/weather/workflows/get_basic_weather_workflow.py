@@ -8,14 +8,20 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 from holobot.sdk.exceptions import InvalidOperationError
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 
 @injectable(IWorkflow)
 class GetBasicWeatherWorkflow(WorkflowBase):
-    def __init__(self, weather_client: WeatherClientInterface) -> None:
+    def __init__(
+        self,
+        i18n_provider: II18nProvider,
+        weather_client: WeatherClientInterface
+    ) -> None:
         super().__init__()
-        self.__weather_client: WeatherClientInterface = weather_client
+        self.__i18n_provider = i18n_provider
+        self.__weather_client = weather_client
     
     @command(
         description="Displays the current temperature in a city.",
@@ -34,50 +40,86 @@ class GetBasicWeatherWorkflow(WorkflowBase):
             weather_data = await self.__weather_client.get_weather_data(city)
             if weather_data.temperature is None:
                 return InteractionResponse(
-                    action=ReplyAction(content="No information is available right now. Please, try again later.")
+                    action=ReplyAction(content=self.__i18n_provider.get(
+                        "extensions.weather.get_basic_weather_workflow.no_information_error"
+                    ))
                 )
             return InteractionResponse(
-                action=ReplyAction(content=GetBasicWeatherWorkflow.__create_embed(weather_data))
+                action=ReplyAction(content=self.__create_embed(weather_data))
             )
         except InvalidLocationError:
             return InteractionResponse(
-                action=ReplyAction(content="The location you requested cannot be found. Did you make a typo?")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.weather.get_basic_weather_workflow.invalid_location_error"
+                ))
             )
         except OpenWeatherError as error:
             return InteractionResponse(
-                action=ReplyAction(content=f"An OpenWeather internal error has occurred (code: {error.error_code}). Please, try again later or contact your server administrator.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.weather.get_basic_weather_workflow.openweather_error",
+                    { "code": error.error_code }
+                ))
             )
         except InvalidOperationError:
             return InteractionResponse(
-                action=ReplyAction(content="OpenWeather isn't configured. Please, contact your server administrator.")
+                action=ReplyAction(content=self.__i18n_provider.get("feature_disabled_error"))
             )
         except QueryQuotaExhaustedError:
             return InteractionResponse(
-                action=ReplyAction(content="The daily quota has been used up for the bot. Please, try again later or contact your server administrator.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "feature_quota_exhausted_error"
+                ))
             )
         except CircuitBrokenError:
             return InteractionResponse(
-                action=ReplyAction(content="I couldn't communicate with OpenWeather. Please, wait a few minutes and try again.")
+                action=ReplyAction(content=self.__i18n_provider.get("rate_limit_error"))
             )
     
-    @staticmethod
-    def __create_embed(weather_data: WeatherData) -> Embed:
+    def __create_embed(self, weather_data: WeatherData) -> Embed:
         embed = Embed(
-            title="Weather report",
-            description=f"Information about the current weather in {weather_data.name}.",
+            title=self.__i18n_provider.get(
+                "extensions.eather.get_basic_weather_workflow.embed_title"
+            ),
+            description=self.__i18n_provider.get(
+                "extensions.eather.get_basic_weather_workflow.embed_description",
+                { "location": weather_data.name }
+            ),
             footer=EmbedFooter(
-                text="Powered by OpenWeather",
+                text=self.__i18n_provider.get(
+                "extensions.eather.get_basic_weather_workflow.embed_footer"
+            ),
                 icon_url="https://openweathermap.org/themes/openweathermap/assets/img/mobile_app/android_icon.png")
         )
         embed.fields.append(EmbedField(
-            name="Temperature",
-            value=f"{weather_data.temperature:,.2f} °C"
+            name=self.__i18n_provider.get(
+                "extensions.eather.get_basic_weather_workflow.embed_field_temperature"
+            ),
+            value=self.__i18n_provider.get(
+                "extensions.eather.get_basic_weather_workflow.embed_field_temperature_value",
+                { "temperature": f"{weather_data.temperature:,.2f}" }
+            )
         ))
 
         if weather_data.pressure is not None:
-            embed.fields.append(EmbedField(name="Pressure", value=f"{weather_data.pressure} hPa"))
+            embed.fields.append(EmbedField(
+                name=self.__i18n_provider.get(
+                    "extensions.eather.get_basic_weather_workflow.embed_field_pressure"
+                ),
+                value=self.__i18n_provider.get(
+                    "extensions.eather.get_basic_weather_workflow.embed_field_pressure_value",
+                    { "pressure": str(weather_data.pressure) }
+                )
+            ))
         if weather_data.humidity is not None:
-            embed.fields.append(EmbedField(name="Humidity", value=f"{weather_data.humidity}%"))
+            embed.fields.append(EmbedField(
+                name=self.__i18n_provider.get(
+                    "extensions.eather.get_basic_weather_workflow.embed_field_humidity"
+                ),
+                value=self.__i18n_provider.get(
+                    "extensions.eather.get_basic_weather_workflow.embed_field_humidity_value",
+                    { "humidity": str(weather_data.humidity) }
+                )
+            ))
 
         if weather_data.condition.condition_image_url is not None:
             embed.thumbnail_url = weather_data.condition.condition_image_url

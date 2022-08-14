@@ -1,40 +1,32 @@
 from random import Random
-from typing import Tuple
 
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.lifecycle import IStartable
 
+@injectable(IStartable)
 @injectable(IWorkflow)
-class MagicEightBallWorkflow(WorkflowBase):
-    def __init__(self) -> None:
+class MagicEightBallWorkflow(WorkflowBase, IStartable):
+    def __init__(
+        self,
+        i18n_provider: II18nProvider
+    ) -> None:
         super().__init__()
-        self.__answers: Tuple[str, ...] = (
-            # Positive answers.
-            "Yes.",
-            "But of course!",
-            "Certainly.",
-            "Without a doubt.",
-            "Yes, definitely.",
-            "Most likely.",
-            "It seems to be the case.",
+        self.__i18n_provider = i18n_provider
+        self.__answers: tuple[str, ...] =  ()
 
-            # Negative answers.
-            "No.",
-            "Of course, not!",
-            "Quite unlikely.",
-            "Don't count on it.",
-            "I don't think so.",
-
-            # Neutral answers.
-            "Maybe.",
-            "You don't have to know that.",
-            "That's not your cup of tea.",
-            "Who knows..."
+    async def start(self):
+        self.__answers = self.__i18n_provider.get_list(
+            "extensions.general.magic_eight_ball_workflow.responses"
         )
+
+    async def stop(self):
+        pass
 
     @command(
         description="Answers your yes/no question.",

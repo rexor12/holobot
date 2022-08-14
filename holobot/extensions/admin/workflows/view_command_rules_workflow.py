@@ -1,4 +1,5 @@
-from .. import CommandRuleManagerInterface
+from typing import Any, List, Optional, Tuple, Union
+
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
@@ -9,9 +10,10 @@ from holobot.discord.sdk.workflows.interactables.components.models import PagerS
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.admin import CommandRuleManagerInterface
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from typing import Any, List, Optional, Tuple, Union
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -20,10 +22,12 @@ class ViewCommandRulesWorkflow(WorkflowBase):
     def __init__(
         self,
         command_manager: CommandRuleManagerInterface,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__(required_permissions=Permission.ADMINISTRATOR)
-        self.__command_manager: CommandRuleManagerInterface = command_manager
+        self.__command_manager = command_manager
+        self.__i18n_provider = i18n_provider
         self.__log = logger_factory.create(ViewCommandRulesWorkflow)
 
     @command(
@@ -44,18 +48,22 @@ class ViewCommandRulesWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if not group and subgroup:
             return InteractionResponse(
-                action=ReplyAction(content="You can specify a subgroup if and only if you specify a group, too.")
+                action=ReplyAction(content=self.__i18n_provider.get(
+                    "extensions.admin.view_command_rules_workflow.subgroup_requires_group_error"
+                ))
             )
 
-        return InteractionResponse(ReplyAction(
-            *await self.__create_page_content(
-                context.server_id,
-                context.author_id,
-                group,
-                subgroup,
-                0,
-                DEFAULT_PAGE_SIZE
-            )
+        content, components = await self.__create_page_content(
+            context.server_id,
+            context.author_id,
+            group,
+            subgroup,
+            0,
+            DEFAULT_PAGE_SIZE
+        )
+        return InteractionResponse(action=ReplyAction(
+            content=content,
+            components=components
         ))
 
     @component(
@@ -73,20 +81,24 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             not isinstance(context, ServerChatInteractionContext)
             or not isinstance(state, PagerState)
         ):
-            return InteractionResponse(EditMessageAction("An internal error occurred while processing the interaction."))
+            return InteractionResponse(EditMessageAction(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            ))
 
         group = state.custom_data.get("group")
         subgroup = state.custom_data.get("subgroup")
+        content, components = await self.__create_page_content(
+            context.server_id,
+            state.owner_id,
+            group,
+            subgroup if group else None,
+            max(state.current_page, 0),
+            DEFAULT_PAGE_SIZE
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    context.server_id,
-                    state.owner_id,
-                    group,
-                    subgroup if group else None,
-                    max(state.current_page, 0),
-                    DEFAULT_PAGE_SIZE
-                )
+                content=content,
+                components=components
             )
         )
 
@@ -102,14 +114,23 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         self.__log.trace("User requested command rule list page", user_id=user_id, page_index=page_index)
         result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
         if len(result.items) == 0:
-            return ("No command rules matching the query have been configured for the server.", [])
+            return (self.__i18n_provider.get(
+                "extensions.admin.view_command_rules_workflow.no_command_rules_configured"
+            ), [])
 
         content = Embed(
-            title="Command rules",
-            description="The list of command rules set on this server.",
+            title=self.__i18n_provider.get(
+                "extensions.admin.view_command_rules_workflow.embed_title"
+            ),
+            description=self.__i18n_provider.get(
+                "extensions.admin.view_command_rules_workflow.embed_description"
+            ),
             color=0xeb7d00,
             fields=[EmbedField(
-                name=f"Rule #{rule.id}",
+                name=self.__i18n_provider.get(
+                    "extensions.admin.view_command_rules_workflow.embed_name_field",
+                    { "rule_id": rule.id }
+                ),
                 value=rule.textify(),
                 is_inline=False
             ) for rule in result.items]

@@ -1,0 +1,283 @@
+{
+    "feature_disabled_error": "I'm sorry, but this feature is disabled. Please, try again later. (｡•́︿•̀｡)",
+    "feature_quota_exhausted_error": "I'm sorry, but I've exhausted my quota for this feature due to massive user interest. Please, try again later. (｡•́︿•̀｡)",
+    "rate_limit_error": "I'm sorry, but an error occurred when I tried to communicate with the server this feature relies on. Please, try again in a few minutes. (｡•́︿•̀｡)",
+    "missing_required_argument_error": "I'm sorry, but I cannot handle your request due to a missing argument: {argname}. Please, try again by specifying the argument. (｡•́︿•̀｡)",
+    "server_not_found_error": "I'm sorry, but I couldn't find the requested server. Please, double check for any typos. (｡•́︿•̀｡)",
+    "channel_not_found_error": "I'm sorry, but I couldn't find the requested channel. Please, double check for any typos. (｡•́︿•̀｡)",
+    "user_not_found_error": "I'm sorry, but I couldn't find the requested user. Please, double check for any typos. (｡•́︿•̀｡)",
+    "missing_dm_permission_error": "I'm sorry, but I don't have the permission to DM users. Please, kindly ask your server administrator to grant me the permission. Thank you! („• ᴗ •„)",
+
+    "interactions": {
+        "halted_interaction_error": "I'm sorry, but you're not allowed to use this command. (｡•́︿•̀｡)",
+        "invalid_interaction_data_error": "I'm sorry, but this interaction isn't valid anymore. If you tried to interact with an old message, it may have expired already. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)",
+        "invalid_interaction_error": "I'm sorry, but I couldn't execute your command, because it's invalid. (｡•́︿•̀｡)",
+        "server_only_interaction_error": "I'm sorry, but this interaction is available for servers only. (｡•́︿•̀｡)",
+        "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)"
+    },
+
+    "extensions": {
+        "admin": {
+            "help_workflow": {
+                "explanation": "Rules are logically separated by the following types:\n- **Global rules**: These rules apply to every command, regardless of group, sub-group or name.\n- **Group rules**: These rules apply to entire command groups, such as \"admin\".\n- **Sub-group rules**: These rules apply to a specific sub-group of a specific group, such as \"commands\".\n- **Command rules**: These rules apply to specific commands, such as \"help\".\nEach one of these groups may apply to all channels or a specific channel only.\n\nThe rule precedence is as follows: _global rules > group rules > sub-group rules > command rules_. Rules that apply to all channels are applied before those that apply to specific channels only.\n\nFor example, to allow the execution of commands in a single channel only, you would need two rules:\n1. :no_entry: Forbid the execution of all commands in every channel.\n2. :white_check_mark: Allow the execution of all commands in a specific channel."
+            },
+            "remove_all_command_rules_workflow": {
+                "all_rules_removed": "I've removed all of the rules specified for this server. („• ᴗ •„)",
+                "no_rules_removed": "I haven't removed any rules. You must confirm your intention correctly."
+            },
+            "remove_command_rule_workflow": {
+                "rule_removed": "The rule has been removed."
+            },
+            "set_command_rule_workflow": {
+                "invalid_command_error": "I'm sorry, but I cannot identify the command you specified, hence the rule couldn't be set. (｡•́︿•̀｡)",
+                "rule_set_successfully": "Your rule has been set: {rule_text}",
+                "server_only_command_error": "I'm sorry, but command rules can be defined in servers only. (｡•́︿•̀｡)"
+            },
+            "test_command_workflow": {
+                "command_can_execute": "The command _can be_ executed in <#{channel_id}>.",
+                "command_cannot_execute": "The command _cannot be_ executed in <#{channel_id}>.",
+                "invalid_command_error": "I'm sorry, but I cannot identify the command you specified. Please, double check for any typos. (｡•́︿•̀｡)"
+            },
+            "view_command_rules_workflow": {
+                "embed_title": "Command rules",
+                "embed_description": "The list of command rules set on this server.",
+                "embed_name_field": "Rule #{rule_id}",
+                "no_command_rules_configured": "No command rules matching the query have been configured for the server.",
+                "subgroup_requires_group_error": "You can specify a subgroup if and only if you specify a group, too."
+            }
+        },
+
+        "general": {
+            "magic_eight_ball_workflow": {
+                "responses": [
+                    "Yes.",
+                    "But of course!",
+                    "Certainly.",
+                    "Without a doubt.",
+                    "Yes, definitely.",
+                    "Most likely.",
+                    "It seems to be the case.",
+                    "No.",
+                    "Of course, not!",
+                    "Quite unlikely.",
+                    "Don't count on it.",
+                    "I don't think so.",
+                    "Maybe.",
+                    "You don't have to know that.",
+                    "That's not your cup of tea.",
+                    "Who knows..."
+                ]
+            },
+            "roll_number_workflow": {
+                "unusual_roll_result": "I rolled an unusually shaped die for you and got {value}. („• ᴗ •„)",
+                "usual_roll_result": "I rolled a {name} for you and got {value}. („• ᴗ •„)",
+                "die_1": "Möbius strip",
+                "die_4": "tetrahedron",
+                "die_6": "cube",
+                "die_8": "octahedron",
+                "die_10": "pentagonal trapezohedron",
+                "die_12": "dodecahedron",
+                "die_20": "icosahedron",
+                "die_24": "pseudo-deltoidal icositetrahedron",
+                "die_50": "icosikaipentagonal trapezohedron",
+                "die_120": "disdyakis triacontahedron"
+            },
+            "summon_user_workflow": {
+                "self_summon": "And thus, be summoned, <@{user_id}>! („• ᴗ •„)",
+                "dm_summon_with_message": "{user_name} requests your presence at <#{channel_id}>:\n> {message}",
+                "dm_summon": "{user_name} requests your presence at <#{channel}>.",
+                "successful_summon": "I'll be back in a moment with <@{user_id}>...",
+                "cannot_summon_bot_error": "I'm sorry, but I'd rather not disturb a fellow bot. (｡•́︿•̀｡)"
+            },
+            "view_bot_info_workflow": {
+                "embed_title": "Holo's information",
+                "embed_description": "Some information about the bot.",
+                "embed_footer": "Brought to you by rexor12",
+                "general_field": "General",
+                "general_value": "Version: _{version}_\nLatency: _{latency:,.2f} ms_\nServers: _{servers}_\nTime: _{server_time:%I:%M:%S %p, %m/%d/%Y %Z}_",
+                "project_home": "Project home",
+                "bug_reports": "Bug reports"
+            },
+            "view_emoji_workflow": {
+                "emoji_not_found_error": "I'm sorry, but I couldn't find the emoji you requested. Please, double check for any typos. (｡•́︿•̀｡)",
+                "invalid_emoji_error": "I'm sorry, but the emoji you requested isn't an image asset based one, so I can't embed it. (｡•́︿•̀｡)"
+            },
+            "view_user_avatar_workflow": {
+                "embed_footer": "Artwork by {artist}",
+                "embed_title": "{user}'s avatar"
+            }
+        },
+
+        "google": {
+            "search_google_workflow": {
+                "no_results": "I couldn't find any good results for you. Please, refine your keywords and try again. („• ᴗ •„)",
+                "google_error": "I'm sorry, but a Google internal error has occurred. Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)"
+            }
+        },
+
+        "hentai": {
+            "link_hentai_workflow": {
+                "missing_site_or_code_error": "You must specify both the site and the identifier.",
+                "nhentai_invalid_code_error": "I'm sorry, but you specified a code that isn't valid for NHentai. It should look similar to this: _166806_. Please, double check for any typos. (｡•́︿•̀｡)",
+                "ehentai_invalid_code_error": "I'm sorry, but you specified a code that isn't valid for E-Hentai. It should look similar to this: _945882/2d77566ffe_. Please, double check for any typos. (｡•́︿•̀｡)",
+                "invalid_site_error": "I'm sorry, but you specified a site I don't know how to use. Please, double check for any typos. (｡•́︿•̀｡)"
+            }
+        },
+
+        "moderation": {
+            "permissions": {
+                "0": "none",
+                "1": "mute users",
+                "2": "kick users",
+                "4": "ban users",
+                "8": "warn users"
+            },
+            "reason_out_of_range_error": "I'm sorry, but the reason's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
+            "warn_count_out_of_range_error": "I'm sorry, but the number of warn strikes must fall between {min} and {max}. Please, correct it and try again. (｡•́︿•̀｡)",
+            "duration_out_of_range_error": "I'm sorry, but the duration must fall between {min} and {max}. Please, correct it and try again. (｡•́︿•̀｡)",
+            "add_moderator_permission_workflow": {
+                "permission_assigned": "I've assigned <@{user_id}> the permission to {permission}."
+            },
+            "remove_moderator_permission_workflow": {
+                "permission_revoked": "I've revoked <@{user_id}>'s permission to {permission}."
+            },
+            "ban_user_workflow": {
+                "days_out_of_range_error": "I'm sorry, but the number of days must fall between {min} and {max}. Please, correct it and try again. (｡•́︿•̀｡)",
+                "cannot_ban_user_error": "I'm sorry, but I couldn't banish <@{user_id}>. Please, make sure I have the required permissions and they don't have a role ranking higher than mine. (｡•́︿•̀｡)",
+                "user_banned_dm": "{user_name} requested I banish you from {server_name}. I'm sorry to see you go. (｡•́︿•̀｡)\n> {reason}",
+                "user_banned_dm_no_reason": "{user_name} requested I banish you from {server_name}. I'm sorry to see you go. (｡•́︿•̀｡)",
+                "user_banned": "I've successfully banished <@{user_id}>.\n> {reason}",
+                "user_banned_no_reason": "I've successfully banished <@{user_id}>."
+            },
+            "clear_log_channel_workflow": {
+                "logs_disabled": "I won't publish logs about moderation command usage anymore."
+            },
+            "disable_auto_ban_workflow": {
+                "auto_ban_disabled": "I won't automatically banish users anymore."
+            },
+            "disable_auto_kick_workflow": {
+                "auto_kick_disabled": "I won't automatically kick users anymore."
+            },
+            "disable_auto_mute_workflow": {
+                "auto_mute_disabled": "I won't automatically mute users anymore."
+            },
+            "disable_warn_decay_workflow": {
+                "auto_warn_disabled": "I won't automatically remove warn strikes anymore."
+            },
+            "kick_user_workflow": {
+                "cannot_kick_user_error": "I'm sorry, but I couldn't kick <@{user_id}>. Please, make sure I have the required permissions and they don't have a role ranking higher than mine. (｡•́︿•̀｡)",
+                "user_kicked_dm": "{user_name} requested I kick you from {server_name}. I'm sorry to see you go. (｡•́︿•̀｡)\n> {reason}",
+                "user_kicked_dm_no_reason": "{user_name} requested I kick you from {server_name}. I'm sorry to see you go. (｡•́︿•̀｡)",
+                "user_kicked": "I've successfully kicked <@{user_id}>.\n> {reason}",
+                "user_kicked_no_reason": "I've successfully kicked <@{user_id}>."
+            },
+            "mute_user_workflow": {
+                "cannot_mute_user_error": "I'm sorry, but I couldn't mute <@{user_id}>. Please, make sure I have the required permissions and they don't have a role ranking higher than mine. (｡•́︿•̀｡)",
+                "user_muted_dm": "{user_name} requested I mute you in {server_name}. Please, behave yourself next time. (｡•́︿•̀｡)\n> {reason}",
+                "user_muted_dm_no_reason": "{user_name} requested I mute you in {server_name}. Please, behave yourself next time. (｡•́︿•̀｡)",
+                "user_muted": "I've successfully muted <@{user_id}>.\n> {reason}",
+                "user_muted_no_reason": "I've successfully muted <@{user_id}>."
+            },
+            "set_auto_ban_workflow": {
+                "autoban_configured": "I'll automatically banish users after {warns} warn strikes."
+            },
+            "set_auto_kick_workflow": {
+                "autokick_configured": "I'll automatically kick users after {warns} warn strikes."
+            },
+            "set_auto_mute_workflow": {
+                "automute_configured": "I'll automatically mute after {warns} warn strikes."
+            },
+            "set_log_channel_workflow": {
+                "modlog_configured": "I'll publish logs about moderation command usage in <#{channel_id}>. Please, make sure you assign me the necessary permissions so I can send messages there. („• ᴗ •„)"
+            },
+            "set_warn_decay_workflow": {
+                "decay_configured": "I'll automatically remove warn strikes that are older than {decay_time}."
+            },
+            "unmute_user_workflow": {
+                "cannot_unmute_user_error": "I'm sorry, but I couldn't unmute <@{user_id}>. Please, make sure I have the required permissions and they don't have a role ranking higher than mine. (｡•́︿•̀｡)",
+                "user_unmuted_dm": "{user_name} requested I unmute you in {server_name}. („• ᴗ •„)",
+                "user_unmuted": "I've successfully unmuted <@{user_id}>."
+            },
+            "view_warn_decay_workflow": {
+                "decay_disabled": "I don't invalidate warn strikes over time automatically.",
+                "decay_enabled": "I invalidate warn strikes after {time}."
+            },
+            "warn_user_workflow": {
+                "user_warned_dm": "{user_name} requested I warn you in {server_name}. Please, behave yourself next time. (｡•́︿•̀｡)\n> {reason}",
+                "user_warned_dm_no_reason": "{user_name} requested I warn you in {server_name}. Please, behave yourself next time. (｡•́︿•̀｡)",
+                "user_warned": "I've successfully warned <@{user_id}>.\n> {reason}",
+                "user_warned_no_reason": "I've successfully warned <@{user_id}>."
+            }
+        },
+
+        "reminders": {
+            "remove_reminder_workflow": {
+                "reminder_deleted": "I've deleted your reminder. Make sure you don't forget about it if it's important, though. („• ᴗ •„)",
+                "reminder_not_found_error": "I'm sorry, but I couldn't find this one among your reminders. Please, double check for any typos. (｡•́︿•̀｡)"
+            },
+            "set_reminder_workflow": {
+                "reminder_set": "I'll remind you at {time:%I:%M:%S %p, %m/%d/%Y} UTC.",
+                "message_out_of_range_error": "I'm sorry, but the message's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
+                "missing_time_error": "I'm sorry, but I need to know either the frequency of the reminder or the date and time at which I should remind you. Please, double check and try again. (｡•́︿•̀｡)",
+                "invalid_params_error": "I'm sorry, but the parameters {param1} and {param2} cannot be used together. Please, double check and try again. (｡•́︿•̀｡)",
+                "too_many_reminders_error": "I'm sorry, but you've reached the maximum number of reminders you can have. Please, remove at least one and try again. (｡•́︿•̀｡)"
+            },
+            "view_reminders_workflow": {
+                "no_reminders": "You don't have any reminders.",
+                "embed_title": "Reminders",
+                "embed_description": "Embeds of <@{user_id}>.",
+                "embed_footer": "Use the reminder's number for removal.",
+                "embed_field_name": "#{reminder_id}",
+                "embed_field_value": "> Message: {message}\n> Next trigger: {time:%I:%M:%S %p, %m/%d/%Y} UTC\n> Repeats: {repeats}"
+            }
+        },
+
+        "server": {
+            "view_server_icon_workflow": {
+                "unknown_server_error": "I'm sorry, but I cannot query the server's data. Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
+                "no_server_icon": "Your server doesn't have an icon. (｡•́︿•̀｡)",
+                "embed_title": "{name}'s icon"
+            }
+        },
+
+        "todo_lists": {
+            "add_todo_item_workflow": {
+                "item_added": "I've added the item to your to-do list. Make sure you don't forget to do it! („• ᴗ •„)",
+                "message_too_long_error": "I'm sorry, but I'm afraid your message is a bit too short or long. Please, make sure the length is between {lower_bound} and {upper_bound} characters. (｡•́︿•̀｡)",
+                "list_full_error": "I'm sorry, but your to-do list is full. I think it's about time to get a few things done. („• ᴗ •„)"
+            },
+            "remove_all_todo_items_workflow": {
+                "items_deleted": "I've removed all {count} of your to-do items. Make sure you don't slack, though. („• ᴗ •„)",
+                "no_todo_items_error": "There's nothing to remove. It's time to add a to-do item and then get to work. („• ᴗ •„)"
+            },
+            "remove_todo_item_workflow": {
+                "item_deleted": "I've removed the to-do item. Make sure you don't slack, though. („• ᴗ •„)",
+                "no_todo_item_error": "I'm sorry, but I couldn't find such a to-do item in your list. Please, double check for any typos. (｡•́︿•̀｡)"
+            },
+            "view_todo_items_workflow": {
+                "no_todo_items": "You don't have any to-do items.",
+                "embed_title": "To-do list",
+                "embed_description": "To-do items of <@{user_id}>.",
+                "embed_footer": "Use the to-do item's number for removal.",
+                "embed_field": "#{item_id}"
+            }
+        },
+
+        "weather": {
+            "get_basic_weather_workflow": {
+                "no_information_error": "I'm sorry, but OpenWeather couldn't provide any information right now. Please, try again a bit later. (｡•́︿•̀｡)",
+                "invalid_location_error": "I'm sorry, but I cannot find the location you requested. Please, double check for any typos or try a larger town nearby. (｡•́︿•̀｡)",
+                "openweather_error": "I'm sorry, but an OpenWeather internal error has occurred (code: {code}). Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
+                "embed_title": "Weather report",
+                "embed_description": "Information about the current weather in {location}.",
+                "embed_footer": "Powered by OpenWeather",
+                "embed_field_temperature": "Temperature",
+                "embed_field_temperature_value": "{temperature} °C",
+                "embed_field_pressure": "Pressure",
+                "embed_field_pressure_value": "{pressure} hPa",
+                "embed_field_humidity": "Humidity",
+                "embed_field_humidity_value": "{humidity}%"
+            }
+        }
+    }
+}

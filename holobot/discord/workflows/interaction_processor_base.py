@@ -15,6 +15,7 @@ from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.sdk.diagnostics import IExecutionContext, IExecutionContextFactory
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.logging import ILoggerFactory
 
 TInteractable = TypeVar("TInteractable", bound=Interactable, contravariant=True)
@@ -29,12 +30,14 @@ class InteractionProcessorBase(
     def __init__(
         self,
         action_processor: IActionProcessor,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         execution_context_factory: IExecutionContextFactory,
         workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...]
     ) -> None:
         super().__init__()
         self.__action_processor = action_processor
+        self.__i18n_provider = i18n_provider
         self.__log = logger_factory.create(type(self))
         self.__execution_context_factory = execution_context_factory
         self.__workflow_execution_rules = workflow_execution_rules
@@ -152,7 +155,7 @@ class InteractionProcessorBase(
 
         await self.__action_processor.process(
             interaction,
-            ReplyAction(content="I couldn't execute your command, because it's invalid."),
+            ReplyAction(content=self.__i18n_provider.get("interactions.invalid_interaction_error")),
             DeferType.NONE,
             True
         )
@@ -177,7 +180,7 @@ class InteractionProcessorBase(
         await self.__action_processor.process(
             interaction,
             ReplyAction(
-                content="You're not allowed to interact with that message."
+                content=self.__i18n_provider.get("interactions.unbound_interaction_user_error")
             ),
             DeferType.NONE,
             True
@@ -202,7 +205,7 @@ class InteractionProcessorBase(
                 await self.__action_processor.process(
                     interaction,
                     ReplyAction(
-                        content="You're not allowed to use this command."
+                        content=self.__i18n_provider.get("interactions.halted_interaction_error")
                     ),
                     DeferType.NONE,
                     True

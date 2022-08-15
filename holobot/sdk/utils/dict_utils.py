@@ -10,7 +10,7 @@ def get_or_add(
     value_factory: Callable[[TState], TValue],
     state: TState
 ) -> TValue:
-    existing_value = dictionary.get(key, None)
-    if not existing_value:
-        dictionary[key] = existing_value = value_factory(state)
-    return existing_value
+    if key in dictionary:
+        return dictionary[key]
+    dictionary[key] = value_factory(state)
+    return dictionary[key]

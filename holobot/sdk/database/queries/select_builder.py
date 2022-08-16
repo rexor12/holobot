@@ -1,5 +1,7 @@
 from typing import Any
 
+from .compiled_query import CompiledQuery
+from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .join_builder import JOIN_TYPE, JoinBuilder
 from .where_builder import WhereBuilder
@@ -59,7 +61,7 @@ class SelectBuilder(IQueryPartBuilder):
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         if len(self.__columns) == 0 and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
 

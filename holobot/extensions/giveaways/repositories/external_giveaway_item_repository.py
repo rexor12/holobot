@@ -2,13 +2,13 @@ from asyncpg.connection import Connection
 
 from holobot.extensions.giveaways.models import ExternalGiveawayItem
 from holobot.sdk.database import DatabaseManagerInterface
-from holobot.sdk.database.statuses import CommandComplete
-from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.statuses import CommandComplete
+from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
-from holobot.sdk.utils import set_time_zone, set_time_zone_nullable, UTC
+from holobot.sdk.utils import UTC, set_time_zone, set_time_zone_nullable
 from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
 
 _TABLE_NAME = "external_giveaway_items"
@@ -119,7 +119,6 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
                     .from_table(_TABLE_NAME)
                     .where()
                     .field("end_time", Equality.LESS, "(NOW() at time zone 'utc') - interval '7 days'", True)
-                    .returning()
                     .compile()
                     .execute(connection)
                 )

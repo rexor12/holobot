@@ -1,7 +1,7 @@
 import glob
 import os
 from json import load
-from typing import Any
+from typing import Any, Sequence
 
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable

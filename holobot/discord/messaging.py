@@ -1,9 +1,12 @@
-from hikari import ForbiddenError as HikariForbiddenError, TextableGuildChannel
+from hikari import (
+    UNDEFINED, ForbiddenError as HikariForbiddenError, GuildNewsChannel, TextableGuildChannel
+)
 
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, InvalidChannelError
 from holobot.discord.sdk.models.embed import Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout
+from holobot.discord.transformers.embed import to_dto as embed_to_dto
 from holobot.discord.utils import get_guild_channel
 from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
@@ -55,15 +58,15 @@ class Messaging(IMessaging):
             )
             raise ChannelNotFoundError(channel_id)
 
-        text_content = content if isinstance(content, str) else hikari.UNDEFINED
-        embed_content = embed_to_dto(content) if isinstance(content, Embed) else hikari.UNDEFINED
+        text_content = content if isinstance(content, str) else UNDEFINED
+        embed_content = embed_to_dto(content) if isinstance(content, Embed) else UNDEFINED
         try:
             message = await channel.send(
                 content=text_content,
                 embed=embed_content,
                 components=(
                     self.__component_transformer.transform_to_root_component(components)
-                    if components else hikari.UNDEFINED
+                    if components else UNDEFINED
                 )
             )
 

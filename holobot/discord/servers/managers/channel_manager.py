@@ -1,13 +1,14 @@
 from collections.abc import Iterable
 
 from hikari import (
-    ForbiddenError as HikariForbiddenError, PermissionOverwrite, PermissionOverwriteType,
-    Permissions, Snowflake
+    ChannelFollowerWebhook, ForbiddenError as HikariForbiddenError, GuildNewsChannel,
+    PermissionOverwrite, PermissionOverwriteType, Permissions, Snowflake
 )
 
+from holobot.discord.bot import BotAccessor
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import (
-    ChannelNotFoundError, ForbiddenError, PermissionError, RoleNotFoundError
+    ChannelNotFoundError, ForbiddenError, InvalidChannelError, PermissionError, RoleNotFoundError
 )
 from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.discord.sdk.servers.models import ServerChannel

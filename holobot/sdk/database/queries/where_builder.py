@@ -5,6 +5,7 @@ from .constraints import (
     ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 )
 from .enums import Connector, Equality
+from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
@@ -22,7 +23,7 @@ class WhereBuilder(IWhereBuilder):
         self,
         column_name: str,
         equality: Equality,
-        value: Optional[Any],
+        value: Any | None,
         is_raw_value: bool = False
     ) -> WhereConstraintBuilder:
         self.constraint = ColumnConstraintBuilder(column_name, equality, value, is_raw_value)

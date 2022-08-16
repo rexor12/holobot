@@ -1,7 +1,8 @@
 from collections.abc import Iterable
+from typing import Protocol
 
 from holobot.discord.sdk.enums import Permission
-from ..models import ServerChannel
+from holobot.discord.sdk.servers.models import ServerChannel
 
 class IChannelManager(Protocol):
     def get_channels(

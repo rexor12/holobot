@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, Sequence
+from typing import Any, Sequence
 
 from .execution_context_data import ExecutionContextData
 from .iexecution_context import IExecutionContext
@@ -7,8 +7,8 @@ from .stopwatch import Stopwatch
 
 class ExecutionContext(IExecutionContext):
     def __init__(self) -> None:
-        self.__events: Dict[str, ExecutionContextData] = {}
-        self.__stopwatches: Dict[str, Stopwatch] = {}
+        self.__events: dict[str, ExecutionContextData] = {}
+        self.__stopwatches: dict[str, Stopwatch] = {}
         self.__is_collected: bool = False
 
     def collect(self) -> Sequence[ExecutionContextData]:
@@ -21,7 +21,7 @@ class ExecutionContext(IExecutionContext):
     def start(
         self,
         event_name: str,
-        extra_info: Dict[str, Any] | None = None
+        extra_info: dict[str, Any] | None = None
     ) -> Stopwatch:
         if self.__is_collected:
             raise ValueError("New events cannot be tracked once collection has been done.")

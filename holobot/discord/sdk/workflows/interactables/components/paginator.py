@@ -1,17 +1,17 @@
 from dataclasses import dataclass, field
 from math import ceil
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .interactable_layout_base import InteractableLayoutBase
 
 @dataclass(kw_only=True)
 class Paginator(InteractableLayoutBase):
     current_page: int = 0
-    page_size: Optional[int] = None
-    total_count: Optional[int] = None
-    has_previous_page: Optional[bool] = None
-    has_next_page: Optional[bool] = None
-    custom_data: Dict[str, Any] = field(default_factory=dict)
+    page_size: int | None = None
+    total_count: int | None = None
+    has_previous_page: bool | None = None
+    has_next_page: bool | None = None
+    custom_data: dict[str, Any] = field(default_factory=dict)
 
     def is_first_page(self) -> bool:
         return self.current_page == 0

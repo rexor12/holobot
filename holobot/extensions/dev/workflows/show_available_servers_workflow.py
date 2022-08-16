@@ -1,4 +1,4 @@
-from typing import Any, List, Tuple, Union
+from typing import Any
 
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.data_providers import IBotDataProvider
@@ -108,7 +108,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         page_size: int,
         server_index: int,
         initiator_id: str
-    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         server_count, servers = self.__bot_data_provider.get_servers(page_index, page_size)
         if not servers:
             return ("The bot isn't part of any servers.", [])

@@ -1,4 +1,3 @@
-from typing import Optional
 
 import contextlib
 
@@ -55,7 +54,7 @@ class BanUserWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         user: str,
         reason: str,
-        days: Optional[int] = None
+        days: int | None = None
     ) -> InteractionResponse:
         user = user.strip()
         reason = reason.strip()

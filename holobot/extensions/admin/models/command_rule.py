@@ -1,13 +1,12 @@
 from ..enums import RuleState
 from datetime import datetime
-from typing import Dict, Optional
 
-rule_to_text_map: Dict[RuleState, str] = {
+rule_to_text_map: dict[RuleState, str] = {
     RuleState.ALLOW: "allowed",
     RuleState.FORBID: "forbidden"
 }
 
-rule_to_emoji_map: Dict[RuleState, str] = {
+rule_to_emoji_map: dict[RuleState, str] = {
     RuleState.ALLOW: ":white_check_mark:",
     RuleState.FORBID: ":no_entry:"
 }
@@ -27,19 +26,19 @@ class CommandRule:
     @property
     def id(self) -> int:
         return self.__id
-    
+
     @id.setter
     def id(self, value: int) -> None:
         self.__id = value
-    
+
     @property
     def created_at(self) -> datetime:
         return self.__created_at
-    
+
     @created_at.setter
     def created_at(self, value: datetime) -> None:
         self.__created_at = value
-    
+
     @property
     def created_by(self) -> str:
         return self.__created_by
@@ -47,58 +46,58 @@ class CommandRule:
     @created_by.setter
     def created_by(self, value: str) -> None:
         self.__created_by = value
-    
+
     @property
     def server_id(self) -> str:
         return self.__server_id
-    
+
     @server_id.setter
     def server_id(self, value: str) -> None:
         self.__server_id = value
-    
+
     @property
     def state(self) -> RuleState:
         return self.__state
-    
+
     @state.setter
     def state(self, value: RuleState) -> None:
         self.__state = value
-    
+
     @property
-    def group(self) -> Optional[str]:
+    def group(self) -> str | None:
         return self.__group
-    
+
     @group.setter
-    def group(self, value: Optional[str]) -> None:
+    def group(self, value: str | None) -> None:
         self.__group = value
-    
+
     @property
-    def subgroup(self) -> Optional[str]:
+    def subgroup(self) -> str | None:
         return self.__subgroup
-    
+
     @subgroup.setter
-    def subgroup(self, value: Optional[str]) -> None:
+    def subgroup(self, value: str | None) -> None:
         self.__subgroup = value
-    
+
     @property
-    def command(self) -> Optional[str]:
+    def command(self) -> str | None:
         return self.__command
-    
+
     @command.setter
-    def command(self, value: Optional[str]) -> None:
+    def command(self, value: str | None) -> None:
         self.__command = value
-    
+
     @property
-    def channel_id(self) -> Optional[str]:
+    def channel_id(self) -> str | None:
         return self.__channel_id
-    
+
     @channel_id.setter
-    def channel_id(self, value: Optional[str]) -> None:
+    def channel_id(self, value: str | None) -> None:
         self.__channel_id = value
 
     def __lt__(self, other: 'CommandRule') -> bool:
         return self.__get_weight() < other.__get_weight()
-    
+
     def textify(self) -> str:
         text_bits = [rule_to_emoji_map.get(self.state, None) or "", " "]
         if self.group is not None or self.command is not None:

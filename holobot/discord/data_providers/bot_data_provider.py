@@ -1,4 +1,4 @@
-from typing import List, Sequence, Tuple
+from typing import Sequence
 
 from holobot.discord.bot import BotAccessor
 from holobot.discord.sdk.data_providers import IBotDataProvider
@@ -21,7 +21,7 @@ class BotDataProvider(IBotDataProvider):
     def get_server_count(self) -> int:
         return len(BotAccessor.get_bot().cache.get_available_guilds_view())
 
-    def get_servers(self, page_index: int, page_size: int) -> Tuple[int, Sequence[Server]]:
+    def get_servers(self, page_index: int, page_size: int) -> tuple[int, Sequence[Server]]:
         guilds = sorted(BotAccessor.get_bot().cache.get_available_guilds_view().items(), key=lambda i: i[0])
         offset = page_index * page_size
         if offset >= len(guilds):
@@ -30,7 +30,7 @@ class BotDataProvider(IBotDataProvider):
         if not count:
             return (len(guilds), ())
 
-        page: List[Server] = []
+        page: list[Server] = []
         for guild_id, guild in guilds[offset:(offset + count)]:
             owner = guild.get_member(guild.owner_id)
             page.append(Server(

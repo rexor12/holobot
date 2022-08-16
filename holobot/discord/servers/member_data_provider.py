@@ -1,4 +1,4 @@
-from typing import List, Mapping, Tuple
+from typing import Mapping
 
 import hikari
 
@@ -27,7 +27,7 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(name, "name")
 
         guild = get_guild(server_id)
-        relevant_members: List[Tuple[hikari.Member, int]] = []
+        relevant_members: list[tuple[hikari.Member, int]] = []
         for member in guild.get_members().values():
             relevance = MemberDataProvider.__match_user_with_relevance(name, member)
             if relevance > 0:

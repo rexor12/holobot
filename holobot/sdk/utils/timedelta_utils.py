@@ -1,7 +1,6 @@
 from datetime import timedelta
-from typing import List, Optional
 
-def textify_timedelta(value: Optional[timedelta]) -> str:
+def textify_timedelta(value: timedelta | None) -> str:
     if value is None:
         return "never"
 
@@ -16,9 +15,9 @@ def textify_timedelta(value: Optional[timedelta]) -> str:
     __add_non_default(format_parts, seconds, "second(s)")
     return " ".join(format_parts)
 
-def __add_non_default(list: List[str], value: float, text: str) -> None:
+def __add_non_default(list: list[str], value: float, text: str) -> None:
     if value <= 0:
         return
-    
+
     list.append(str(int(value)))
     list.append(text)

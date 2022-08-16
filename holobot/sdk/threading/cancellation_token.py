@@ -1,5 +1,5 @@
 from .cancellation_token_registration import CancellationTokenRegistration
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 import asyncio
 
@@ -8,7 +8,7 @@ class CancellationToken:
 
     def __init__(self) -> None:
         self.__is_cancellation_requested: bool = False
-        self.__registrations: Dict[int, CancellationTokenRegistration] = {}
+        self.__registrations: dict[int, CancellationTokenRegistration] = {}
         self.__current_registration_id = 0
 
     @property

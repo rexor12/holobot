@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Protocol, Sequence
+from typing import Any, Protocol, Sequence
 
 from holobot.sdk.diagnostics import ExecutionContextData
 
@@ -24,7 +24,7 @@ class ILogger(Protocol):
     def error(
         self,
         message: str,
-        exception: Optional[Exception] = None,
+        exception: Exception | None = None,
         **kwargs: Any
     ) -> None:
         ...

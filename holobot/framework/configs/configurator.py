@@ -2,7 +2,6 @@ from holobot.sdk.configs import ConfiguratorInterface, TValue
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import IEnvironment
 from json import load
-from typing import Optional
 
 import os
 
@@ -29,7 +28,7 @@ class Configurator(ConfiguratorInterface):
             return load(config_file)
 
     @staticmethod
-    def __get_env(section_name: str, parameter_name: str, default_value: TValue) -> Optional[TValue]:
+    def __get_env(section_name: str, parameter_name: str, default_value: TValue) -> TValue | None:
         if (value := os.environ.get(f"{section_name}-{parameter_name}", None)) is None:
             return None
         # Because of this check, only the string/bool/int queries are supported, technically.

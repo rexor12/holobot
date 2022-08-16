@@ -1,8 +1,7 @@
 from hikari import PartialRole as HikariPartialRole, Role as HikariRole
 from holobot.discord.sdk.models import Role
-from typing import Union
 
-TRole = Union[HikariPartialRole, HikariRole]
+TRole = HikariPartialRole | HikariRole
 
 def to_model(dto: TRole) -> Role:
     return Role(

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Protocol
+from typing import Any, Protocol
 
 class II18nProvider(Protocol):
     """Interface for a service used to resolve internationalization keys."""
@@ -6,7 +6,7 @@ class II18nProvider(Protocol):
     def get(
         self,
         key: str,
-        arguments: Dict[str, Any] | None = None,
+        arguments: dict[str, Any] | None = None,
         language: str | None = None,
     ) -> str:
         """Gets the formatted text associated to the specified key.
@@ -18,7 +18,7 @@ class II18nProvider(Protocol):
         :param key: The I18N key used to identify the resource.
         :type key: str
         :param arguments: An optional key-value pair collection to resolve text templates, defaults to None
-        :type arguments: Dict[str, Any] | None, optional
+        :type arguments: dict[str, Any] | None, optional
         :param language: An optional language for which to get the translation, defaults to None
         :type language: str | None, optional
         :return: The formatted text or the key itself if there is no associated value.

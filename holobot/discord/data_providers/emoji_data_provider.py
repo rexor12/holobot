@@ -1,4 +1,4 @@
-from typing import Match, Optional, Union
+from typing import Match
 
 import re
 
@@ -15,14 +15,14 @@ EMOJI_REGEX = re.compile(r"<(?P<flags>[^:]*):(?P<name>[^:]*):(?P<id>\d+)>")
 
 @injectable(IEmojiDataProvider)
 class EmojiDataProvider(IEmojiDataProvider):
-    async def find_emoji(self, name_or_mention: str) -> Optional[Emoji]:
+    async def find_emoji(self, name_or_mention: str) -> Emoji | None:
         emoji = await self.__find_emoji(name_or_mention)
         if isinstance(emoji, Emoji):
             return emoji
 
         return to_model(emoji) if emoji else None
 
-    async def __find_emoji(self, name_or_mention: str) -> Union[HikariEmoji, Emoji, None]:
+    async def __find_emoji(self, name_or_mention: str) -> HikariEmoji | Emoji | None:
         if (match := EMOJI_REGEX.match(name_or_mention)) is not None:
             if emoji := BotAccessor.get_bot().cache.get_emoji(int(match["id"])):
                 return emoji

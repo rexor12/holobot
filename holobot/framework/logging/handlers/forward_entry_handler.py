@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 import logging
 
@@ -7,7 +7,7 @@ from holobot.sdk.logging import ILogger
 
 _DEFAULT_WRITER: Callable[[ILogger, str], None] = lambda i, m: i.trace(m)
 
-_LOG_WRITERS: Dict[int, Callable[[ILogger, str], None]] = {
+_LOG_WRITERS: dict[int, Callable[[ILogger, str], None]] = {
     logging.CRITICAL: lambda i, m: i.critical(m),
     logging.ERROR: lambda i, m: i.error(m),
     logging.WARNING: lambda i, m: i.warning(m),

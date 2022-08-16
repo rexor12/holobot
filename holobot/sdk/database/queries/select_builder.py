@@ -1,33 +1,33 @@
 from .join_builder import JoinBuilder, JOIN_TYPE
 from .iquery_part_builder import IQueryPartBuilder
 from .where_builder import WhereBuilder
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 class SelectBuilder(IQueryPartBuilder):
     def __init__(self) -> None:
         super().__init__()
-        self.__columns: List[str] = []
-        self.__table_name: Optional[str] = None
-        self.__table_alias: Optional[str] = None
+        self.__columns: list[str] = []
+        self.__table_name: str | None = None
+        self.__table_alias: str | None = None
         self.__is_count_select: bool = False
-    
+
     def column(self, column_name: str) -> 'SelectBuilder':
         if column_name in self.__columns:
             return self
-        
+
         self.__columns.append(column_name)
         return self
-    
+
     def columns(self, *column_names: str) -> 'SelectBuilder':
         for column_name in column_names:
             self.column(column_name)
         return self
-    
+
     def count(self) -> 'SelectBuilder':
         self.__is_count_select = True
         return self
-    
-    def from_table(self, table_name: str, alias: Optional[str] = None) -> 'SelectBuilder':
+
+    def from_table(self, table_name: str, alias: str | None = None) -> 'SelectBuilder':
         self.__table_name = table_name
         self.__table_alias = alias
         return self
@@ -37,7 +37,7 @@ class SelectBuilder(IQueryPartBuilder):
         table_name: str,
         left_column: str,
         right_column: str,
-        alias: Optional[str] = None,
+        alias: str | None = None,
         join_type: JOIN_TYPE = "LEFT"
     ) -> JoinBuilder:
         return JoinBuilder(
@@ -52,7 +52,7 @@ class SelectBuilder(IQueryPartBuilder):
     def where(self) -> WhereBuilder:
         return WhereBuilder(self)
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         if len(self.__columns) == 0 and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
 

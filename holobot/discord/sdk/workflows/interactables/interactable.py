@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Callable, Coroutine, Set
+from typing import Any, Callable, Coroutine
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums.permission import Permission
@@ -39,8 +39,8 @@ class Interactable:
     defer_type: DeferType = DeferType.NONE
     """Determines the type of deferral of the response."""
 
-    server_ids: Set[str] = field(default_factory=set)
+    server_ids: set[str] = field(default_factory=set)
     """A set of identifiers that specifies the servers the interactable is available in.
-    
+
     If the set is empty, the interactable will be available globally.
     """

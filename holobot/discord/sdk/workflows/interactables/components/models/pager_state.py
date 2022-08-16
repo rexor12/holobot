@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from .component_state_base import ComponentStateBase
 
@@ -8,5 +8,5 @@ class PagerState(ComponentStateBase):
     current_page: int
     """The index of the currently selected page."""
 
-    custom_data: Dict[str, Any]
+    custom_data: dict[str, Any]
     """Additional data used by extensions."""

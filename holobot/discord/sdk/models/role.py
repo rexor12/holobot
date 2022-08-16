@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
 
 @dataclass
 class Role:
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None

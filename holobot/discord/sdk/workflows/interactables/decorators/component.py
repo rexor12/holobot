@@ -1,4 +1,4 @@
-from typing import Any, Callable, Coroutine, Optional, Set, Type
+from typing import Any, Callable, Coroutine, Type
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
@@ -15,7 +15,7 @@ def component(
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
     defer_type: DeferType = DeferType.NONE,
-    server_ids: Optional[Set[str]] = None
+    server_ids: set[str] | None = None
 ):
     """A decorator that can be used to conveniently turn a function
     of a workflow into a component interaction.
@@ -33,7 +33,7 @@ def component(
     :param defer_type: The type of the deferral of the response, defaults to DeferType.NONE
     :type defer_type: DeferType, optional
     :param server_ids: The identifiers of the servers the command is available in, defaults to None
-    :type server_ids: Optional[Set[str]], optional
+    :type server_ids: set[str] | None, optional
     """
 
     def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):

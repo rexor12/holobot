@@ -8,7 +8,7 @@ from holobot.discord.utils import get_guild
 from holobot.discord.utils.permission_utils import PERMISSION_TO_DTOS
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
-from typing import Iterable, Tuple, Union
+from typing import Iterable
 
 @injectable(IChannelManager)
 class ChannelManager(IChannelManager):
@@ -18,7 +18,7 @@ class ChannelManager(IChannelManager):
         guild = get_guild(server_id)
         return [to_model(channel) for channel in guild.get_channels().values()]
 
-    async def set_role_permissions(self, server_id: str, channel_id: str, role_id: str, *permissions: Tuple[Permission, Union[bool, None]]) -> None:
+    async def set_role_permissions(self, server_id: str, channel_id: str, role_id: str, *permissions: tuple[Permission, bool | None]) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(role_id, "role_id")

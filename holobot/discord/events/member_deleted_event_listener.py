@@ -1,4 +1,4 @@
-from typing import Any, Tuple, Type
+from typing import Any, Type
 
 import hikari
 
@@ -15,7 +15,7 @@ _EVENT_TYPE = hikari.MemberDeleteEvent
 class MemberDeletedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
     def __init__(
         self,
-        listeners: Tuple[IListener[ServerMemberLeftEvent], ...]
+        listeners: tuple[IListener[ServerMemberLeftEvent], ...]
     ) -> None:
         super().__init__()
         self.__listeners = sorted(listeners, key=lambda i: i.priority)

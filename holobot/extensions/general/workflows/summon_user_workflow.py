@@ -1,4 +1,3 @@
-from typing import Optional
 
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import DoNothingAction, ReplyAction
@@ -44,8 +43,8 @@ class SummonUserWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         name: str,
-        message: Optional[str] = None,
-        channel: Optional[str] = None
+        message: str | None = None,
+        channel: str | None = None
     ) -> InteractionResponse:
         if not name:
             return InteractionResponse(ReplyAction(content=self.__i18n_provider.get(

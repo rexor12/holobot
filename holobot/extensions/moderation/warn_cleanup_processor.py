@@ -7,7 +7,7 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from typing import Awaitable, Optional
+from typing import Awaitable
 
 import asyncio
 
@@ -22,9 +22,9 @@ class WarnCleanupProcessor(IStartable):
         self.__warn_repository: IWarnRepository = warn_repository
         self.__cleanup_interval: timedelta = config_provider.get_warn_cleanup_interval()
         self.__cleanup_delay: timedelta = config_provider.get_warn_cleanup_delay()
-        self.__token_source: Optional[CancellationTokenSource] = None
-        self.__background_task: Optional[Task[None]] = None
-    
+        self.__token_source: CancellationTokenSource | None = None
+        self.__background_task: Task[None] | None = None
+
     async def start(self):
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
@@ -35,7 +35,7 @@ class WarnCleanupProcessor(IStartable):
             delay=self.__cleanup_delay.total_seconds() * 1000,
             interval=self.__cleanup_interval.total_seconds() * 1000
         )
-    
+
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()
         if self.__background_task:

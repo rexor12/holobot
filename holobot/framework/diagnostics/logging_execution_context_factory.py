@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from .execution_context_wrapper import ExecutionContextWrapper
 from holobot.sdk.diagnostics import (
@@ -21,7 +21,7 @@ class LoggingExecutionContextFactory(IExecutionContextFactory):
         self,
         message: str,
         event_name: str,
-        extra_info: Dict[str, Any] | None = None
+        extra_info: dict[str, Any] | None = None
     ) -> IExecutionContext:
         if extra_info is None:
             extra_info = {}

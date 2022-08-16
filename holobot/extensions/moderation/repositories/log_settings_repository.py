@@ -5,7 +5,6 @@ from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
-from typing import Optional
 
 TABLE_NAME = "moderation_log_settings"
 
@@ -15,7 +14,7 @@ class LogSettingsRepository(ILogSettingsRepository):
         super().__init__()
         self.__database_manager: DatabaseManagerInterface = database_manager
 
-    async def get_log_channel(self, server_id: str) -> Optional[str]:
+    async def get_log_channel(self, server_id: str) -> str | None:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:

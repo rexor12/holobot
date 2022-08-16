@@ -1,5 +1,5 @@
 from types import coroutine
-from typing import Generator, Tuple
+from typing import Generator
 
 import asyncio
 import ssl
@@ -22,11 +22,11 @@ class DatabaseManager(DatabaseManagerInterface, IStartable):
     def __init__(
         self,
         configurator: ConfiguratorInterface,
-        migrations: Tuple[MigrationInterface, ...],
+        migrations: tuple[MigrationInterface, ...],
         logger_factory: ILoggerFactory
     ) -> None:
         self.__configurator: ConfiguratorInterface = configurator
-        self.__migrations: Tuple[MigrationInterface, ...] = migrations
+        self.__migrations: tuple[MigrationInterface, ...] = migrations
         self.__logger = logger_factory.create(DatabaseManager)
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
 
@@ -47,7 +47,7 @@ class DatabaseManager(DatabaseManagerInterface, IStartable):
                     await self.__upgrade_table(connection, migration)
         self.__logger.info("Successfully upgraded the database")
 
-    async def downgrade_many(self, version_by_table: Tuple[str, int]):
+    async def downgrade_many(self, version_by_table: tuple[str, int]):
         self.__logger.info("Rolling back the database...")
         async with self.__connection_pool.acquire() as connection:
             connection: Connection
@@ -59,7 +59,7 @@ class DatabaseManager(DatabaseManagerInterface, IStartable):
 
     def acquire_connection(self) -> PoolAcquireContext:
         return self.__connection_pool.acquire()
-    
+
     async def __initialize_database(self) -> Pool:
         database_host = self.__configurator.get("Database", "Host", "127.0.0.1")
         database_port = self.__configurator.get("Database", "Port", 5432)
@@ -104,7 +104,7 @@ class DatabaseManager(DatabaseManagerInterface, IStartable):
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
         return ssl_context
-    
+
     async def __try_create_database(self, connection: Connection, name: str):
         if await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name) != 1:
             self.__logger.debug("Creating a new database", name=name)
@@ -126,10 +126,10 @@ class DatabaseManager(DatabaseManagerInterface, IStartable):
     async def __downgrade_table(self, connection: Connection, migration: MigrationInterface):
         # TODO Implement database rollbacks.
         raise NotImplementedError
-    
+
     async def __get_current_table_version(self, connection: Connection, table_name: str):
         return await connection.fetchval("SELECT version FROM table_info WHERE name = $1", table_name) or 0
-    
+
     async def __update_current_table_version(self, connection: Connection, table_name: str, version: int):
         await connection.execute((
             "INSERT INTO table_info (name, version)"

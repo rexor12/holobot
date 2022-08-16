@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Sequence
+from typing import Any, Sequence
 
 @dataclass(frozen=True)
 class PaginationResult:
@@ -14,5 +14,5 @@ class PaginationResult:
     total_count: int
     """The total number of records matching the query."""
 
-    records: Sequence[Dict[str, Any]] = field(default_factory=list)
+    records: Sequence[dict[str, Any]] = field(default_factory=list)
     """The records of the current page."""

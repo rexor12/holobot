@@ -1,4 +1,3 @@
-from typing import Optional
 
 from ..managers import ILogManager
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
@@ -45,7 +44,7 @@ class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
         )
 
     @staticmethod
-    def __create_event_message(event: MenuItemProcessedEvent) -> Optional[str]:
+    def __create_event_message(event: MenuItemProcessedEvent) -> str | None:
         response = event.response
         if isinstance(response, UserWarnedResponse):
             return f":warning: <@{response.author_id}> has warned <@{response.user_id}> via a context menu item."

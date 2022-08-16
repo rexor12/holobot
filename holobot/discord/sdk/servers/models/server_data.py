@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
 
 @dataclass
 class ServerData:
     server_id: str
-    icon_url: Optional[str]
+    icon_url: str | None
     name: str

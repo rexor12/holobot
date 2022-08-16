@@ -1,8 +1,8 @@
 from datetime import timedelta
-from typing import Optional, Protocol, Tuple
+from typing import Protocol
 
-from ..models import WarnStrike
 from holobot.sdk.queries import PaginationResult
+from ..models import WarnStrike
 
 class IWarnRepository(Protocol):
     async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
@@ -20,15 +20,15 @@ class IWarnRepository(Protocol):
     async def add_warn(
         self,
         warn_strike: WarnStrike,
-        decay_threshold: Optional[timedelta] = None
+        decay_threshold: timedelta | None = None
     ) -> int:
         ...
-    
+
     async def clear_warns_by_server(self, server_id: str) -> int:
         ...
-    
+
     async def clear_warns_by_user(self, server_id: str, user_id: str) -> int:
         ...
-    
+
     async def clear_expired_warns(self) -> int:
         ...

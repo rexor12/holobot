@@ -1,5 +1,4 @@
 from enum import IntEnum, unique
-from typing import Dict, Tuple
 
 DEFAULT_BREAK_CHARS = (" ",)
 UNBOUND_KEY = "__unbound"
@@ -11,16 +10,16 @@ class ParserState(IntEnum):
     PARSING_UNBOUND = 2
 
 class State:
-    def __init__(self, keys: Tuple[str, ...], break_chars: Tuple[str, ...] = DEFAULT_BREAK_CHARS) -> None:
-        self.args: Dict[str, str] = { UNBOUND_KEY: "" }
+    def __init__(self, keys: tuple[str, ...], break_chars: tuple[str, ...] = DEFAULT_BREAK_CHARS) -> None:
+        self.args: dict[str, str] = { UNBOUND_KEY: "" }
         for key in keys:
             self.args[key] = ""
         self.state: ParserState = ParserState.PARSING_KEY
         self.buffer: str = ""
-        self.break_chars: Tuple[str, ...] = break_chars
+        self.break_chars: tuple[str, ...] = break_chars
         self.key: str = ""
 
-def parse_arguments(keys: Tuple[str, ...], value: str, break_chars: Tuple[str, ...] = DEFAULT_BREAK_CHARS) -> Dict[str, str]:
+def parse_arguments(keys: tuple[str, ...], value: str, break_chars: tuple[str, ...] = DEFAULT_BREAK_CHARS) -> dict[str, str]:
     if UNBOUND_KEY in keys:
         raise ValueError("The reserved unbound key cannot be among the keys.")
     state: State = State(keys, break_chars)
@@ -32,13 +31,13 @@ def parse_arguments(keys: Tuple[str, ...], value: str, break_chars: Tuple[str, .
 def __flush(state: State) -> None:
     if len(state.buffer) == 0:
         return
-    
+
     # If it's a value, we just assign it to the associated key.
     if state.state == ParserState.PARSING_VALUE:
         state.args[state.key] = state.buffer
         state.key = state.buffer = ""
         return
-    
+
     # Otherwise, we'll assume it's the unbound string.
     state.args[UNBOUND_KEY] = state.buffer
     state.buffer = state.key = ""
@@ -58,14 +57,14 @@ def __on_char_parsing_key(state: State, char: str) -> None:
     if not char in state.break_chars:
         state.buffer += char
         return
-    
+
     # We have a key.
     if state.buffer in state.args.keys():
         state.key = state.buffer
         state.buffer = ""
         state.state = ParserState.PARSING_VALUE
         return
-    
+
     # Not a key, so we move on to the unbound string.
     state.buffer += char
     state.state = ParserState.PARSING_UNBOUND
@@ -75,7 +74,7 @@ def __on_char_parsing_value(state: State, char: str) -> None:
     if not char in state.break_chars:
         state.buffer += char
         return
-    
+
     # We have the value.
     state.args[state.key] = state.buffer
     state.buffer = state.key = ""

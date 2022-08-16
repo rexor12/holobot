@@ -1,17 +1,16 @@
-from .iconfig_provider import IConfigProvider
-from .managers import ILogManager, IMuteManager
-from .repositories import IMutesRepository
-from asyncio.tasks import Task
+import asyncio
+from collections.abc import Awaitable
 from datetime import timedelta
+
 from holobot.discord.sdk.exceptions import ForbiddenError, ServerNotFoundError, UserNotFoundError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from typing import Awaitable, Optional
-
-import asyncio
+from .iconfig_provider import IConfigProvider
+from .managers import ILogManager, IMuteManager
+from .repositories import IMutesRepository
 
 @injectable(IStartable)
 class MuteCleanupProcessor(IStartable):
@@ -28,9 +27,9 @@ class MuteCleanupProcessor(IStartable):
         self.__mutes_repository: IMutesRepository = mutes_repository
         self.__cleanup_interval: timedelta = config_provider.get_mute_cleanup_interval()
         self.__cleanup_delay: timedelta = config_provider.get_mute_cleanup_delay()
-        self.__token_source: Optional[CancellationTokenSource] = None
-        self.__background_task: Optional[Awaitable[None]] = None
-    
+        self.__token_source: CancellationTokenSource | None = None
+        self.__background_task: Awaitable[None] | None = None
+
     async def start(self):
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
@@ -41,7 +40,7 @@ class MuteCleanupProcessor(IStartable):
             delay=self.__cleanup_delay.total_seconds() * 1000,
             interval=self.__cleanup_interval.total_seconds() * 1000
         )
-    
+
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()
         if self.__background_task:
@@ -68,7 +67,7 @@ class MuteCleanupProcessor(IStartable):
             finally:
                 self.__logger.trace("Processed mutes", count=cleared_mute_count)
             await wait(interval, token)
-    
+
     async def __try_unmute_user(self, server_id: str, user_id: str) -> None:
         try:
             await self.__mute_manager.unmute_user(server_id, user_id, False)

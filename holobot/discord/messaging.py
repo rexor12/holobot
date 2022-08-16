@@ -1,11 +1,5 @@
-import hikari
+from hikari import ForbiddenError as HikariForbiddenError, TextableGuildChannel
 
-from hikari import (
-    ForbiddenError as HikariForbiddenError, GuildNewsChannel, TextableGuildChannel
-)
-
-from .bot import BotAccessor
-from .transformers.embed import to_dto as embed_to_dto
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, InvalidChannelError
 from holobot.discord.sdk.models.embed import Embed
@@ -15,6 +9,7 @@ from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
+from .bot import BotAccessor
 
 @injectable(IMessaging)
 class Messaging(IMessaging):

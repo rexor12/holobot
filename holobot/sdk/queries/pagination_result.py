@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Generic, Sequence, TypeVar
+from typing import Generic, TypeVar
 
 TItem = TypeVar("TItem")
 
@@ -18,4 +19,3 @@ class PaginationResult(Generic[TItem]):
 
     items: Sequence[TItem] = field(default_factory=list)
     """The items of the current page."""
-

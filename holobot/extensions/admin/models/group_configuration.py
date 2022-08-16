@@ -1,6 +1,7 @@
+from typing import Any
+
 from .command_configuration import CommandConfiguration
 from .subgroup_configuration import SubgroupConfiguration
-from typing import Any, Dict
 
 class GroupConfiguration:
     def __init__(self, name: str) -> None:
@@ -26,23 +27,23 @@ class GroupConfiguration:
         self.__can_disable = value
 
     @property
-    def subgroups(self) -> Dict[str, SubgroupConfiguration]:
+    def subgroups(self) -> dict[str, SubgroupConfiguration]:
         return self.__subgroups
 
     @subgroups.setter
-    def subgroups(self, value: Dict[str, SubgroupConfiguration]) -> None:
+    def subgroups(self, value: dict[str, SubgroupConfiguration]) -> None:
         self.__subgroups = value
 
     @property
-    def commands(self) -> Dict[str, CommandConfiguration]:
+    def commands(self) -> dict[str, CommandConfiguration]:
         return self.__commands
 
     @commands.setter
-    def commands(self, value: Dict[str, CommandConfiguration]) -> None:
+    def commands(self, value: dict[str, CommandConfiguration]) -> None:
         self.__commands = value
 
     @staticmethod
-    def from_json(name: str, json: Dict[str, Any]) -> 'GroupConfiguration':
+    def from_json(name: str, json: dict[str, Any]) -> 'GroupConfiguration':
         config = GroupConfiguration(name)
         config.can_disable = json.get("CanDisable", True)
         for key, value in json.get("Subgroups", {}).items():

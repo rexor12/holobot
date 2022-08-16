@@ -1,6 +1,3 @@
-from .interactables.decorators import moderation_command
-from .responses import LogChannelToggledResponse
-from ..managers import ILogManager
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import get_channel_id
@@ -9,6 +6,9 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from ..managers import ILogManager
+from .interactables.decorators import moderation_command
+from .responses import LogChannelToggledResponse
 
 @injectable(IWorkflow)
 class SetLogChannelWorkflow(WorkflowBase):

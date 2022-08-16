@@ -1,5 +1,4 @@
 from asyncpg.connection import Connection
-from typing import Optional
 
 class MigrationInterface:
     def __init__(self, table_name: str):
@@ -9,7 +8,7 @@ class MigrationInterface:
 
     # NOTE When upgrading tables, the target version may be omitted
     # in which case the latest version is favored.
-    async def upgrade(self, connection: Connection, current_version: int, target_version: Optional[int] = None) -> int:
+    async def upgrade(self, connection: Connection, current_version: int, target_version: int | None = None) -> int:
         raise NotImplementedError
 
     # NOTE When rolling back upgrades, the target version is always required.

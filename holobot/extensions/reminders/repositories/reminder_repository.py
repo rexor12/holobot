@@ -1,16 +1,15 @@
 from datetime import datetime
-from typing import Tuple, Optional
 
 from asyncpg.connection import Connection
 
-from .reminder_repository_interface import ReminderRepositoryInterface
-from ..enums import DayOfWeek
-from ..models import Reminder
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
+from ..enums import DayOfWeek
+from ..models import Reminder
+from .reminder_repository_interface import ReminderRepositoryInterface
 
 TABLE_NAME = "reminders"
 
@@ -23,12 +22,12 @@ class ReminderRepository(ReminderRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                result: Optional[int] = await Query.select().column("COUNT(*)").from_table(TABLE_NAME).where().field(
+                result: int | None = await Query.select().column("COUNT(*)").from_table(TABLE_NAME).where().field(
                     "user_id", Equality.EQUAL, user_id
                 ).compile().fetchval(connection)
                 return result or 0
 
-    async def get(self, id: int) -> Optional[Reminder]:
+    async def get(self, id: int) -> Reminder | None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -63,7 +62,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                     [ReminderRepository.__parse_reminder(record) for record in result.records]
                 )
 
-    async def get_triggerable(self) -> Tuple[Reminder, ...]:
+    async def get_triggerable(self) -> tuple[Reminder, ...]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():

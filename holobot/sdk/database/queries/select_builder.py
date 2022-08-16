@@ -1,17 +1,15 @@
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
-from .compiled_query import CompiledQuery
-from .exists_builder import ExistsBuilder
-from .join_builder import JoinBuilder, JOIN_TYPE
 from .iquery_part_builder import IQueryPartBuilder
+from .join_builder import JOIN_TYPE, JoinBuilder
 from .where_builder import WhereBuilder
 
 class SelectBuilder(IQueryPartBuilder):
     def __init__(self) -> None:
         super().__init__()
-        self.__columns: List[str] = []
-        self.__table_name: Optional[str] = None
-        self.__table_alias: Optional[str] = None
+        self.__columns: list[str] = []
+        self.__table_name: str | None = None
+        self.__table_alias: str | None = None
         self.__is_count_select: bool = False
 
     def column(self, column_name: str) -> 'SelectBuilder':
@@ -29,8 +27,8 @@ class SelectBuilder(IQueryPartBuilder):
     def count(self) -> 'SelectBuilder':
         self.__is_count_select = True
         return self
-    
-    def from_table(self, table_name: str, alias: Optional[str] = None) -> 'SelectBuilder':
+
+    def from_table(self, table_name: str, alias: str | None = None) -> 'SelectBuilder':
         self.__table_name = table_name
         self.__table_alias = alias
         return self
@@ -40,7 +38,7 @@ class SelectBuilder(IQueryPartBuilder):
         table_name: str,
         left_column: str,
         right_column: str,
-        alias: Optional[str] = None,
+        alias: str | None = None,
         join_type: JOIN_TYPE = "LEFT"
     ) -> JoinBuilder:
         return JoinBuilder(

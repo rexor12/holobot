@@ -1,13 +1,14 @@
-from .iwarn_settings_repository import IWarnSettingsRepository
-from ..models import WarnSettings
-from asyncpg.connection import Connection
 from datetime import timedelta
+
+from asyncpg.connection import Connection
+
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
-from typing import Optional
+from ..models import WarnSettings
+from .iwarn_settings_repository import IWarnSettingsRepository
 
 TABLE_NAME = "moderation_warn_settings"
 
@@ -17,7 +18,7 @@ class WarnSettingsRepository(IWarnSettingsRepository):
         super().__init__()
         self.__database_manager: DatabaseManagerInterface = database_manager
 
-    async def get_warn_decay_threshold(self, server_id: str) -> Optional[timedelta]:
+    async def get_warn_decay_threshold(self, server_id: str) -> timedelta | None:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:
@@ -72,7 +73,7 @@ class WarnSettingsRepository(IWarnSettingsRepository):
                     auto_ban_after=record["auto_ban_after"]
                 ) if record else WarnSettings()
 
-    async def set_auto_mute(self, server_id: str, warn_count: int, duration: Optional[timedelta]) -> None:
+    async def set_auto_mute(self, server_id: str, warn_count: int, duration: timedelta | None) -> None:
         assert_not_none(server_id, "server_id")
 
         async with self.__database_manager.acquire_connection() as connection:

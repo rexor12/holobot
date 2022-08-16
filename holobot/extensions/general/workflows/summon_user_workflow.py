@@ -1,18 +1,17 @@
-from typing import Optional
 
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import DoNothingAction, ReplyAction
-from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.enums import OptionType
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, ServerNotFoundError, UserNotFoundError
 )
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.utils.mention_utils import get_channel_id_or_default
+from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
+from holobot.discord.sdk.workflows.interactables.decorators import command
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
+from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -44,8 +43,8 @@ class SummonUserWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         name: str,
-        message: Optional[str] = None,
-        channel: Optional[str] = None
+        message: str | None = None,
+        channel: str | None = None
     ) -> InteractionResponse:
         if not name:
             return InteractionResponse(ReplyAction(content=self.__i18n_provider.get(

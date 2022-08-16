@@ -1,6 +1,3 @@
-from .interactables.decorators import moderation_command
-from .responses import AutoBanToggledResponse
-from ..managers import IWarnManager
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -10,6 +7,9 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from ..managers import IWarnManager
+from .interactables.decorators import moderation_command
+from .responses import AutoBanToggledResponse
 
 @injectable(IWorkflow)
 class SetAutoBanWorkflow(WorkflowBase):

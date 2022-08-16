@@ -1,15 +1,14 @@
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from .compiled_query import CompiledQuery
-from .exists_builder import ExistsBuilder
+from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
+from .enums import Connector, Equality
 from .iquery_part_builder import IQueryPartBuilder
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
 from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_builder import IWhereBuilder
-from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
-from .enums import Connector, Equality
 
 class WhereConstraintBuilder(IQueryPartBuilder):
     def __init__(self, where_builder: IWhereBuilder) -> None:
@@ -35,13 +34,13 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     
     def and_expression(self, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
         return self.__append_constraint(Connector.AND, constraint)
-    
+
     def or_expression(self, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
         return self.__append_constraint(Connector.OR, constraint)
-    
+
     def order_by(self) -> OrderByBuilder:
         return OrderByBuilder(self)
-    
+
     def limit(self) -> LimitBuilder:
         return LimitBuilder(self)
 
@@ -62,7 +61,7 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         return self.__where_builder.build()
     
     def __append_constraint(

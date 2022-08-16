@@ -1,4 +1,5 @@
-from typing import Callable, Generator, Iterable, Optional, TypeVar
+from collections.abc import Callable, Generator, Iterable
+from typing import TypeVar
 
 T = TypeVar("T")
 
@@ -14,7 +15,7 @@ def where(iterable: Iterable[T], predicate: Callable[[T], bool]) -> Generator[T,
 def has_any(iterable: Iterable[T], predicate: Callable[[T], bool]) -> bool:
     return first_or_default(iterable, predicate) is not None
 
-def first_or_default(iterable: Iterable[T], predicate: Optional[Callable[[T], bool]] = None, default_value: Optional[T] = None) -> Optional[T]:
+def first_or_default(iterable: Iterable[T], predicate: Callable[[T], bool] | None = None, default_value: T | None = None) -> T | None:
     if predicate is None:
         return next(iter(iterable), default_value)
     return next(where(iterable, predicate), default_value)

@@ -1,12 +1,6 @@
-from typing import Optional
 
 import contextlib
 
-from .interactables.decorators import moderation_command, moderation_menu_item
-from .responses import UserBannedResponse as UserBannedInteractionResponse
-from .responses.menu_item_responses import UserBannedResponse as UserBannedMenuItemResponse
-from .. import IConfigProvider
-from ..enums import ModeratorPermission
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
@@ -20,6 +14,11 @@ from holobot.discord.sdk.workflows.models import (
 )
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from .. import IConfigProvider
+from ..enums import ModeratorPermission
+from .interactables.decorators import moderation_command, moderation_menu_item
+from .responses import UserBannedResponse as UserBannedInteractionResponse
+from .responses.menu_item_responses import UserBannedResponse as UserBannedMenuItemResponse
 
 _MIN_DAYS = 0
 _MAX_DAYS = 7
@@ -55,7 +54,7 @@ class BanUserWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         user: str,
         reason: str,
-        days: Optional[int] = None
+        days: int | None = None
     ) -> InteractionResponse:
         user = user.strip()
         reason = reason.strip()

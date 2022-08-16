@@ -1,8 +1,5 @@
-from typing import Any, List, Tuple, Union
+from typing import Any
 
-from .interactables.decorators import moderation_command, moderation_component
-from ..enums import ModeratorPermission
-from ..managers import IWarnManager
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
@@ -15,6 +12,9 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from ..enums import ModeratorPermission
+from ..managers import IWarnManager
+from .interactables.decorators import moderation_command, moderation_component
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -104,7 +104,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__logger.trace(
             "User requested warn strike page",
             server_id=server_id,

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional, Tuple
 
 from .interactable import Interactable
 from .models import Option
@@ -14,16 +13,16 @@ class Command(Interactable):
     description: str
     """The user-friendly description of the command."""
 
-    group_name: Optional[str] = None
+    group_name: str | None = None
     """The name of the group the command belongs to, if any."""
 
-    subgroup_name: Optional[str] = None
+    subgroup_name: str | None = None
     """The name of the subgroup within the group, if any.
 
     Specifying this without specifying a group name will result in an error.
     """
 
-    options: Tuple[Option, ...] = field(default_factory=tuple)
+    options: tuple[Option, ...] = field(default_factory=tuple)
     """The list of arguments the command takes."""
 
     def __str__(self) -> str:

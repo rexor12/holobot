@@ -1,7 +1,5 @@
-from typing import Any, List, Tuple, Union
+from typing import Any
 
-from .. import AlertManagerInterface
-from ..enums import PriceDirection
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
@@ -13,6 +11,8 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from .. import AlertManagerInterface
+from ..enums import PriceDirection
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -74,12 +74,12 @@ class ViewAlarmsWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__log.trace("User requested crypto alarm page", user_id=user_id, page_index=page_index)
         result = await self.__alert_manager.get_many(user_id, page_index, page_size)
         if len(result.items) == 0:
             return ("The user has no crypto alarms.", [])
-        
+
         embed = Embed(
             title="Crypto alarms",
             description=f"Cryptocurrency alarms of <@{user_id}>."
@@ -99,5 +99,5 @@ class ViewAlarmsWorkflow(WorkflowBase):
             page_size=page_size,
             total_count=result.total_count
         )
-        
+
         return (embed, component)

@@ -1,15 +1,13 @@
-from collections.abc import Sequence
+import glob
+import os
 from json import load
 from typing import Any
 
-import glob
-import os
-
-from .types import I18nGroup
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.system import IEnvironment
+from .types import I18nGroup
 
 _ARGUMENTS_SENTINEL: dict[str, Any] = {}
 _DEFAULT_LANGUAGE = "default"

@@ -1,11 +1,11 @@
-from typing import Any, Callable, Dict, NamedTuple, Optional, Type
+from collections.abc import Callable
+from typing import Any, NamedTuple, Type
 
 import hikari
-import hikari.messages as hikari_messages
 import hikari.api.special_endpoints as endpointsintf
 import hikari.impl.special_endpoints as endpoints
+import hikari.messages as hikari_messages
 
-from .icomponent_transformer import IComponentTransformer
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComboBox, ComponentBase, Layout, Paginator, StackLayout
 )
@@ -16,10 +16,11 @@ from holobot.discord.sdk.workflows.interactables.components.models import (
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, assert_range, try_parse_int
+from .icomponent_transformer import IComponentTransformer
 
 PRIMARY_COMPONENT_STYLE_ID: int = 1
 
-COMPONENT_STYLE_MAP: Dict[ComponentStyle, hikari_messages.ButtonStyle] = {
+COMPONENT_STYLE_MAP: dict[ComponentStyle, hikari_messages.ButtonStyle] = {
     ComponentStyle.PRIMARY: hikari_messages.ButtonStyle.PRIMARY,
     ComponentStyle.SECONDARY: hikari_messages.ButtonStyle.SECONDARY,
     ComponentStyle.SUCCESS: hikari_messages.ButtonStyle.SUCCESS,
@@ -28,7 +29,7 @@ COMPONENT_STYLE_MAP: Dict[ComponentStyle, hikari_messages.ButtonStyle] = {
 }
 
 _TComponentBuilder = Callable[
-    [Any, Optional[endpointsintf.ComponentBuilder]],
+    [Any, endpointsintf.ComponentBuilder | None],
     endpointsintf.ComponentBuilder
 ]
 
@@ -40,13 +41,13 @@ class _ComponentData(NamedTuple):
 class ComponentTransformer(IComponentTransformer):
     def __init__(self) -> None:
         super().__init__()
-        self.__component_transformers: Dict[Type[ComponentBase], _TComponentBuilder] = {
+        self.__component_transformers: dict[Type[ComponentBase], _TComponentBuilder] = {
             StackLayout: self.__transform_stack_layout,
             Button: self.__transform_button,
             ComboBox: self.__transform_combo_box,
             Paginator: self.__transform_pager
         }
-        self.__state_transformers: Dict[Type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
+        self.__state_transformers: dict[Type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
             StackLayout: lambda i: EmptyState(owner_id=str(i.user.id)),
             Button: lambda i: EmptyState(owner_id=str(i.user.id)),
             ComboBox: self.__transform_combo_box_state,
@@ -101,7 +102,7 @@ class ComponentTransformer(IComponentTransformer):
     def __transform_component(
         self,
         component: ComponentBase,
-        container: Optional[endpointsintf.ComponentBuilder]
+        container: endpointsintf.ComponentBuilder | None
     ) -> endpointsintf.ComponentBuilder:
         assert_not_none(component, "component")
         assert_range(len(component.id), 1, 100, "component.id")
@@ -114,7 +115,7 @@ class ComponentTransformer(IComponentTransformer):
     def __transform_stack_layout(
         self,
         component: StackLayout,
-        container: Optional[endpointsintf.ComponentBuilder]
+        container: endpointsintf.ComponentBuilder | None
     ) -> endpointsintf.ComponentBuilder:
         if container:
             raise ArgumentError("A stack layout cannot be placed in a container layout.")
@@ -137,7 +138,7 @@ class ComponentTransformer(IComponentTransformer):
     def __transform_button(
         self,
         component: Button,
-        container: Optional[endpointsintf.ComponentBuilder]
+        container: endpointsintf.ComponentBuilder | None
     ) -> endpointsintf.ComponentBuilder:
         assert_not_none(container, "container")
         assert_range(len(component.text), 1, 80, "component.text")
@@ -161,7 +162,7 @@ class ComponentTransformer(IComponentTransformer):
     def __transform_combo_box(
         self,
         component: ComboBox,
-        container: Optional[endpointsintf.ComponentBuilder]
+        container: endpointsintf.ComponentBuilder | None
     ) -> endpointsintf.ComponentBuilder:
         assert_not_none(container, "container")
         assert_range(len(component.items), 1, 25, "component.items")
@@ -212,7 +213,7 @@ class ComponentTransformer(IComponentTransformer):
     def __transform_pager(
         self,
         component: Paginator,
-        container: Optional[endpointsintf.ComponentBuilder]
+        container: endpointsintf.ComponentBuilder | None
     ) -> endpointsintf.ComponentBuilder:
         assert_not_none(component, "component")
         if container:

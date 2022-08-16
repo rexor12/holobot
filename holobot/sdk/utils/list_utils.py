@@ -1,8 +1,8 @@
-from typing import List, TypeVar
+from typing import TypeVar
 
 T = TypeVar("T")
 
-def pad_left(list: List[T], value: T, length: int) -> List[T]:
+def pad_left(list: list[T], value: T, length: int) -> list[T]:
     if length < 0:
         raise ValueError("Length cannot be less than zero.")
     if length < len(list):

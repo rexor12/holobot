@@ -1,11 +1,10 @@
 from abc import ABCMeta, abstractmethod
+from collections.abc import Coroutine, Generator
 from types import coroutine
-from typing import Any, Coroutine, Dict, Generator, Generic, Tuple, TypeVar
+from typing import Any, Generic, TypeVar
 
 import hikari
 
-from .iinteraction_processor import IInteractionProcessor, TInteraction
-from .models import InteractionDescriptor
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
@@ -17,6 +16,8 @@ from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.sdk.diagnostics import IExecutionContext, IExecutionContextFactory
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.logging import ILoggerFactory
+from .iinteraction_processor import IInteractionProcessor, TInteraction
+from .models import InteractionDescriptor
 
 TInteractable = TypeVar("TInteractable", bound=Interactable, contravariant=True)
 
@@ -33,7 +34,7 @@ class InteractionProcessorBase(
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         execution_context_factory: IExecutionContextFactory,
-        workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...]
+        workflow_execution_rules: tuple[IWorkflowExecutionRule, ...]
     ) -> None:
         super().__init__()
         self.__action_processor = action_processor
@@ -60,7 +61,7 @@ class InteractionProcessorBase(
         self,
         interaction: TInteraction,
         execution_context: IExecutionContext,
-        execution_data: Dict[str, Any]
+        execution_data: dict[str, Any]
     ) -> None:
         descriptor = self._get_interactable_descriptor(interaction)
         execution_data["initiator_id"] = descriptor.initiator_id

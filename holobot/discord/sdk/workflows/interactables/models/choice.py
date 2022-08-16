@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Union
 
 @dataclass
 class Choice:
@@ -8,7 +7,7 @@ class Choice:
     name: str
     """The user-friendly name of the choice."""
 
-    value: Union[str, int, float]
+    value: str | int | float
     """The associated value that is provided by Discord
     when the user selects this choice.
     """

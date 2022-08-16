@@ -1,8 +1,9 @@
 from __future__ import annotations
-from .cancellation_token import CancellationToken
-from typing import Any, Generic, TypeVar
 
 import asyncio
+from typing import Any, Generic, TypeVar
+
+from .cancellation_token import CancellationToken
 
 TResult = TypeVar("TResult")
 

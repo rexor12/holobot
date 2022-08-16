@@ -1,5 +1,4 @@
 from .bot import Bot
-from typing import Optional
 
 class BotAccessor:
     # NOTE: This is a hack, because we have a circular dependency here.
@@ -8,7 +7,7 @@ class BotAccessor:
     # Therefore, as a hack, we're using this static field
     # to have a reference to our instance of Bot... at some point.
     # To avoid this, kanata needs to support lazy dependency injection.
-    _bot: Optional[Bot] = None
+    _bot: Bot | None = None
 
     def __init__(self) -> None:
         raise TypeError("Cannot initialize instances of this static type.")

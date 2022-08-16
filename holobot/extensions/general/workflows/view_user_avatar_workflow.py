@@ -1,4 +1,3 @@
-from typing import Optional
 
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.data_providers import IBotDataProvider
@@ -41,7 +40,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
     async def execute(
         self,
         context: ServerChatInteractionContext,
-        user: Optional[str] = None
+        user: str | None = None
     ) -> InteractionResponse:
         try:
             if user is None:
@@ -71,7 +70,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                 )
             )
         else: footer = None
-        
+
         return InteractionResponse(
             action=ReplyAction(content=Embed(
                 title=self.__i18n_provider.get(

@@ -1,13 +1,11 @@
-from typing import Union
 from hikari import (
-    CustomEmoji as HikariCustomEmoji,
-    Emoji as HikariEmoji,
-    KnownCustomEmoji as HikariKnownCustomEmoji,
-    UnicodeEmoji as HikariUnicodeEmoji
+    CustomEmoji as HikariCustomEmoji, Emoji as HikariEmoji,
+    KnownCustomEmoji as HikariKnownCustomEmoji, UnicodeEmoji as HikariUnicodeEmoji
 )
+
 from holobot.discord.sdk.models import Emoji
 
-TEmoji = Union[HikariCustomEmoji, HikariEmoji, HikariKnownCustomEmoji, HikariUnicodeEmoji]
+TEmoji = HikariCustomEmoji | HikariEmoji | HikariKnownCustomEmoji | HikariUnicodeEmoji
 
 def to_model(dto: TEmoji) -> Emoji:
     identifier = None

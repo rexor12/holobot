@@ -1,5 +1,5 @@
-from typing import Any, Tuple
+from typing import Any
 
 class IQueryPartBuilder:
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         raise NotImplementedError

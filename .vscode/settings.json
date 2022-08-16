@@ -1,14 +1,26 @@
 {
-    "python.formatting.provider": "black",
+    "editor.formatOnSave": false,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticMode": "workspace",
-    "python.linting.pylintEnabled": true,
     "python.linting.enabled": false,
     "python.linting.pylintArgs": [
         "--disable=missing-class-docstring,missing-function-docstring,missing-module-docstring,too-few-public-methods,wrong-import-order"
     ],
     "autoDocstring.docstringFormat": "sphinx",
     "autoDocstring.guessTypes": true,
-    "files.trimFinalNewlines": true,
-    "files.trimTrailingWhitespace": true
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "python.sortImports.args": [
+        "--project", "holobot",
+        "--line-length", "100",
+        "--lines-after-imports", "1",
+        "--multi-line", "5",
+        "--no-lines-before", "LOCALFOLDER",
+        "--combine-as",
+        "--use-parentheses"
+    ]
 }

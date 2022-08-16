@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
 
 # NOTE: The HTTP methods return the JSON responses.
 class HttpClientPoolInterface(metaclass=ABCMeta):
@@ -7,9 +7,9 @@ class HttpClientPoolInterface(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get(self, url: str, query_parameters: Optional[Dict[str, Any]] = None) -> Any:
+    async def get(self, url: str, query_parameters: dict[str, Any] | None = None) -> Any:
         ...
 
     @abstractmethod
-    async def post(self, url: str, json: Dict[str, Any]) -> Any:
+    async def post(self, url: str, json: dict[str, Any]) -> Any:
         ...

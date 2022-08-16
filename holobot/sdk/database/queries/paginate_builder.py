@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any
 
 from .compiled_pagination_query import CompiledPaginationQuery
 from .iquery_part_builder import IQueryPartBuilder
@@ -24,7 +24,7 @@ class PaginateBuilder(IQueryPartBuilder):
             self.__page_size
         )
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql = self.__parent_builder.build()
         arguments = [
             *parent_sql[1],

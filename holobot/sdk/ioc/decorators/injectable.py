@@ -1,9 +1,8 @@
-from kanata.decorators import (
-    injectable as kanata_injectable,
-    scope as kanata_scope
-)
+from collections.abc import Callable
+from typing import Any, Type, TypeVar
+
+from kanata.decorators import injectable as kanata_injectable, scope as kanata_scope
 from kanata.models import InjectableScopeType
-from typing import Any, Callable, Type, TypeVar
 
 T = TypeVar("T")
 

@@ -1,7 +1,3 @@
-from .interactables.decorators import moderation_command
-from .responses import ModeratorPermissionsChangedResponse
-from ..enums import ModeratorPermission
-from ..managers import IPermissionManager
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.utils import get_user_id
@@ -11,6 +7,10 @@ from holobot.discord.sdk.workflows.interactables.models import Choice, Interacti
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from ..enums import ModeratorPermission
+from ..managers import IPermissionManager
+from .interactables.decorators import moderation_command
+from .responses import ModeratorPermissionsChangedResponse
 
 @injectable(IWorkflow)
 class RemoveModeratorPermissionWorkflow(WorkflowBase):

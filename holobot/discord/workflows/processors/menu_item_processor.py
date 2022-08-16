@@ -1,35 +1,35 @@
-from typing import Tuple
 from uuid import uuid4
 
 from hikari import CommandInteraction, CommandType
 
-
-from .imenu_item_processor import IMenuItemProcessor
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.events import MenuItemProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import MenuItem
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.discord.sdk.workflows.models import ServerMessageInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    ServerMessageInteractionContext, ServerUserInteractionContext
+)
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.diagnostics import IExecutionContextFactory
 from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
+from .imenu_item_processor import IMenuItemProcessor
 
 @injectable(IMenuItemProcessor)
 class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], IMenuItemProcessor):
     def __init__(
         self,
         action_processor: IActionProcessor,
-        event_listeners: Tuple[IListener[MenuItemProcessedEvent], ...],
+        event_listeners: tuple[IListener[MenuItemProcessedEvent], ...],
         i18n_provider: II18nProvider,
         log: ILoggerFactory,
         measurement_context_factory: IExecutionContextFactory,
-        workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
+        workflow_execution_rules: tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, i18n_provider, log, measurement_context_factory, workflow_execution_rules)

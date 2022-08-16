@@ -1,9 +1,9 @@
-from ..exceptions import AggregateError
 from asyncio.tasks import Task
-from typing import List, Tuple
 
-async def when_all(tasks: Tuple[Task, ...]) -> None:
-    exceptions: List[Exception] = []
+from ..exceptions import AggregateError
+
+async def when_all(tasks: tuple[Task, ...]) -> None:
+    exceptions: list[Exception] = []
     for task in tasks:
         try:
             await task

@@ -1,11 +1,7 @@
 from decimal import Decimal
-from typing import List
 
 from asyncpg.connection import Connection
 
-from .alert_manager_interface import AlertManagerInterface
-from .enums import FrequencyType, PriceDirection
-from .models import Alert, SymbolUpdateEvent
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
@@ -14,6 +10,9 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.reactive import IListener
+from .alert_manager_interface import AlertManagerInterface
+from .enums import FrequencyType, PriceDirection
+from .models import Alert, SymbolUpdateEvent
 
 @injectable(AlertManagerInterface)
 @injectable(IListener[SymbolUpdateEvent])
@@ -27,7 +26,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
         self.__database_manager = database_manager
         self.__messaging = messaging
         self.__log = logger_factory.create(AlertManager)
-    
+
     async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
         frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):
         self.__log.debug("Adding alert...", user_id=user_id, symbol=symbol)
@@ -84,7 +83,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                     ]
                 )
 
-    async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
+    async def remove_many(self, user_id: str, symbol: str) -> list[Alert]:
         self.__log.debug("Deleting alerts...", user_id=user_id, symbol=symbol)
         deleted_alerts = []
         async with self.__database_manager.acquire_connection() as connection:
@@ -96,7 +95,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
         self.__log.debug("Deleted alerts", user_id=user_id, symbol=symbol, count=len(deleted_alerts))
         return deleted_alerts
 
-    async def remove_all(self, user_id: str) -> List[Alert]:
+    async def remove_all(self, user_id: str) -> list[Alert]:
         self.__log.debug("Deleting all alerts...", user_id=user_id)
         deleted_alerts = []
         async with self.__database_manager.acquire_connection() as connection:
@@ -140,7 +139,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                     ",".join(record_ids)
                 ))
                 self.__log.debug("Notified users", alert_count=len(record_ids), symbol=event.symbol)
-    
+
     async def __try_notify(self, user_id: str, event: SymbolUpdateEvent):
         try:
             await self.__messaging.send_private_message(user_id, f"{event.symbol} price is {event.price:,.8f}.")

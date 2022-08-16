@@ -1,15 +1,14 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
-from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
-from .models import Reminder, ReminderConfig
-from .reminder_manager_interface import ReminderManagerInterface
-from .repositories import ReminderRepositoryInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
+from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
+from .models import Reminder, ReminderConfig
+from .reminder_manager_interface import ReminderManagerInterface
+from .repositories import ReminderRepositoryInterface
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
@@ -25,7 +24,7 @@ class ReminderManager(ReminderManagerInterface):
         self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
         self.__message_length_min: int = configurator.get("Reminders", "MessageLengthMin", 10)
         self.__message_length_max: int = configurator.get("Reminders", "MessageLengthMax", 120)
-        
+
     async def set_reminder(self, user_id: str, config: ReminderConfig) -> Reminder:
         if not (self.__message_length_min <= len(config.message) <= self.__message_length_max):
             raise ArgumentOutOfRangeError(
@@ -52,7 +51,7 @@ class ReminderManager(ReminderManagerInterface):
 
         self.__logger.debug("Set new reminder", user_id=user_id, next_trigger=reminder.next_trigger, base_trigger=reminder.base_trigger, repeats=reminder.is_repeating)
         return reminder
-    
+
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:
         if user_id is None or len(user_id) == 0:
             raise ArgumentError("user_id", "The user identifier must not be empty.")
@@ -68,8 +67,8 @@ class ReminderManager(ReminderManagerInterface):
         count = await self.__reminder_repository.count(user_id)
         if count >= self.__reminders_per_user_max:
             raise TooManyRemindersError(count)
-    
-    async def __set_recurring_reminder(self, user_id: str, message: str, frequency_time: timedelta, at_time: Optional[timedelta]) -> Reminder:
+
+    async def __set_recurring_reminder(self, user_id: str, message: str, frequency_time: timedelta, at_time: timedelta | None) -> Reminder:
         reminder = Reminder()
         reminder.user_id = user_id
         reminder.message = message
@@ -88,7 +87,7 @@ class ReminderManager(ReminderManagerInterface):
         await self.__reminder_repository.store(reminder)
         return reminder
 
-    def __calculate_recurring_base_trigger(self, frequency_time: timedelta, at_time: Optional[timedelta]):
+    def __calculate_recurring_base_trigger(self, frequency_time: timedelta, at_time: timedelta | None):
         current_time = datetime.utcnow()
         if at_time is None:
             return current_time

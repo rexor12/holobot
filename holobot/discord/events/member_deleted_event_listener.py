@@ -1,13 +1,13 @@
-from typing import Any, Tuple, Type
+from typing import Any, Type
 
 import hikari
 
-from .discord_event_listener_base import DiscordEventListenerBase
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.events import ServerMemberLeftEvent
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 _EVENT_TYPE = hikari.MemberDeleteEvent
 
@@ -15,7 +15,7 @@ _EVENT_TYPE = hikari.MemberDeleteEvent
 class MemberDeletedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
     def __init__(
         self,
-        listeners: Tuple[IListener[ServerMemberLeftEvent], ...]
+        listeners: tuple[IListener[ServerMemberLeftEvent], ...]
     ) -> None:
         super().__init__()
         self.__listeners = sorted(listeners, key=lambda i: i.priority)

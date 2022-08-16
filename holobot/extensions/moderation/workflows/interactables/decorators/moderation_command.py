@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Coroutine, Optional, Tuple
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
@@ -10,10 +11,10 @@ from holobot.extensions.moderation.workflows.interactables import ModerationComm
 def moderation_command(
     *,
     description: str,
-    name: Optional[str] = None,
-    group_name: Optional[str] = None,
-    subgroup_name: Optional[str] = None,
-    options: Tuple[Option, ...] = (),
+    name: str | None = None,
+    group_name: str | None = None,
+    subgroup_name: str | None = None,
+    options: tuple[Option, ...] = (),
     is_bound: bool = False,
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
@@ -26,13 +27,13 @@ def moderation_command(
     :param description: The user-friendly description of the command.
     :type description: str
     :param name: The name of the command, defaults to None
-    :type name: Optional[str], optional
+    :type name: str | None, optional
     :param group_name: The optional name of the group the command belongs to, defaults to None
-    :type group_name: Optional[str], optional
+    :type group_name: str | None, optional
     :param subgroup_name: The optional nem fo the subgroup the command belongs to, defaults to None
-    :type subgroup_name: Optional[str], optional
+    :type subgroup_name: str | None, optional
     :param options: The list of command arguments, defaults to ()
-    :type options: Tuple[Option, ...], optional
+    :type options: tuple[Option, ...], optional
     :param is_bound: Whether only the invoking user can interact with the result, defaults to False
     :type is_bound: bool, optional
     :param is_ephemeral: Whether only the invoking user can see the result, defaults to False

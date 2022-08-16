@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional, Tuple
+from typing import Any, Literal
 
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
@@ -13,7 +13,7 @@ class JoinBuilder(IQueryPartBuilder):
         table_name: str,
         left_column: str,
         right_column: str,
-        alias: Optional[str] = None,
+        alias: str | None = None,
         join_type: JOIN_TYPE = "LEFT"
     ) -> None:
         super().__init__()
@@ -21,7 +21,7 @@ class JoinBuilder(IQueryPartBuilder):
         self.__table_name: str = table_name
         self.__left_column: str = left_column
         self.__right_column: str = right_column
-        self.__alias: Optional[str] = alias
+        self.__alias: str | None = alias
         self.__join_type: JOIN_TYPE = join_type
 
     def compile(self) -> CompiledQuery:
@@ -30,7 +30,7 @@ class JoinBuilder(IQueryPartBuilder):
     def where(self) -> WhereBuilder:
         return WhereBuilder(self)
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql = self.__parent_builder.build()
         base_index = len(parent_sql[1])
         sql = [parent_sql[0], f"{self.__join_type} JOIN {self.__table_name}"]

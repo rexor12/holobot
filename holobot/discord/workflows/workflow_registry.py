@@ -1,22 +1,24 @@
-from typing import Dict, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
 
 from hikari import CommandType
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
 
-from .iworkflow_registry import IWorkflowRegistry
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Command, Component, MenuItem
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
-from holobot.discord.workflows.builders import CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
+from holobot.discord.workflows.builders import (
+    CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
+)
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
+from .iworkflow_registry import IWorkflowRegistry
 
-TCommandGroup = Dict[str, Tuple[IWorkflow, Command]]
-TSubGroup = Dict[str, TCommandGroup]
-TGroup = Dict[str, TSubGroup]
+TCommandGroup = dict[str, tuple[IWorkflow, Command]]
+TSubGroup = dict[str, TCommandGroup]
+TGroup = dict[str, TSubGroup]
 
 @injectable(IWorkflowRegistry)
 class WorkflowRegistry(IWorkflowRegistry):
@@ -24,7 +26,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         self,
         debugger: DebuggerInterface,
         logger_factory: ILoggerFactory,
-        workflows: Tuple[IWorkflow, ...]
+        workflows: tuple[IWorkflow, ...]
     ) -> None:
         super().__init__()
         self.__log = logger_factory.create(WorkflowRegistry)
@@ -32,10 +34,10 @@ class WorkflowRegistry(IWorkflowRegistry):
 
     def get_command(
         self,
-        group_name: Optional[str],
-        subgroup_name: Optional[str],
+        group_name: str | None,
+        subgroup_name: str | None,
         name: str
-    ) -> Optional[Tuple[IWorkflow, Command]]:
+    ) -> tuple[IWorkflow, Command] | None:
         if (not (group := self.__commands.get(group_name or ""))
             or not (sub_group := group.get(subgroup_name or ""))
             or not (command := sub_group.get(name))):
@@ -45,19 +47,19 @@ class WorkflowRegistry(IWorkflowRegistry):
     def get_component(
         self,
         identifier: str
-    ) -> Optional[Tuple[IWorkflow, Component]]:
+    ) -> tuple[IWorkflow, Component] | None:
         return self.__components.get(identifier)
 
     def get_menu_item(
         self,
         name: str
-    ) -> Optional[Tuple[IWorkflow, MenuItem]]:
+    ) -> tuple[IWorkflow, MenuItem] | None:
         return self.__menu_items.get(name)
 
-    def get_command_builders(self, bot: Bot) -> Dict[str, Sequence[SlashCommandBuilder]]:
+    def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
         self.__log.info("Registering commands...")
-        builders_by_servers: Dict[str, Dict[str, CommandGroupBuilder | CommandBuilder]] = {}
-        subgroup_builders_by_servers: Dict[str, Dict[str, CommandSubGroupBuilder]] = {}
+        builders_by_servers: dict[str, dict[str, CommandGroupBuilder | CommandBuilder]] = {}
+        subgroup_builders_by_servers: dict[str, dict[str, CommandSubGroupBuilder]] = {}
         total_command_count = 0
         for group_name, group in self.__commands.items():
             for subgroup_name, subgroup in group.items():
@@ -98,7 +100,7 @@ class WorkflowRegistry(IWorkflowRegistry):
             for server_id, builders in builders_by_servers.items()
         }
 
-    def get_menu_item_builders(self, bot: Bot) -> Dict[str, Sequence[ContextMenuCommandBuilder]]:
+    def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
         self.__log.info("Registering user menu items...")
         builders = {}
         for menu_item in sorted(self.__menu_items.values(), key=lambda i: i[1].priority, reverse=True):
@@ -123,7 +125,7 @@ class WorkflowRegistry(IWorkflowRegistry):
 
     @staticmethod
     def __add_child_command(
-        sub_group_builder: Union[CommandGroupBuilder, CommandSubGroupBuilder],
+        sub_group_builder: CommandGroupBuilder | CommandSubGroupBuilder,
         command: Command,
         command_name: str
     ) -> None:
@@ -154,12 +156,12 @@ class WorkflowRegistry(IWorkflowRegistry):
 
     def __initialize_groups(
         self,
-        workflows: Tuple[IWorkflow, ...],
+        workflows: tuple[IWorkflow, ...],
         debugger: DebuggerInterface
     ) -> None:
         commands: TGroup = {}
-        components: Dict[str, Tuple[IWorkflow, Component]] = {}
-        menu_items: Dict[str, Tuple[IWorkflow, MenuItem]] = {}
+        components: dict[str, tuple[IWorkflow, Component]] = {}
+        menu_items: dict[str, tuple[IWorkflow, MenuItem]] = {}
         for workflow in workflows:
             for interactable in workflow.interactables:
                 if isinstance(interactable, Command):

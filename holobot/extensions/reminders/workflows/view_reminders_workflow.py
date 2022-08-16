@@ -1,4 +1,5 @@
-from .. import ReminderManagerInterface
+from typing import Any
+
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
@@ -11,7 +12,7 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from typing import Any, List, Tuple, Union
+from .. import ReminderManagerInterface
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -79,7 +80,7 @@ class ViewRemindersWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__reminder_manager.get_by_user(user_id, page_index, page_size)
         if len(result.items) == 0:

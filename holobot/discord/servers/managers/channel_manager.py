@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 from hikari import ForbiddenError as HikariForbiddenError, PermissionOverwrite, PermissionOverwriteType, Permissions, Snowflake
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, PermissionError, RoleNotFoundError
@@ -8,7 +10,6 @@ from holobot.discord.utils import get_guild
 from holobot.discord.utils.permission_utils import PERMISSION_TO_DTOS
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
-from typing import Iterable
 
 @injectable(IChannelManager)
 class ChannelManager(IChannelManager):

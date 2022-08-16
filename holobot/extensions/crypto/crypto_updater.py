@@ -1,10 +1,14 @@
-from .models import PriceData
-from .repositories import CryptoRepositoryInterface
-from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
 from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
+from collections.abc import Awaitable
 from datetime import datetime
 from decimal import Decimal
+import asyncio
+
+from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
+
+from .models import PriceData
+from .repositories import CryptoRepositoryInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
@@ -15,9 +19,7 @@ from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from typing import Awaitable
 
-import asyncio
 
 FAILURE_THRESHOLD: int = 1
 RECOVERY_TIMEOUT: int = 5 * 60

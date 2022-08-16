@@ -1,5 +1,3 @@
-from typing import Match
-
 import re
 
 from hikari import urls, Emoji as HikariEmoji
@@ -37,7 +35,7 @@ class EmojiDataProvider(IEmojiDataProvider):
         )
 
     @staticmethod
-    def __create_unknown_emoji(emoji_match: Match[str], mention: str) -> Emoji:
+    def __create_unknown_emoji(emoji_match: re.Match[str], mention: str) -> Emoji:
         is_animated = emoji_match["flags"] in ("a", "A")
         extension = "gif" if is_animated else "png"
         identifier = emoji_match["id"]

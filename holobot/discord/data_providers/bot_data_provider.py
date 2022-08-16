@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from holobot.discord.bot import BotAccessor
 from holobot.discord.sdk.data_providers import IBotDataProvider

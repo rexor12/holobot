@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from typing import Sequence, TypeVar
+from collections.abc import Sequence
+from typing import TypeVar
 
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
 

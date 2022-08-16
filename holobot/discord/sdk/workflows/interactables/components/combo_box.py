@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Sequence
 
 from .combo_box_item import ComboBoxItem
 from .interactable_component_base import InteractableComponentBase

@@ -1,9 +1,11 @@
 from __future__ import annotations
-from .child_command_builder import ChildCommandBuilder
-from hikari.api.special_endpoints import SlashCommandBuilder
-from typing import Callable
+from collections.abc import Callable
 
+from hikari.api.special_endpoints import SlashCommandBuilder
 import hikari
+
+from .child_command_builder import ChildCommandBuilder
+
 
 class CommandSubGroupBuilder:
     @property

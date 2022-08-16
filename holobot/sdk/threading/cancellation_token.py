@@ -1,7 +1,8 @@
-from .cancellation_token_registration import CancellationTokenRegistration
-from typing import Any, Callable
-
+from collections.abc import Callable
+from typing import Any
 import asyncio
+
+from .cancellation_token_registration import CancellationTokenRegistration
 
 class CancellationToken:
     """A token used for signaling cancellation requests to asynchronous operations."""

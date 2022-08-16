@@ -1,15 +1,14 @@
-from .iconfig_provider import IConfigProvider
-from .repositories import IWarnRepository
 from asyncio.tasks import Task
 from datetime import timedelta
+import asyncio
+
+from .iconfig_provider import IConfigProvider
+from .repositories import IWarnRepository
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from typing import Awaitable
-
-import asyncio
 
 @injectable(IStartable)
 class WarnCleanupProcessor(IStartable):

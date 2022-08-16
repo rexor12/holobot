@@ -1,4 +1,5 @@
-from typing import Any, Callable, NamedTuple, Type
+from collections.abc import Callable
+from typing import Any, NamedTuple, Type
 
 import hikari
 import hikari.messages as hikari_messages

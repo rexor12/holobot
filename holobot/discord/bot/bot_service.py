@@ -1,5 +1,6 @@
 from asyncio.tasks import Task
-from typing import Sequence, Type
+from collections.abc import Sequence
+from typing import Type
 
 import asyncio
 import hikari

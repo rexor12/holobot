@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from types import coroutine
-from typing import Any, Coroutine, Generator, Generic, TypeVar
+from collections.abc import Coroutine, Generator
+from typing import Any, Generic, TypeVar
 
 import hikari
 

@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from hikari import CommandType
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder

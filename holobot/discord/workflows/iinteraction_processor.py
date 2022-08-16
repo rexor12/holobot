@@ -1,4 +1,5 @@
-from typing import Any, Coroutine, Generic, Protocol, TypeVar
+from collections.abc import Coroutine
+from typing import Any, Generic, Protocol, TypeVar
 
 from hikari import MessageResponseMixin
 

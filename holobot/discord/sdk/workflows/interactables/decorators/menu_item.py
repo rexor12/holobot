@@ -1,4 +1,5 @@
-from typing import Any, Callable, Coroutine
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from ..enums import MenuType
 from holobot.discord.sdk.actions.enums import DeferType

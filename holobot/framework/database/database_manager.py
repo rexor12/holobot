@@ -1,5 +1,5 @@
+from collections.abc import Generator
 from types import coroutine
-from typing import Generator
 
 import asyncio
 import ssl

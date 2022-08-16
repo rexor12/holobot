@@ -1,3 +1,6 @@
+from collections.abc import Callable, Coroutine
+from typing import Any
+
 from ..managers import IMuteManager
 from ..models import WarnSettings
 from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSettingsRepository
@@ -10,7 +13,6 @@ from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
-from typing import Any, Callable, Coroutine
 
 # TODO Implement sequence registration in IoC to ensure that punish is executed after log.
 # Eg. container.register_sequence(LogListener, PunishListener)

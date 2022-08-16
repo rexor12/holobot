@@ -1,8 +1,10 @@
 {
-    "python.formatting.provider": "black",
+    "editor.formatOnSave": false,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticMode": "workspace",
-    "python.linting.pylintEnabled": true,
     "python.linting.enabled": false,
     "python.linting.pylintArgs": [
         "--disable=missing-class-docstring,missing-function-docstring,missing-module-docstring,too-few-public-methods,wrong-import-order"

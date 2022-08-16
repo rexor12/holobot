@@ -1,6 +1,3 @@
-from .interactables.decorators import moderation_command
-from .responses import WarnDecayToggledResponse
-from ..managers import IWarnManager
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -11,6 +8,9 @@ from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import textify_timedelta
+from ..managers import IWarnManager
+from .interactables.decorators import moderation_command
+from .responses import WarnDecayToggledResponse
 
 @injectable(IWorkflow)
 class SetWarnDecayWorkflow(WorkflowBase):

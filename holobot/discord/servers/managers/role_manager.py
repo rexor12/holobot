@@ -1,6 +1,9 @@
 from hikari import ForbiddenError as HikariForbiddenError, Guild
+
 from holobot.discord.bot import BotAccessor
-from holobot.discord.sdk.exceptions import ForbiddenError, RoleAlreadyExistsError, ServerNotFoundError
+from holobot.discord.sdk.exceptions import (
+    ForbiddenError, RoleAlreadyExistsError, ServerNotFoundError
+)
 from holobot.discord.sdk.models import Role
 from holobot.discord.sdk.servers.managers import IRoleManager
 from holobot.discord.transformers.role import to_model

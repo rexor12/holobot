@@ -1,7 +1,3 @@
-from .igoogle_client import IGoogleClient
-from .enums import SearchType
-from .exceptions import SearchQuotaExhaustedError
-from .models import SearchResult
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
@@ -10,6 +6,10 @@ from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from .enums import SearchType
+from .exceptions import SearchQuotaExhaustedError
+from .igoogle_client import IGoogleClient
+from .models import SearchResult
 
 CONFIG_SECTION = "Google"
 GCS_API_KEY = "GoogleSearchApiKey"

@@ -1,12 +1,13 @@
-from .ipermission_repository import IPermissionRepository
-from ..enums import ModeratorPermission
 from asyncpg.connection import Connection
+
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
+from ..enums import ModeratorPermission
+from .ipermission_repository import IPermissionRepository
 
 TABLE_NAME = "moderation_users"
 

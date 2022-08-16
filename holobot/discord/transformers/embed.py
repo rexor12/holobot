@@ -1,4 +1,5 @@
 from hikari import Embed as HikariEmbed
+
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 
 def to_model(dto: HikariEmbed) -> Embed:

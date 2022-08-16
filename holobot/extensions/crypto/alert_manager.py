@@ -2,9 +2,6 @@ from decimal import Decimal
 
 from asyncpg.connection import Connection
 
-from .alert_manager_interface import AlertManagerInterface
-from .enums import FrequencyType, PriceDirection
-from .models import Alert, SymbolUpdateEvent
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
@@ -13,6 +10,9 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.reactive import IListener
+from .alert_manager_interface import AlertManagerInterface
+from .enums import FrequencyType, PriceDirection
+from .models import Alert, SymbolUpdateEvent
 
 @injectable(AlertManagerInterface)
 @injectable(IListener[SymbolUpdateEvent])

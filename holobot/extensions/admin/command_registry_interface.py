@@ -1,5 +1,6 @@
-from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 from abc import ABCMeta, abstractmethod
+
+from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 
 class CommandRegistryInterface(metaclass=ABCMeta):
     @abstractmethod

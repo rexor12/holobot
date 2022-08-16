@@ -1,4 +1,3 @@
-from .. import CommandRuleManagerInterface
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -8,6 +7,7 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from .. import CommandRuleManagerInterface
 
 @injectable(IWorkflow)
 class RemoveCommandRuleWorkflow(WorkflowBase):

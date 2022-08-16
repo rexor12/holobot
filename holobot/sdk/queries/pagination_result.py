@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
 TItem = TypeVar("TItem")

@@ -1,6 +1,8 @@
-from ..statuses import CommandComplete
-from asyncpg.connection import Connection
 from typing import Any
+
+from asyncpg.connection import Connection
+
+from ..statuses import CommandComplete
 
 # TODO Query string tracing.
 class CompiledQuery:

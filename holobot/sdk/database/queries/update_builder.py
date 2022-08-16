@@ -1,7 +1,8 @@
+from typing import Any
+
 from .iquery_part_builder import IQueryPartBuilder
 from .returning_builder import ReturningBuilder
 from .where_builder import WhereBuilder
-from typing import Any
 
 class UpdateBuilder(IQueryPartBuilder):
     def __init__(self) -> None:

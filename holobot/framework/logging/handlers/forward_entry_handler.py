@@ -1,7 +1,6 @@
+import logging
 from collections.abc import Callable
 from typing import Any
-
-import logging
 
 from holobot.framework.logging.formatters import DefaultExternalLogFormatterInstance
 from holobot.sdk.logging import ILogger

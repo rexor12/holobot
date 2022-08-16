@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import Generic, TypeVar
 
 import hikari
 
-from .utils import transform_option
 from holobot.discord.sdk.workflows.interactables.models import Option
+from .utils import transform_option
 
 TParentBuilder = TypeVar("TParentBuilder")
 

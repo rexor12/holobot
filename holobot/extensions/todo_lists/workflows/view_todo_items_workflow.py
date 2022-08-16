@@ -1,6 +1,5 @@
 from typing import Any
 
-from .. import TodoItemManagerInterface
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
@@ -13,6 +12,7 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from .. import TodoItemManagerInterface
 
 DEFAULT_PAGE_SIZE = 5
 

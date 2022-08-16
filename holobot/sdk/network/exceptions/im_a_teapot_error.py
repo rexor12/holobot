@@ -1,7 +1,9 @@
+from datetime import datetime
+
+from multidict import CIMultiDict
+
 from .header_utils import try_get_retry_after
 from .http_status_error import HttpStatusError
-from datetime import datetime
-from multidict import CIMultiDict
 
 class ImATeapotError(HttpStatusError):
     STATUS_CODE: int = 418

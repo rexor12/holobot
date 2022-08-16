@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from .models import Reminder, ReminderConfig
 from holobot.sdk.queries import PaginationResult
+from .models import Reminder, ReminderConfig
 
 class ReminderManagerInterface(Protocol):
     async def set_reminder(self, user_id: str, config: ReminderConfig) -> Reminder:

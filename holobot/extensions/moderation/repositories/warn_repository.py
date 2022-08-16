@@ -2,11 +2,11 @@ from datetime import timedelta
 
 from asyncpg.connection import Connection
 
-from .iwarn_repository import IWarnRepository
-from ..models import WarnStrike
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.constraints import and_expression, column_expression, or_expression
+from holobot.sdk.database.queries.constraints import (
+    and_expression, column_expression, or_expression
+)
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
@@ -14,6 +14,8 @@ from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import assert_not_none
+from ..models import WarnStrike
+from .iwarn_repository import IWarnRepository
 
 TABLE_NAME = "moderation_warns"
 SETTINGS_TABLE_NAME = "moderation_warn_settings"

@@ -1,7 +1,8 @@
-from .join_builder import JoinBuilder, JOIN_TYPE
-from .iquery_part_builder import IQueryPartBuilder
-from .where_builder import WhereBuilder
 from typing import Any
+
+from .iquery_part_builder import IQueryPartBuilder
+from .join_builder import JOIN_TYPE, JoinBuilder
+from .where_builder import WhereBuilder
 
 class SelectBuilder(IQueryPartBuilder):
     def __init__(self) -> None:

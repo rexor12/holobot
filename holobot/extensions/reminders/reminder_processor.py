@@ -1,8 +1,7 @@
-from datetime import datetime
-from collections.abc import Awaitable
 import asyncio
+from collections.abc import Awaitable
+from datetime import datetime
 
-from .repositories import ReminderRepositoryInterface
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -10,6 +9,7 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
+from .repositories import ReminderRepositoryInterface
 
 DEFAULT_RESOLUTION: int = 60
 DEFAULT_DELAY: int = 30

@@ -1,17 +1,19 @@
-from typing import Any
 from collections.abc import Sequence
+from typing import Any
 
 from asyncpg.connection import Connection
 
-from .command_rule_repository_interface import CommandRuleRepositoryInterface
-from .enums.rule_state import RuleState
-from .models import CommandRule
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.constraints import column_expression, and_expression, or_expression
+from holobot.sdk.database.queries.constraints import (
+    and_expression, column_expression, or_expression
+)
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
+from .command_rule_repository_interface import CommandRuleRepositoryInterface
+from .enums.rule_state import RuleState
+from .models import CommandRule
 
 TABLE_NAME = "admin_rules"
 

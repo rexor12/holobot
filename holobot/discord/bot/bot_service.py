@@ -1,18 +1,18 @@
+import asyncio
 from asyncio.tasks import Task
 from collections.abc import Sequence
 from typing import Type
 
-import asyncio
 import hikari
 
-from .bot_accessor import BotAccessor
-from .bot import Bot
-from .bot_service_interface import BotServiceInterface
 from holobot.discord.events import IGenericDiscordEventListener
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import get_or_add
+from .bot import Bot
+from .bot_accessor import BotAccessor
+from .bot_service_interface import BotServiceInterface
 
 DEFAULT_BOT_PREFIX = "h!"
 DEBUG_MODE_BOT_PREFIX = "h#"

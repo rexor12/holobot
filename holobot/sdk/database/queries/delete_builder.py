@@ -1,6 +1,7 @@
+from typing import Any
+
 from .iquery_part_builder import IQueryPartBuilder
 from .where_builder import WhereBuilder
-from typing import Any
 
 class DeleteBuilder(IQueryPartBuilder):
     def __init__(self) -> None:

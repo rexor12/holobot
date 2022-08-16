@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 from holobot.sdk.math import Range
 
 class IConfigProvider:

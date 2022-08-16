@@ -1,12 +1,12 @@
+from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.queries import PaginationResult
+from holobot.sdk.utils.exception_utils import assert_not_none
 from .command_registry_interface import CommandRegistryInterface
 from .command_rule_manager_interface import CommandRuleManagerInterface
 from .command_rule_repository_interface import CommandRuleRepositoryInterface
 from .enums import RuleState
 from .exceptions import InvalidCommandError
 from .models import CommandRule
-from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils.exception_utils import assert_not_none
-from holobot.sdk.queries import PaginationResult
 
 @injectable(CommandRuleManagerInterface)
 class CommandRuleManager(CommandRuleManagerInterface):

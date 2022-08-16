@@ -1,5 +1,6 @@
-from ..enums import RuleState
 from datetime import datetime
+
+from ..enums import RuleState
 
 rule_to_text_map: dict[RuleState, str] = {
     RuleState.ALLOW: "allowed",

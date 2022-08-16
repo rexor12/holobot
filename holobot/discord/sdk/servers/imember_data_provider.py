@@ -1,5 +1,5 @@
-from .models import MemberData
 from ..enums import Permission
+from .models import MemberData
 
 class IMemberDataProvider:
     def get_basic_data_by_id(self, server_id: str, user_id: str) -> MemberData:

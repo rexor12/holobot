@@ -1,13 +1,13 @@
 import re
 
-from hikari import urls, Emoji as HikariEmoji
+from hikari import Emoji as HikariEmoji, urls
 from hikari.internal import routes
 
-from ..bot import BotAccessor
-from ..transformers.emoji import to_model
 from holobot.discord.sdk.data_providers import IEmojiDataProvider
 from holobot.discord.sdk.models import Emoji
 from holobot.sdk.ioc.decorators import injectable
+from ..bot import BotAccessor
+from ..transformers.emoji import to_model
 
 EMOJI_REGEX = re.compile(r"<(?P<flags>[^:]*):(?P<name>[^:]*):(?P<id>\d+)>")
 

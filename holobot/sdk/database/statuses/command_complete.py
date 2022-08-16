@@ -1,6 +1,7 @@
-from .command_tags import CommandTag, DeleteCommandTag, InsertCommandTag, UpdateCommandTag
-from holobot.sdk.utils import assert_not_none
 from typing import Any, Generic, TypeVar
+
+from holobot.sdk.utils import assert_not_none
+from .command_tags import CommandTag, DeleteCommandTag, InsertCommandTag, UpdateCommandTag
 
 TTag = TypeVar("TTag", bound=CommandTag)
 

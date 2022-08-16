@@ -1,5 +1,6 @@
-from ..enums import DayOfWeek
 from datetime import date, datetime, timedelta
+
+from ..enums import DayOfWeek
 
 class Reminder:
     def __init__(self) -> None:

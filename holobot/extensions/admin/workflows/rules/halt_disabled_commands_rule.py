@@ -1,6 +1,6 @@
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
-from holobot.discord.sdk.workflows.interactables import Interactable, Command
+from holobot.discord.sdk.workflows.interactables import Command, Interactable
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.extensions.admin import CommandRuleManagerInterface

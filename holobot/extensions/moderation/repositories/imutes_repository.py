@@ -1,5 +1,6 @@
-from ..models import Mute
 from datetime import datetime
+
+from ..models import Mute
 
 class IMutesRepository:
     async def get_mute(self, server_id: str, user_id: str) -> datetime | None:

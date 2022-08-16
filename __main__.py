@@ -1,9 +1,8 @@
 import logging
 
+import structlog
 from kanata import InjectableCatalog, LifetimeScope, find_injectables
 from kanata.graphs.exceptions import CyclicGraphException
-
-import structlog
 
 from holobot.framework import Kernel
 from holobot.framework.configs import Configurator

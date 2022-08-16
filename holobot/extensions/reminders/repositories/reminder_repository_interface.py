@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Protocol
 
-from ..models import Reminder
 from holobot.sdk.queries import PaginationResult
+from ..models import Reminder
 
 class ReminderRepositoryInterface(Protocol):
     async def count(self, user_id: str) -> int:

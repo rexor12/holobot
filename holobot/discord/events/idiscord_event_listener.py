@@ -2,8 +2,8 @@ from typing import Generic, Protocol, TypeVar
 
 import hikari
 
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 TEvent = TypeVar("TEvent", bound=hikari.Event, contravariant=True)
 

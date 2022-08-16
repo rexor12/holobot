@@ -1,7 +1,6 @@
+import traceback
 from io import StringIO
 from typing import TypeVar
-
-import traceback
 
 from ..exceptions import ArgumentError, ArgumentOutOfRangeError
 from ..math import ComparableProtocol

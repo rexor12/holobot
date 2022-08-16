@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 
-from .action_base import ActionBase
-from ..models import Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout
+from ..models import Embed
+from .action_base import ActionBase
 
 @dataclass(kw_only=True, frozen=True)
 class ContentChangingActionBase(ActionBase):

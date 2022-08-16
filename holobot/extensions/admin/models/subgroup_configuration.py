@@ -1,5 +1,6 @@
-from .command_configuration import CommandConfiguration
 from typing import Any
+
+from .command_configuration import CommandConfiguration
 
 class SubgroupConfiguration:
     def __init__(self, name: str) -> None:

@@ -1,10 +1,5 @@
 import contextlib
 
-from .interactables.decorators import moderation_command, moderation_menu_item
-from .responses import UserUnmutedResponse as UserUnmutedInteractionResponse
-from .responses.menu_item_responses import UserUnmutedResponse as UserUnmutedMenuItemResponse
-from ..enums import ModeratorPermission
-from ..managers import IMuteManager
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
@@ -12,9 +7,16 @@ from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    ServerChatInteractionContext, ServerUserInteractionContext
+)
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from ..enums import ModeratorPermission
+from ..managers import IMuteManager
+from .interactables.decorators import moderation_command, moderation_menu_item
+from .responses import UserUnmutedResponse as UserUnmutedInteractionResponse
+from .responses.menu_item_responses import UserUnmutedResponse as UserUnmutedMenuItemResponse
 
 @injectable(IWorkflow)
 class UnmuteUserWorkflow(WorkflowBase):

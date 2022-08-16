@@ -1,5 +1,6 @@
-from .bot_interface import BotInterface
 from hikari import GatewayBot, Intents, Snowflakeish, User
+
+from .bot_interface import BotInterface
 
 class Bot(GatewayBot, BotInterface):
     def __init__(self, token: str, intents: Intents):

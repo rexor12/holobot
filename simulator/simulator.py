@@ -1,8 +1,8 @@
 import argparse
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from typing import Any
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from json import load
 from json.encoder import JSONEncoder
+from typing import Any
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):

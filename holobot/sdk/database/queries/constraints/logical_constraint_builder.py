@@ -1,6 +1,7 @@
-from .iconstraint_builder import IConstraintBuilder
-from ..enums import Connector
 from typing import Any
+
+from ..enums import Connector
+from .iconstraint_builder import IConstraintBuilder
 
 class LogicalConstraintBuilder(IConstraintBuilder):
     def __init__(self,

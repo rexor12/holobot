@@ -1,9 +1,9 @@
-from .command_registry_interface import CommandRegistryInterface
-from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
+from .command_registry_interface import CommandRegistryInterface
+from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 
 DEFAULT_GROUP_NAME = ""
 

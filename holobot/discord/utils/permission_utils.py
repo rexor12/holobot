@@ -1,4 +1,5 @@
 from hikari import Permissions
+
 from holobot.discord.sdk.enums import Permission
 
 PERMISSION_TO_DTOS: dict[Permission, Permissions] = {

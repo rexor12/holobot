@@ -1,6 +1,7 @@
-from .iconstraint_builder import IConstraintBuilder
-from ..enums import Equality
 from typing import Any
+
+from ..enums import Equality
+from .iconstraint_builder import IConstraintBuilder
 
 class ColumnConstraintBuilder(IConstraintBuilder):
     def __init__(self, column_name: str, equality: Equality, value: Any | None, is_raw_value: bool = False) -> None:

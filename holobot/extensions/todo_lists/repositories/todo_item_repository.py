@@ -1,13 +1,13 @@
 
 from asyncpg.connection import Connection
 
-from .todo_item_repository_interface import TodoItemRepositoryInterface
 from holobot.extensions.todo_lists.models import TodoItem
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
+from .todo_item_repository_interface import TodoItemRepositoryInterface
 
 @injectable(TodoItemRepositoryInterface)
 class TodoItemRepository(TodoItemRepositoryInterface):

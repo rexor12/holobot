@@ -1,9 +1,8 @@
 from hikari import (
-    CustomEmoji as HikariCustomEmoji,
-    Emoji as HikariEmoji,
-    KnownCustomEmoji as HikariKnownCustomEmoji,
-    UnicodeEmoji as HikariUnicodeEmoji
+    CustomEmoji as HikariCustomEmoji, Emoji as HikariEmoji,
+    KnownCustomEmoji as HikariKnownCustomEmoji, UnicodeEmoji as HikariUnicodeEmoji
 )
+
 from holobot.discord.sdk.models import Emoji
 
 TEmoji = HikariCustomEmoji | HikariEmoji | HikariKnownCustomEmoji | HikariUnicodeEmoji

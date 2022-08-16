@@ -1,7 +1,7 @@
+import asyncio
+
 from .cancellation_promise import CancellationPromise
 from .cancellation_token import CancellationToken
-
-import asyncio
 
 def wait(
     timeout: int,

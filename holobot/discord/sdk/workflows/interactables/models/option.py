@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from .choice import Choice
 from ..enums import OptionType
+from .choice import Choice
 
 @dataclass
 class Option:

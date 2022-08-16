@@ -1,6 +1,7 @@
+from typing import Any
+
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
-from typing import Any
 
 class ReturningBuilder(IQueryPartBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:

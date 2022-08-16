@@ -1,11 +1,5 @@
 import contextlib
 
-from .interactables.decorators import moderation_command, moderation_menu_item
-from .responses import UserWarnedResponse as UserWarnedInteractionResponse
-from .responses.menu_item_responses import UserWarnedResponse as UserWarnedMenuItemResponse
-from .. import IConfigProvider
-from ..enums import ModeratorPermission
-from ..managers import IWarnManager
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError
@@ -19,6 +13,12 @@ from holobot.discord.sdk.workflows.models import (
 )
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from .. import IConfigProvider
+from ..enums import ModeratorPermission
+from ..managers import IWarnManager
+from .interactables.decorators import moderation_command, moderation_menu_item
+from .responses import UserWarnedResponse as UserWarnedInteractionResponse
+from .responses.menu_item_responses import UserWarnedResponse as UserWarnedMenuItemResponse
 
 @injectable(IWorkflow)
 class WarnUserWorkflow(WorkflowBase):

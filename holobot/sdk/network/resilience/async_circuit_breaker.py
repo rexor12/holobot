@@ -1,6 +1,6 @@
+import asyncio
 from collections.abc import Callable, Coroutine
 from time import time
-import asyncio
 
 from .exceptions.circuit_broken_error import CircuitBrokenError
 from .models.circuit_state import CircuitState

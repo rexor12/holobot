@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from typing import Protocol
 
-from .models import CommandRule
 from holobot.sdk.queries import PaginationResult
+from .models import CommandRule
 
 class CommandRuleRepositoryInterface(Protocol):
     async def add_or_update(self, rule: CommandRule) -> int:

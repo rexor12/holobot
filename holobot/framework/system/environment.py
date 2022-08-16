@@ -1,8 +1,8 @@
+import os
+
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import IEnvironment
 from holobot.sdk.system.models import Version
-
-import os
 
 ROOT_PATH: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 

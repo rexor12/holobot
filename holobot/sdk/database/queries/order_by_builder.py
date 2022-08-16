@@ -1,8 +1,9 @@
+from typing import Any
+
 from .compiled_query import CompiledQuery
+from .enums import Order
 from .iquery_part_builder import IQueryPartBuilder
 from .limit_builder import LimitBuilder
-from .enums import Order
-from typing import Any
 
 class OrderByBuilder(IQueryPartBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:

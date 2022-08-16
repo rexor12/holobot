@@ -1,7 +1,7 @@
-from .imutes_repository import IMutesRepository
-from ..models import Mute
-from asyncpg.connection import Connection
 from datetime import datetime
+
+from asyncpg.connection import Connection
+
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
@@ -9,6 +9,8 @@ from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
+from ..models import Mute
+from .imutes_repository import IMutesRepository
 
 TABLE_NAME = "moderation_mutes"
 

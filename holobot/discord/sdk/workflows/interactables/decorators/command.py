@@ -1,12 +1,12 @@
 from collections.abc import Callable, Coroutine
 from typing import Any
 
-from ..models import Option
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from ..models import Option
 
 def command(
     *,

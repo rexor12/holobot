@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
-from ..models import ServerChannel
 from holobot.discord.sdk.enums import Permission
+from ..models import ServerChannel
 
 class IChannelManager:
     def get_channels(self, server_id: str) -> Iterable[ServerChannel]:

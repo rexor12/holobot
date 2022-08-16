@@ -3,16 +3,18 @@ from collections.abc import Sequence
 from hikari import CommandType
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
 
-from .iworkflow_registry import IWorkflowRegistry
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Command, Component, MenuItem
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
-from holobot.discord.workflows.builders import CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
+from holobot.discord.workflows.builders import (
+    CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
+)
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
+from .iworkflow_registry import IWorkflowRegistry
 
 TCommandGroup = dict[str, tuple[IWorkflow, Command]]
 TSubGroup = dict[str, TCommandGroup]

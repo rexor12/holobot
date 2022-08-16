@@ -1,22 +1,22 @@
 import contextlib
 
-from hikari import (
-    CommandInteraction, ComponentInteraction, MessageFlag, NotFoundError,
-    PartialInteraction, ResponseType, UNDEFINED
-)
 import hikari.api.special_endpoints as hikari_endpoints
-
-from .iaction_processor import IActionProcessor
-from holobot.discord.workflows.transformers import IComponentTransformer
-from holobot.discord.sdk.actions import (
-    ActionBase, DoNothingAction, EditMessageAction, ReplyAction
+from hikari import (
+    UNDEFINED, CommandInteraction, ComponentInteraction, MessageFlag, NotFoundError,
+    PartialInteraction, ResponseType
 )
+
+from holobot.discord.sdk.actions import ActionBase, DoNothingAction, EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, StackLayout
+from holobot.discord.sdk.workflows.interactables.components import (
+    ComponentBase, Layout, StackLayout
+)
 from holobot.discord.transformers.embed import to_dto
+from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
+from .iaction_processor import IActionProcessor
 
 @injectable(IActionProcessor)
 class ActionProcessor(IActionProcessor):

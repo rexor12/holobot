@@ -1,12 +1,13 @@
-from .crypto_repository_interface import CryptoRepositoryInterface
-from ..models import PriceData, SymbolUpdateEvent
 from asyncpg.connection import Connection
+
 from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
+from ..models import PriceData, SymbolUpdateEvent
+from .crypto_repository_interface import CryptoRepositoryInterface
 
 @injectable(CryptoRepositoryInterface)
 class CryptoRepository(CryptoRepositoryInterface):

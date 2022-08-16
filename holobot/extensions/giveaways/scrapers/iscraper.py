@@ -1,18 +1,16 @@
-from ..models import ExternalGiveawayItem
-from abc import ABCMeta, abstractmethod
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Optional, Sequence
+from typing import Protocol
 
-class IScraper(metaclass=ABCMeta):
+from holobot.extensions.giveaways.models import ExternalGiveawayItem
+
+class IScraper(Protocol):
     @property
-    @abstractmethod
     def name(self) -> str:
         ...
 
-    @abstractmethod
-    def get_next_scrape_time(self, last_scrape_time: Optional[datetime]) -> datetime:
+    def get_next_scrape_time(self, last_scrape_time: datetime | None) -> datetime:
         ...
 
-    @abstractmethod
     async def scrape(self) -> Sequence[ExternalGiveawayItem]:
         ...

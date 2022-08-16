@@ -1,11 +1,12 @@
-from ..models import ScraperInfo
-from typing import Optional, Protocol
+from typing import Protocol
+
+from holobot.extensions.giveaways.models import ScraperInfo
 
 class IScraperInfoRepository(Protocol):
-    async def get(self, item_id: int) -> Optional[ScraperInfo]:
+    async def get(self, item_id: int) -> ScraperInfo | None:
         ...
 
-    async def get_by_name(self, name: str) -> Optional[ScraperInfo]:
+    async def get_by_name(self, name: str) -> ScraperInfo | None:
         ...
 
     async def store(self, item: ScraperInfo) -> None:

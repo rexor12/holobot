@@ -1,17 +1,17 @@
-from typing import Optional
-
 from asyncpg.connection import Connection
 
-from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
 from holobot.extensions.giveaways.models import ExternalGiveawayItem
 from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database.statuses import CommandComplete
+from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import set_time_zone, set_time_zone_nullable, UTC
+from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
 
-TABLE_NAME = "external_giveaway_items"
+_TABLE_NAME = "external_giveaway_items"
 
 @injectable(IExternalGiveawayItemRepository)
 class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
@@ -21,14 +21,21 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
     async def count(self, user_id: str) -> int:
         raise NotImplementedError
 
-    async def get(self, item_id: int) -> Optional[ExternalGiveawayItem]:
+    async def get(self, item_id: int) -> ExternalGiveawayItem | None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                record = await Query.select().columns(
-                    "id", "created_at", "start_time", "end_time", "source_name",
-                    "item_type", "url", "preview_url", "title"
-                ).from_table(TABLE_NAME).where().field("id", Equality.EQUAL, item_id).compile().fetchrow(connection)
+                record = await (Query
+                    .select()
+                    .columns(
+                        "id", "created_at", "start_time", "end_time", "source_name",
+                        "item_type", "url", "preview_url", "title"
+                    ).from_table(_TABLE_NAME)
+                    .where()
+                    .field("id", Equality.EQUAL, item_id)
+                    .compile()
+                    .fetchrow(connection)
+                )
                 return ExternalGiveawayItemRepository.__parse_record(record) if record else None
 
     async def get_many(
@@ -47,7 +54,7 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
                         "id", "created_at", "start_time", "end_time", "source_name",
                         "item_type", "url", "preview_url", "title"
                     )
-                    .from_table(TABLE_NAME)
+                    .from_table(_TABLE_NAME)
                     .where()
                     .field("item_type", Equality.EQUAL, item_type)
                 )
@@ -67,7 +74,13 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                query = Query.select().columns("id").from_table(TABLE_NAME).where().field("url", Equality.EQUAL, url)
+                query = (Query
+                    .select()
+                    .columns("id")
+                    .from_table(_TABLE_NAME)
+                    .where()
+                    .field("url", Equality.EQUAL, url)
+                )
                 if active_only:
                     query = query.and_field(
                         "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
@@ -78,7 +91,7 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.insert().in_table(TABLE_NAME).fields(
+                await Query.insert().in_table(_TABLE_NAME).fields(
                     ("created_at", set_time_zone(item.created_at, None)),
                     ("start_time", set_time_zone_nullable(item.start_time, None)),
                     ("end_time", set_time_zone(item.end_time, None)),
@@ -93,9 +106,24 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().field(
+                await Query.delete().from_table(_TABLE_NAME).where().field(
                     "id", Equality.EQUAL, item_id
                 ).compile().execute(connection)
+
+    async def delete_expired(self) -> int:
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                status: CommandComplete[DeleteCommandTag] = await (Query
+                    .delete()
+                    .from_table(_TABLE_NAME)
+                    .where()
+                    .field("end_time", Equality.LESS, "(NOW() at time zone 'utc') - interval '7 days'", True)
+                    .returning()
+                    .compile()
+                    .execute(connection)
+                )
+                return status.command_tag.rows
 
     @staticmethod
     def __parse_record(record) -> ExternalGiveawayItem:

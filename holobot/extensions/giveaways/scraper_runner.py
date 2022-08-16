@@ -1,14 +1,8 @@
+import asyncio
+import contextlib
 from collections.abc import Awaitable
 from datetime import datetime, timezone
 
-import contextlib
-
-import asyncio
-
-from .events.models import NewGiveawaysEvent
-from .models import ExternalGiveawayItem, ScraperInfo
-from .repositories import IExternalGiveawayItemRepository, IScraperInfoRepository
-from .scrapers import IScraper
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
@@ -17,6 +11,10 @@ from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.reactive import IListener
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
+from .events.models import NewGiveawaysEvent
+from .models import ExternalGiveawayItem, ScraperInfo
+from .repositories import IExternalGiveawayItemRepository, IScraperInfoRepository
+from .scrapers import IScraper
 
 DEFAULT_RESOLUTION: int = 60
 DEFAULT_DELAY: int = 40
@@ -76,7 +74,13 @@ class ScraperRunner(IStartable):
                 giveaway_items.extend(await self.__run_scraper(scraper))
                 run_count += 1
             self.__logger.trace("Ran giveaway scrapers", count=run_count)
+
             await self.__notify_listeners(tuple(giveaway_items))
+
+            deleted_count = await self.__external_giveaway_item_repository.delete_expired()
+            if deleted_count > 0:
+                self.__logger.debug("Deleted expired giveaway items", count=deleted_count)
+
             await wait(self.__process_resolution, token)
 
     async def __run_scraper(self, scraper: IScraper) -> tuple[ExternalGiveawayItem, ...]:

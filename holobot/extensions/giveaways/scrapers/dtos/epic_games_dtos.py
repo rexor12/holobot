@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
 
 @dataclass
 class DiscountSetting:
@@ -9,17 +8,17 @@ class DiscountSetting:
 
 @dataclass
 class ChildPromotionalOffer:
-    startDate: Optional[datetime]
-    endDate: Optional[datetime]
+    startDate: datetime | None
+    endDate: datetime | None
     discountSetting: DiscountSetting
 
 @dataclass
 class PromotionalOffer:
-    promotionalOffers: List[ChildPromotionalOffer] = field(default_factory=list)
+    promotionalOffers: list[ChildPromotionalOffer] = field(default_factory=list)
 
 @dataclass
 class Promotions:
-    promotionalOffers: List[PromotionalOffer] = field(default_factory=list)
+    promotionalOffers: list[PromotionalOffer] = field(default_factory=list)
 
 @dataclass
 class CustomAttribute:
@@ -33,7 +32,7 @@ class CatalogNsEntry:
 
 @dataclass
 class CatalogNs:
-    mappings: List[CatalogNsEntry] = field(default_factory=list)
+    mappings: list[CatalogNsEntry] = field(default_factory=list)
 
 @dataclass
 class Image:
@@ -44,13 +43,13 @@ class Image:
 class Offer:
     title: str
     promotions: Promotions = field(default_factory=Promotions)
-    keyImages: List[Image] = field(default_factory=list)
+    keyImages: list[Image] = field(default_factory=list)
     catalogNs: CatalogNs = field(default_factory=CatalogNs)
-    customAttributes: List[CustomAttribute] = field(default_factory=list)
+    customAttributes: list[CustomAttribute] = field(default_factory=list)
 
 @dataclass
 class SearchStore:
-    elements: List[Offer] = field(default_factory=list)
+    elements: list[Offer] = field(default_factory=list)
 
 @dataclass
 class OfferCatalog:

@@ -1,10 +1,7 @@
-from datetime import datetime, time, timedelta, timezone
-from typing import List, Optional, Sequence, Tuple
-
 import zoneinfo
+from collections.abc import Sequence
+from datetime import datetime, time, timedelta, timezone
 
-from .iscraper import IScraper
-from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
 from holobot.extensions.giveaways.models import ExternalGiveawayItem
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -14,6 +11,8 @@ from holobot.sdk.network.exceptions import TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.utils import first_or_default
+from .iscraper import IScraper
+from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
 
 CONFIG_SECTION = "Giveaways"
 CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "EpicScraperCircuitBreakerFailureThreshold"
@@ -21,7 +20,7 @@ CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER = "EpicScraperCircuitBreakerRecoveryTime
 URL_PARAMETER = "EpicScraperUrl"
 COUNTRY_CODE_PARAMETER = "EpicScraperCountryCode"
 SCRAPE_DELAY: timedelta = timedelta(minutes=5)
-OFFER_IMAGE_TYPES: Tuple[str, ...] = (
+OFFER_IMAGE_TYPES: tuple[str, ...] = (
     "OfferImageWide", "DieselStoreFrontWide", "OfferImageTall", "Thumbnail"
 )
 
@@ -48,7 +47,7 @@ class EpicGamesScraper(IScraper):
     def name(self) -> str:
         return "Epic Games Store"
 
-    def get_next_scrape_time(self, last_scrape_time: Optional[datetime]) -> datetime:
+    def get_next_scrape_time(self, last_scrape_time: datetime | None) -> datetime:
         if last_scrape_time is None:
             return datetime.now(timezone.utc) - timedelta(minutes=1)
 
@@ -121,8 +120,8 @@ class EpicGamesScraper(IScraper):
         return circuit_breaker.recovery_timeout
 
     @staticmethod
-    def __get_giveaway_data(item: Offer) -> Optional[ChildPromotionalOffer]:
-        offers: List[ChildPromotionalOffer] = []
+    def __get_giveaway_data(item: Offer) -> ChildPromotionalOffer | None:
+        offers: list[ChildPromotionalOffer] = []
         for promotional_offer in item.promotions.promotionalOffers:
             offers.extend(
                 child_promotional_offer
@@ -151,7 +150,7 @@ class EpicGamesScraper(IScraper):
                 and int(offer.discountSetting.discountPercentage) == 0)
 
     @staticmethod
-    def __get_preview_image(offer: Offer) -> Optional[str]:
+    def __get_preview_image(offer: Offer) -> str | None:
         for image_key in OFFER_IMAGE_TYPES:
             if image := first_or_default(offer.keyImages, lambda i, k=image_key: i.type == k, None):
                 return image.url

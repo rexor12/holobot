@@ -1,4 +1,5 @@
-from typing import Protocol, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Protocol
 
 from holobot.discord.sdk.models import Server
 
@@ -15,5 +16,5 @@ class IBotDataProvider(Protocol):
     def get_server_count(self) -> int:
         ...
 
-    def get_servers(self, page_index: int, page_size: int) -> Tuple[int, Sequence[Server]]:
+    def get_servers(self, page_index: int, page_size: int) -> tuple[int, Sequence[Server]]:
         ...

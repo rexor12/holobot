@@ -1,5 +1,3 @@
-from typing import List, Union
-
 import contextlib
 
 from hikari import (
@@ -115,8 +113,8 @@ class ActionProcessor(IActionProcessor):
 
     def __transform_component(
         self,
-        components: Union[ComponentBase, List[Layout]]
-    ) -> List[hikari_endpoints.ComponentBuilder]:
+        components: ComponentBase | list[Layout]
+    ) -> list[hikari_endpoints.ComponentBuilder]:
         if not components:
             return []
 

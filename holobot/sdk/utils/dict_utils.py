@@ -1,11 +1,12 @@
-from typing import Callable, Dict, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
 TState = TypeVar("TState")
 
 def get_or_add(
-    dictionary: Dict[TKey, TValue],
+    dictionary: dict[TKey, TValue],
     key: TKey,
     value_factory: Callable[[TState], TValue],
     state: TState

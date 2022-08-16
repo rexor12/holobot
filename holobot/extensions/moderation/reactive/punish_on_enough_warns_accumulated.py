@@ -1,3 +1,6 @@
+from collections.abc import Callable, Coroutine
+from typing import Any
+
 from ..managers import IMuteManager
 from ..models import WarnSettings
 from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSettingsRepository
@@ -10,7 +13,6 @@ from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
-from typing import Any, Callable, Coroutine, Tuple
 
 # TODO Implement sequence registration in IoC to ensure that punish is executed after log.
 # Eg. container.register_sequence(LogListener, PunishListener)
@@ -42,11 +44,11 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         if (not issubclass(event.command_type, ModerationCommand)
             or not isinstance(event.response, UserWarnedResponse)):
             return
-        
+
         warn_settings = await self.__warn_settings_repository.get_warn_settings(event.server_id)
         if not warn_settings.has_auto_features:
             return
-        
+
         warn_count = await self.__warn_repository.get_warn_count_by_user(event.server_id, event.response.user_id)
         is_punished, operation, icon = await self.__try_punish(event.server_id, event.response.user_id, warn_count, warn_settings)
         if not is_punished:
@@ -64,7 +66,7 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             punishment=operation
         )
         log_channel = await self.__log_settings_repository.get_log_channel(event.server_id)
-        
+
         if not log_channel:
             return
 
@@ -73,8 +75,8 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             log_channel,
             f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes."
         )
-    
-    async def __try_punish(self, server_id: str, user_id: str, warn_count: int, warn_settings: WarnSettings) -> Tuple[bool, str, str]:
+
+    async def __try_punish(self, server_id: str, user_id: str, warn_count: int, warn_settings: WarnSettings) -> tuple[bool, str, str]:
         if warn_settings.auto_ban_after > 0 and warn_count >= warn_settings.auto_ban_after:
             is_success = await self.__try_execute_punishment(lambda: self.__user_manager.ban_user(server_id, user_id, self.__get_reason(warn_count)))
             return (is_success, "banned", "no_entry")
@@ -88,7 +90,7 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             return (True, "muted", "mute")
 
         return (False, "", "")
-    
+
     async def __try_execute_punishment(self, action: Callable[[], Coroutine[Any, Any, None]]) -> bool:
         try:
             await action()
@@ -102,7 +104,7 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         except UserNotFoundError:
             self.__logger.error("Failed to execute punishment as the user was not found")
             return False
-    
+
     @staticmethod
     def __get_reason(warn_count: int) -> str:
         return f"You have hit {warn_count} warn strikes which has earned you this punishment."

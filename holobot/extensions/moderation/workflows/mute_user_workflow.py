@@ -1,4 +1,3 @@
-from typing import Optional
 
 import contextlib
 
@@ -52,7 +51,7 @@ class MuteUserWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         user: str,
         reason: str,
-        duration: Optional[str] = None
+        duration: str | None = None
     ) -> InteractionResponse:
         user = user.strip()
         reason = reason.strip()

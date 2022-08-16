@@ -1,6 +1,6 @@
 import argparse
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from typing import Any, Dict
+from typing import Any
 from json import load
 from json.encoder import JSONEncoder
 
@@ -10,7 +10,7 @@ class S(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.end_headers()
 
-    def _json(self, json_object: Dict[str, Any]):
+    def _json(self, json_object: dict[str, Any]):
         # NOTE: must return a bytes object!
         content = JSONEncoder().encode(json_object)
         return content.encode("utf8")
@@ -20,7 +20,7 @@ class S(BaseHTTPRequestHandler):
         self.send_header("Retry-After", "120")
         self.end_headers()
         return 0
-        
+
         self._set_headers()
         with open("./simulator/responses/ticker-price.json") as file:
             return self.wfile.write(JSONEncoder().encode(load(file)).encode("utf8"))

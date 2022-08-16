@@ -1,4 +1,3 @@
-from typing import Optional
 
 from .. import ReminderManagerInterface
 from ..exceptions import InvalidReminderConfigError, TooManyRemindersError
@@ -42,9 +41,9 @@ class SetReminderWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         message: str,
-        in_time: Optional[str] = None,
-        at_time: Optional[str] = None,
-        every_interval: Optional[str] = None
+        in_time: str | None = None,
+        at_time: str | None = None,
+        every_interval: str | None = None
     ) -> InteractionResponse:
         reminder_config = ReminderConfig()
         if in_time is not None and len(in_time) > 0:

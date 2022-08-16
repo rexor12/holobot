@@ -1,4 +1,3 @@
-from typing import Optional
 
 from ..igoogle_client import IGoogleClient
 from ..enums import SearchType
@@ -42,7 +41,7 @@ class SearchGoogleWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         query: str,
-        type: Optional[str] = None
+        type: str | None = None
     ) -> InteractionResponse:
         search_type = SearchType.IMAGE if type == "image" else SearchType.TEXT
         try:

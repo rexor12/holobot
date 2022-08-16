@@ -1,9 +1,8 @@
 from ..models import PriceData
-from typing import List, Optional
 
 class CryptoRepositoryInterface:
-    async def get_price(self, symbol: str) -> Optional[PriceData]:
+    async def get_price(self, symbol: str) -> PriceData | None:
         raise NotImplementedError
-    
-    async def update_prices(self, prices: List[PriceData]):
+
+    async def update_prices(self, prices: list[PriceData]):
         raise NotImplementedError

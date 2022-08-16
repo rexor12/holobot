@@ -1,4 +1,3 @@
-from typing import Tuple
 
 import asyncio
 
@@ -17,7 +16,7 @@ class Kernel(KernelInterface):
         logger_factory: ILoggerFactory,
         database_manager: DatabaseManagerInterface,
         environment: IEnvironment,
-        integrations: Tuple[IntegrationInterface, ...],
+        integrations: tuple[IntegrationInterface, ...],
         lifecycle_manager: LifecycleManagerInterface
     ) -> None:
         super().__init__()

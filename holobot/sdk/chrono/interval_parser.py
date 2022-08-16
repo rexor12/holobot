@@ -1,27 +1,26 @@
 from ..utils import pad_left, try_parse_int
 from datetime import timedelta
-from typing import Dict, List
 
-TIME_PARTS: List[str] = [ "D", "H", "M", "S" ]
-FIXED_INTERVALS: Dict[str, timedelta] = {
+TIME_PARTS: list[str] = [ "D", "H", "M", "S" ]
+FIXED_INTERVALS: dict[str, timedelta] = {
     "WEEK": timedelta(weeks=1),
     "DAY": timedelta(days=1),
     "HOUR": timedelta(hours=1)
 }
 
 def parse_interval(value: str) -> timedelta:
-    args: Dict[str, int] = { part: 0 for part in TIME_PARTS }
+    args: dict[str, int] = { part: 0 for part in TIME_PARTS }
     value = value.upper()
     if (fixed_interval := FIXED_INTERVALS.get(value, None)) is not None:
         return fixed_interval
-    
+
     if ":" in value:
         __parse_delimited_into(value, args)
     else: __parse_denoted_into(value, args)
-    
+
     return timedelta(days=args["D"], hours=args["H"], minutes=args["M"], seconds=args["S"])
 
-def __parse_delimited_into(value: str, args: Dict[str, int]) -> None:
+def __parse_delimited_into(value: str, args: dict[str, int]) -> None:
     split_values = value.split(":")
     padded_values = pad_left(split_values, "0", len(TIME_PARTS))
     for index in range(0, len(TIME_PARTS)):
@@ -31,8 +30,8 @@ def __parse_delimited_into(value: str, args: Dict[str, int]) -> None:
         args["H"] = args["M"]
         args["M"] = args["S"]
         args["S"] = 0
-        
-def __parse_denoted_into(value: str, args: Dict[str, int]) -> None:
+
+def __parse_denoted_into(value: str, args: dict[str, int]) -> None:
     for time_part in args.keys():
         split_values = value.split(time_part, 1)
         if len(split_values) == 2:

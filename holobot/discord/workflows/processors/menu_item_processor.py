@@ -1,4 +1,3 @@
-from typing import Tuple
 from uuid import uuid4
 
 from hikari import CommandInteraction, CommandType
@@ -25,11 +24,11 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
     def __init__(
         self,
         action_processor: IActionProcessor,
-        event_listeners: Tuple[IListener[MenuItemProcessedEvent], ...],
+        event_listeners: tuple[IListener[MenuItemProcessedEvent], ...],
         i18n_provider: II18nProvider,
         log: ILoggerFactory,
         measurement_context_factory: IExecutionContextFactory,
-        workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
+        workflow_execution_rules: tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, i18n_provider, log, measurement_context_factory, workflow_execution_rules)

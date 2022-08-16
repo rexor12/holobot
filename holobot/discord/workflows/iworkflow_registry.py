@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Optional, Sequence, Tuple, TypeVar
+from collections.abc import Sequence
+from typing import TypeVar
 
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
 
@@ -15,28 +16,28 @@ class IWorkflowRegistry(metaclass=ABCMeta):
     @abstractmethod
     def get_command(
         self,
-        group_name: Optional[str],
-        subgroup_name: Optional[str],
+        group_name: str | None,
+        subgroup_name: str | None,
         name: str
-    ) -> Optional[Tuple[IWorkflow, Command]]:
+    ) -> tuple[IWorkflow, Command] | None:
         ...
 
     @abstractmethod
     def get_component(
         self,
         identifier: str
-    ) -> Optional[Tuple[IWorkflow, Component]]:
+    ) -> tuple[IWorkflow, Component] | None:
         ...
 
     @abstractmethod
     def get_menu_item(
         self,
         name: str
-    ) -> Optional[Tuple[IWorkflow, MenuItem]]:
+    ) ->tuple[IWorkflow, MenuItem] | None:
         ...
 
     @abstractmethod
-    def get_command_builders(self, bot: Bot) -> Dict[str, Sequence[SlashCommandBuilder]]:
+    def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
         """Gets the command builders for each server's commands.
 
         An empty string should be used as the key for global commands;
@@ -45,11 +46,11 @@ class IWorkflowRegistry(metaclass=ABCMeta):
         :param bot: The current bot instance.
         :type bot: Bot
         :return: A list of command builders for each server.
-        :rtype: Dict[str, Sequence[SlashCommandBuilder]]
+        :rtype: dict[str, Sequence[SlashCommandBuilder]]
         """
 
     @abstractmethod
-    def get_menu_item_builders(self, bot: Bot) -> Dict[str, Sequence[ContextMenuCommandBuilder]]:
+    def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
         """Gets the menu item builders for each server's menu items.
 
         An empty string should be used as the key for global menu items;
@@ -58,5 +59,5 @@ class IWorkflowRegistry(metaclass=ABCMeta):
         :param bot: The current bot instance.
         :type bot: Bot
         :return: A list of menu item builders for each server.
-        :rtype: Dict[str, Sequence[ContextMenuCommandBuilder]]
+        :rtype: dict[str, Sequence[ContextMenuCommandBuilder]]
         """

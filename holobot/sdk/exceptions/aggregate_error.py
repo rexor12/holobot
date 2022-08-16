@@ -1,14 +1,13 @@
-from typing import List
 
 import traceback
 
 ERROR_MESSAGE = "One or more errors occurred."
 
 class AggregateError(Exception):
-    def __init__(self, inner_exceptions: List[Exception] = [], *args):
+    def __init__(self, inner_exceptions: list[Exception] = [], *args):
         super().__init__(*args)
-        self.inner_exceptions: List[Exception] = inner_exceptions
-    
+        self.inner_exceptions: list[Exception] = inner_exceptions
+
     def __str__(self) -> str:
         exception_string = f"{ERROR_MESSAGE}\n"
         exception_count = len(self.inner_exceptions)

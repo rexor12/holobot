@@ -1,26 +1,26 @@
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 class OnConflictUpdateBuilder(IQueryPartBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.__table_name: str = ""
-        self.__fields: Dict[str, Tuple[Optional[Any], bool]] = {}
+        self.__fields: dict[str, tuple[Any | None, bool]] = {}
 
     @property
     def table_name(self) -> str:
         return self.__table_name
 
     @property
-    def set_fields(self) -> Dict[str, Optional[Any]]:
+    def set_fields(self) -> dict[str, Any | None]:
         return self.__fields
 
-    def field(self, column_name: str, value: Optional[Any], is_raw_value: bool = False) -> 'OnConflictUpdateBuilder':
+    def field(self, column_name: str, value: Any | None, is_raw_value: bool = False) -> 'OnConflictUpdateBuilder':
         self.__fields[column_name] = (value, is_raw_value)
         return self
-    
-    def fields(self, field: Tuple[str, Optional[Any]], *fields: Tuple[str, Optional[Any]]) -> 'OnConflictUpdateBuilder':
+
+    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> 'OnConflictUpdateBuilder':
         self.__fields[field[0]] = (field[1], False)
         for f in fields:
             self.__fields[f[0]] = (f[1], False)
@@ -29,7 +29,7 @@ class OnConflictUpdateBuilder(IQueryPartBuilder):
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         if len(self.__fields) == 0:
             raise ValueError("The UPDATE clause must have at least one field.")
 

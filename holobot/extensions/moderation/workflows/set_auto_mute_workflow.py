@@ -1,4 +1,3 @@
-from typing import Optional
 
 from .interactables.decorators import moderation_command
 from .responses import AutoMuteToggledResponse
@@ -40,7 +39,7 @@ class SetAutoMuteWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         warn_count: int,
-        duration: Optional[str] = None
+        duration: str | None = None
     ) -> InteractionResponse:
         mute_duration = parse_interval(duration.strip()) if duration is not None else None
         try:

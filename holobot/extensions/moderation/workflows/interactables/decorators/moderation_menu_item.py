@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Coroutine
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission

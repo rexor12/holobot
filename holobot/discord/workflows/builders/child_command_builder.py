@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Generic, List, TypeVar
+from typing import Generic, TypeVar
 
 import hikari
 
@@ -18,7 +18,7 @@ class ChildCommandBuilder(Generic[TParentBuilder]):
         self.__name: str = name
         self.__description: str = description
         self.__parent_builder: TParentBuilder = parent_builder
-        self.__options: List[Option] = []
+        self.__options: list[Option] = []
 
     def with_option(self, option: Option) -> ChildCommandBuilder[TParentBuilder]:
         self.__options.append(option)

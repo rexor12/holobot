@@ -1,4 +1,3 @@
-from typing import Tuple
 
 
 from .lifecycle_manager_interface import LifecycleManagerInterface
@@ -14,12 +13,12 @@ class LifecycleManager(LifecycleManagerInterface):
         self,
         execution_context_factory: IExecutionContextFactory,
         logger_factory: ILoggerFactory,
-        startables: Tuple[IStartable, ...]
+        startables: tuple[IStartable, ...]
     ) -> None:
         self.__execution_context_factory = execution_context_factory
         self.__logger = logger_factory.create(LifecycleManager)
         self.__startables = startables
-    
+
     async def start_all(self):
         with self.__execution_context_factory.create("Started startables", "Started all"):
             errors = []
@@ -31,7 +30,7 @@ class LifecycleManager(LifecycleManagerInterface):
             if len(errors) > 0:
                 raise AggregateError(errors)
         self.__logger.info("Successfully started all services")
-    
+
     async def stop_all(self):
         with self.__execution_context_factory.create("Stopped startables", "Stopped all"):
             errors = []

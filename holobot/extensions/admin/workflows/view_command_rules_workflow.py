@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
@@ -43,8 +43,8 @@ class ViewCommandRulesWorkflow(WorkflowBase):
     async def view_command_rules(
         self,
         context: ServerChatInteractionContext,
-        group: Optional[str] = None,
-        subgroup: Optional[str] = None
+        group: str | None = None,
+        subgroup: str | None = None
     ) -> InteractionResponse:
         if not group and subgroup:
             return InteractionResponse(
@@ -106,11 +106,11 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         self,
         server_id: str,
         user_id: str,
-        group: Optional[str],
-        subgroup: Optional[str],
+        group: str | None,
+        subgroup: str | None,
         page_index: int,
         page_size: int
-    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__log.trace("User requested command rule list page", user_id=user_id, page_index=page_index)
         result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
         if len(result.items) == 0:
@@ -143,5 +143,5 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             page_size=page_size,
             total_count=result.total_count
         )
-        
+
         return (content, component)

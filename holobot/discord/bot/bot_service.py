@@ -1,5 +1,6 @@
 from asyncio.tasks import Task
-from typing import Dict, List, Optional, Sequence, Tuple, Type
+from collections.abc import Sequence
+from typing import Type
 
 import asyncio
 import hikari
@@ -28,12 +29,12 @@ class BotService(BotServiceInterface):
     def __init__(
         self,
         configurator: ConfiguratorInterface,
-        discord_event_listeners: Tuple[IGenericDiscordEventListener, ...]
+        discord_event_listeners: tuple[IGenericDiscordEventListener, ...]
     ) -> None:
         super().__init__()
         self.__discord_event_listeners = discord_event_listeners
         self.__bot: Bot = self.__initialize_bot(configurator)
-        self.__bot_task: Optional[Task] = None
+        self.__bot_task: Task | None = None
         # See the reference for a note about what this is.
         BotAccessor._bot = self.__bot
 
@@ -60,7 +61,7 @@ class BotService(BotServiceInterface):
             intents = REQUIRED_INTENTS
         )
 
-        event_listeners: Dict[Type[hikari.Event], List[IGenericDiscordEventListener]] = {}
+        event_listeners: dict[Type[hikari.Event], list[IGenericDiscordEventListener]] = {}
         for listener in self.__discord_event_listeners:
             listeners = get_or_add(event_listeners, listener.event_type, lambda _: [], None)
             listeners.append(listener)

@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Protocol
+from typing import Protocol
 
 from .enums import FrequencyType, PriceDirection
 from .models import Alert
@@ -18,8 +18,8 @@ class AlertManagerInterface(Protocol):
     ) -> PaginationResult[Alert]:
         ...
 
-    async def remove_many(self, user_id: str, symbol: str) -> List[Alert]:
+    async def remove_many(self, user_id: str, symbol: str) -> list[Alert]:
         ...
 
-    async def remove_all(self, user_id: str) -> List[Alert]:
+    async def remove_all(self, user_id: str) -> list[Alert]:
         ...

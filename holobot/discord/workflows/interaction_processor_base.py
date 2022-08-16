@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from types import coroutine
-from typing import Any, Coroutine, Dict, Generator, Generic, Tuple, TypeVar
+from collections.abc import Coroutine, Generator
+from typing import Any, Generic, TypeVar
 
 import hikari
 
@@ -33,7 +34,7 @@ class InteractionProcessorBase(
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         execution_context_factory: IExecutionContextFactory,
-        workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...]
+        workflow_execution_rules: tuple[IWorkflowExecutionRule, ...]
     ) -> None:
         super().__init__()
         self.__action_processor = action_processor
@@ -60,7 +61,7 @@ class InteractionProcessorBase(
         self,
         interaction: TInteraction,
         execution_context: IExecutionContext,
-        execution_data: Dict[str, Any]
+        execution_data: dict[str, Any]
     ) -> None:
         descriptor = self._get_interactable_descriptor(interaction)
         execution_data["initiator_id"] = descriptor.initiator_id

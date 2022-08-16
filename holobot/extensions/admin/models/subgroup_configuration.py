@@ -1,5 +1,5 @@
 from .command_configuration import CommandConfiguration
-from typing import Any, Dict
+from typing import Any
 
 class SubgroupConfiguration:
     def __init__(self, name: str) -> None:
@@ -24,15 +24,15 @@ class SubgroupConfiguration:
         self.__can_disable = value
 
     @property
-    def commands(self) -> Dict[str, CommandConfiguration]:
+    def commands(self) -> dict[str, CommandConfiguration]:
         return self.__commands
 
     @commands.setter
-    def commands(self, value: Dict[str, CommandConfiguration]) -> None:
+    def commands(self, value: dict[str, CommandConfiguration]) -> None:
         self.__commands = value
 
     @staticmethod
-    def from_json(name: str, can_disable_parent: bool, json: Dict[str, Any]) -> 'SubgroupConfiguration':
+    def from_json(name: str, can_disable_parent: bool, json: dict[str, Any]) -> 'SubgroupConfiguration':
         config = SubgroupConfiguration(name)
         config.can_disable = json.get("CanDisable", can_disable_parent)
         for key, value in json.get("Commands", {}).items():

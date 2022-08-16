@@ -9,7 +9,6 @@ from holobot.discord.sdk.servers.managers import IChannelManager, IRoleManager, 
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, textify_timedelta
-from typing import List, Optional
 
 @injectable(IMuteManager)
 class MuteManager(IMuteManager):
@@ -26,7 +25,7 @@ class MuteManager(IMuteManager):
         self.__role_manager: IRoleManager = role_manager
         self.__user_manager: IUserManager = user_manager
 
-    async def mute_user(self, server_id: str, user_id: str, reason: str, duration: Optional[timedelta] = None) -> None:
+    async def mute_user(self, server_id: str, user_id: str, reason: str, duration: timedelta | None = None) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         assert_not_none(reason, "reason")
@@ -62,6 +61,6 @@ class MuteManager(IMuteManager):
             raise RoleNotFoundError(MUTED_ROLE_NAME)
 
         await self.__user_manager.remove_role(server_id, user_id, muted_role.id)
-        
+
         if clear_auto_unmute:
             await self.__mutes_repository.delete_mute(server_id, user_id)

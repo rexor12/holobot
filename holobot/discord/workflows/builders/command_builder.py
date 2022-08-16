@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, List
+from collections.abc import Callable
 
 from hikari.api.special_endpoints import SlashCommandBuilder
 
@@ -15,7 +15,7 @@ class CommandBuilder:
         self.__name: str = name
         self.__description: str = description
         self.__slash_command_builder_factory: Callable[[str, str], SlashCommandBuilder] = slash_command_builder_factory
-        self.__options: List[Option] = []
+        self.__options: list[Option] = []
 
     def with_option(self, option: Option) -> CommandBuilder:
         self.__options.append(option)

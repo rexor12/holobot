@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type
+from typing import Any, Type
 
 from hikari.api.special_endpoints import CommandBuilder
 
@@ -37,7 +37,7 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
         application = await bot.rest.fetch_application()
-        command_builders: Dict[str, List[CommandBuilder]] = {}
+        command_builders: dict[str, list[CommandBuilder]] = {}
         for server_id, builders in self.__workflow_registry.get_command_builders(bot).items():
             cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
             cb.extend(builders)

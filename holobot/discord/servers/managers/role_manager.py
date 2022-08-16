@@ -6,11 +6,10 @@ from holobot.discord.sdk.servers.managers import IRoleManager
 from holobot.discord.transformers.role import to_model
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
-from typing import Optional
 
 @injectable(IRoleManager)
 class RoleManager(IRoleManager):
-    def get_role(self, server_id: str, role_name: str) -> Optional[Role]:
+    def get_role(self, server_id: str, role_name: str) -> Role | None:
         assert_not_none(server_id, "server_id")
         assert_not_none(role_name, "role_name")
 

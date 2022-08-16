@@ -1,8 +1,4 @@
-from typing import Optional
 
-from ..igoogle_client import IGoogleClient
-from ..enums import SearchType
-from ..exceptions import SearchQuotaExhaustedError
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -13,6 +9,9 @@ from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.exceptions import HttpStatusError
+from ..enums import SearchType
+from ..exceptions import SearchQuotaExhaustedError
+from ..igoogle_client import IGoogleClient
 
 @injectable(IWorkflow)
 class SearchGoogleWorkflow(WorkflowBase):
@@ -42,7 +41,7 @@ class SearchGoogleWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         query: str,
-        type: Optional[str] = None
+        type: str | None = None
     ) -> InteractionResponse:
         search_type = SearchType.IMAGE if type == "image" else SearchType.TEXT
         try:

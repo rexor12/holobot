@@ -1,11 +1,8 @@
-from typing import Any, Dict, List, Type
-
-from hikari.api.special_endpoints import CommandBuilder
+from typing import Any, Type
 
 import hikari
+from hikari.api.special_endpoints import CommandBuilder
 
-from .discord_event_listener_base import DiscordEventListenerBase
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
 from holobot.discord.workflows import IWorkflowRegistry
 from holobot.sdk.configs import ConfiguratorInterface
@@ -13,6 +10,8 @@ from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 _EVENT_TYPE = hikari.StartingEvent
 
@@ -37,7 +36,7 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
         application = await bot.rest.fetch_application()
-        command_builders: Dict[str, List[CommandBuilder]] = {}
+        command_builders: dict[str, list[CommandBuilder]] = {}
         for server_id, builders in self.__workflow_registry.get_command_builders(bot).items():
             cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
             cb.extend(builders)

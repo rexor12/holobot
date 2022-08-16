@@ -1,5 +1,6 @@
-from ..enums import PriceDirection
 from decimal import Decimal
+
+from ..enums import PriceDirection
 
 class Alert:
     def __init__(self, symbol: str, direction: PriceDirection, price: Decimal):

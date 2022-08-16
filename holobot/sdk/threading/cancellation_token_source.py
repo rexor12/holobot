@@ -1,6 +1,6 @@
-from .cancellation_token import CancellationToken
-
 import asyncio
+
+from .cancellation_token import CancellationToken
 
 class CancellationTokenSource:
     """Provides a cancellation token that can be passed to asynchronous methods."""

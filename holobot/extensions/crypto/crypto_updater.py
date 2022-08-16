@@ -1,10 +1,12 @@
-from .models import PriceData
-from .repositories import CryptoRepositoryInterface
-from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
+import asyncio
 from asyncio.exceptions import TimeoutError as AsyncIoTimeoutError
 from asyncio.tasks import Task
+from collections.abc import Awaitable
 from datetime import datetime
 from decimal import Decimal
+
+from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
+
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
@@ -15,9 +17,8 @@ from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from typing import Awaitable, List, Optional
-
-import asyncio
+from .models import PriceData
+from .repositories import CryptoRepositoryInterface
 
 FAILURE_THRESHOLD: int = 1
 RECOVERY_TIMEOUT: int = 5 * 60
@@ -44,8 +45,8 @@ class CryptoUpdater(IStartable):
         self.__crypto_repository: CryptoRepositoryInterface = crypto_repository
         self.__configurator: ConfiguratorInterface = configurator
         self.__log = logger_factory.create(CryptoUpdater)
-        self.__token_source: Optional[CancellationTokenSource] = None
-        self.__background_task: Optional[Awaitable[None]] = None
+        self.__token_source: CancellationTokenSource | None = None
+        self.__background_task: Awaitable[None] | None = None
         self.__circuit_breaker: AsyncCircuitBreaker = AsyncCircuitBreaker(
             FAILURE_THRESHOLD, RECOVERY_TIMEOUT, evaluate_error
         )
@@ -60,7 +61,7 @@ class CryptoUpdater(IStartable):
             self.__update_prices(self.__token_source.token)
         )
         self.__log.info("Started background task", delay=INITIAL_UPDATE_DELAY, interval=UPDATE_INTERVAL)
-        
+
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()
         if self.__background_task:
@@ -69,7 +70,7 @@ class CryptoUpdater(IStartable):
             except asyncio.exceptions.CancelledError:
                 pass
         self.__log.debug("Stopped background task")
-    
+
     # TODO Automatic detection of the addition/removal of a symbol.
     async def __update_prices(self, token: CancellationToken) -> None:
         await wait(INITIAL_UPDATE_DELAY, token)
@@ -109,7 +110,7 @@ class CryptoUpdater(IStartable):
                 raise
             await wait(UPDATE_INTERVAL, token)
 
-    async def __get_symbol_prices(self) -> List[PriceData]:
+    async def __get_symbol_prices(self) -> list[PriceData]:
         result = await self.__http_client_pool.get(f"{BINANCE_API_BASE_URL}ticker/price")
         now = datetime.utcnow()
         return [PriceData(

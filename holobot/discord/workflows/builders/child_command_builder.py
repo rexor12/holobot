@@ -1,10 +1,11 @@
 from __future__ import annotations
-from typing import Generic, List, TypeVar
+
+from typing import Generic, TypeVar
 
 import hikari
 
-from .utils import transform_option
 from holobot.discord.sdk.workflows.interactables.models import Option
+from .utils import transform_option
 
 TParentBuilder = TypeVar("TParentBuilder")
 
@@ -18,7 +19,7 @@ class ChildCommandBuilder(Generic[TParentBuilder]):
         self.__name: str = name
         self.__description: str = description
         self.__parent_builder: TParentBuilder = parent_builder
-        self.__options: List[Option] = []
+        self.__options: list[Option] = []
 
     def with_option(self, option: Option) -> ChildCommandBuilder[TParentBuilder]:
         self.__options.append(option)

@@ -1,14 +1,14 @@
-from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 from abc import ABCMeta, abstractmethod
-from typing import Optional
+
+from .models import CommandConfiguration, GroupConfiguration, SubgroupConfiguration
 
 class CommandRegistryInterface(metaclass=ABCMeta):
     @abstractmethod
     def command_exists(
         self,
         command_name: str,
-        group_name: Optional[str] = None,
-        subgroup_name: Optional[str] = None
+        group_name: str | None = None,
+        subgroup_name: str | None = None
     ) -> bool:
         ...
 
@@ -17,7 +17,7 @@ class CommandRegistryInterface(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def get_group(self, group_name: str) -> Optional[GroupConfiguration]:
+    def get_group(self, group_name: str) -> GroupConfiguration | None:
         ...
 
     @abstractmethod
@@ -25,14 +25,14 @@ class CommandRegistryInterface(metaclass=ABCMeta):
         self,
         group_name: str,
         subgroup_name: str
-    ) -> Optional[SubgroupConfiguration]:
+    ) -> SubgroupConfiguration | None:
         ...
 
     @abstractmethod
     def get_command(
         self,
         command_name: str,
-        group_name: Optional[str] = None,
-        subgroup_name: Optional[str] = None
-    ) -> Optional[CommandConfiguration]:
+        group_name: str | None = None,
+        subgroup_name: str | None = None
+    ) -> CommandConfiguration | None:
         ...

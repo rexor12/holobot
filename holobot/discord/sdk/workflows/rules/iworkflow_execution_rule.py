@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
-from ..iworkflow import IWorkflow
-from ..interactables import Interactable
 from holobot.discord.sdk.models import InteractionContext
+from ..interactables import Interactable
+from ..iworkflow import IWorkflow
 
 class IWorkflowExecutionRule(metaclass=ABCMeta):
     """Interface for a workflow execution rule.

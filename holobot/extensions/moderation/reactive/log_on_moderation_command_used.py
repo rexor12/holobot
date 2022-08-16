@@ -1,19 +1,18 @@
-from typing import Optional
 
-from ..managers import ILogManager
-from ..workflows.interactables import ModerationCommand
-from ..workflows.responses import (
-    AutoBanToggledResponse, AutoKickToggledResponse, AutoMuteToggledResponse,
-    LogChannelToggledResponse, ModeratorPermissionsChangedResponse,
-    UserBannedResponse, UserKickedResponse, UserMutedResponse, UserUnmutedResponse,
-    UserWarnedResponse, WarnDecayToggledResponse
-)
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.sdk.events import CommandProcessedEvent
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 from holobot.sdk.utils import textify_timedelta
+from ..managers import ILogManager
+from ..workflows.interactables import ModerationCommand
+from ..workflows.responses import (
+    AutoBanToggledResponse, AutoKickToggledResponse, AutoMuteToggledResponse,
+    LogChannelToggledResponse, ModeratorPermissionsChangedResponse, UserBannedResponse,
+    UserKickedResponse, UserMutedResponse, UserUnmutedResponse, UserWarnedResponse,
+    WarnDecayToggledResponse
+)
 
 @injectable(IListener[CommandProcessedEvent])
 class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
@@ -30,7 +29,7 @@ class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
         if (not issubclass(event.command_type, ModerationCommand)
             or not (event_message := LogOnModerationCommandUsed.__create_event_message(event))):
             return
-        
+
         try:
             is_published = await self.__log_manager.publish_log_entry(event.server_id, event_message)
             if not is_published:
@@ -47,7 +46,7 @@ class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
         )
 
     @staticmethod
-    def __create_event_message(event: CommandProcessedEvent) -> Optional[str]:
+    def __create_event_message(event: CommandProcessedEvent) -> str | None:
         response = event.response
         if isinstance(response, UserWarnedResponse):
             return f":warning: <@{response.author_id}> has warned <@{response.user_id}> with the reason '{response.reason}'."

@@ -1,7 +1,7 @@
+import hikari
+
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Option
-
-import hikari
 
 def transform_option_type(option_type: OptionType) -> hikari.OptionType:
     if option_type == OptionType.BOOLEAN:

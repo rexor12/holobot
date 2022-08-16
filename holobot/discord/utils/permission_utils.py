@@ -1,8 +1,8 @@
 from hikari import Permissions
-from holobot.discord.sdk.enums import Permission
-from typing import Dict
 
-PERMISSION_TO_DTOS: Dict[Permission, Permissions] = {
+from holobot.discord.sdk.enums import Permission
+
+PERMISSION_TO_DTOS: dict[Permission, Permissions] = {
     Permission.NONE: Permissions.NONE,
     Permission.ADMINISTRATOR: Permissions.ADMINISTRATOR,
     Permission.VIEW_CHANNEL: Permissions.VIEW_CHANNEL,
@@ -39,7 +39,7 @@ PERMISSION_TO_DTOS: Dict[Permission, Permissions] = {
     Permission.REQUEST_TO_SPEAK: Permissions.REQUEST_TO_SPEAK
 }
 
-PERMISSION_TO_MODELS: Dict[Permissions, Permission] = {
+PERMISSION_TO_MODELS: dict[Permissions, Permission] = {
     dto: model
     for model, dto in PERMISSION_TO_DTOS.items()
 }

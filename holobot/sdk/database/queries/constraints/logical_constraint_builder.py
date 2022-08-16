@@ -1,6 +1,7 @@
-from .iconstraint_builder import IConstraintBuilder
+from typing import Any
+
 from ..enums import Connector
-from typing import Any, Tuple
+from .iconstraint_builder import IConstraintBuilder
 
 class LogicalConstraintBuilder(IConstraintBuilder):
     def __init__(self,
@@ -9,17 +10,17 @@ class LogicalConstraintBuilder(IConstraintBuilder):
         constraint2: IConstraintBuilder,
         *constraints: IConstraintBuilder) -> None:
         self.__connector: Connector = connector
-        self.__constraints: Tuple[IConstraintBuilder, ...] = tuple([constraint1, constraint2, *constraints])
-    
+        self.__constraints: tuple[IConstraintBuilder, ...] = tuple([constraint1, constraint2, *constraints])
+
     @property
     def connector(self) -> Connector:
         return self.__connector
-    
+
     @property
-    def constraints(self) -> Tuple[IConstraintBuilder, ...]:
+    def constraints(self) -> tuple[IConstraintBuilder, ...]:
         return self.__constraints
 
-    def build(self, base_param_index: int) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self, base_param_index: int) -> tuple[str, tuple[Any, ...]]:
         sql = []
         arguments = []
 

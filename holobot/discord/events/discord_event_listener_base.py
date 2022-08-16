@@ -3,8 +3,8 @@ from typing import Any, Generic, Type
 
 import hikari
 
-from .idiscord_event_listener import IDiscordEventListener, TEvent
 from holobot.discord.bot import Bot
+from .idiscord_event_listener import IDiscordEventListener, TEvent
 
 class DiscordEventListenerBase(
     Generic[TEvent],

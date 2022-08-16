@@ -1,12 +1,6 @@
-from typing import Optional
 
 import contextlib
 
-from .interactables.decorators import moderation_command, moderation_menu_item
-from .responses import UserMutedResponse as UserMutedInteractionResponse
-from .responses.menu_item_responses import UserMutedResponse as UserMutedMenuItemResponse
-from ..enums import ModeratorPermission
-from ..managers import IMuteManager
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
@@ -14,12 +8,19 @@ from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    ServerChatInteractionContext, ServerUserInteractionContext
+)
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from ..enums import ModeratorPermission
+from ..managers import IMuteManager
+from .interactables.decorators import moderation_command, moderation_menu_item
+from .responses import UserMutedResponse as UserMutedInteractionResponse
+from .responses.menu_item_responses import UserMutedResponse as UserMutedMenuItemResponse
 
 @injectable(IWorkflow)
 class MuteUserWorkflow(WorkflowBase):
@@ -52,7 +53,7 @@ class MuteUserWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         user: str,
         reason: str,
-        duration: Optional[str] = None
+        duration: str | None = None
     ) -> InteractionResponse:
         user = user.strip()
         reason = reason.strip()

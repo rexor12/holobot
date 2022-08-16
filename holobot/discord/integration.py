@@ -1,7 +1,7 @@
-from .bot import BotServiceInterface
 from holobot.sdk.integration import IntegrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from .bot import BotServiceInterface
 
 @injectable(IntegrationInterface)
 class Integration(IntegrationInterface):

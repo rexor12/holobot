@@ -1,15 +1,12 @@
-from hikari import (
-    ForbiddenError as HikariForbiddenError,
-    TextableGuildChannel
-)
+from hikari import ForbiddenError as HikariForbiddenError, TextableGuildChannel
 
-from .bot import BotAccessor
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.utils import get_guild_channel
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
+from .bot import BotAccessor
 
 @injectable(IMessaging)
 class Messaging(IMessaging):

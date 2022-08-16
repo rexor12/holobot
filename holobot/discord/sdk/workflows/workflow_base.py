@@ -1,10 +1,10 @@
 from typing import Protocol
 
+from ..enums import Permission
 from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
 from .interactables import Interactable
 from .iworkflow import IWorkflow
 from .workflow_meta import WorkflowMeta
-from ..enums import Permission
 
 class MixinMeta(WorkflowMeta, type(Protocol)):
     pass

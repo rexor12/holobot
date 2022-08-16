@@ -1,8 +1,8 @@
 from __future__ import annotations
-from enum import IntFlag, unique
 
 import functools
 import operator
+from enum import IntFlag, unique
 
 @unique
 class Permission(IntFlag):

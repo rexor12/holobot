@@ -1,4 +1,10 @@
+from typing import Any
+
 from .compiled_query import CompiledQuery
+from .constraints import (
+    ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
+)
+from .enums import Connector, Equality
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
@@ -6,24 +12,21 @@ from .order_by_builder import OrderByBuilder
 from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
-from .constraints import ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
-from .enums import Connector, Equality
-from typing import Any, Optional, Tuple
 
 class WhereBuilder(IWhereBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.constraint = EmptyConstraintBuilder()
-    
-    def field(self, column_name: str, equality: Equality, value: Optional[Any], is_raw_value: bool = False) -> WhereConstraintBuilder:
+
+    def field(self, column_name: str, equality: Equality, value: Any | None, is_raw_value: bool = False) -> WhereConstraintBuilder:
         self.constraint = ColumnConstraintBuilder(column_name, equality, value, is_raw_value)
         return WhereConstraintBuilder(self)
-    
+
     def fields(self,
         connector: Connector,
-        field1: Tuple[str, Equality, Optional[Any]],
-        field2: Tuple[str, Equality, Optional[Any]],
-        *fields: Tuple[str, Equality, Optional[Any]]) -> 'WhereConstraintBuilder':
+        field1: tuple[str, Equality, Any | None],
+        field2: tuple[str, Equality, Any | None],
+        *fields: tuple[str, Equality, Any | None]) -> 'WhereConstraintBuilder':
         self.constraint = LogicalConstraintBuilder(
             connector,
             ColumnConstraintBuilder(field1[0], field1[1], field1[2]),
@@ -31,17 +34,17 @@ class WhereBuilder(IWhereBuilder):
             *[ColumnConstraintBuilder(field[0], field[1], field[2]) for field in fields]
         )
         return WhereConstraintBuilder(self)
-    
+
     def expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:
        self.constraint = constraint
        return WhereConstraintBuilder(self)
-    
+
     def order_by(self) -> OrderByBuilder:
         return OrderByBuilder(self)
-    
+
     def limit(self) -> LimitBuilder:
         return LimitBuilder(self)
-    
+
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)
 
@@ -56,7 +59,7 @@ class WhereBuilder(IWhereBuilder):
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         if isinstance(self.constraint, EmptyConstraintBuilder):
             raise ValueError("A constraint must be specified.")
 

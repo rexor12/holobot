@@ -1,4 +1,5 @@
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import structlog
 
@@ -29,7 +30,7 @@ class DefaultLogger(ILogger):
     def error(
         self,
         message: str,
-        exception: Optional[Exception] = None,
+        exception: Exception | None = None,
         **kwargs: Any
     ) -> None:
         self.__logger.error(

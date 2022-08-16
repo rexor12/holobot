@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Tuple
 
-from .choice import Choice
 from ..enums import OptionType
+from .choice import Choice
 
 @dataclass
 class Option:
@@ -20,5 +19,5 @@ class Option:
     is_mandatory: bool = True
     """Determines whether this option must always be specified."""
 
-    choices: Tuple[Choice, ...] = field(default_factory=tuple)
+    choices: tuple[Choice, ...] = field(default_factory=tuple)
     """An optional list of pre-defined choices that can be selected."""

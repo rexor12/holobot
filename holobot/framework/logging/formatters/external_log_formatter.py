@@ -1,7 +1,6 @@
-from io import StringIO
-
 import logging
 import traceback
+from io import StringIO
 
 class ExternalLogFormatter(object):
     """A formatter used to format log records emitted by external libraries."""

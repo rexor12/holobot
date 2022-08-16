@@ -1,4 +1,4 @@
-from typing import Any, Dict, Protocol
+from typing import Any, Protocol
 
 from holobot.sdk.diagnostics import IExecutionContext
 
@@ -7,6 +7,6 @@ class IExecutionContextFactory(Protocol):
         self,
         message: str,
         event_name: str,
-        extra_info: Dict[str, Any] | None = None
+        extra_info: dict[str, Any] | None = None
     ) -> IExecutionContext:
         ...

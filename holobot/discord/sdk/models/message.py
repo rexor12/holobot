@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
 
 @dataclass
 class Message:
-    server_id: Optional[str]
+    server_id: str | None
     channel_id: str
     message_id: str

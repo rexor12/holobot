@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from holobot.sdk.diagnostics import ExecutionContextData, IExecutionContext, Stopwatch
 
@@ -18,7 +19,7 @@ class ExecutionContextWrapper(IExecutionContext):
     def start(
         self,
         event_name: str,
-        extra_info: Dict[str, Any] | None = None
+        extra_info: dict[str, Any] | None = None
     ) -> Stopwatch:
         return self.__context.start(event_name, extra_info)
 

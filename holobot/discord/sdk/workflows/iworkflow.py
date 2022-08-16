@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from .interactables import Interactable
 from ..enums import Permission
+from .interactables import Interactable
 
 class IWorkflow(Protocol):
     @property

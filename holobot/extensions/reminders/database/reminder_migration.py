@@ -1,7 +1,8 @@
 from asyncpg.connection import Connection
-from holobot.sdk.ioc.decorators import injectable
+
 from holobot.sdk.database.migration import MigrationBase, MigrationInterface
 from holobot.sdk.database.migration.models import MigrationPlan
+from holobot.sdk.ioc.decorators import injectable
 
 TABLE_NAME = "reminders"
 

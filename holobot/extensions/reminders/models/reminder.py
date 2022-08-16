@@ -1,6 +1,6 @@
-from ..enums import DayOfWeek
 from datetime import date, datetime, timedelta
-from typing import Optional
+
+from ..enums import DayOfWeek
 
 class Reminder:
     def __init__(self) -> None:
@@ -20,11 +20,11 @@ class Reminder:
     @property
     def id(self) -> int:
         return self.__id
-        
+
     @id.setter
     def id(self, value: int) -> None:
         self.__id = value
-    
+
     @property
     def user_id(self) -> str:
         return self.__user_id
@@ -32,7 +32,7 @@ class Reminder:
     @user_id.setter
     def user_id(self, value: str) -> None:
         self.__user_id = value
-    
+
     @property
     def message(self) -> str:
         return self.__message
@@ -40,7 +40,7 @@ class Reminder:
     @message.setter
     def message(self, value: str) -> None:
         self.__message = value
-    
+
     @property
     def created_at(self) -> datetime:
         return self.__created_at
@@ -48,7 +48,7 @@ class Reminder:
     @created_at.setter
     def created_at(self, value: datetime) -> None:
         self.__created_at = value
-    
+
     @property
     def is_repeating(self) -> bool:
         return self.__is_repeating
@@ -56,7 +56,7 @@ class Reminder:
     @is_repeating.setter
     def is_repeating(self, value: bool) -> None:
         self.__is_repeating = value
-    
+
     @property
     def frequency_time(self) -> timedelta:
         return self.__frequency_time
@@ -64,7 +64,7 @@ class Reminder:
     @frequency_time.setter
     def frequency_time(self, value: timedelta) -> None:
         self.__frequency_time = value
-    
+
     @property
     def day_of_week(self) -> DayOfWeek:
         return self.__day_of_week
@@ -72,15 +72,15 @@ class Reminder:
     @day_of_week.setter
     def day_of_week(self, value: DayOfWeek) -> None:
         self.__day_of_week = value
-    
+
     @property
-    def until_date(self) -> Optional[date]:
+    def until_date(self) -> date | None:
         return self.__until_date
 
     @until_date.setter
-    def until_date(self, value: Optional[date]) -> None:
+    def until_date(self, value: date | None) -> None:
         self.__until_date = value
-    
+
     @property
     def base_trigger(self) -> datetime:
         return self.__base_trigger
@@ -88,7 +88,7 @@ class Reminder:
     @base_trigger.setter
     def base_trigger(self, value: datetime) -> None:
         self.__base_trigger = value
-    
+
     @property
     def last_trigger(self) -> datetime:
         return self.__last_trigger
@@ -96,7 +96,7 @@ class Reminder:
     @last_trigger.setter
     def last_trigger(self, value: datetime) -> None:
         self.__last_trigger = value
-    
+
     @property
     def next_trigger(self) -> datetime:
         return self.__next_trigger
@@ -104,13 +104,13 @@ class Reminder:
     @next_trigger.setter
     def next_trigger(self, value: datetime) -> None:
         self.__next_trigger = value
-    
+
     @property
     def is_expired(self) -> bool:
         if self.until_date is None:
             return False
         return self.__next_trigger.date() > self.until_date
-    
+
     def __str__(self) -> str:
         return (
             "<Reminder id: {}, repeats: {}, last trigger: {}, next trigger: {}, frequency: {}>"

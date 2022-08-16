@@ -1,4 +1,5 @@
 from hikari import ForbiddenError as HikariForbiddenError
+
 from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.discord.utils import get_guild_member, get_guild_role

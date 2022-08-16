@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional
 
 @dataclass(kw_only=True)
 class Emoji:
-    identifier: Optional[str]
-    url: Optional[str]
-    mention: Optional[str]
+    identifier: str | None
+    url: str | None
+    mention: str | None
     is_known: bool

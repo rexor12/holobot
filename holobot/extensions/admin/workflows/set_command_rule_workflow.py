@@ -1,4 +1,3 @@
-from typing import Optional
 
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
@@ -45,10 +44,10 @@ class SetCommandRuleWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         state: str,
-        group: Optional[str] = None,
-        subgroup: Optional[str] = None,
-        command: Optional[str] = None,
-        channel: Optional[str] = None
+        group: str | None = None,
+        subgroup: str | None = None,
+        command: str | None = None,
+        channel: str | None = None
     ) -> InteractionResponse:
         if context.server_id is None:
             return InteractionResponse(

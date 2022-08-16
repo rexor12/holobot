@@ -1,13 +1,12 @@
 from datetime import timedelta
-from typing import Optional
 
 from asyncpg.connection import Connection
 
-from .iwarn_repository import IWarnRepository
-from ..models import WarnStrike
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.constraints import and_expression, column_expression, or_expression
+from holobot.sdk.database.queries.constraints import (
+    and_expression, column_expression, or_expression
+)
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
@@ -15,6 +14,8 @@ from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import assert_not_none
+from ..models import WarnStrike
+from .iwarn_repository import IWarnRepository
 
 TABLE_NAME = "moderation_warns"
 SETTINGS_TABLE_NAME = "moderation_warn_settings"
@@ -32,7 +33,7 @@ class WarnRepository(IWarnRepository):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                count: Optional[int] = await connection.fetchval(
+                count: int | None = await connection.fetchval(
                     (
                         f"SELECT COUNT(*) FROM {TABLE_NAME} AS t1"
                         f" LEFT JOIN {SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
@@ -83,7 +84,7 @@ class WarnRepository(IWarnRepository):
                     [WarnRepository.__map_to_model(record) for record in result.records]
                 )
 
-    async def add_warn(self, warn_strike: WarnStrike, decay_threshold: Optional[timedelta] = None) -> int:
+    async def add_warn(self, warn_strike: WarnStrike, decay_threshold: timedelta | None = None) -> int:
         assert_not_none(warn_strike, "warn_strike")
         assert_not_none(warn_strike.server_id, "warn_strike.server_id")
         assert_not_none(warn_strike.user_id, "warn_strike.user_id")
@@ -99,7 +100,7 @@ class WarnRepository(IWarnRepository):
             connection: Connection
             async with connection.transaction():
                 await self.__clear_warns_older_than(connection, decay_threshold)
-                id: Optional[int] = await Query.insert().in_table(TABLE_NAME).fields(
+                id: int | None = await Query.insert().in_table(TABLE_NAME).fields(
                     ("server_id", warn_strike.server_id),
                     ("user_id", warn_strike.user_id),
                     ("reason", warn_strike.reason),
@@ -108,7 +109,7 @@ class WarnRepository(IWarnRepository):
                 if id is None:
                     raise ValueError("Unexpected error while creating a new warn.")
                 return id
-    
+
     async def clear_warns_by_server(self, server_id: str) -> int:
         assert_not_none(server_id, "server_id")
 
@@ -119,7 +120,7 @@ class WarnRepository(IWarnRepository):
                     "server_id", Equality.EQUAL, server_id
                 ).compile().execute(connection)
                 return status.command_tag.rows
-    
+
     async def clear_warns_by_user(self, server_id: str, user_id: str) -> int:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -133,7 +134,7 @@ class WarnRepository(IWarnRepository):
                     ("user_id", Equality.EQUAL, user_id)
                 ).compile().execute(connection)
                 return status.command_tag.rows
-    
+
     async def clear_expired_warns(self) -> int:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -147,15 +148,15 @@ class WarnRepository(IWarnRepository):
                 )
                 status_tag: CommandComplete[DeleteCommandTag] = CommandComplete.parse(status)
                 return status_tag.command_tag.rows
-    
-    async def __clear_warns_older_than(self, connection: Connection, threshold: Optional[timedelta]) -> None:
+
+    async def __clear_warns_older_than(self, connection: Connection, threshold: timedelta | None) -> None:
         if threshold is None:
             return
 
         await Query.delete().from_table(TABLE_NAME).where().field(
             "created_at", Equality.LESS, f"(NOW() at time zone 'utc') - interval '{int(threshold.total_seconds())} seconds'", True
         ).compile().execute(connection)
-    
+
     @staticmethod
     def __map_to_model(record) -> WarnStrike:
         model = WarnStrike()

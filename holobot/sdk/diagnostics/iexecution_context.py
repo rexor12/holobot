@@ -1,8 +1,9 @@
-from typing import Any, Dict, Protocol, Sequence
+from collections.abc import Sequence
+from typing import Any, Protocol
 
+from holobot.sdk import IDisposable
 from .execution_context_data import ExecutionContextData
 from .stopwatch import Stopwatch
-from holobot.sdk import IDisposable
 
 class IExecutionContext(IDisposable, Protocol):
     def collect(self) -> Sequence[ExecutionContextData]:
@@ -11,6 +12,6 @@ class IExecutionContext(IDisposable, Protocol):
     def start(
         self,
         event_name: str,
-        extra_info: Dict[str, Any] | None = None
+        extra_info: dict[str, Any] | None = None
     ) -> Stopwatch:
         ...

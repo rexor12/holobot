@@ -1,5 +1,3 @@
-from .. import ReminderManagerInterface
-from ..exceptions import InvalidReminderError
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -9,6 +7,8 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from .. import ReminderManagerInterface
+from ..exceptions import InvalidReminderError
 
 @injectable(IWorkflow)
 class RemoveReminderWorkflow(WorkflowBase):

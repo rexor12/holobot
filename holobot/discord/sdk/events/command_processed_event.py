@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any, Optional, Type
+from typing import Any, Type
 
-from ..workflows.interactables.models import InteractionResponse
 from holobot.sdk.reactive.models import EventBase
+from ..workflows.interactables.models import InteractionResponse
 
 @dataclass(frozen=True)
 class CommandProcessedEvent(EventBase):
@@ -10,6 +10,6 @@ class CommandProcessedEvent(EventBase):
     server_id: str = ""
     user_id: str = ""
     command: str = ""
-    group: Optional[str] = None
-    subgroup: Optional[str] = None
+    group: str | None = None
+    subgroup: str | None = None
     response: InteractionResponse = field(default_factory=InteractionResponse)

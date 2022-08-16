@@ -1,9 +1,11 @@
 from __future__ import annotations
-from .child_command_builder import ChildCommandBuilder
-from hikari.api.special_endpoints import SlashCommandBuilder
-from typing import Callable, Dict
+
+from collections.abc import Callable
 
 import hikari
+from hikari.api.special_endpoints import SlashCommandBuilder
+
+from .child_command_builder import ChildCommandBuilder
 
 class CommandSubGroupBuilder:
     @property
@@ -18,7 +20,7 @@ class CommandSubGroupBuilder:
         self.__name: str = name
         self.__description: str = description
         self.__parent_builder: CommandGroupBuilder = parent_builder
-        self.__commands: Dict[str, ChildCommandBuilder[CommandSubGroupBuilder]] = {}
+        self.__commands: dict[str, ChildCommandBuilder[CommandSubGroupBuilder]] = {}
 
     def with_command(self, name: str, description: str) -> ChildCommandBuilder[CommandSubGroupBuilder]:
         if name in self.__commands:
@@ -43,8 +45,8 @@ class CommandGroupBuilder:
         self.__name: str = name
         self.__description: str = description
         self.__slash_command_builder_factory: Callable[[str, str], SlashCommandBuilder] = slash_command_builder_factory
-        self.__sub_groups: Dict[str, CommandSubGroupBuilder] = {}
-        self.__commands: Dict[str, ChildCommandBuilder[CommandGroupBuilder]] = {}
+        self.__sub_groups: dict[str, CommandSubGroupBuilder] = {}
+        self.__commands: dict[str, ChildCommandBuilder[CommandGroupBuilder]] = {}
 
     def with_command(self, name: str, description: str) -> ChildCommandBuilder[CommandGroupBuilder]:
         if name in self.__commands:

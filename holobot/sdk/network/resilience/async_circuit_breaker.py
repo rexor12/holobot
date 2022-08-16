@@ -1,9 +1,9 @@
+import asyncio
+from collections.abc import Callable, Coroutine
+from time import time
+
 from .exceptions.circuit_broken_error import CircuitBrokenError
 from .models.circuit_state import CircuitState
-from time import time
-from typing import Callable, Coroutine
-
-import asyncio
 
 DEFAULT_FAILURE_THRESHOLD: int = 5
 DEFAULT_RECOVERY_TIMEOUT: int = 30

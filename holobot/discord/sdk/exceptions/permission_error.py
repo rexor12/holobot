@@ -1,11 +1,10 @@
 from ..enums import Permission
-from typing import Optional
 
 class PermissionError(Exception):
-    def __init__(self, permissions: Optional[Permission], *args: object) -> None:
+    def __init__(self, permissions: Permission | None, *args: object) -> None:
         super().__init__(*args)
-        self.__permissions: Optional[Permission] = permissions
-    
+        self.__permissions: Permission | None = permissions
+
     @property
-    def permissions(self) -> Optional[Permission]:
+    def permissions(self) -> Permission | None:
         return self.__permissions

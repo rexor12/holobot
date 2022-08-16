@@ -1,16 +1,19 @@
-from typing import Any, Dict, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from asyncpg.connection import Connection
 
-from .command_rule_repository_interface import CommandRuleRepositoryInterface
-from .enums.rule_state import RuleState
-from .models import CommandRule
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.constraints import column_expression, and_expression, or_expression
+from holobot.sdk.database.queries.constraints import (
+    and_expression, column_expression, or_expression
+)
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
+from .command_rule_repository_interface import CommandRuleRepositoryInterface
+from .enums.rule_state import RuleState
+from .models import CommandRule
 
 TABLE_NAME = "admin_rules"
 
@@ -24,7 +27,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                id: Optional[int] = await Query.update().table(TABLE_NAME).fields(
+                id: int | None = await Query.update().table(TABLE_NAME).fields(
                     ("created_at", rule.created_at),
                     ("created_by", rule.created_by),
                     ("state", rule.state)
@@ -38,7 +41,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 ).returning().column("id").compile().fetchval(connection)
                 if id is not None:
                     return id
-                
+
                 id = await Query.insert().in_table(TABLE_NAME).fields(
                     ("created_at", rule.created_at),
                     ("created_by", rule.created_by),
@@ -52,8 +55,8 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 if id is None:
                     raise ValueError("Unexpected error while creating a new rule.")
                 return id
-    
-    async def get(self, id: int) -> Optional[CommandRule]:
+
+    async def get(self, id: int) -> CommandRule | None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -63,12 +66,12 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                     "id", Equality.EQUAL, id
                 ).compile().fetchrow(connection)
                 return CommandRuleRepository.__record_to_entity(record) if record is not None else None
-    
+
     async def get_many(
         self,
         server_id: str,
-        group: Optional[str],
-        subgroup: Optional[str],
+        group: str | None,
+        subgroup: str | None,
         page_index: int,
         page_size: int
     ) -> PaginationResult[CommandRule]:
@@ -89,21 +92,21 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                     .compile()
                     .fetch(connection)
                 )
-                
+
                 return PaginationResult(
                     result.page_index,
                     result.page_size,
                     result.total_count,
                     [CommandRuleRepository.__record_to_entity(record) for record in result.records]
                 )
-    
+
     async def get_relevant(
         self,
         server_id: str,
         channel_id: str,
-        group: Optional[str],
-        subgroup: Optional[str],
-        command: Optional[str]
+        group: str | None,
+        subgroup: str | None,
+        command: str | None
     ) -> Sequence[CommandRule]:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -156,13 +159,13 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                     )
                 ).compile().fetch(connection)
                 return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
-    
+
     async def delete_by_id(self, rule_id: int) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
                 await Query.delete().from_table(TABLE_NAME).where().field("id", Equality.EQUAL, rule_id).compile().execute(connection)
-    
+
     async def delete_by_server(self, server_id: str) -> None:
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection
@@ -170,7 +173,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 await Query.delete().from_table(TABLE_NAME).where().field("server_id", Equality.EQUAL, server_id).compile().execute(connection)
 
     @staticmethod
-    def __record_to_entity(record: Dict[str, Any]) -> CommandRule:
+    def __record_to_entity(record: dict[str, Any]) -> CommandRule:
         entity = CommandRule()
         entity.id = record["id"]
         entity.created_at = record["created_at"]

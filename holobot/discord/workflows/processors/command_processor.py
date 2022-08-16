@@ -1,4 +1,3 @@
-from typing import Tuple
 from uuid import uuid4
 
 from hikari import CommandInteraction, OptionType
@@ -10,11 +9,13 @@ from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
-from holobot.discord.workflows import IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
+from holobot.discord.workflows import (
+    IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
+)
 from holobot.discord.workflows.models import InteractionDescriptor
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.diagnostics import IExecutionContextFactory
 from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
@@ -23,11 +24,11 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
     def __init__(
         self,
         action_processor: IActionProcessor,
-        event_listeners: Tuple[IListener[CommandProcessedEvent], ...],
+        event_listeners: tuple[IListener[CommandProcessedEvent], ...],
         i18n_provider: II18nProvider,
         log: ILoggerFactory,
         measurement_context_factory: IExecutionContextFactory,
-        workflow_execution_rules: Tuple[IWorkflowExecutionRule, ...],
+        workflow_execution_rules: tuple[IWorkflowExecutionRule, ...],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__(action_processor, i18n_provider, log, measurement_context_factory, workflow_execution_rules)

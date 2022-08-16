@@ -1,8 +1,9 @@
-from .iconfig_provider import IConfigProvider
 from datetime import timedelta
+
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.math import Range
+from .iconfig_provider import IConfigProvider
 
 SECTION_NAME = "Moderation"
 

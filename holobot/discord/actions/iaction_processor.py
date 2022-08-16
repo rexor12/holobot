@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Coroutine
+from collections.abc import Coroutine
+from typing import Any
 
 from hikari import PartialInteraction
 

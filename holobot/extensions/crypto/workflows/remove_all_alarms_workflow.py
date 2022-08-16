@@ -1,10 +1,10 @@
-from .. import AlertManagerInterface
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
+from .. import AlertManagerInterface
 
 @injectable(IWorkflow)
 class RemoveAllAlarmsWorkflow(WorkflowBase):

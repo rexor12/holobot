@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from .interactable import Interactable
 from .enums import MenuType
+from .interactable import Interactable
 
 @dataclass(kw_only=True)
 class MenuItem(Interactable):

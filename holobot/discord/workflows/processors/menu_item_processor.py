@@ -2,22 +2,23 @@ from uuid import uuid4
 
 from hikari import CommandInteraction, CommandType
 
-
-from .imenu_item_processor import IMenuItemProcessor
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.events import MenuItemProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import MenuItem
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.discord.sdk.workflows.models import ServerMessageInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    ServerMessageInteractionContext, ServerUserInteractionContext
+)
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.diagnostics import IExecutionContextFactory
 from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
+from .imenu_item_processor import IMenuItemProcessor
 
 @injectable(IMenuItemProcessor)
 class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], IMenuItemProcessor):

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Type
 
-from ..workflows.interactables.models import InteractionResponse
 from holobot.sdk.reactive.models import EventBase
+from ..workflows.interactables.models import InteractionResponse
 
 @dataclass
 class ComponentProcessedEvent(EventBase):

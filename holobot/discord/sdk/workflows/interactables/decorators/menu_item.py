@@ -1,12 +1,12 @@
 from collections.abc import Callable, Coroutine
 from typing import Any
 
-from ..enums import MenuType
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import MenuItem
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from ..enums import MenuType
 
 def menu_item(
     *,

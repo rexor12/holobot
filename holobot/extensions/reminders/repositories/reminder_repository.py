@@ -2,14 +2,14 @@ from datetime import datetime
 
 from asyncpg.connection import Connection
 
-from .reminder_repository_interface import ReminderRepositoryInterface
-from ..enums import DayOfWeek
-from ..models import Reminder
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
+from ..enums import DayOfWeek
+from ..models import Reminder
+from .reminder_repository_interface import ReminderRepositoryInterface
 
 TABLE_NAME = "reminders"
 

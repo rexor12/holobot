@@ -1,11 +1,11 @@
 
 
-from .lifecycle_manager_interface import LifecycleManagerInterface
 from holobot.sdk.diagnostics import IExecutionContextFactory
 from holobot.sdk.exceptions import AggregateError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
+from .lifecycle_manager_interface import LifecycleManagerInterface
 
 @injectable(LifecycleManagerInterface)
 class LifecycleManager(LifecycleManagerInterface):

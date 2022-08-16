@@ -1,8 +1,8 @@
 from datetime import timedelta
 from typing import Protocol
 
-from ..models import WarnStrike
 from holobot.sdk.queries import PaginationResult
+from ..models import WarnStrike
 
 class IWarnManager(Protocol):
     async def get_warns(

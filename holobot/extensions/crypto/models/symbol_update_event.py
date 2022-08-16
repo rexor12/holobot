@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from holobot.sdk.reactive.models import EventBase
 
 class SymbolUpdateEvent(EventBase):

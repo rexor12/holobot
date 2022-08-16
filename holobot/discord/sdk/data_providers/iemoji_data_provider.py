@@ -1,5 +1,6 @@
-from ..models import Emoji
 from abc import ABCMeta, abstractmethod
+
+from ..models import Emoji
 
 class IEmojiDataProvider(metaclass=ABCMeta):
     @abstractmethod

@@ -1,6 +1,7 @@
+from dataclasses import dataclass, field
+
 from .embed_field import EmbedField
 from .embed_footer import EmbedFooter
-from dataclasses import dataclass, field
 
 @dataclass
 class Embed:

@@ -2,12 +2,12 @@ from typing import Any, Type
 
 import hikari
 
-from .discord_event_listener_base import DiscordEventListenerBase
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.events import ServerMemberLeftEvent
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 _EVENT_TYPE = hikari.MemberDeleteEvent
 

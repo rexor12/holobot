@@ -2,11 +2,11 @@ from typing import Any, Type
 
 import hikari
 
-from .discord_event_listener_base import DiscordEventListenerBase
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import IEnvironment
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 _EVENT_TYPE = hikari.StartedEvent
 

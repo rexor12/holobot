@@ -1,6 +1,7 @@
-from .condition_data import ConditionData
-from holobot.sdk.utils import try_parse_float, try_parse_int
 from typing import Any
+
+from holobot.sdk.utils import try_parse_float, try_parse_int
+from .condition_data import ConditionData
 
 class WeatherData:
     def __init__(self) -> None:

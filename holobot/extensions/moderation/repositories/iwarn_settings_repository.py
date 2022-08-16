@@ -1,5 +1,6 @@
-from ..models import WarnSettings
 from datetime import timedelta
+
+from ..models import WarnSettings
 
 class IWarnSettingsRepository:
     async def get_warn_decay_threshold(self, server_id: str) -> timedelta | None:

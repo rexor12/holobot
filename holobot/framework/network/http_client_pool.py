@@ -1,10 +1,11 @@
+from collections.abc import Callable, Generator
+from types import coroutine
+from typing import Any
+
 from aiohttp import ClientSession
 from aiohttp.client import ClientTimeout
 from aiohttp.web_exceptions import HTTPError, HTTPForbidden, HTTPNotFound
-from collections.abc import Callable, Generator
 from multidict import CIMultiDict
-from types import coroutine
-from typing import Any
 
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable

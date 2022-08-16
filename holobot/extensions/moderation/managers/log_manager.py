@@ -1,9 +1,9 @@
-from .ilog_manager import ILogManager
-from ..repositories import ILogSettingsRepository
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
+from ..repositories import ILogSettingsRepository
+from .ilog_manager import ILogManager
 
 @injectable(ILogManager)
 class LogManager(ILogManager):

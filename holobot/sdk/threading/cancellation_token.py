@@ -1,6 +1,6 @@
+import asyncio
 from collections.abc import Callable
 from typing import Any
-import asyncio
 
 from .cancellation_token_registration import CancellationTokenRegistration
 

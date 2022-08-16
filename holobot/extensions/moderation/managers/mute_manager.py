@@ -1,14 +1,15 @@
-from .imute_manager import IMuteManager
-from .. import IConfigProvider
-from ..constants import MUTED_ROLE_NAME
-from ..exceptions import RoleNotFoundError
-from ..repositories import IMutesRepository
 from datetime import datetime, timedelta
+
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.servers.managers import IChannelManager, IRoleManager, IUserManager
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, textify_timedelta
+from .. import IConfigProvider
+from ..constants import MUTED_ROLE_NAME
+from ..exceptions import RoleNotFoundError
+from ..repositories import IMutesRepository
+from .imute_manager import IMuteManager
 
 @injectable(IMuteManager)
 class MuteManager(IMuteManager):

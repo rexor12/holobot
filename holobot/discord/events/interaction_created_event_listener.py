@@ -1,15 +1,14 @@
 from typing import Any, Type
 
+import hikari
 from hikari import CommandInteraction, ComponentInteraction
 
-import hikari
-
-from .discord_event_listener_base import DiscordEventListenerBase
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
 from holobot.discord.workflows import IInteractionProcessor
 from holobot.discord.workflows.processors import IMenuItemProcessor
 from holobot.sdk.ioc.decorators import injectable
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 _EVENT_TYPE = hikari.InteractionCreateEvent
 

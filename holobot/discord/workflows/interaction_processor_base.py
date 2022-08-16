@@ -1,12 +1,10 @@
 from abc import ABCMeta, abstractmethod
-from types import coroutine
 from collections.abc import Coroutine, Generator
+from types import coroutine
 from typing import Any, Generic, TypeVar
 
 import hikari
 
-from .iinteraction_processor import IInteractionProcessor, TInteraction
-from .models import InteractionDescriptor
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
@@ -18,6 +16,8 @@ from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.sdk.diagnostics import IExecutionContext, IExecutionContextFactory
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.logging import ILoggerFactory
+from .iinteraction_processor import IInteractionProcessor, TInteraction
+from .models import InteractionDescriptor
 
 TInteractable = TypeVar("TInteractable", bound=Interactable, contravariant=True)
 

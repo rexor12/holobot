@@ -1,9 +1,6 @@
 from json import dumps
 from typing import Any
 
-from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
-from .models import WeatherData
-from .weather_client_interface import WeatherClientInterface
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
@@ -12,6 +9,9 @@ from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
+from .models import WeatherData
+from .weather_client_interface import WeatherClientInterface
 
 CONFIG_SECTION = "OpenWeather"
 API_GATEWAY_PARAMETER = "ApiGatewayBaseUrl"

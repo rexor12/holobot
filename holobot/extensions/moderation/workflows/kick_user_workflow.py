@@ -1,10 +1,5 @@
 import contextlib
 
-from .interactables.decorators import moderation_command, moderation_menu_item
-from .responses import UserKickedResponse as UserKickedInteractionResponse
-from .responses.menu_item_responses import UserKickedResponse as UserKickedMenuItemResponse
-from .. import IConfigProvider
-from ..enums import ModeratorPermission
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
@@ -13,9 +8,16 @@ from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, ServerUserInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    ServerChatInteractionContext, ServerUserInteractionContext
+)
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from .. import IConfigProvider
+from ..enums import ModeratorPermission
+from .interactables.decorators import moderation_command, moderation_menu_item
+from .responses import UserKickedResponse as UserKickedInteractionResponse
+from .responses.menu_item_responses import UserKickedResponse as UserKickedMenuItemResponse
 
 @injectable(IWorkflow)
 class KickUserWorkflow(WorkflowBase):

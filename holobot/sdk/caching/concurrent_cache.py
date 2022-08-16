@@ -1,7 +1,8 @@
 from asyncio.locks import Lock
-from holobot.sdk.exceptions import ArgumentError
 from collections.abc import Awaitable, Callable
 from typing import Any, Generic, TypeVar
+
+from holobot.sdk.exceptions import ArgumentError
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")

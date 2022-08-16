@@ -1,4 +1,5 @@
 from hikari import GuildChannel as HikariGuildChannel
+
 from holobot.discord.sdk.servers.models import ServerChannel
 
 def to_model(dto: HikariGuildChannel) -> ServerChannel:

@@ -1,8 +1,8 @@
-from .ipermission_manager import IPermissionManager
-from ..enums import ModeratorPermission
-from ..repositories import IPermissionRepository
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
+from ..enums import ModeratorPermission
+from ..repositories import IPermissionRepository
+from .ipermission_manager import IPermissionManager
 
 @injectable(IPermissionManager)
 class PermissionManager(IPermissionManager):

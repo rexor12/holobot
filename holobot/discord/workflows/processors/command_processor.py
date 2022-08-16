@@ -9,11 +9,13 @@ from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
-from holobot.discord.workflows import IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
+from holobot.discord.workflows import (
+    IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
+)
 from holobot.discord.workflows.models import InteractionDescriptor
-from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.diagnostics import IExecutionContextFactory
 from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 

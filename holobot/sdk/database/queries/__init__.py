@@ -1,5 +1,5 @@
-from .compiled_query import CompiledQuery
 from .compiled_pagination_query import CompiledPaginationQuery
+from .compiled_query import CompiledQuery
 from .delete_builder import DeleteBuilder
 from .do_nothing_builder import DoNothingBuilder
 from .insert_builder import InsertBuilder

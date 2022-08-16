@@ -1,5 +1,6 @@
-from ..utils import pad_left, try_parse_int
 from datetime import timedelta
+
+from ..utils import pad_left, try_parse_int
 
 TIME_PARTS: list[str] = [ "D", "H", "M", "S" ]
 FIXED_INTERVALS: dict[str, timedelta] = {

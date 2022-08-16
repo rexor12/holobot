@@ -1,5 +1,5 @@
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.sdk.events import ServerMemberLeftEvent
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.extensions.moderation.managers import ILogManager, IPermissionManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory

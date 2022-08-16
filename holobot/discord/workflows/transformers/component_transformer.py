@@ -2,11 +2,10 @@ from collections.abc import Callable
 from typing import Any, NamedTuple, Type
 
 import hikari
-import hikari.messages as hikari_messages
 import hikari.api.special_endpoints as endpointsintf
 import hikari.impl.special_endpoints as endpoints
+import hikari.messages as hikari_messages
 
-from .icomponent_transformer import IComponentTransformer
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComboBox, ComponentBase, Paginator, StackLayout
 )
@@ -17,6 +16,7 @@ from holobot.discord.sdk.workflows.interactables.components.models import (
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, assert_range, try_parse_int
+from .icomponent_transformer import IComponentTransformer
 
 PRIMARY_COMPONENT_STYLE_ID: int = 1
 

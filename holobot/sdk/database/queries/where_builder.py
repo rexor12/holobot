@@ -1,4 +1,10 @@
+from typing import Any
+
 from .compiled_query import CompiledQuery
+from .constraints import (
+    ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
+)
+from .enums import Connector, Equality
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
@@ -6,9 +12,6 @@ from .order_by_builder import OrderByBuilder
 from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
-from .constraints import ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
-from .enums import Connector, Equality
-from typing import Any
 
 class WhereBuilder(IWhereBuilder):
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:

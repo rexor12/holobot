@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from .models import TodoItem
 from holobot.sdk.queries import PaginationResult
+from .models import TodoItem
 
 class TodoItemManagerInterface(Protocol):
     async def get_by_user(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[TodoItem]:

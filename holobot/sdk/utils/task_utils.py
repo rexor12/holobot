@@ -1,5 +1,6 @@
-from ..exceptions import AggregateError
 from asyncio.tasks import Task
+
+from ..exceptions import AggregateError
 
 async def when_all(tasks: tuple[Task, ...]) -> None:
     exceptions: list[Exception] = []

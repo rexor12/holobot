@@ -1,7 +1,7 @@
 from __future__ import annotations
-from collections.abc import Callable
 
 import time
+from collections.abc import Callable
 
 from holobot.sdk import IDisposable
 

@@ -1,6 +1,7 @@
+from asyncpg.connection import Connection
+
 from .migration_interface import MigrationInterface
 from .models.migration_plan import MigrationPlan
-from asyncpg.connection import Connection
 
 class MigrationBase(MigrationInterface):
     def __init__(self, table_name: str, upgrade_plans: dict[int, MigrationPlan], downgrade_plans: dict[int, MigrationPlan]):

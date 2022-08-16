@@ -1,12 +1,11 @@
 from typing import Any
 
-from .execution_context_wrapper import ExecutionContextWrapper
 from holobot.sdk.diagnostics import (
-    ExecutionContext, IExecutionContext, IExecutionContextFactory,
-    Stopwatch
+    ExecutionContext, IExecutionContext, IExecutionContextFactory, Stopwatch
 )
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from .execution_context_wrapper import ExecutionContextWrapper
 
 @injectable(IExecutionContextFactory)
 class LoggingExecutionContextFactory(IExecutionContextFactory):

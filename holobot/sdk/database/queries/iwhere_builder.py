@@ -1,5 +1,5 @@
-from .iquery_part_builder import IQueryPartBuilder
 from .constraints import IConstraintBuilder
+from .iquery_part_builder import IQueryPartBuilder
 
 class IWhereBuilder(IQueryPartBuilder):
     @property

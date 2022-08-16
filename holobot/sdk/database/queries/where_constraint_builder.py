@@ -1,13 +1,14 @@
+from typing import Any
+
 from .compiled_query import CompiledQuery
+from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
+from .enums import Connector, Equality
 from .iquery_part_builder import IQueryPartBuilder
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
 from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_builder import IWhereBuilder
-from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
-from .enums import Connector, Equality
-from typing import Any
 
 class WhereConstraintBuilder(IQueryPartBuilder):
     def __init__(self, where_builder: IWhereBuilder) -> None:

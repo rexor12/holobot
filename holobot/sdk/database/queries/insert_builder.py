@@ -1,8 +1,9 @@
+from typing import Any
+
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
 from .on_conflict_builder import OnConflictBuilder
 from .returning_builder import ReturningBuilder
-from typing import Any
 
 class InsertBuilder(IQueryPartBuilder):
     def __init__(self) -> None:

@@ -1,13 +1,11 @@
+import asyncio
+import ssl
 from collections.abc import Generator
 from types import coroutine
 
-import asyncio
-import ssl
-
+import asyncpg
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
-
-import asyncpg
 
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.database import DatabaseManagerInterface

@@ -1,8 +1,5 @@
-from .. import AlertManagerInterface
-from ..enums import FrequencyType, PriceDirection
-from ..repositories import CryptoRepositoryInterface
-from ..utils import is_valid_symbol
 from decimal import Decimal, InvalidOperation
+
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -10,6 +7,10 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
+from .. import AlertManagerInterface
+from ..enums import FrequencyType, PriceDirection
+from ..repositories import CryptoRepositoryInterface
+from ..utils import is_valid_symbol
 
 ALARM_MIN_PRICE = Decimal("0.00000001")
 ALARM_PRICE_UPPER_RATE = Decimal("100")

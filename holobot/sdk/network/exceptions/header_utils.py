@@ -1,7 +1,9 @@
-from .parsers import try_parse_http_date
 from datetime import datetime
-from holobot.sdk.utils import try_parse_int
+
 from multidict import CIMultiDict
+
+from holobot.sdk.utils import try_parse_int
+from .parsers import try_parse_http_date
 
 def try_get_retry_after(headers: CIMultiDict) -> datetime | int | None:
     retry_after = headers.get("Retry-After", None)

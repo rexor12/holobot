@@ -1,15 +1,15 @@
 
-from ..managers import ILogManager
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.discord.sdk.events import MenuItemProcessedEvent
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
 from holobot.extensions.moderation.workflows.interactables import ModerationMenuItem
 from holobot.extensions.moderation.workflows.responses.menu_item_responses import (
-    UserBannedResponse, UserKickedResponse, UserMutedResponse,
-    UserUnmutedResponse, UserWarnedResponse
+    UserBannedResponse, UserKickedResponse, UserMutedResponse, UserUnmutedResponse,
+    UserWarnedResponse
 )
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
+from ..managers import ILogManager
 
 @injectable(IListener[MenuItemProcessedEvent])
 class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):

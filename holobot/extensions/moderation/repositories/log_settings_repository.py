@@ -1,10 +1,11 @@
-from .ilog_settings_repository import ILogSettingsRepository
 from asyncpg.connection import Connection
+
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
+from .ilog_settings_repository import ILogSettingsRepository
 
 TABLE_NAME = "moderation_log_settings"
 

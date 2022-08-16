@@ -2,16 +2,16 @@ from collections.abc import Mapping
 
 import hikari
 
-from ..utils import get_guild_member
-from ..utils.permission_utils import PERMISSION_TO_MODELS
 from holobot.discord.bot import BotAccessor
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
-from holobot.discord.utils import get_guild_channel, get_guild
+from holobot.discord.utils import get_guild, get_guild_channel
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
+from ..utils import get_guild_member
+from ..utils.permission_utils import PERMISSION_TO_MODELS
 
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):

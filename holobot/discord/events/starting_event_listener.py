@@ -1,11 +1,8 @@
 from typing import Any, Type
 
+import hikari
 from hikari.api.special_endpoints import CommandBuilder
 
-import hikari
-
-from .discord_event_listener_base import DiscordEventListenerBase
-from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from holobot.discord.bot import Bot
 from holobot.discord.workflows import IWorkflowRegistry
 from holobot.sdk.configs import ConfiguratorInterface
@@ -13,6 +10,8 @@ from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
+from .discord_event_listener_base import DiscordEventListenerBase
+from .igeneric_discord_event_listener import IGenericDiscordEventListener
 
 _EVENT_TYPE = hikari.StartingEvent
 

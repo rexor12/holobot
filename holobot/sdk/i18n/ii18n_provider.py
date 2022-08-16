@@ -1,4 +1,5 @@
-from typing import Any, Dict, Protocol
+from collections.abc import Sequence
+from typing import Any, Protocol
 
 class II18nProvider(Protocol):
     """Interface for a service used to resolve internationalization keys."""
@@ -6,7 +7,7 @@ class II18nProvider(Protocol):
     def get(
         self,
         key: str,
-        arguments: Dict[str, Any] | None = None,
+        arguments: dict[str, Any] | None = None,
         language: str | None = None,
     ) -> str:
         """Gets the formatted text associated to the specified key.
@@ -18,7 +19,7 @@ class II18nProvider(Protocol):
         :param key: The I18N key used to identify the resource.
         :type key: str
         :param arguments: An optional key-value pair collection to resolve text templates, defaults to None
-        :type arguments: Dict[str, Any] | None, optional
+        :type arguments: dict[str, Any] | None, optional
         :param language: An optional language for which to get the translation, defaults to None
         :type language: str | None, optional
         :return: The formatted text or the key itself if there is no associated value.
@@ -42,6 +43,32 @@ class II18nProvider(Protocol):
         :param language: An optional language for which to get the translation, defaults to None
         :type language: str | None, optional
         :return: The list of strings or an empty list if there is no associated value.
+        :rtype: tuple[str, ...]
+        """
+        ...
+
+    def get_list_items(
+        self,
+        key: str,
+        item_arguments: Sequence[dict[str, Any]],
+        language: str | None = None
+    ) -> tuple[str, ...]:
+        """Gets a list of formatted strings associated to the specified key.
+
+        - If there is no value associated to the specified key, an empty list is returned.
+        - If there is no value associated to the specified key in the specified language,
+        the default translation is returned (or an empty list, as per the above).
+
+        This is essentially the same as resolving the same key for multiple values one by one,
+        but an effort is made to avoid multiple look-ups.
+
+        :param key: The I18N key used to identify the resource.
+        :type key: str
+        :param item_arguments: A list of key-value pair collections to resolve text templates for each item, defaults to None
+        :type item_arguments: Sequence[dict[str, Any]]
+        :param language: An optional language for which to get the translation, defaults to None
+        :type language: str | None, optional
+        :return: The list of formatted strings or an empty list if there is no associated value.
         :rtype: tuple[str, ...]
         """
         ...

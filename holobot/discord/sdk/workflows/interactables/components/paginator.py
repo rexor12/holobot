@@ -21,4 +21,4 @@ class Paginator(InteractableLayoutBase):
             return False
 
         last_page_index = ceil(self.total_count / self.page_size) - 1
-        return self.current_page == last_page_index
+        return self.current_page >= last_page_index

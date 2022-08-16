@@ -209,7 +209,9 @@
             "EpicScraperCircuitBreakerFailureThreshold": 1,
             "EpicScraperCircuitBreakerRecoveryTime": 300,
             "EpicScraperUrl": "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions",
-            "EpicScraperCountryCode": "US"
+            "EpicScraperCountryCode": "US",
+            "GiveawayAnnouncementServerId": 0,
+            "GiveawayAnnouncementChannelId": 0
         }
     }
 }

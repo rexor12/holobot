@@ -39,10 +39,10 @@ class EpicGamesScraper(IScraper):
     ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(EpicGamesScraper)
-        self.__http_client_pool: HttpClientPoolInterface = http_client_pool
-        self.__url: str = configurator.get(CONFIG_SECTION, URL_PARAMETER, "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
-        self.__country_code: str = configurator.get(CONFIG_SECTION, COUNTRY_CODE_PARAMETER, "US")
-        self.__circuit_breaker: AsyncCircuitBreaker = EpicGamesScraper.__create_circuit_breaker(configurator)
+        self.__http_client_pool = http_client_pool
+        self.__url = configurator.get(CONFIG_SECTION, URL_PARAMETER, "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
+        self.__country_code = configurator.get(CONFIG_SECTION, COUNTRY_CODE_PARAMETER, "US")
+        self.__circuit_breaker = EpicGamesScraper.__create_circuit_breaker(configurator)
 
     @property
     def name(self) -> str:

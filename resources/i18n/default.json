@@ -108,6 +108,30 @@
             }
         },
 
+        "giveaways": {
+            "giveaway_types": {
+                "game": "Game"
+            },
+            "publish_new_giveaways_event_listener": {
+                "new_giveaways_crosspost": "I've just sniffed out some new giveaways:\n{items}\n\nCheck them out with the `/giveaway view` command. („• ᴗ •„) ",
+                "new_giveaways_crosspost_list_item": "   ⦁ [{source}] {title}"
+            },
+            "set_announcement_channel_workflow": {
+                "channel_set": "From now on I'll announce new giveaways in <#{channel_id}>.",
+                "channel_unset": "From now on I won't announce new giveaways in any channel."
+            },
+            "view_active_giveaways_workflow": {
+                "no_active_giveaways": "I'm sorry, but currently there are no active giveaways. Please, check back later. (｡•́︿•̀｡)",
+                "selector_placeholder": "Choose a giveaway",
+                "embed_title": "Giveaway details",
+                "embed_field_expires": "Expires",
+                "embed_field_expires_value": "<t:{end_time}:R>",
+                "embed_field_type": "Type",
+                "embed_field_claim_at": "Claim at",
+                "embed_footer": "Sponsored by {source_name}"
+            }
+        },
+
         "google": {
             "search_google_workflow": {
                 "no_results": "I couldn't find any good results for you. Please, refine your keywords and try again. („• ᴗ •„)",

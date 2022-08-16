@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any
 
 from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
@@ -7,31 +7,27 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, Layout, Paginator, StackLayout
 )
-from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.extensions.giveaways.repositories import IExternalGiveawayItemRepository
 from holobot.extensions.giveaways.models import ExternalGiveawayItem
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import try_parse_int
 
-ITEMS_PER_PAGE: int = 5
-ITEM_TYPE_I18N: Dict[str, str] = {
-    "game": "Game"
-}
+_ITEMS_PER_PAGE: int = 5
 
 @injectable(IWorkflow)
-class GetActiveGiveawayItemsWorkflow(WorkflowBase):
+class ViewActiveGiveawaysWorkflow(WorkflowBase):
     def __init__(
         self,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,
-        logger_factory: ILoggerFactory
+        i18n_provider: II18nProvider
     ) -> None:
         super().__init__()
-        self.__logger = logger_factory.create(GetActiveGiveawayItemsWorkflow)
-        self.__repository: IExternalGiveawayItemRepository = external_giveaway_item_repository
+        self.__i18n_provider = i18n_provider
+        self.__repository = external_giveaway_item_repository
 
     @command(
         description="Displays the currently available giveaways.",
@@ -43,7 +39,13 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
         self,
         context: InteractionContext
     ) -> InteractionResponse:
-        content, layout = await self.__create_page_content(0, ITEMS_PER_PAGE, "game", 0, context.author_id)
+        content, layout = await self.__create_page_content(
+            0,
+            _ITEMS_PER_PAGE,
+            "game",
+            0,
+            context.author_id
+        )
         return InteractionResponse(
             action=ReplyAction(content=content, components=layout)
         )
@@ -59,33 +61,30 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(state, ComboBoxState):
-            return InteractionResponse(EditMessageAction((
-                "This interaction isn't valid anymore. If this problem persists,"
-                " please report the issue (see `/info`)."
-            )))
-
-        if len(state.selected_values) != 1:
-            return InteractionResponse(EditMessageAction("You must select a single giveaway."))
+            return InteractionResponse(EditMessageAction(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            ))
 
         identifier, page_index, item_index, item_type = state.selected_values[0].split(";")
         if (not identifier
             or not item_type
             or (page_index := try_parse_int(page_index)) is None
             or (item_index := try_parse_int(item_index)) is None):
-            return InteractionResponse(EditMessageAction((
-                "This interaction isn't valid anymore. If this problem persists,"
-                " please report the issue (see `/info`)."
-            )))
+            return InteractionResponse(EditMessageAction(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            ))
 
+        content, components = await self.__create_page_content(
+            page_index,
+            _ITEMS_PER_PAGE,
+            item_type,
+            item_index,
+            context.author_id
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    page_index,
-                    ITEMS_PER_PAGE,
-                    item_type,
-                    item_index,
-                    context.author_id
-                )
+                content=content,
+                components=components
             )
         )
 
@@ -99,26 +98,21 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(state, PagerState):
-            return InteractionResponse(EditMessageAction((
-                "This interaction isn't valid anymore. If this problem persists,"
-                " please report the issue (see `/info`)."
-            )))
+            return InteractionResponse(EditMessageAction(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            ))
 
-        if not (item_type := state.custom_data.get("item_type", "game")):
-            return InteractionResponse(EditMessageAction((
-                "This interaction isn't valid anymore. If this problem persists,"
-                " please report the issue (see `/info`)."
-            )))
-
+        content, components = await self.__create_page_content(
+            state.current_page,
+            _ITEMS_PER_PAGE,
+            state.custom_data.get("item_type", "game") or "game",
+            0,
+            context.author_id
+        )
         return InteractionResponse(
             EditMessageAction(
-                *await self.__create_page_content(
-                    state.current_page,
-                    ITEMS_PER_PAGE,
-                    item_type,
-                    0,
-                    context.author_id
-                )
+                content=content,
+                components=components
             )
         )
 
@@ -129,7 +123,7 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
         item_type: str,
         item_index: int,
         initiator_id: str
-    ) -> Tuple[Union[str, Embed], Union[ComponentBase, List[Layout]]]:
+    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         result = await self.__repository.get_many(page_index, page_size, item_type)
         if page_index > 0 and len(result.items) == 0:
             page_index = 0
@@ -137,12 +131,17 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
             result = await self.__repository.get_many(page_index, page_size, item_type)
 
         if len(result.items) == 0:
-            return ("Currently, there are no active giveaways. Check back later.", [])
+            return (
+                self.__i18n_provider.get(
+                    "extensions.giveaways.view_active_giveaways_workflow.no_active_giveaways"
+                ),
+                []
+            )
 
         if item_index >= len(result.items):
             item_index = 0
 
-        content = GetActiveGiveawayItemsWorkflow.__create_embed(result.items[item_index])
+        content = self.__create_embed(result.items[item_index])
         return (
             content,
             [
@@ -157,7 +156,9 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
                             )
                             for index, item in enumerate(result.items)
                         ],
-                        placeholder="Choose a giveaway"
+                        placeholder=self.__i18n_provider.get(
+                            "extensions.giveaways.view_active_giveaways_workflow.selector_placeholder"
+                        )
                     )
                 ]),
                 Paginator(
@@ -173,16 +174,43 @@ class GetActiveGiveawayItemsWorkflow(WorkflowBase):
             ]
         )
 
-    @staticmethod
-    def __create_embed(item: ExternalGiveawayItem) -> Embed:
+    def __create_embed(self, item: ExternalGiveawayItem) -> Embed:
         return Embed(
-            "Giveaway details",
+            self.__i18n_provider.get(
+                "extensions.giveaways.view_active_giveaways_workflow.embed_title"
+            ),
             item.title,
             image_url=item.preview_url,
             fields=[
-                EmbedField("Expires", f"<t:{int(item.end_time.timestamp())}:R>"),
-                EmbedField("Type", ITEM_TYPE_I18N[item.item_type] if item.item_type in ITEM_TYPE_I18N else item.item_type),
-                EmbedField("Claim at", item.url, False)
+                EmbedField(
+                    self.__i18n_provider.get(
+                        "extensions.giveaways.view_active_giveaways_workflow.embed_field_expires"
+                    ),
+                    self.__i18n_provider.get(
+                        "extensions.giveaways.view_active_giveaways_workflow.embed_field_expires_value",
+                        { "end_time": int(item.end_time.timestamp()) }
+                    )
+                ),
+                EmbedField(
+                    self.__i18n_provider.get(
+                        "extensions.giveaways.view_active_giveaways_workflow.embed_field_type"
+                    ),
+                    self.__i18n_provider.get(
+                        f"extensions.giveaways.giveaway_types.{item.item_type}"
+                    )
+                ),
+                EmbedField(
+                    self.__i18n_provider.get(
+                        "extensions.giveaways.view_active_giveaways_workflow.embed_field_claim_at"
+                    ),
+                    item.url,
+                    False
+                )
             ],
-            footer=EmbedFooter(f"Sponsored by {item.source_name}")
+            footer=EmbedFooter(
+                self.__i18n_provider.get(
+                    "extensions.giveaways.view_active_giveaways_workflow.embed_footer",
+                    { "source_name": item.source_name }
+                )
+            )
         )

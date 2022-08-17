@@ -11,7 +11,7 @@ from holobot.discord.sdk.workflows.interactables.components.models import ComboB
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.extensions.giveaways.repositories import IExternalGiveawayItemRepository
-from holobot.extensions.giveaways.models import ExternalGiveawayItem
+from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import try_parse_int
@@ -124,13 +124,13 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         item_index: int,
         initiator_id: str
     ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
-        result = await self.__repository.get_many(page_index, page_size, item_type)
-        if page_index > 0 and len(result.items) == 0:
+        metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
+        if page_index > 0 and len(metadatas.items) == 0:
             page_index = 0
             item_index = 0
-            result = await self.__repository.get_many(page_index, page_size, item_type)
+            metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
 
-        if len(result.items) == 0:
+        if len(metadatas.items) == 0:
             return (
                 self.__i18n_provider.get(
                     "extensions.giveaways.view_active_giveaways_workflow.no_active_giveaways"
@@ -138,12 +138,11 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
                 []
             )
 
-        if item_index >= len(result.items):
+        if item_index >= len(metadatas.items):
             item_index = 0
 
-        content = self.__create_embed(result.items[item_index])
         return (
-            content,
+            await self.__create_embed(metadatas.items[item_index].identifier),
             [
                 StackLayout(id="combo_box_container", children=[
                     ComboBox(
@@ -154,7 +153,7 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
                                 text=item.title,
                                 value=f"{item.identifier};{page_index};{index};{item_type}"
                             )
-                            for index, item in enumerate(result.items)
+                            for index, item in enumerate(metadatas.items)
                         ],
                         placeholder=self.__i18n_provider.get(
                             "extensions.giveaways.view_active_giveaways_workflow.selector_placeholder"
@@ -166,7 +165,7 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
                     owner_id=initiator_id,
                     current_page=page_index,
                     page_size=page_size,
-                    total_count=result.total_count,
+                    total_count=metadatas.total_count,
                     custom_data={
                         item_type: item_type
                     }
@@ -174,7 +173,14 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
             ]
         )
 
-    def __create_embed(self, item: ExternalGiveawayItem) -> Embed:
+    async def __create_embed(self, item_id: int) -> Embed:
+        item = await self.__repository.get(item_id)
+        if not item:
+            raise ArgumentError(
+                "item_id",
+                f"Cannot find the external giveaway item with identifier '{item_id}'."
+            )
+
         return Embed(
             self.__i18n_provider.get(
                 "extensions.giveaways.view_active_giveaways_workflow.embed_title"

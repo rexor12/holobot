@@ -1,6 +1,6 @@
 from asyncpg.connection import Connection
 
-from holobot.extensions.giveaways.models import ExternalGiveawayItem
+from holobot.extensions.giveaways.models import ExternalGiveawayItem, ExternalGiveawayItemMetadata
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
@@ -68,6 +68,41 @@ class ExternalGiveawayItemRepository(IExternalGiveawayItemRepository):
                     result.page_size,
                     result.total_count,
                     [ExternalGiveawayItemRepository.__parse_record(record) for record in result.records]
+                )
+
+    async def get_metadatas(
+        self,
+        page_index: int,
+        page_size: int,
+        item_type: str,
+        active_only: bool = True
+    ) -> PaginationResult[ExternalGiveawayItemMetadata]:
+        async with self.__database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                query = (Query
+                    .select()
+                    .columns("id", "title")
+                    .from_table(_TABLE_NAME)
+                    .where()
+                    .field("item_type", Equality.EQUAL, item_type)
+                )
+                if active_only:
+                    query = query.and_field(
+                        "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
+                    )
+                result = await query.paginate("id", page_index, page_size).compile().fetch(connection)
+                return PaginationResult(
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [
+                        ExternalGiveawayItemMetadata(
+                            identifier=record["id"],
+                            title=record["title"]
+                        )
+                        for record in result.records
+                    ]
                 )
 
     async def exists(self, url: str, active_only: bool = True) -> bool:

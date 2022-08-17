@@ -26,6 +26,7 @@ OFFER_IMAGE_TYPES: tuple[str, ...] = (
 
 # Epic Games always updates the free games on Thursdays at 10 PM CT.
 EPIC_UPDATE_TIMEZONE = zoneinfo.ZoneInfo("US/Central")
+EPIC_UPDATE_DAYOFWEEK = 3
 EPIC_UPDATE_TIME = time(hour=10)
 
 @injectable(IScraper)
@@ -52,12 +53,17 @@ class EpicGamesScraper(IScraper):
             return datetime.now(timezone.utc) - timedelta(minutes=1)
 
         today = datetime.now(EPIC_UPDATE_TIMEZONE).date()
-        previous_thursday = today - timedelta(days=abs(3 - today.weekday()))
+        time_to_nearest_release_day = timedelta(days=EPIC_UPDATE_DAYOFWEEK - today.weekday())
+        if today.weekday() >= EPIC_UPDATE_DAYOFWEEK:
+            previous_thursday = today - timedelta(days=today.weekday() - EPIC_UPDATE_DAYOFWEEK)
+            next_thursday = today + timedelta(weeks=1) + time_to_nearest_release_day
+        else:
+            previous_thursday = today - timedelta(weeks=1) + time_to_nearest_release_day
+            next_thursday = today + time_to_nearest_release_day
         previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         if last_scrape_time < previous_release_time:
             return datetime.now(timezone.utc) - timedelta(minutes=1)
 
-        next_thursday = today + timedelta(days=3 - today.weekday(), weeks=1)
         next_release_time = datetime.combine(next_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         return next_release_time.astimezone(timezone.utc) + SCRAPE_DELAY
 

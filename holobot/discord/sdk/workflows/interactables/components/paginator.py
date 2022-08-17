@@ -14,7 +14,7 @@ class Paginator(InteractableLayoutBase):
     custom_data: dict[str, Any] = field(default_factory=dict)
 
     def is_first_page(self) -> bool:
-        return self.current_page == 0
+        return not self.current_page
 
     def is_last_page(self) -> bool:
         if self.total_count is None or self.page_size is None:

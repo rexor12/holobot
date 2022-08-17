@@ -38,7 +38,7 @@ class UpdateBuilder(IQueryPartBuilder):
         return ReturningBuilder(self)
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        if len(self.__fields) == 0:
+        if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
         sql = ["UPDATE", self.__table_name, "SET"]

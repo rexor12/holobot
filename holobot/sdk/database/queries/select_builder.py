@@ -62,7 +62,7 @@ class SelectBuilder(IQueryPartBuilder):
         return CompiledQuery(*self.build())
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        if len(self.__columns) == 0 and not self.__is_count_select:
+        if not self.__columns and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
 
         sql = ["SELECT"]

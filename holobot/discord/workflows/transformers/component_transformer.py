@@ -65,8 +65,8 @@ class ComponentTransformer(IComponentTransformer):
             return []
 
         if isinstance(components, list):
-            if len(components) == 0:
-                return []
+            # Lists don't need to be wrapped.
+            pass
         elif not isinstance(components, Layout):
             components = [StackLayout(id="auto_wrapper_stack_layout", children=[components])]
         else: components = [components]

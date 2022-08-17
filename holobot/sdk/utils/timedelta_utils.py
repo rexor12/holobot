@@ -34,7 +34,7 @@ def __add_non_default(
     value: float,
     text: str,
     allow_negative_values: bool = False) -> bool:
-    if value == 0 or (not allow_negative_values and value < 0):
+    if not value or (not allow_negative_values and value < 0):
         return False
 
     items.extend((str(int(value)), text))

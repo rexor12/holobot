@@ -153,7 +153,7 @@ class EpicGamesScraper(IScraper):
                 and offer.discountSetting.discountType is not None
                 and offer.discountSetting.discountPercentage is not None
                 and offer.discountSetting.discountType.upper() == "PERCENTAGE"
-                and int(offer.discountSetting.discountPercentage) == 0)
+                and not int(offer.discountSetting.discountPercentage))
 
     @staticmethod
     def __get_preview_image(offer: Offer) -> str | None:

@@ -46,7 +46,7 @@ class ScraperRunner(IStartable):
             self.__logger.info("Giveaway scraping is disabled by configuration")
             return
 
-        if len(self.__scrapers) == 0:
+        if not self.__scrapers:
             self.__logger.info("Giveaway scraping is disabled, because there are no loaded scrapers")
             return
 

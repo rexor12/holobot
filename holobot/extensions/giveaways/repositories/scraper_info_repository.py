@@ -5,7 +5,7 @@ from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import set_time_zone, UTC
+from holobot.sdk.utils import UTC, set_time_zone
 from .iscraper_info_repository import IScraperInfoRepository
 
 _TABLE_NAME = "scraper_infos"

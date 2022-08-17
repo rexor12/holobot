@@ -11,8 +11,8 @@ from holobot.sdk.network.exceptions import TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.utils import first_or_default
-from .iscraper import IScraper
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
+from .iscraper import IScraper
 
 CONFIG_SECTION = "Giveaways"
 CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "EpicScraperCircuitBreakerFailureThreshold"

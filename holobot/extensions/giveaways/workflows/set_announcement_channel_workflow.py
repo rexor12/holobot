@@ -9,7 +9,6 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import ILoggerFactory
 
 @injectable(IWorkflow)
 class SetAnnouncementChannelWorkflow(WorkflowBase):
@@ -17,8 +16,7 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
         self,
         channel_manager: IChannelManager,
         configurator: ConfiguratorInterface,
-        i18n_provider: II18nProvider,
-        logger_factory: ILoggerFactory
+        i18n_provider: II18nProvider
     ) -> None:
         super().__init__()
         self.__channel_manager = channel_manager

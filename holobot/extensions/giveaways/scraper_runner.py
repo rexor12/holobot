@@ -94,10 +94,12 @@ class ScraperRunner(IStartable):
                 return ()
 
             self.__logger.trace("Running giveaway scraper...", name=scraper_name)
-            giveaway_items = tuple(await scraper.scrape())
+            scraped_giveaway_items = await scraper.scrape()
+            new_giveaway_items: list[ExternalGiveawayItem] = []
             self.__logger.trace("Ran giveaway scraper", name=scraper_name)
-            for item in giveaway_items:
+            for item in scraped_giveaway_items:
                 if not await self.__external_giveaway_item_repository.exists(item.url):
+                    new_giveaway_items.append(item)
                     await self.__external_giveaway_item_repository.store(item)
 
             if scraper_info:
@@ -105,7 +107,7 @@ class ScraperRunner(IStartable):
             else: scraper_info = ScraperInfo(0, scraper_name, datetime.now(timezone.utc))
 
             await self.__scraper_info_repository.store(scraper_info)
-            return giveaway_items
+            return tuple(new_giveaway_items)
         except CircuitBrokenError:
             return ()
         except Exception as error: # pylint: disable=broad-except

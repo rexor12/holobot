@@ -1,16 +1,15 @@
+import json
+from collections.abc import Callable, Sequence
 from dataclasses import _MISSING_TYPE, fields, is_dataclass
 from datetime import datetime
-from dateutil.parser import isoparse
-from typing import (
-    Any, Callable, Dict, NamedTuple, Optional,
-    Sequence, Type, TypeVar, Union, get_args, get_type_hints
-)
+from types import NoneType, UnionType
+from typing import Any, NamedTuple, Type, TypeVar, Union, get_args, get_type_hints
 
-import json
+from dateutil.parser import isoparse
 
 T = TypeVar("T")
 
-PRIMITIVE_DESERIALIZERS: Dict[Type[Any], Callable[[Any], Any]] = {
+PRIMITIVE_DESERIALIZERS: dict[Type[Any], Callable[[Any], Any]] = {
     str: lambda obj: obj,
     int: lambda obj: int(obj) if obj is not None else 0,
     float: lambda obj: float(obj) if obj is not None else 0.0,
@@ -20,16 +19,16 @@ PRIMITIVE_DESERIALIZERS: Dict[Type[Any], Callable[[Any], Any]] = {
 class ArgumentInfo(NamedTuple):
     name: str
     object_type: Type[Any]
-    collection_constructor: Optional[Type[Any]]
+    collection_constructor: Type[Any] | None
     allows_none: bool
     default_value: Any
-    default_factory: Optional[Callable[[], Any]]
+    default_factory: Callable[[], Any] | None
 
-def deserialize(object_type: Type[T], json_data: Union[str, dict]) -> Optional[T]:
+def deserialize(object_type: Type[T], json_data: str | dict) -> T | None:
     json_object = json.loads(json_data) if isinstance(json_data, str) else json_data
     return __deserialize_instance(object_type, json_object)
 
-def __deserialize_instance(object_type: Type[T], json_object: Any) -> Optional[T]:
+def __deserialize_instance(object_type: Type[T], json_object: Any) -> T | None:
     if json_object is None:
         return None
 
@@ -37,10 +36,13 @@ def __deserialize_instance(object_type: Type[T], json_object: Any) -> Optional[T
         return deserializer(json_object)
 
     if not is_dataclass(object_type):
-        raise ValueError(f"Cannot deserialize type '{object_type}'. It must be either a primitive type or a dataclass.")
+        raise ValueError((
+            f"Cannot deserialize type '{object_type}'."
+            " It must be either a primitive type or a dataclass."
+        ))
 
     argument_infos = __get_argument_infos(object_type)
-    arguments: Dict[str, Any] = {}
+    arguments: dict[str, Any] = {}
     for argument_info in argument_infos:
         if argument_info.collection_constructor is not None:
             argument_items = [
@@ -83,13 +85,22 @@ def __get_argument_info(
     object_type: Type[Any],
     default_value: Any,
     default_factory: Any) -> ArgumentInfo:
-    if (origin := getattr(object_type, "__origin__", None)) is None:
+    if isinstance(object_type, UnionType):
+        origin = UnionType
+    elif (origin := getattr(object_type, "__origin__", None)) is None:
         return ArgumentInfo(name, object_type, None, False, default_value, default_factory)
 
     allows_none = False
-    if origin == Union:
+    if origin in (Union, UnionType):
+        args = get_args(object_type)
+        if len(args) != 2 or NoneType not in args:
+            raise ValueError((
+                "Expected an optional type (NoneType or other),"
+                f" but '{name}' in '{object_type}' is diferent ({args})."
+            ))
+
         allows_none = True
-        object_type = get_args(object_type)[0]
+        object_type = args[0] or args[1]
         origin = getattr(object_type, "__origin__", None)
 
     if origin is None:
@@ -98,11 +109,14 @@ def __get_argument_info(
     if origin == tuple:
         args = get_args(object_type)
         if len(args) != 2 or args[-1] != Ellipsis:
-            raise ValueError("Expected a tuple with two arguments, the second being an ellipsis.")
+            raise ValueError((
+                "Expected a tuple with two arguments, the second being an ellipsis,"
+                f" but got {args} instead."
+            ))
         return ArgumentInfo(name, args[0], tuple, allows_none, default_value, default_factory)
 
     if origin == list:
         args = get_args(object_type)
         return ArgumentInfo(name, args[0], list, allows_none, default_value, default_factory)
 
-    raise ValueError(f"Expected a tuple or a list, but got '{object_type}'.")
+    raise ValueError(f"Expected a tuple or an optional, tuple or list type, but got '{object_type}'.")

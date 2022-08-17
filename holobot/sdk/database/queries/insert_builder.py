@@ -42,7 +42,7 @@ class InsertBuilder(IQueryPartBuilder):
         return CompiledQuery(*self.build())
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        if len(self.__fields) == 0:
+        if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
         sql = ["INSERT INTO", self.__table_name, "("]

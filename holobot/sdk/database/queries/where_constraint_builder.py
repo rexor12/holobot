@@ -3,6 +3,7 @@ from typing import Any
 from .compiled_query import CompiledQuery
 from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 from .enums import Connector, Equality
+from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
@@ -14,11 +15,23 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     def __init__(self, where_builder: IWhereBuilder) -> None:
         self.__where_builder: IWhereBuilder = where_builder
 
-    def and_field(self, column_name: str, equality: Equality, value: Any | None) -> 'WhereConstraintBuilder':
-        return self.__append_constraint(Connector.AND, ColumnConstraintBuilder(column_name, equality, value))
+    def and_field(
+        self,
+        column_name: str,
+        equality: Equality,
+        value: Any | None,
+        is_raw_value: bool = False
+    ) -> 'WhereConstraintBuilder':
+        return self.__append_constraint(Connector.AND, ColumnConstraintBuilder(column_name, equality, value, is_raw_value))
 
-    def or_field(self, column_name: str, equality: Equality, value: Any | None) -> 'WhereConstraintBuilder':
-        return self.__append_constraint(Connector.OR, ColumnConstraintBuilder(column_name, equality, value))
+    def or_field(
+        self,
+        column_name: str,
+        equality: Equality,
+        value: Any | None,
+        is_raw_value: bool = False
+    ) -> 'WhereConstraintBuilder':
+        return self.__append_constraint(Connector.OR, ColumnConstraintBuilder(column_name, equality, value, is_raw_value))
 
     def and_expression(self, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
         return self.__append_constraint(Connector.AND, constraint)
@@ -35,6 +48,9 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)
 
+    def exists(self) -> ExistsBuilder:
+        return ExistsBuilder(self)
+
     def paginate(
         self,
         ordering_column: str,
@@ -49,7 +65,11 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     def build(self) -> tuple[str, tuple[Any, ...]]:
         return self.__where_builder.build()
 
-    def __append_constraint(self, connector: Connector, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
+    def __append_constraint(
+        self,
+        connector: Connector,
+        constraint: IConstraintBuilder
+    ) -> 'WhereConstraintBuilder':
         # TODO Optimize this to avoid wrapping when the connectors are identical; append instead.
         self.__where_builder.constraint = LogicalConstraintBuilder(
             connector,

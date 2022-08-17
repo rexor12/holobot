@@ -7,7 +7,7 @@ import hikari.impl.special_endpoints as endpoints
 import hikari.messages as hikari_messages
 
 from holobot.discord.sdk.workflows.interactables.components import (
-    Button, ComboBox, ComponentBase, Paginator, StackLayout
+    Button, ComboBox, ComponentBase, Layout, Paginator, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import (
@@ -56,6 +56,28 @@ class ComponentTransformer(IComponentTransformer):
 
     def transform_component(self, component: ComponentBase) -> endpointsintf.ComponentBuilder:
         return self.__transform_component(component, None)
+
+    def transform_to_root_component(
+        self,
+        components: ComponentBase | list[Layout]
+    ) -> list[endpointsintf.ComponentBuilder]:
+        if not components:
+            return []
+
+        if isinstance(components, list):
+            # Lists don't need to be wrapped.
+            pass
+        elif not isinstance(components, Layout):
+            components = [StackLayout(id="auto_wrapper_stack_layout", children=[components])]
+        else: components = [components]
+
+        if len(components) > 5:
+            raise ArgumentError("components", "A message cannot hold more than 5 layouts.")
+
+        return [
+            self.transform_component(component)
+            for component in components
+        ]
 
     def transform_state(
         self,

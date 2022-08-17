@@ -1,5 +1,6 @@
 import glob
 import os
+from collections.abc import Sequence
 from json import load
 from typing import Any
 
@@ -48,7 +49,7 @@ class I18nProvider(II18nProvider, IStartable):
     ) -> str:
         if arguments is None:
             arguments = _ARGUMENTS_SENTINEL
-        value = self.__resolve_formatted_key_by_language(key, arguments, language)
+        value = self.__resolve_key(key, arguments, language)
         return value if isinstance(value, str) else key
 
     def get_list(
@@ -56,8 +57,20 @@ class I18nProvider(II18nProvider, IStartable):
         key: str,
         language: str | None = None,
     ) -> tuple[str, ...]:
-        value = self.__resolve_formatted_key_by_language(key, _ARGUMENTS_SENTINEL, language)
+        value = self.__resolve_key(key, _ARGUMENTS_SENTINEL, language)
         return value if isinstance(value, tuple) else ()
+
+    def get_list_items(
+        self,
+        key: str,
+        item_arguments: Sequence[dict[str, Any]],
+        language: str | None = None
+    ) -> tuple[str, ...]:
+        value = self.__get_value_by_key(key, language)
+        if value is None or isinstance(value, tuple):
+            return ()
+
+        return tuple(value.format(**arguments) for arguments in item_arguments)
 
     @staticmethod
     def __build_map(file_path: str) -> I18nGroup:
@@ -82,7 +95,7 @@ class I18nProvider(II18nProvider, IStartable):
         return root_group
 
     @staticmethod
-    def __resolve_key(
+    def __find_value_in_group(
         group: I18nGroup,
         subkeys: list[str]
     ) -> str | tuple[str, ...] | None:
@@ -95,23 +108,10 @@ class I18nProvider(II18nProvider, IStartable):
         value = current_group.value.get(subkeys[-1])
         return None if isinstance(value, I18nGroup) else value
 
-    @staticmethod
-    def __resolve_formatted_key(
-        group: I18nGroup,
-        subkeys: list[str],
-        arguments: dict[str, Any]
-    ) -> str | tuple[str, ...] | None:
-        value = I18nProvider.__resolve_key(group, subkeys)
-        if isinstance(value, tuple):
-            return value
-
-        return value.format(**arguments) if value else None
-
-    def __resolve_formatted_key_by_language(
+    def __get_value_by_key(
         self,
         key: str,
-        arguments: dict[str, Any],
-        language: str | None = None
+        language: str | None
     ) -> str | tuple[str, ...] | None:
         subkeys = key.split(".")
         language_map = self.__languages.get(language) if language else None
@@ -120,16 +120,27 @@ class I18nProvider(II18nProvider, IStartable):
             language_map = self.__languages.get(_DEFAULT_LANGUAGE)
             has_checked_default = True
         if not language_map:
-            return key
-        value = I18nProvider.__resolve_formatted_key(language_map, subkeys, arguments)
+            return None
+        value = I18nProvider.__find_value_in_group(language_map, subkeys)
         if value is not None:
             return value
         if has_checked_default:
-            return key
+            return None
 
         language_map = self.__languages.get(_DEFAULT_LANGUAGE)
-        value = (
-            I18nProvider.__resolve_formatted_key(language_map, subkeys, arguments)
+        return (
+            I18nProvider.__find_value_in_group(language_map, subkeys)
             if language_map else None
         )
-        return key if value is None else value
+
+    def __resolve_key(
+        self,
+        key: str,
+        arguments: dict[str, Any],
+        language: str | None = None
+    ) -> str | tuple[str, ...] | None:
+        value = self.__get_value_by_key(key, language)
+        if value is None:
+            return key
+
+        return value if isinstance(value, tuple) else value.format(**arguments)

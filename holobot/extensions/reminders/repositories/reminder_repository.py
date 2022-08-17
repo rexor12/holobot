@@ -72,7 +72,7 @@ class ReminderRepository(ReminderRepositoryInterface):
                 ).from_table(TABLE_NAME).where().field(
                     "next_trigger", Equality.LESS | Equality.EQUAL, "(NOW() AT TIME ZONE 'utc')", True
                 ).compile().fetch(connection)
-                return tuple([ReminderRepository.__parse_reminder(record) for record in records])
+                return tuple(ReminderRepository.__parse_reminder(record) for record in records)
 
     async def store(self, reminder: Reminder) -> None:
         async with self.__database_manager.acquire_connection() as connection:

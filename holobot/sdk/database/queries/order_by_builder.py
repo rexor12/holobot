@@ -22,7 +22,7 @@ class OrderByBuilder(IQueryPartBuilder):
         return CompiledQuery(*self.build())
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        if len(self.__columns) == 0:
+        if not self.__columns:
             raise ValueError("The ORDER BY clause must have at least one field.")
 
         parent_sql = self.__parent_builder.build()

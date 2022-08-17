@@ -1,0 +1,4 @@
+from .external_giveaway_item_repository import ExternalGiveawayItemRepository
+from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
+from .iscraper_info_repository import IScraperInfoRepository
+from .scraper_info_repository import ScraperInfoRepository

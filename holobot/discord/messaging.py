@@ -1,8 +1,14 @@
-from hikari import ForbiddenError as HikariForbiddenError, TextableGuildChannel
+from hikari import (
+    UNDEFINED, ForbiddenError as HikariForbiddenError, GuildNewsChannel, TextableGuildChannel
+)
 
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError
+from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, InvalidChannelError
+from holobot.discord.sdk.models.embed import Embed
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout
+from holobot.discord.transformers.embed import to_dto as embed_to_dto
 from holobot.discord.utils import get_guild_channel
+from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
@@ -10,8 +16,13 @@ from .bot import BotAccessor
 
 @injectable(IMessaging)
 class Messaging(IMessaging):
-    def __init__(self, logger_factory: ILoggerFactory) -> None:
+    def __init__(
+        self,
+        component_transformer: IComponentTransformer,
+        logger_factory: ILoggerFactory
+    ) -> None:
         super().__init__()
+        self.__component_transformer = component_transformer
         self.__log = logger_factory.create(Messaging)
 
     async def send_private_message(self, user_id: str, message: str) -> None:
@@ -27,9 +38,16 @@ class Messaging(IMessaging):
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot send DMs to the specified user.") from error
 
-    async def send_channel_message(self, server_id: str, channel_id: str, message: str) -> None:
+    async def send_channel_message(
+        self,
+        server_id: str,
+        channel_id: str,
+        content: str | Embed,
+        components: ComponentBase | list[Layout] | None = None
+    ) -> str:
+        assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
-        assert_not_none(message, "message")
+        assert_not_none(content, "content")
 
         channel = get_guild_channel(server_id, channel_id)
         if not channel or not isinstance(channel, TextableGuildChannel):
@@ -40,7 +58,38 @@ class Messaging(IMessaging):
             )
             raise ChannelNotFoundError(channel_id)
 
+        text_content = content if isinstance(content, str) else UNDEFINED
+        embed_content = embed_to_dto(content) if isinstance(content, Embed) else UNDEFINED
         try:
-            await channel.send(message)
+            message = await channel.send(
+                content=text_content,
+                embed=embed_content,
+                components=(
+                    self.__component_transformer.transform_to_root_component(components)
+                    if components else UNDEFINED
+                )
+            )
+
+            return str(message.id)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot send messages to the specified channel.") from error
+
+    async def crosspost_message(
+        self,
+        server_id: str,
+        channel_id: str,
+        message_id: str
+    ) -> None:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+        assert_not_none(message_id, "message_id")
+
+        channel = get_guild_channel(server_id, channel_id)
+        if not isinstance(channel, GuildNewsChannel):
+            raise InvalidChannelError(
+                server_id,
+                channel_id,
+                "The source channel must be a news-type channel."
+            )
+
+        await BotAccessor.get_bot().rest.crosspost_message(channel, int(message_id))

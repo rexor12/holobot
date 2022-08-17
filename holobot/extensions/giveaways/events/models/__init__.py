@@ -1,0 +1,1 @@
+from .new_giveaways_event import NewGiveawaysEvent

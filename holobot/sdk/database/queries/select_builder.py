@@ -1,5 +1,7 @@
 from typing import Any
 
+from .compiled_query import CompiledQuery
+from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .join_builder import JOIN_TYPE, JoinBuilder
 from .where_builder import WhereBuilder
@@ -53,21 +55,24 @@ class SelectBuilder(IQueryPartBuilder):
     def where(self) -> WhereBuilder:
         return WhereBuilder(self)
 
+    def exists(self) -> ExistsBuilder:
+        return ExistsBuilder(self)
+
+    def compile(self) -> CompiledQuery:
+        return CompiledQuery(*self.build())
+
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        if len(self.__columns) == 0 and not self.__is_count_select:
+        if not self.__columns and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
 
         sql = ["SELECT"]
-
         if self.__is_count_select:
             sql.append("COUNT(*)")
         else: sql.append(", ".join(self.__columns))
 
         if self.__table_name:
-            sql.append("FROM")
-            sql.append(self.__table_name)
+            sql.extend(("FROM", self.__table_name))
             if self.__table_alias:
-                sql.append("AS ")
-                sql.append(self.__table_alias)
+                sql.extend(("AS ", self.__table_alias))
 
         return (" ".join(sql), ())

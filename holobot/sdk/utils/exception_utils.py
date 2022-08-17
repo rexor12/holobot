@@ -9,7 +9,7 @@ TComparable = TypeVar("TComparable", ComparableProtocol, int, float)
 
 def assert_not_none(obj: T, argument_name: str) -> T:
     if obj is None:
-        raise ArgumentError(argument_name, f"The argument must have a value.")
+        raise ArgumentError(argument_name, "The argument must have a value.")
 
     return obj
 
@@ -25,8 +25,6 @@ def assert_range(
 
 def format_exception(exception: Exception) -> str:
     """Pretty-print an exception.
-
-    Shamelessly stolen from structlog.
 
     :param exception: The exception to be formatted.
     :type exception: Exception

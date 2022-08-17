@@ -2,6 +2,7 @@ from .compiled_pagination_query import CompiledPaginationQuery
 from .compiled_query import CompiledQuery
 from .delete_builder import DeleteBuilder
 from .do_nothing_builder import DoNothingBuilder
+from .exists_builder import ExistsBuilder
 from .insert_builder import InsertBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder

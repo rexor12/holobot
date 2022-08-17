@@ -5,6 +5,7 @@ from .constraints import (
     ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 )
 from .enums import Connector, Equality
+from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
@@ -18,7 +19,13 @@ class WhereBuilder(IWhereBuilder):
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.constraint = EmptyConstraintBuilder()
 
-    def field(self, column_name: str, equality: Equality, value: Any | None, is_raw_value: bool = False) -> WhereConstraintBuilder:
+    def field(
+        self,
+        column_name: str,
+        equality: Equality,
+        value: Any | None,
+        is_raw_value: bool = False
+    ) -> WhereConstraintBuilder:
         self.constraint = ColumnConstraintBuilder(column_name, equality, value, is_raw_value)
         return WhereConstraintBuilder(self)
 
@@ -36,8 +43,8 @@ class WhereBuilder(IWhereBuilder):
         return WhereConstraintBuilder(self)
 
     def expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:
-       self.constraint = constraint
-       return WhereConstraintBuilder(self)
+        self.constraint = constraint
+        return WhereConstraintBuilder(self)
 
     def order_by(self) -> OrderByBuilder:
         return OrderByBuilder(self)
@@ -47,6 +54,9 @@ class WhereBuilder(IWhereBuilder):
 
     def returning(self) -> ReturningBuilder:
         return ReturningBuilder(self)
+
+    def exists(self) -> ExistsBuilder:
+        return ExistsBuilder(self)
 
     def paginate(
         self,

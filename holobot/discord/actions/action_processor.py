@@ -22,7 +22,7 @@ from .iaction_processor import IActionProcessor
 class ActionProcessor(IActionProcessor):
     def __init__(self, component_transformer: IComponentTransformer) -> None:
         super().__init__()
-        self.__component_transformer: IComponentTransformer = component_transformer
+        self.__component_transformer = component_transformer
 
     async def process(
         self,
@@ -51,7 +51,7 @@ class ActionProcessor(IActionProcessor):
 
         content = action.content if isinstance(action.content, str) else None
         embed = to_dto(action.content) if isinstance(action.content, Embed) else None
-        components = self.__transform_component(action.components)
+        components = self.__component_transformer.transform_to_root_component(action.components)
         with contextlib.suppress(NotFoundError):
             if deferral == DeferType.NONE:
                 await interaction.create_initial_response(
@@ -87,7 +87,7 @@ class ActionProcessor(IActionProcessor):
 
         content = action.content if isinstance(action.content, str) else None
         embed = to_dto(action.content) if isinstance(action.content, Embed) else None
-        components = self.__transform_component(action.components)
+        components = self.__component_transformer.transform_to_root_component(action.components)
         with contextlib.suppress(NotFoundError):
             if deferral == DeferType.NONE:
                 await interaction.create_initial_response(
@@ -110,25 +110,3 @@ class ActionProcessor(IActionProcessor):
                 return
 
             raise ArgumentError(f"Cannot edit an interaction deferred as '{deferral}'.")
-
-    def __transform_component(
-        self,
-        components: ComponentBase | list[Layout]
-    ) -> list[hikari_endpoints.ComponentBuilder]:
-        if not components:
-            return []
-
-        if isinstance(components, list):
-            if len(components) == 0:
-                return []
-        elif not isinstance(components, Layout):
-            components = [StackLayout(id="auto_wrapper_stack_layout", children=[components])]
-        else: components = [components]
-
-        if len(components) > 5:
-            raise ArgumentError("components", "A message cannot hold more than 5 layouts.")
-
-        return [
-            self.__component_transformer.transform_component(component)
-            for component in components
-        ]

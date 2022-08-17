@@ -1,13 +1,14 @@
 from collections.abc import Iterable
 
 from hikari import (
-    ForbiddenError as HikariForbiddenError, PermissionOverwrite, PermissionOverwriteType,
-    Permissions, Snowflake
+    ChannelFollowerWebhook, ForbiddenError as HikariForbiddenError, GuildNewsChannel,
+    PermissionOverwrite, PermissionOverwriteType, Permissions, Snowflake
 )
 
+from holobot.discord.bot import BotAccessor
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import (
-    ChannelNotFoundError, ForbiddenError, PermissionError, RoleNotFoundError
+    ChannelNotFoundError, ForbiddenError, InvalidChannelError, PermissionError, RoleNotFoundError
 )
 from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.discord.sdk.servers.models import ServerChannel
@@ -25,7 +26,13 @@ class ChannelManager(IChannelManager):
         guild = get_guild(server_id)
         return [to_model(channel) for channel in guild.get_channels().values()]
 
-    async def set_role_permissions(self, server_id: str, channel_id: str, role_id: str, *permissions: tuple[Permission, bool | None]) -> None:
+    async def set_role_permissions(
+        self,
+        server_id: str,
+        channel_id: str,
+        role_id: str,
+        *permissions: tuple[Permission, bool | None]
+    ) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(role_id, "role_id")
@@ -64,3 +71,52 @@ class ChannelManager(IChannelManager):
             await channel.edit(permission_overwrites=new_permission_overwrites)
         except HikariForbiddenError as error:
             raise ForbiddenError(f"Cannot set permissions for role '{role_id}' and channel '{channel_id}'.") from error
+
+    async def follow_news_channel(
+        self,
+        server_id: str,
+        channel_id: str,
+        source_server_id: str,
+        source_channel_id: str
+    ) -> None:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+        assert_not_none(source_server_id, "source_server_id")
+        assert_not_none(source_channel_id, "source_channel_id")
+
+        guild = get_guild(server_id)
+        if not (channel := guild.get_channel(int(channel_id))):
+            raise ChannelNotFoundError(channel_id)
+
+        source_guild = get_guild(source_server_id)
+        if not (source_channel := source_guild.get_channel(int(source_channel_id))):
+            raise ChannelNotFoundError(source_channel_id)
+
+        if not isinstance(source_channel, GuildNewsChannel):
+            raise InvalidChannelError(
+                source_server_id,
+                source_channel_id,
+                "The source channel must be a news-type channel."
+            )
+
+        await BotAccessor.get_bot().rest.follow_channel(source_channel, channel)
+
+    async def unfollow_news_channel_for_all_channels(
+        self,
+        server_id: str,
+        source_server_id: str,
+        source_channel_id: str
+    ) -> None:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(source_server_id, "source_server_id")
+        assert_not_none(source_channel_id, "source_channel_id")
+
+        guild = get_guild(server_id)
+        webhooks = await BotAccessor.get_bot().rest.fetch_guild_webhooks(guild)
+        for webhook in webhooks:
+            if (
+                isinstance(webhook, ChannelFollowerWebhook)
+                and str(webhook.source_guild.id) == source_server_id
+                and str(webhook.source_channel.id) == source_channel_id
+            ):
+                await BotAccessor.get_bot().rest.delete_webhook(webhook)

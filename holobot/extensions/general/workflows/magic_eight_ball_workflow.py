@@ -40,7 +40,7 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
         context: ServerChatInteractionContext,
         question: str
     ) -> InteractionResponse:
-        seed = question.strip().strip("?.!-+").lower().__hash__()
+        seed = hash(question.strip().strip("?.!-+").lower())
         return InteractionResponse(
             action=ReplyAction(content=Random(seed).choice(self.__answers))
         )

@@ -1,10 +1,25 @@
-from abc import ABCMeta, abstractmethod
+from typing import Protocol
 
-class IMessaging(metaclass=ABCMeta):
-    @abstractmethod
+from .models.embed import Embed
+from .workflows.interactables.components import ComponentBase, Layout
+
+class IMessaging(Protocol):
     async def send_private_message(self, user_id: str, message: str) -> None:
         ...
 
-    @abstractmethod
-    async def send_channel_message(self, server_id: str, channel_id: str, message: str) -> None:
+    async def send_channel_message(
+        self,
+        server_id: str,
+        channel_id: str,
+        content: str | Embed,
+        components: ComponentBase | list[Layout] | None = None
+    ) -> str:
+        ...
+
+    async def crosspost_message(
+        self,
+        server_id: str,
+        channel_id: str,
+        message_id: str
+    ) -> None:
         ...

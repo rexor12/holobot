@@ -1,5 +1,4 @@
 import traceback
-from io import StringIO
 from typing import TypeVar
 
 from ..exceptions import ArgumentError, ArgumentOutOfRangeError
@@ -35,11 +34,5 @@ def format_exception(exception: Exception) -> str:
     :rtype: str
     """
 
-    string_buffer = StringIO()
-    traceback.print_exception(exception, limit=None, file=string_buffer)
-    formatted_string = string_buffer.getvalue()
-    string_buffer.close()
-    if formatted_string[-1:] == "\n":
-        formatted_string = formatted_string[:-1]
-
-    return formatted_string
+    formatted_string = "".join(traceback.format_exception(exception))
+    return formatted_string.rstrip()

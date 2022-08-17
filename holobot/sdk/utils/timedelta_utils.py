@@ -16,8 +16,5 @@ def textify_timedelta(value: timedelta | None) -> str:
     return " ".join(format_parts)
 
 def __add_non_default(list: list[str], value: float, text: str) -> None:
-    if value <= 0:
-        return
-
-    list.append(str(int(value)))
-    list.append(text)
+    if value > 0:
+        list.extend((str(int(value)), text))

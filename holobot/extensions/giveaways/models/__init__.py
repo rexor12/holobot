@@ -1,4 +1,3 @@
 from .external_giveaway_item import ExternalGiveawayItem
 from .external_giveaway_item_metadata import ExternalGiveawayItemMetadata
-from .giveaway_settings import GiveawaySettings
 from .scraper_info import ScraperInfo

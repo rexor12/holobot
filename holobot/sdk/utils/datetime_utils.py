@@ -1,12 +1,10 @@
-from datetime import datetime, tzinfo
-from typing import Optional
-
 import zoneinfo
+from datetime import datetime, tzinfo
 
 UTC: zoneinfo.ZoneInfo = zoneinfo.ZoneInfo("UTC")
 
-def set_time_zone(dt: datetime, tz: Optional[tzinfo]) -> datetime:
+def set_time_zone(dt: datetime, tz: tzinfo | None) -> datetime:
     return dt.replace(tzinfo=tz)
 
-def set_time_zone_nullable(dt: Optional[datetime], tz: Optional[tzinfo]) -> Optional[datetime]:
+def set_time_zone_nullable(dt: datetime | None, tz: tzinfo | None) -> datetime | None:
     return dt.replace(tzinfo=tz) if dt else None

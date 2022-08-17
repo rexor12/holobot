@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any
 
 from .compiled_query import CompiledQuery
 from .iquery_part_builder import IQueryPartBuilder
@@ -10,7 +10,7 @@ class ExistsBuilder(IQueryPartBuilder):
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())
 
-    def build(self) -> Tuple[str, Tuple[Any, ...]]:
+    def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql, parent_args = self.__parent_builder.build()
         return (
             " ".join(("SELECT EXISTS (", parent_sql, ")")),

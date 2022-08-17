@@ -1,7 +1,7 @@
+from collections.abc import Sequence
 from datetime import timedelta
-from typing import List, Optional, Sequence, Tuple
 
-__COMPONENT_I18N: Tuple[Tuple[str, str], ...] = (
+__COMPONENT_I18N: tuple[tuple[str, str], ...] = (
     ("days", "day"),
     ("hours", "hour"),
     ("minutes", "minute"),
@@ -9,7 +9,7 @@ __COMPONENT_I18N: Tuple[Tuple[str, str], ...] = (
 )
 
 def textify_timedelta(
-    value: Optional[timedelta],
+    value: timedelta | None,
     default_text: str = "never",
     only_largest_remaining: bool = False,
     allow_negative_values: bool = False) -> str:
@@ -30,7 +30,7 @@ def textify_timedelta(
     return __join_parts(format_parts) if format_parts else default_text
 
 def __add_non_default(
-    items: List[str],
+    items: list[str],
     value: float,
     text: str,
     allow_negative_values: bool = False) -> bool:

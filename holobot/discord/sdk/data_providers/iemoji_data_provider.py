@@ -1,8 +1,7 @@
-from abc import ABCMeta, abstractmethod
+from typing import Protocol
 
-from ..models import Emoji
+from holobot.discord.sdk.models import Emoji
 
-class IEmojiDataProvider(metaclass=ABCMeta):
-    @abstractmethod
+class IEmojiDataProvider(Protocol):
     async def find_emoji(self, name_or_mention: str) -> Emoji | None:
         ...

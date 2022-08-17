@@ -10,7 +10,7 @@ from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflow)
-class ViewServerIconWorkflow(WorkflowBase):
+class ViewServerBannerWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
@@ -21,11 +21,11 @@ class ViewServerIconWorkflow(WorkflowBase):
         self.__server_data_provider = server_data_provider
 
     @command(
-        description="Displays the server's icon.",
-        name="icon",
+        description="Displays the server's banner.",
+        name="banner",
         group_name="server"
     )
-    async def display_server_icon(
+    async def display_server_banner(
         self,
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
@@ -36,17 +36,17 @@ class ViewServerIconWorkflow(WorkflowBase):
                 action=ReplyAction(content=self.__i18n_provider.get("server_not_found_error"))
             )
 
-        if not server.icon_url:
+        if not server.banner_url:
             return InteractionResponse(ReplyAction(content=self.__i18n_provider.get(
-                    "extensions.server.view_server_icon_workflow.no_server_icon"
+                    "extensions.server.view_server_banner_workflow.no_server_banner"
                 )))
 
         return InteractionResponse(
             action=ReplyAction(content=Embed(
                 title=self.__i18n_provider.get(
-                    "extensions.server.view_server_icon_workflow.embed_title",
+                    "extensions.server.view_server_banner_workflow.embed_title",
                     { "name": server.name }
                 ),
-                image_url=server.icon_url
+                image_url=server.banner_url
             ))
         )

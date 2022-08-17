@@ -7,37 +7,36 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
-from holobot.discord.utils import get_guild, get_guild_channel
+from holobot.discord.utils import (
+    get_guild, get_guild_channel, get_guild_member, get_guild_member_by_name
+)
+from holobot.discord.utils.permission_utils import PERMISSION_TO_MODELS
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, first_or_default
-from ..utils import get_guild_member
-from ..utils.permission_utils import PERMISSION_TO_MODELS
 
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):
-    def get_basic_data_by_id(self, server_id: str, user_id: str) -> MemberData:
+    async def get_basic_data_by_id(
+        self,
+        server_id: str,
+        user_id: str
+    ) -> MemberData:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        user = get_guild_member(server_id, user_id)
+        user = await MemberDataProvider.__get_or_fetch_member(server_id, user_id)
         return MemberDataProvider.__member_to_basic_data(user)
 
-    def get_basic_data_by_name(self, server_id: str, name: str) -> MemberData:
+    async def get_basic_data_by_name(
+        self,
+        server_id: str,
+        name: str
+    ) -> MemberData:
         assert_not_none(server_id, "server_id")
         assert_not_none(name, "name")
 
-        guild = get_guild(server_id)
-        relevant_members: list[tuple[hikari.Member, int]] = []
-        for member in guild.get_members().values():
-            relevance = MemberDataProvider.__match_user_with_relevance(name, member)
-            if relevance > 0:
-                relevant_members.append((member, relevance))
-
-        best_match = first_or_default(sorted(relevant_members, key=lambda p: p[1], reverse=True))
-        if not best_match:
-            raise UserNotFoundError(name)
-
-        return MemberDataProvider.__member_to_basic_data(best_match[0])
+        member = get_guild_member_by_name(server_id, name)
+        return MemberDataProvider.__member_to_basic_data(member)
 
     def is_member(self, server_id: str, user_id: str) -> bool:
         assert_not_none(server_id, "server_id")
@@ -99,45 +98,14 @@ class MemberDataProvider(IMemberDataProvider):
         return MemberData(
             user_id=str(user.id),
             avatar_url=user.avatar_url.url if user.avatar_url else None,
+            server_specific_avatar_url=(
+                user.guild_avatar_url.url if user.guild_avatar_url else None
+            ),
             name=user.username,
             nick_name=user.nickname,
             is_self=bot_user.id == user.id if bot_user else False,
             is_bot=user.is_bot
         )
-
-    @staticmethod
-    def __match_with_relevance(pattern: str, value: str) -> int:
-        relevance = 0
-        pattern_lower = pattern.lower()
-        value_lower = value.lower()
-
-        # Containment, different casing.
-        if pattern_lower not in value_lower:
-            return relevance
-        relevance += 1
-
-        # Full match, different casing.
-        if pattern_lower == value_lower:
-            relevance += 1
-
-        # Containment, same casing.
-        if pattern not in value:
-            return relevance
-        relevance += 1
-
-        # Full match, same casing.
-        if pattern != value:
-            return relevance
-
-        return relevance + 1
-
-    @staticmethod
-    def __match_user_with_relevance(pattern: str, user: hikari.Member) -> int:
-        # Display names are more relevant than real names.
-        relevance = MemberDataProvider.__match_with_relevance(pattern, user.display_name)
-        if relevance > 0:
-            return relevance + 1
-        return MemberDataProvider.__match_with_relevance(pattern, user.username)
 
     @staticmethod
     def _get_channel_permissions(
@@ -176,3 +144,12 @@ class MemberDataProvider(IMemberDataProvider):
                 permissions |= role.permissions
 
         return permissions
+
+    @staticmethod
+    async def __get_or_fetch_member(server_id: str, user_id: str) -> hikari.Member:
+        if member := get_guild_member(server_id, user_id):
+            return member
+        try:
+            return await BotAccessor.get_bot().rest.fetch_member(int(server_id), int(user_id))
+        except hikari.NotFoundError as error:
+            raise UserNotFoundError(user_id) from error

@@ -9,7 +9,7 @@ ROOT_PATH: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname
 @injectable(IEnvironment)
 class Environment(IEnvironment):
     # NOTE: This version number is automatically updated on build by the script assign_version.yml.
-    __version = Version(4, 0, 0, 428)
+    __version = Version(3, 2, 0, 454)
 
     @property
     def root_path(self) -> str:

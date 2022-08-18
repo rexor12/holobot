@@ -1,8 +1,9 @@
 from collections.abc import Iterable
 
 from hikari import (
-    ChannelFollowerWebhook, ForbiddenError as HikariForbiddenError, GuildNewsChannel,
-    PermissionOverwrite, PermissionOverwriteType, Permissions, Snowflake
+    BadRequestError as HikariBadRequestError, ChannelFollowerWebhook,
+    ForbiddenError as HikariForbiddenError, GuildNewsChannel, PermissionOverwrite,
+    PermissionOverwriteType, Permissions, Snowflake
 )
 
 from holobot.discord.bot import BotAccessor
@@ -99,7 +100,16 @@ class ChannelManager(IChannelManager):
                 "The source channel must be a news-type channel."
             )
 
-        await BotAccessor.get_bot().rest.follow_channel(source_channel, channel)
+        try:
+            await BotAccessor.get_bot().rest.follow_channel(source_channel, channel)
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot follow news channel.") from error
+        except HikariBadRequestError as error:
+            raise InvalidChannelError(
+                server_id,
+                channel_id,
+                "Cannot follow news channel."
+            ) from error
 
     async def unfollow_news_channel_for_all_channels(
         self,
@@ -112,11 +122,14 @@ class ChannelManager(IChannelManager):
         assert_not_none(source_channel_id, "source_channel_id")
 
         guild = get_guild(server_id)
-        webhooks = await BotAccessor.get_bot().rest.fetch_guild_webhooks(guild)
-        for webhook in webhooks:
-            if (
-                isinstance(webhook, ChannelFollowerWebhook)
-                and str(webhook.source_guild.id) == source_server_id
-                and str(webhook.source_channel.id) == source_channel_id
-            ):
-                await BotAccessor.get_bot().rest.delete_webhook(webhook)
+        try:
+            webhooks = await BotAccessor.get_bot().rest.fetch_guild_webhooks(guild)
+            for webhook in webhooks:
+                if (
+                    isinstance(webhook, ChannelFollowerWebhook)
+                    and str(webhook.source_guild.id) == source_server_id
+                    and str(webhook.source_channel.id) == source_channel_id
+                ):
+                    await BotAccessor.get_bot().rest.delete_webhook(webhook)
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot unfollow news channel.") from error

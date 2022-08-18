@@ -97,13 +97,11 @@ class MemberDataProvider(IMemberDataProvider):
         bot_user = BotAccessor.get_bot().get_me()
         return MemberData(
             user_id=str(user.id),
-            avatar_url=user.avatar_url.url if user.avatar_url else None,
-            server_specific_avatar_url=(
-                user.guild_avatar_url.url if user.guild_avatar_url else None
-            ),
+            avatar_url=user.avatar_url and user.avatar_url.url,
+            server_specific_avatar_url=user.guild_avatar_url and user.guild_avatar_url.url,
             name=user.username,
             nick_name=user.nickname,
-            is_self=bot_user.id == user.id if bot_user else False,
+            is_self=bot_user == user,
             is_bot=user.is_bot
         )
 

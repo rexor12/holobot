@@ -44,7 +44,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                 is_mandatory=False
             ),
             Option(
-                "type",
+                "kind",
                 "Whether to show the global or the server-specific avatar.",
                 OptionType.STRING,
                 is_mandatory=False,
@@ -55,11 +55,11 @@ class ViewUserAvatarWorkflow(WorkflowBase):
             )
         )
     )
-    async def execute(
+    async def view_user_avatar(
         self,
         context: ServerChatInteractionContext,
         user: str | None = None,
-        type: str | None = None
+        kind: str | None = None
     ) -> InteractionResponse:
         try:
             if user is None:
@@ -92,11 +92,11 @@ class ViewUserAvatarWorkflow(WorkflowBase):
 
         avatar_url = None
         no_avatar_i18n = None
-        if not type:
+        if not kind:
             avatar_url = member.server_specific_avatar_url or member.avatar_url
             if not avatar_url:
                 no_avatar_i18n = "extensions.general.view_user_avatar_workflow.no_avatar_error"
-        elif type == _SERVER_AVATAR_VALUE:
+        elif kind == _SERVER_AVATAR_VALUE:
             avatar_url = member.server_specific_avatar_url
             if not avatar_url:
                 no_avatar_i18n = "extensions.general.view_user_avatar_workflow.no_server_avatar_error"

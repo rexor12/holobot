@@ -49,9 +49,9 @@ class UserDataProvider(IUserDataProvider):
         bot_user = BotAccessor.get_bot().get_me()
         return UserData(
             user_id=str(user.id),
-            avatar_url=user.avatar_url.url if user.avatar_url else None,
-            banner_url=user.banner_url.url if user.banner_url else None,
-            is_self=user.id == bot_user.id if bot_user else False,
+            avatar_url=user.avatar_url and user.avatar_url.url,
+            banner_url=user.banner_url and user.banner_url.url,
+            is_self=user == bot_user,
             is_bot=user.is_bot,
             name=user.username
         )

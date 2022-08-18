@@ -91,6 +91,7 @@ class ScraperRunner(IStartable):
 
             next_scrape_time = scraper.get_next_scrape_time(last_scrape_time)
             if datetime.now(timezone.utc) < next_scrape_time:
+                self.__logger.trace("Postponed scraping", name=scraper_name, scrape_at=next_scrape_time)
                 return ()
 
             self.__logger.trace("Running giveaway scraper...", name=scraper_name)

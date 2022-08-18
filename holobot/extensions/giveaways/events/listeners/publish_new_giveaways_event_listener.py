@@ -1,4 +1,6 @@
 from holobot.discord.sdk import IMessaging
+from holobot.discord.sdk.exceptions import ForbiddenError
+from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.extensions.giveaways.events.models import NewGiveawaysEvent
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.i18n import II18nProvider
@@ -11,10 +13,12 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
         self,
         configurator: ConfiguratorInterface,
         i18n_provider: II18nProvider,
+        server_data_provider: IServerDataProvider,
         messaging: IMessaging
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
+        self.__server_data_provider = server_data_provider
         self.__messaging = messaging
         self.__server_id = str(configurator.get("Giveaways", "GiveawayAnnouncementServerId", 0))
         self.__channel_id = str(configurator.get("Giveaways", "GiveawayAnnouncementChannelId", 0))
@@ -34,17 +38,21 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
                 for giveaway in event.giveaways
             ]
         )
-        message_id = await self.__messaging.send_channel_message(
-            self.__server_id,
-            self.__channel_id,
-            self.__i18n_provider.get(
-                "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost",
-                {
-                    "items": "\n".join(items_i18n)
-                }
+
+        try:
+            message_id = await self.__messaging.send_channel_message(
+                self.__server_id,
+                self.__channel_id,
+                self.__i18n_provider.get(
+                    "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost",
+                    {
+                        "items": "\n".join(items_i18n)
+                    }
+                )
             )
-        )
-        await self.__messaging.crosspost_message(self.__server_id, self.__channel_id, message_id)
+            await self.__messaging.crosspost_message(self.__server_id, self.__channel_id, message_id)
+        except ForbiddenError:
+            await self.__try_notify_admin_on_error()
 
     def __is_feature_enabled(self) -> bool:
         return (
@@ -53,3 +61,20 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
             and not not self.__channel_id
             and self.__channel_id != "0"
         )
+
+    async def __try_notify_admin_on_error(self) -> None:
+        try:
+            server_data = self.__server_data_provider.get_basic_data_by_id(self.__server_id)
+            await self.__messaging.send_private_message(
+                server_data.owner_id,
+                self.__i18n_provider.get(
+                    "extensions.giveaways.publish_new_giveaways_event_listener.cannot_announce_error",
+                    {
+                        "channel_id": self.__channel_id,
+                        "server_name": server_data.name
+                    }
+                )
+            )
+        except ForbiddenError:
+            # Tried our best, but we can't even send a message to the server administrator.
+            pass

@@ -20,5 +20,6 @@ class ServerDataProvider(IServerDataProvider):
             server_id=str(guild.id),
             icon_url=str(guild.icon_url) if guild.icon_url else None,
             banner_url=guild.banner_url.url if guild.banner_url else None,
-            name=guild.name
+            name=guild.name,
+            owner_id=str(guild.owner_id)
         )

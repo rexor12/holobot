@@ -6,3 +6,4 @@ class ServerData:
     icon_url: str | None
     banner_url: str | None
     name: str
+    owner_id: str

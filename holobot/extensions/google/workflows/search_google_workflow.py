@@ -46,7 +46,7 @@ class SearchGoogleWorkflow(WorkflowBase):
         search_type = SearchType.IMAGE if type == "image" else SearchType.TEXT
         try:
             results = await self.__google_client.search(search_type, query)
-            if len(results) == 0 or not results[0].link:
+            if not results or not results[0].link:
                 return InteractionResponse(
                     action=ReplyAction(content=self.__i18n_provider.get(
                         "extensions.google.search_google_workflow.no_results"

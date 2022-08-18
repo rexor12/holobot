@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -11,7 +13,7 @@ class OrderByBuilder(IQueryPartBuilder):
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.__columns: list[tuple[str, Order]] = []
 
-    def column(self, column_name: str, order: Order = Order.ASCENDING) -> 'OrderByBuilder':
+    def column(self, column_name: str, order: Order = Order.ASCENDING) -> OrderByBuilder:
         self.__columns.append((column_name, order))
         return self
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from multidict import CIMultiDict
@@ -21,5 +23,5 @@ class TooManyRequestsError(HttpStatusError):
         self.__retry_after = value
 
     @staticmethod
-    def from_headers(headers: CIMultiDict) -> 'TooManyRequestsError':
+    def from_headers(headers: CIMultiDict) -> TooManyRequestsError:
         return TooManyRequestsError(try_get_retry_after(headers))

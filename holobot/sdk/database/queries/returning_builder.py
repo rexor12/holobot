@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -9,14 +11,14 @@ class ReturningBuilder(IQueryPartBuilder):
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.__columns: list[str] = []
 
-    def column(self, column_name: str) -> 'ReturningBuilder':
+    def column(self, column_name: str) -> ReturningBuilder:
         if column_name in self.__columns:
             return self
 
         self.__columns.append(column_name)
         return self
 
-    def columns(self, column_name: str, *column_names: str) -> 'ReturningBuilder':
+    def columns(self, column_name: str, *column_names: str) -> ReturningBuilder:
         columns = [column_name, *column_names]
         for column in columns:
             if column not in self.__columns:

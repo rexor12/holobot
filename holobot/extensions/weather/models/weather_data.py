@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from holobot.sdk.utils import try_parse_float, try_parse_int
@@ -65,7 +67,7 @@ class WeatherData:
         self.__condition = value
 
     @staticmethod
-    def from_json(json: dict[str, Any]) -> 'WeatherData':
+    def from_json(json: dict[str, Any]) -> WeatherData:
         entity = WeatherData()
         entity.name = json.get("name", "Unknown")
         WeatherData.fill_main_data(entity, json.get("main", {}))
@@ -73,7 +75,7 @@ class WeatherData:
         return entity
 
     @staticmethod
-    def fill_main_data(weather_data: 'WeatherData', json: dict[str, Any]) -> None:
+    def fill_main_data(weather_data: WeatherData, json: dict[str, Any]) -> None:
         weather_data.temperature = try_parse_float(json.get("temp", None))
         weather_data.temperature_feels_like = try_parse_float(json.get("feels_like", None))
         weather_data.pressure = try_parse_int(json.get("pressure", None))

@@ -83,7 +83,7 @@ class ViewTodoItemsWorkflow(WorkflowBase):
     ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__todo_item_manager.get_by_user(user_id, page_index, page_size)
-        if len(result.items) == 0:
+        if not result.items:
             return (
                 self.__i18n_provider.get(
                     "extensions.todo_lists.view_todo_items_workflow.no_todo_items"

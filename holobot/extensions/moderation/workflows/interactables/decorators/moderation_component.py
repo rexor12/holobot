@@ -1,5 +1,5 @@
 from collections.abc import Callable, Coroutine
-from typing import Any, Type
+from typing import Any
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
@@ -11,7 +11,7 @@ from holobot.extensions.moderation.workflows.interactables import ModerationComp
 def moderation_component(
     *,
     identifier: str,
-    component_type: Type[ComponentBase],
+    component_type: type[ComponentBase],
     is_bound: bool = False,
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,

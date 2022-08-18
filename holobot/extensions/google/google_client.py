@@ -67,7 +67,7 @@ class GoogleClient(IGoogleClient):
             self.__log.error("An unexpected error has occurred during a Google request", error)
             raise
 
-        if len(results := response.get("items", [])) == 0:
+        if not (results := response.get("items")):
             return ()
 
         return tuple(SearchResult.from_json(result) for result in results)

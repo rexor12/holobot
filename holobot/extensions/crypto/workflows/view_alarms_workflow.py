@@ -77,7 +77,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
     ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__log.trace("User requested crypto alarm page", user_id=user_id, page_index=page_index)
         result = await self.__alert_manager.get_many(user_id, page_index, page_size)
-        if len(result.items) == 0:
+        if not result.items:
             return ("The user has no crypto alarms.", [])
 
         embed = Embed(

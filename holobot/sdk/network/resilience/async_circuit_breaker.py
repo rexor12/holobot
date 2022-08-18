@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from collections.abc import Callable, Coroutine
 from time import time
@@ -8,7 +10,7 @@ from .models.circuit_state import CircuitState
 DEFAULT_FAILURE_THRESHOLD: int = 5
 DEFAULT_RECOVERY_TIMEOUT: int = 30
 
-async def constant_break(circuit_breaker: 'AsyncCircuitBreaker', error: Exception) -> int:
+async def constant_break(circuit_breaker: AsyncCircuitBreaker, error: Exception) -> int:
     return circuit_breaker.recovery_timeout
 
 class AsyncCircuitBreaker:

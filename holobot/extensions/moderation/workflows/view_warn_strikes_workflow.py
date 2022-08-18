@@ -112,7 +112,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             page_index=page_index
         )
         result = await self.__warn_manager.get_warns(server_id, user_id, page_index, page_size)
-        if len(result.items) == 0:
+        if not result.items:
             return ("The user has no warn strikes.", [])
 
         embed = Embed(

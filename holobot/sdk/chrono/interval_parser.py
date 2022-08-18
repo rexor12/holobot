@@ -12,7 +12,7 @@ FIXED_INTERVALS: dict[str, timedelta] = {
 def parse_interval(value: str) -> timedelta:
     args: dict[str, int] = { part: 0 for part in TIME_PARTS }
     value = value.upper()
-    if (fixed_interval := FIXED_INTERVALS.get(value, None)) is not None:
+    if (fixed_interval := FIXED_INTERVALS.get(value)) is not None:
         return fixed_interval
 
     if ":" in value:

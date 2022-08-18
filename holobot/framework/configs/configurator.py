@@ -15,9 +15,9 @@ class Configurator(ConfiguratorInterface):
     def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
         if (env_value := Configurator.__get_env(section_name, parameter_name, default_value)) is not None:
             return env_value
-        if not (section := self.__configs.get(section_name, None)):
+        if not (section := self.__configs.get(section_name)):
             return default_value
-        if not (parameters := section.get("parameters", None)):
+        if not (parameters := section.get("parameters")):
             return default_value
         return parameters.get(parameter_name, default_value)
 

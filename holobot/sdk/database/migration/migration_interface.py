@@ -2,7 +2,7 @@ from asyncpg.connection import Connection
 
 class MigrationInterface:
     def __init__(self, table_name: str):
-        if not table_name or len(table_name) == 0:
+        if not table_name:
             raise ValueError("The specified table name is invalid.")
         self.table_name = table_name
 

@@ -24,11 +24,10 @@ Below are some of the technologies used by this project:
 * [hikari](https://github.com/hikari-py)
 * [kanata](https://github.com/rexor12/kanata)
 * [asyncpg](https://github.com/MagicStack/asyncpg)
-* [pytz](https://pythonhosted.org/pytz)
 * [tzlocal](https://github.com/regebro/tzlocal)
 * [Binance API](https://developers.binance.com)
 * [Google API](https://developers.google.com/custom-search/v1/overview)
-  
+
 # Installation
 
 ## Inviting the official instance to your server

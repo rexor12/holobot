@@ -4,7 +4,7 @@ from holobot.sdk.reactive.models import EventBase
 
 class SymbolUpdateEvent(EventBase):
     def __init__(self, symbol: str, price: Decimal, previous_price: Decimal | None):
-        if not symbol or len(symbol) == 0:
+        if not symbol:
             raise ValueError("The symbol must be specified.")
         self.symbol = symbol
         self.price = price

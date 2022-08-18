@@ -1,7 +1,6 @@
 import asyncio
 from asyncio.tasks import Task
 from collections.abc import Sequence
-from typing import Type
 
 import hikari
 
@@ -61,7 +60,7 @@ class BotService(BotServiceInterface):
             intents = REQUIRED_INTENTS
         )
 
-        event_listeners: dict[Type[hikari.Event], list[IGenericDiscordEventListener]] = {}
+        event_listeners: dict[type[hikari.Event], list[IGenericDiscordEventListener]] = {}
         for listener in self.__discord_event_listeners:
             listeners = get_or_add(event_listeners, listener.event_type, lambda _: [], None)
             listeners.append(listener)

@@ -21,13 +21,13 @@ class CommandRegistry(CommandRegistryInterface):
     def command_exists(self, command_name: str, group_name: str | None = None, subgroup_name: str | None = None) -> bool:
         assert_not_none(command_name, "command_name")
         group_name = group_name or DEFAULT_GROUP_NAME
-        if (group := self.__registry.get(group_name, None)) is None:
+        if (group := self.__registry.get(group_name)) is None:
             return False
 
         if not subgroup_name:
             return command_name in group.commands.keys()
 
-        if (subgroup := group.subgroups.get(subgroup_name, None)) is None:
+        if not (subgroup := group.subgroups.get(subgroup_name)):
             return False
 
         return command_name in subgroup.commands.keys()
@@ -37,16 +37,16 @@ class CommandRegistry(CommandRegistryInterface):
         return group_name in self.__registry
 
     def get_group(self, group_name: str) -> GroupConfiguration | None:
-        return self.__registry.get(group_name, None)
+        return self.__registry.get(group_name)
 
     def get_subgroup(
         self,
         group_name: str,
         subgroup_name: str
     ) -> SubgroupConfiguration | None:
-        if not (group := self.__registry.get(group_name, None)):
+        if not (group := self.__registry.get(group_name)):
             return None
-        return group.subgroups.get(subgroup_name, None)
+        return group.subgroups.get(subgroup_name)
 
     def get_command(
         self,
@@ -55,13 +55,13 @@ class CommandRegistry(CommandRegistryInterface):
         subgroup_name: str | None = None
     ) -> CommandConfiguration | None:
         group_name = group_name or DEFAULT_GROUP_NAME
-        if not (group := self.__registry.get(group_name, None)):
+        if not (group := self.__registry.get(group_name)):
             return None
         if not subgroup_name:
-            return group.commands.get(command_name, None)
-        if not (subgroup := group.subgroups.get(subgroup_name, None)):
+            return group.commands.get(command_name)
+        if not (subgroup := group.subgroups.get(subgroup_name)):
             return None
-        return subgroup.commands.get(command_name, None)
+        return subgroup.commands.get(command_name)
 
     def __parse_command_configs(
         self,

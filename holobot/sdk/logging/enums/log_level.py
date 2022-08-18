@@ -9,7 +9,7 @@ class LogLevel(IntEnum):
     ERROR = 4
     CRITICAL = 5
     NONE = 6
-    
+
     @staticmethod
     def parse(value: str):
-        return LogLevel.__dict__.get(value.upper(), LogLevel.WARNING)
+        return LogLevel.__members__.get(value.upper(), LogLevel.WARNING)

@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any, NamedTuple, Type
+from typing import Any, NamedTuple
 
 import hikari
 import hikari.api.special_endpoints as endpointsintf
@@ -41,13 +41,13 @@ class _ComponentData(NamedTuple):
 class ComponentTransformer(IComponentTransformer):
     def __init__(self) -> None:
         super().__init__()
-        self.__component_transformers: dict[Type[ComponentBase], _TComponentBuilder] = {
+        self.__component_transformers: dict[type[ComponentBase], _TComponentBuilder] = {
             StackLayout: self.__transform_stack_layout,
             Button: self.__transform_button,
             ComboBox: self.__transform_combo_box,
             Paginator: self.__transform_pager
         }
-        self.__state_transformers: dict[Type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
+        self.__state_transformers: dict[type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
             StackLayout: lambda i: EmptyState(owner_id=str(i.user.id)),
             Button: lambda i: EmptyState(owner_id=str(i.user.id)),
             ComboBox: self.__transform_combo_box_state,
@@ -81,13 +81,13 @@ class ComponentTransformer(IComponentTransformer):
 
     def transform_state(
         self,
-        component_type: Type[ComponentBase],
+        component_type: type[ComponentBase],
         interaction: hikari.ComponentInteraction
     ) -> ComponentStateBase:
         assert_not_none(component_type, "component_type")
         assert_not_none(interaction, "interaction")
 
-        if not (transformer := self.__state_transformers.get(component_type, None)):
+        if not (transformer := self.__state_transformers.get(component_type)):
             raise ArgumentError("component_type", "Invalid component type.")
         return transformer(interaction)
 

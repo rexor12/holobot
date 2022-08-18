@@ -53,7 +53,7 @@ class ReminderManager(ReminderManagerInterface):
         return reminder
 
     async def delete_reminder(self, user_id: str, reminder_id: int) -> None:
-        if user_id is None or len(user_id) == 0:
+        if not user_id:
             raise ArgumentError("user_id", "The user identifier must not be empty.")
 
         deleted_count = await self.__reminder_repository.delete_by_user(user_id, reminder_id)

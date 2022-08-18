@@ -1,7 +1,7 @@
-from typing import Any, Type
+from typing import Any
 
 class Singleton(type):
-    __instance: Type | None = None
+    __instance: Any | None = None
 
     def __call__(cls, *args, **kwargs):
         if cls.__instance is None:
@@ -14,7 +14,7 @@ class _UndefinedType(metaclass=Singleton):
 
 UNDEFINED = _UndefinedType()
 
-def get_fully_qualified_name(clazz: Type[Any]):
+def get_fully_qualified_name(clazz: type):
     module_name = clazz.__module__
     class_name = clazz.__qualname__
     # To avoid outputting "__builtin__", we check for the always available

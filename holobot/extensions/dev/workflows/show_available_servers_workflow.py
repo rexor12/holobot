@@ -120,7 +120,10 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         owner_name = server.owner_name
         owner = None
         if not owner_name and server.owner_id:
-            owner = self.__member_data_provider.get_basic_data_by_id(server.identifier, server.owner_id)
+            owner = await self.__member_data_provider.get_basic_data_by_id(
+                server.identifier,
+                server.owner_id
+            )
             owner_name = owner.name if owner else "N/A"
 
         return (

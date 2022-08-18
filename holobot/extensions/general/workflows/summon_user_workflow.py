@@ -55,9 +55,9 @@ class SummonUserWorkflow(WorkflowBase):
             name = name.strip()
             user_id = get_user_id(name)
             member = (
-                self.__member_data_provider.get_basic_data_by_id(context.server_id, user_id)
+                await self.__member_data_provider.get_basic_data_by_id(context.server_id, user_id)
                 if user_id
-                else self.__member_data_provider.get_basic_data_by_name(context.server_id, name)
+                else await self.__member_data_provider.get_basic_data_by_name(context.server_id, name)
             )
             if not member:
                 return InteractionResponse(action=ReplyAction(

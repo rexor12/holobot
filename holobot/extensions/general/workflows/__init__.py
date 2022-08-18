@@ -4,3 +4,4 @@ from .summon_user_workflow import SummonUserWorkflow
 from .view_bot_info_workflow import ViewBotInfoWorkflow
 from .view_emoji_workflow import ViewEmojiWorkflow
 from .view_user_avatar_workflow import ViewUserAvatarWorkflow
+from .view_user_banner_workflow import ViewUserBannerWorkflow

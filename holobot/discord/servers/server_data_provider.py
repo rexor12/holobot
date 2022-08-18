@@ -19,5 +19,6 @@ class ServerDataProvider(IServerDataProvider):
         return ServerData(
             server_id=str(guild.id),
             icon_url=str(guild.icon_url) if guild.icon_url else None,
+            banner_url=guild.banner_url.url if guild.banner_url else None,
             name=guild.name
         )

@@ -1,2 +1,3 @@
 from .ibot_data_provider import IBotDataProvider
 from .iemoji_data_provider import IEmojiDataProvider
+from .iuser_data_provider import IUserDataProvider

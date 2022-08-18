@@ -104,7 +104,14 @@
             },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",
-                "embed_title": "{user}'s avatar"
+                "embed_title": "{user}'s avatar",
+                "no_global_avatar_error": "I'm sorry, but <@{user_id}> doesn't have a global avatar. (｡•́︿•̀｡)",
+                "no_server_avatar_error": "I'm sorry, but <@{user_id}> doesn't have a server-specific avatar. (｡•́︿•̀｡)",
+                "no_avatar_error": "I'm sorry, but <@{user_id}> doesn't have an avatar. (｡•́︿•̀｡)"
+            },
+            "view_user_banner_workflow": {
+                "embed_title": "{user}'s banner",
+                "no_banner_error": "I'm sorry, but <@{user_id}> doesn't have a banner. (｡•́︿•̀｡)"
             }
         },
 
@@ -257,9 +264,12 @@
         },
 
         "server": {
+            "view_server_banner_workflow": {
+                "no_server_banner": "I'm sorry, but this server doesn't have a banner. (｡•́︿•̀｡)",
+                "embed_title": "{name}'s banner"
+            },
             "view_server_icon_workflow": {
-                "unknown_server_error": "I'm sorry, but I cannot query the server's data. Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
-                "no_server_icon": "Your server doesn't have an icon. (｡•́︿•̀｡)",
+                "no_server_icon": "I'm sorry, but this server doesn't have an icon. (｡•́︿•̀｡)",
                 "embed_title": "{name}'s icon"
             }
         },

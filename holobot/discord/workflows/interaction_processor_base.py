@@ -52,10 +52,12 @@ class InteractionProcessorBase(
                 # An expected exception but log it anyway to be aware of the frequency.
                 execution_data["has_exception"] = True
                 self.__log.exception("A Discord HTTP error occurred while processing an interaction")
+                await self.__try_send_error_response(interaction)
             except Exception:
                 # Don't propagate to the framework, better log it here.
                 execution_data["has_exception"] = True
                 self.__log.exception("An unhandled exception occurred while processing an interaction")
+                await self.__try_send_error_response(interaction)
 
     async def __process_interaction(
         self,
@@ -214,3 +216,22 @@ class InteractionProcessorBase(
                 return True
 
         return False
+
+    async def __try_send_error_response(
+        self,
+        interaction: TInteraction
+    ) -> None:
+        try:
+            await self.__action_processor.process(
+                interaction,
+                ReplyAction(
+                    content=self.__i18n_provider.get("interactions.unhandled_interaction_error")
+                ),
+                DeferType.NONE,
+                True
+            )
+        except Exception as error:
+            self.__log.debug(
+                "Failed to send the default interaction error response",
+                exception=error
+            )

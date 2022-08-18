@@ -4,5 +4,5 @@ from typing import Any
 @dataclass
 class ExecutionContextData:
     event_name: str
-    elapsed_milliseconds: float = -1
+    elapsed_milliseconds: float = -1.0
     extra_infos: dict[str, Any] = field(default_factory=dict)

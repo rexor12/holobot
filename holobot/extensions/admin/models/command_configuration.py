@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 class CommandConfiguration:
@@ -22,7 +24,7 @@ class CommandConfiguration:
         self.__can_disable = value
 
     @staticmethod
-    def from_json(name: str, can_disable_parent: bool, json: dict[str, Any]) -> 'CommandConfiguration':
+    def from_json(name: str, can_disable_parent: bool, json: dict[str, Any]) -> CommandConfiguration:
         config = CommandConfiguration(name)
         config.can_disable = json.get("CanDisable", can_disable_parent)
         return config

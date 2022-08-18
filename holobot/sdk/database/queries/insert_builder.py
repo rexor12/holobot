@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -18,15 +20,15 @@ class InsertBuilder(IQueryPartBuilder):
     def set_fields(self) -> dict[str, Any | None]:
         return self.__fields
 
-    def in_table(self, table_name: str) -> 'InsertBuilder':
+    def in_table(self, table_name: str) -> InsertBuilder:
         self.__table_name = table_name
         return self
 
-    def field(self, column_name: str, value: Any | None) -> 'InsertBuilder':
+    def field(self, column_name: str, value: Any | None) -> InsertBuilder:
         self.__fields[column_name] = value
         return self
 
-    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> 'InsertBuilder':
+    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> InsertBuilder:
         self.__fields[field[0]] = field[1]
         for f in fields:
             self.__fields[f[0]] = f[1]

@@ -51,7 +51,7 @@ class ChannelManager(IChannelManager):
         allowed_permissions = Permissions.NONE
         denied_permissions = Permissions.NONE
         for permission, status in permissions:
-            if (permission_dto := PERMISSION_TO_DTOS.get(permission, None)) is None:
+            if (permission_dto := PERMISSION_TO_DTOS.get(permission)) is None:
                 # This may also be a programming error if the map doesn't contain a newly introduced flag.
                 raise PermissionError(permission, "There is no matching Discord permission. Make sure a single flag is specified only.")
             if status is True:

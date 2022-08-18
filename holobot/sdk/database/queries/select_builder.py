@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -14,23 +16,23 @@ class SelectBuilder(IQueryPartBuilder):
         self.__table_alias: str | None = None
         self.__is_count_select: bool = False
 
-    def column(self, column_name: str) -> 'SelectBuilder':
+    def column(self, column_name: str) -> SelectBuilder:
         if column_name in self.__columns:
             return self
 
         self.__columns.append(column_name)
         return self
 
-    def columns(self, *column_names: str) -> 'SelectBuilder':
+    def columns(self, *column_names: str) -> SelectBuilder:
         for column_name in column_names:
             self.column(column_name)
         return self
 
-    def count(self) -> 'SelectBuilder':
+    def count(self) -> SelectBuilder:
         self.__is_count_select = True
         return self
 
-    def from_table(self, table_name: str, alias: str | None = None) -> 'SelectBuilder':
+    def from_table(self, table_name: str, alias: str | None = None) -> SelectBuilder:
         self.__table_name = table_name
         self.__table_alias = alias
         return self

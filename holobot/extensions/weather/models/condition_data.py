@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 class ConditionData:
@@ -31,7 +33,7 @@ class ConditionData:
         self.__condition_image_url = value
 
     @staticmethod
-    def from_json(json: dict[str, Any]) -> 'ConditionData':
+    def from_json(json: dict[str, Any]) -> ConditionData:
         entity = ConditionData()
         entity.id = json.get("id", 0)
         entity.icon = json.get("icon", "")

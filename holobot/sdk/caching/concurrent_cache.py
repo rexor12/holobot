@@ -3,6 +3,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any, Generic, TypeVar
 
 from holobot.sdk.exceptions import ArgumentError
+from holobot.sdk.utils import UNDEFINED
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -14,8 +15,8 @@ class ConcurrentCache(Generic[TKey, TValue]):
         self.__dict: dict[TKey, TValue] = {}
         self.__lock: Lock = Lock()
 
-    async def get(self, key: TKey) -> TValue | None:
-        return self.__dict.get(key, None)
+    async def get(self, key: TKey) -> TValue | UNDEFINED:
+        return self.__dict.get(key, UNDEFINED)
 
     async def get_or_add(self, key: TKey, factory: Callable[[TKey], Awaitable[TValue]]) -> TValue:
         return await self.__get_or_add(key, factory)
@@ -36,27 +37,26 @@ class ConcurrentCache(Generic[TKey, TValue]):
         add_factory: Callable[[TKey], Awaitable[TValue]],
         update_factory: Callable[[TKey, TValue], Awaitable[TValue]]) -> TValue:
         async with self.__lock:
-            if (value := self.__dict.get(key, None)) is not None:
+            if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+                value = await add_factory(key)
+            else:
                 value = await update_factory(key, value)
-                self.__dict[key] = value
-                return value
 
-            value = await add_factory(key)
             self.__dict[key] = value
             return value
 
     async def remove(self, key: TKey) -> TValue:
         async with self.__lock:
-            if (value := self.__dict.pop(key, None)) is None:
+            if (value := self.__dict.pop(key, UNDEFINED)) is UNDEFINED:
                 raise ArgumentError("key", "The specified key is not present.")
             return value
 
     async def __get_or_add(self, key: TKey, factory: Callable[..., Awaitable[TValue]], *args: Any) -> TValue:
-        if (value := self.__dict.get(key, None)) is not None:
+        if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
             return value
 
         async with self.__lock:
-            if (value := self.__dict.get(key, None)) is not None:
+            if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
                 return value
 
             value = await factory(key, *args)
@@ -65,7 +65,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
 
     async def __add(self, key: TKey, add_factory: Callable[..., Awaitable[TValue]], *args: Any) -> TValue:
         async with self.__lock:
-            if (value := self.__dict.get(key, None)) is not None:
+            if key in self.__dict:
                 raise ArgumentError("key", "An item with the specified key is already present.")
 
             value = await add_factory(key, *args)

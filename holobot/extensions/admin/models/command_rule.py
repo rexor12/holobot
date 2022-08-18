@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from ..enums import RuleState
@@ -96,7 +98,7 @@ class CommandRule:
     def channel_id(self, value: str | None) -> None:
         self.__channel_id = value
 
-    def __lt__(self, other: 'CommandRule') -> bool:
+    def __lt__(self, other: CommandRule) -> bool:
         return self.__get_weight() < other.__get_weight()
 
     def textify(self) -> str:

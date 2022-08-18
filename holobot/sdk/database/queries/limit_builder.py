@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -10,11 +12,11 @@ class LimitBuilder(IQueryPartBuilder):
         self.__start_index: int | None = None
         self.__max_count: int | None = None
 
-    def max_count(self, max_count: int) -> 'LimitBuilder':
+    def max_count(self, max_count: int) -> LimitBuilder:
         self.__max_count = max_count
         return self
 
-    def start_index(self, start_index: int) -> 'LimitBuilder':
+    def start_index(self, start_index: int) -> LimitBuilder:
         self.__start_index = start_index
         return self
 

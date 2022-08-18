@@ -1,5 +1,3 @@
-from typing import Any, Type
-
 import hikari
 
 from holobot.discord.bot import Bot
@@ -20,7 +18,7 @@ class StartedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         self.__environment = environment
 
     @property
-    def event_type(self) -> Type[Any]:
+    def event_type(self) -> type:
         return _EVENT_TYPE
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:

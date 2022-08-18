@@ -1,5 +1,5 @@
 from collections.abc import Callable, Coroutine
-from typing import Any, Type
+from typing import Any
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
@@ -11,7 +11,7 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 def component(
     *,
     identifier: str,
-    component_type: Type[ComponentBase],
+    component_type: type[ComponentBase],
     is_bound: bool = False,
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
@@ -24,7 +24,7 @@ def component(
     :param identifier: The globally unique identifier of the component that can trigger the interaction.
     :type identifier: str
     :param component_type: The type of the associated component.
-    :type component_type: Type[ComponentBase]
+    :type component_type: type[ComponentBase]
     :param is_bound: Whether only the invoking user can interact with the result, defaults to False
     :type is_bound: bool, optional
     :param is_ephemeral: Whether only the invoking user can see the result, defaults to False

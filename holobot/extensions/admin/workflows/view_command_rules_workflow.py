@@ -113,7 +113,7 @@ class ViewCommandRulesWorkflow(WorkflowBase):
     ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__log.trace("User requested command rule list page", user_id=user_id, page_index=page_index)
         result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
-        if len(result.items) == 0:
+        if not result.items:
             return (self.__i18n_provider.get(
                 "extensions.admin.view_command_rules_workflow.no_command_rules_configured"
             ), [])

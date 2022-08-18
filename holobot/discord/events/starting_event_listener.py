@@ -1,5 +1,3 @@
-from typing import Any, Type
-
 import hikari
 from hikari.api.special_endpoints import CommandBuilder
 
@@ -31,7 +29,7 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         self.__workflow_registry = workflow_registry
 
     @property
-    def event_type(self) -> Type[Any]:
+    def event_type(self) -> type:
         return _EVENT_TYPE
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:

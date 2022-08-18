@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -17,11 +19,11 @@ class OnConflictUpdateBuilder(IQueryPartBuilder):
     def set_fields(self) -> dict[str, Any | None]:
         return self.__fields
 
-    def field(self, column_name: str, value: Any | None, is_raw_value: bool = False) -> 'OnConflictUpdateBuilder':
+    def field(self, column_name: str, value: Any | None, is_raw_value: bool = False) -> OnConflictUpdateBuilder:
         self.__fields[column_name] = (value, is_raw_value)
         return self
 
-    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> 'OnConflictUpdateBuilder':
+    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> OnConflictUpdateBuilder:
         self.__fields[field[0]] = (field[1], False)
         for f in fields:
             self.__fields[f[0]] = (f[1], False)

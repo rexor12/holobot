@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .compiled_query import CompiledQuery
@@ -33,10 +35,10 @@ class WhereConstraintBuilder(IQueryPartBuilder):
     ) -> 'WhereConstraintBuilder':
         return self.__append_constraint(Connector.OR, ColumnConstraintBuilder(column_name, equality, value, is_raw_value))
 
-    def and_expression(self, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
+    def and_expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:
         return self.__append_constraint(Connector.AND, constraint)
 
-    def or_expression(self, constraint: IConstraintBuilder) -> 'WhereConstraintBuilder':
+    def or_expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:
         return self.__append_constraint(Connector.OR, constraint)
 
     def order_by(self) -> OrderByBuilder:

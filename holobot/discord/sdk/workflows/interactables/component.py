@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Type
 
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase
 from .interactable import Interactable
@@ -12,7 +11,7 @@ class Component(Interactable):
     The same identifier CANNOT be used by multiple components to avoid ambiguity.
     """
 
-    component_type: Type[ComponentBase]
+    component_type: type[ComponentBase]
     """The type of the component."""
 
     def __str__(self) -> str:

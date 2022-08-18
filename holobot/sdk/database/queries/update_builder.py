@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .iquery_part_builder import IQueryPartBuilder
@@ -17,15 +19,15 @@ class UpdateBuilder(IQueryPartBuilder):
     def set_fields(self) -> dict[str, Any | None]:
         return self.__fields
 
-    def table(self, table_name: str) -> 'UpdateBuilder':
+    def table(self, table_name: str) -> UpdateBuilder:
         self.__table_name = table_name
         return self
 
-    def field(self, column_name: str, value: Any | None, is_raw_value: bool = False) -> 'UpdateBuilder':
+    def field(self, column_name: str, value: Any | None, is_raw_value: bool = False) -> UpdateBuilder:
         self.__fields[column_name] = (value, is_raw_value)
         return self
 
-    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> 'UpdateBuilder':
+    def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> UpdateBuilder:
         self.__fields[field[0]] = (field[1], False)
         for f in fields:
             self.__fields[f[0]] = (f[1], False)

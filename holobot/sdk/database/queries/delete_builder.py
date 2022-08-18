@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .iquery_part_builder import IQueryPartBuilder
@@ -8,7 +10,7 @@ class DeleteBuilder(IQueryPartBuilder):
         super().__init__()
         self.__table_name: str | None = None
 
-    def from_table(self, table_name: str) -> 'DeleteBuilder':
+    def from_table(self, table_name: str) -> DeleteBuilder:
         self.__table_name = table_name
         return self
 

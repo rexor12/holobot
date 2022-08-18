@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Generic, Type
+from typing import Generic
 
 import hikari
 
@@ -15,7 +15,7 @@ class DiscordEventListenerBase(
     # Python 3.10 doesn't support returning TEvent here.
     @property
     @abstractmethod
-    def event_type(self) -> Type[Any]:
+    def event_type(self) -> type:
         ...
 
     def process(self, bot: Bot, event: hikari.Event):

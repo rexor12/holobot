@@ -1,4 +1,4 @@
-from typing import Protocol, Type
+from typing import Protocol
 
 from hikari import ComponentInteraction
 from hikari.api.special_endpoints import ComponentBuilder
@@ -18,7 +18,7 @@ class IComponentTransformer(Protocol):
 
     def transform_state(
         self,
-        component_type: Type[ComponentBase],
+        component_type: type[ComponentBase],
         interaction: ComponentInteraction
     ) -> ComponentStateBase:
         ...

@@ -1,5 +1,3 @@
-from typing import Any, Type
-
 import hikari
 from hikari import CommandInteraction, ComponentInteraction
 
@@ -26,7 +24,7 @@ class InteractionCreatedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         self.__menu_item_processor = menu_item_processor
 
     @property
-    def event_type(self) -> Type[Any]:
+    def event_type(self) -> type:
         return _EVENT_TYPE
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:

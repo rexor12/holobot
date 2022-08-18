@@ -83,7 +83,7 @@ class ViewRemindersWorkflow(WorkflowBase):
     ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__reminder_manager.get_by_user(user_id, page_index, page_size)
-        if len(result.items) == 0:
+        if not result.items:
             return (
                 self.__i18n_provider.get(
                     "extensions.reminders.view_reminders_workflow.no_reminders"

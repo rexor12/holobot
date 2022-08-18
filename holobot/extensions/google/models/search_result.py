@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 class SearchResult:
@@ -13,7 +15,7 @@ class SearchResult:
         self.__link = value
 
     @staticmethod
-    def from_json(json: dict[str, Any]) -> 'SearchResult':
+    def from_json(json: dict[str, Any]) -> SearchResult:
         return SearchResult(
             link=json.get("link", "")
         )

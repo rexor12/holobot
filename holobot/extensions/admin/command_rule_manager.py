@@ -60,4 +60,4 @@ class CommandRuleManager(CommandRuleManagerInterface):
 
         rules = await self.__repository.get_relevant(server_id, channel_id, group, subgroup, command)
         sorted_rules = sorted(rules, reverse=True)
-        return len(sorted_rules) == 0 or sorted_rules[0].state == RuleState.ALLOW
+        return not sorted_rules or sorted_rules[0].state is RuleState.ALLOW

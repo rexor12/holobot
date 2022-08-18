@@ -133,7 +133,7 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
                     sent_notifications.add(notification_id)
                     record_ids.add(str(record["id"]))
                     await self.__try_notify(user_id, event)
-                if len(record_ids) == 0:
+                if not record_ids:
                     return
                 await connection.execute("UPDATE crypto_alerts SET notified_at = NOW() WHERE id IN ({})".format(
                     ",".join(record_ids)

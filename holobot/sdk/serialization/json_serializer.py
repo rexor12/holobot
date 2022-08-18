@@ -3,13 +3,13 @@ from collections.abc import Callable, Sequence
 from dataclasses import _MISSING_TYPE, fields, is_dataclass
 from datetime import datetime
 from types import NoneType, UnionType
-from typing import Any, NamedTuple, Type, TypeVar, Union, get_args, get_type_hints
+from typing import Any, NamedTuple, TypeVar, Union, get_args, get_type_hints
 
 from dateutil.parser import isoparse
 
 T = TypeVar("T")
 
-PRIMITIVE_DESERIALIZERS: dict[Type[Any], Callable[[Any], Any]] = {
+PRIMITIVE_DESERIALIZERS: dict[type, Callable[[Any], Any]] = {
     str: lambda obj: obj,
     int: lambda obj: int(obj) if obj is not None else 0,
     float: lambda obj: float(obj) if obj is not None else 0.0,
@@ -18,21 +18,21 @@ PRIMITIVE_DESERIALIZERS: dict[Type[Any], Callable[[Any], Any]] = {
 
 class ArgumentInfo(NamedTuple):
     name: str
-    object_type: Type[Any]
-    collection_constructor: Type[Any] | None
+    object_type: type
+    collection_constructor: type | None
     allows_none: bool
     default_value: Any
     default_factory: Callable[[], Any] | None
 
-def deserialize(object_type: Type[T], json_data: str | dict) -> T | None:
+def deserialize(object_type: type[T], json_data: str | dict) -> T | None:
     json_object = json.loads(json_data) if isinstance(json_data, str) else json_data
     return __deserialize_instance(object_type, json_object)
 
-def __deserialize_instance(object_type: Type[T], json_object: Any) -> T | None:
+def __deserialize_instance(object_type: type[T], json_object: Any) -> T | None:
     if json_object is None:
         return None
 
-    if (deserializer := PRIMITIVE_DESERIALIZERS.get(object_type, None)) is not None:
+    if (deserializer := PRIMITIVE_DESERIALIZERS.get(object_type)) is not None:
         return deserializer(json_object)
 
     if not is_dataclass(object_type):
@@ -62,7 +62,7 @@ def __deserialize_instance(object_type: Type[T], json_object: Any) -> T | None:
 
     return object_type(**arguments)
 
-def __get_argument_infos(object_type: Type[Any]) -> Sequence[ArgumentInfo]:
+def __get_argument_infos(object_type: type) -> Sequence[ArgumentInfo]:
     initializer = getattr(object_type, "__init__", None)
     if not initializer:
         raise ValueError(f"Type '{object_type}' has no __init__ method.")
@@ -82,7 +82,7 @@ def __get_argument_infos(object_type: Type[Any]) -> Sequence[ArgumentInfo]:
 
 def __get_argument_info(
     name: str,
-    object_type: Type[Any],
+    object_type: type,
     default_value: Any,
     default_factory: Any) -> ArgumentInfo:
     if isinstance(object_type, UnionType):

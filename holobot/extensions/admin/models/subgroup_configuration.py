@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from .command_configuration import CommandConfiguration
@@ -33,7 +35,7 @@ class SubgroupConfiguration:
         self.__commands = value
 
     @staticmethod
-    def from_json(name: str, can_disable_parent: bool, json: dict[str, Any]) -> 'SubgroupConfiguration':
+    def from_json(name: str, can_disable_parent: bool, json: dict[str, Any]) -> SubgroupConfiguration:
         config = SubgroupConfiguration(name)
         config.can_disable = json.get("CanDisable", can_disable_parent)
         for key, value in json.get("Commands", {}).items():

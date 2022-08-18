@@ -13,7 +13,8 @@
         "invalid_interaction_data_error": "I'm sorry, but this interaction isn't valid anymore. If you tried to interact with an old message, it may have expired already. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)",
         "invalid_interaction_error": "I'm sorry, but I couldn't execute your command, because it's invalid. (｡•́︿•̀｡)",
         "server_only_interaction_error": "I'm sorry, but this interaction is available for servers only. (｡•́︿•̀｡)",
-        "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)"
+        "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)",
+        "unhandled_interaction_error": "I'm sorry, but an internal error has occurred while trying to process your request. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)"
     },
 
     "extensions": {

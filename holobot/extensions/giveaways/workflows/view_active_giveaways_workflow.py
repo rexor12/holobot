@@ -125,10 +125,12 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         initiator_id: str
     ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
         metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
+        if page_index > 0 and not metadatas.items:
+            page_index = 0
+            item_index = 0
+            metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
+
         if not metadatas.items:
-            if page_index > 0:
-                page_index = item_index = 0
-                metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
             return (
                 self.__i18n_provider.get(
                     "extensions.giveaways.view_active_giveaways_workflow.no_active_giveaways"

@@ -13,7 +13,8 @@
         "invalid_interaction_data_error": "I'm sorry, but this interaction isn't valid anymore. If you tried to interact with an old message, it may have expired already. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)",
         "invalid_interaction_error": "I'm sorry, but I couldn't execute your command, because it's invalid. (｡•́︿•̀｡)",
         "server_only_interaction_error": "I'm sorry, but this interaction is available for servers only. (｡•́︿•̀｡)",
-        "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)"
+        "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)",
+        "unhandled_interaction_error": "I'm sorry, but an internal error has occurred while trying to process your request. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)"
     },
 
     "extensions": {
@@ -121,11 +122,14 @@
             },
             "publish_new_giveaways_event_listener": {
                 "new_giveaways_crosspost": "I've just sniffed out some new giveaways:\n{items}\n\nCheck them out with the `/giveaway view` command. („• ᴗ •„) ",
-                "new_giveaways_crosspost_list_item": "   ⦁ [{source}] {title}"
+                "new_giveaways_crosspost_list_item": "   ⦁ [{source}] {title}",
+                "cannot_announce_error": "I'm sorry, but I cannot announce new giveaways in <#{channel_id}> in {server_name}. Please, make sure I have the permissions to send messages there. (｡•́︿•̀｡)"
             },
             "set_announcement_channel_workflow": {
                 "channel_set": "From now on I'll announce new giveaways in <#{channel_id}>.",
-                "channel_unset": "From now on I won't announce new giveaways in any channel."
+                "channel_unset": "From now on I won't announce new giveaways in any channel.",
+                "forbidden_error": "I'm sorry, but I couldn't follow/unfollow the announcement channel. Please, make sure I have the permissions to manage webhooks. (｡•́︿•̀｡)",
+                "invalid_channel_error": "I'm sorry, but I couldn't follow/unfollow the announcement channel. Please, make sure the channel you're trying to subscribe is a regular text channel. (｡•́︿•̀｡)"
             },
             "view_active_giveaways_workflow": {
                 "no_active_giveaways": "I'm sorry, but currently there are no active giveaways. Please, check back later. (｡•́︿•̀｡)",

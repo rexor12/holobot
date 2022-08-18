@@ -22,7 +22,7 @@ class GetBasicWeatherWorkflow(WorkflowBase):
         super().__init__()
         self.__i18n_provider = i18n_provider
         self.__weather_client = weather_client
-    
+
     @command(
         description="Displays the current temperature in a city.",
         name="basic",
@@ -74,28 +74,28 @@ class GetBasicWeatherWorkflow(WorkflowBase):
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("rate_limit_error"))
             )
-    
+
     def __create_embed(self, weather_data: WeatherData) -> Embed:
         embed = Embed(
             title=self.__i18n_provider.get(
-                "extensions.eather.get_basic_weather_workflow.embed_title"
+                "extensions.weather.get_basic_weather_workflow.embed_title"
             ),
             description=self.__i18n_provider.get(
-                "extensions.eather.get_basic_weather_workflow.embed_description",
+                "extensions.weather.get_basic_weather_workflow.embed_description",
                 { "location": weather_data.name }
             ),
             footer=EmbedFooter(
                 text=self.__i18n_provider.get(
-                "extensions.eather.get_basic_weather_workflow.embed_footer"
+                "extensions.weather.get_basic_weather_workflow.embed_footer"
             ),
                 icon_url="https://openweathermap.org/themes/openweathermap/assets/img/mobile_app/android_icon.png")
         )
         embed.fields.append(EmbedField(
             name=self.__i18n_provider.get(
-                "extensions.eather.get_basic_weather_workflow.embed_field_temperature"
+                "extensions.weather.get_basic_weather_workflow.embed_field_temperature"
             ),
             value=self.__i18n_provider.get(
-                "extensions.eather.get_basic_weather_workflow.embed_field_temperature_value",
+                "extensions.weather.get_basic_weather_workflow.embed_field_temperature_value",
                 { "temperature": f"{weather_data.temperature:,.2f}" }
             )
         ))
@@ -103,20 +103,20 @@ class GetBasicWeatherWorkflow(WorkflowBase):
         if weather_data.pressure is not None:
             embed.fields.append(EmbedField(
                 name=self.__i18n_provider.get(
-                    "extensions.eather.get_basic_weather_workflow.embed_field_pressure"
+                    "extensions.weather.get_basic_weather_workflow.embed_field_pressure"
                 ),
                 value=self.__i18n_provider.get(
-                    "extensions.eather.get_basic_weather_workflow.embed_field_pressure_value",
+                    "extensions.weather.get_basic_weather_workflow.embed_field_pressure_value",
                     { "pressure": str(weather_data.pressure) }
                 )
             ))
         if weather_data.humidity is not None:
             embed.fields.append(EmbedField(
                 name=self.__i18n_provider.get(
-                    "extensions.eather.get_basic_weather_workflow.embed_field_humidity"
+                    "extensions.weather.get_basic_weather_workflow.embed_field_humidity"
                 ),
                 value=self.__i18n_provider.get(
-                    "extensions.eather.get_basic_weather_workflow.embed_field_humidity_value",
+                    "extensions.weather.get_basic_weather_workflow.embed_field_humidity_value",
                     { "humidity": str(weather_data.humidity) }
                 )
             ))

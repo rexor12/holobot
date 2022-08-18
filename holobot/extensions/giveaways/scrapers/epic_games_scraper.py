@@ -62,7 +62,9 @@ class EpicGamesScraper(IScraper):
             next_thursday = today + time_to_nearest_release_day
         previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         if last_scrape_time < previous_release_time:
-            return datetime.now(timezone.utc) - timedelta(minutes=1)
+            if datetime.now(timezone.utc) > previous_release_time:
+                return datetime.now(timezone.utc) - timedelta(minutes=1)
+            else: return previous_release_time.astimezone(timezone.utc)
 
         next_release_time = datetime.combine(next_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         return next_release_time.astimezone(timezone.utc) + SCRAPE_DELAY

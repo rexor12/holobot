@@ -7,4 +7,4 @@ from .action_base import ActionBase
 @dataclass(kw_only=True, frozen=True)
 class ContentChangingActionBase(ActionBase):
     content: str | Embed
-    components: ComponentBase | list[Layout] = field(default_factory=lambda: [])
+    components: ComponentBase | list[Layout] = field(default_factory=list)

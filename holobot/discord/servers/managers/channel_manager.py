@@ -6,7 +6,7 @@ from hikari import (
     PermissionOverwriteType, Permissions, Snowflake
 )
 
-from holobot.discord.bot import BotAccessor
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, InvalidChannelError, PermissionError, RoleNotFoundError
@@ -101,7 +101,7 @@ class ChannelManager(IChannelManager):
             )
 
         try:
-            await BotAccessor.get_bot().rest.follow_channel(source_channel, channel)
+            await get_bot().rest.follow_channel(source_channel, channel)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot follow news channel.") from error
         except HikariBadRequestError as error:
@@ -123,13 +123,13 @@ class ChannelManager(IChannelManager):
 
         guild = get_guild(server_id)
         try:
-            webhooks = await BotAccessor.get_bot().rest.fetch_guild_webhooks(guild)
+            webhooks = await get_bot().rest.fetch_guild_webhooks(guild)
             for webhook in webhooks:
                 if (
                     isinstance(webhook, ChannelFollowerWebhook)
                     and str(webhook.source_guild.id) == source_server_id
                     and str(webhook.source_channel.id) == source_channel_id
                 ):
-                    await BotAccessor.get_bot().rest.delete_webhook(webhook)
+                    await get_bot().rest.delete_webhook(webhook)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot unfollow news channel.") from error

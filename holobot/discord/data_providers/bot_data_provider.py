@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from holobot.discord.bot import BotAccessor
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.models import Server
 from holobot.sdk.ioc.decorators import injectable
@@ -8,21 +8,21 @@ from holobot.sdk.ioc.decorators import injectable
 @injectable(IBotDataProvider)
 class BotDataProvider(IBotDataProvider):
     def get_user_id(self) -> str:
-        user = BotAccessor.get_bot().get_me()
+        user = get_bot().get_me()
         return str(user.id) if user else ""
 
     def get_avatar_url(self) -> str:
-        user = BotAccessor.get_bot().get_me()
+        user = get_bot().get_me()
         return str(user.avatar_url) if user else ""
 
     def get_latency(self) -> float:
-        return BotAccessor.get_bot().heartbeat_latency * 1000
+        return get_bot().heartbeat_latency * 1000
 
     def get_server_count(self) -> int:
-        return len(BotAccessor.get_bot().cache.get_available_guilds_view())
+        return len(get_bot().cache.get_available_guilds_view())
 
     def get_servers(self, page_index: int, page_size: int) -> tuple[int, Sequence[Server]]:
-        guilds = sorted(BotAccessor.get_bot().cache.get_available_guilds_view().items(), key=lambda i: i[0])
+        guilds = sorted(get_bot().cache.get_available_guilds_view().items(), key=lambda i: i[0])
         offset = page_index * page_size
         if offset >= len(guilds):
             offset = 0

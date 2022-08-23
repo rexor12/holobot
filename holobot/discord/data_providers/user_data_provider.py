@@ -1,6 +1,6 @@
 import hikari
 
-from holobot.discord.bot import BotAccessor
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.data_providers import IUserDataProvider
 from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.models import UserData
@@ -35,7 +35,7 @@ class UserDataProvider(IUserDataProvider):
 
     @staticmethod
     async def __get_or_fetch_user(user_id: str, force_fetch: bool) -> hikari.User:
-        bot = BotAccessor.get_bot()
+        bot = get_bot()
         if not force_fetch and (user := bot.cache.get_user(int(user_id))):
             return user
 
@@ -46,7 +46,7 @@ class UserDataProvider(IUserDataProvider):
 
     @staticmethod
     def __transform_user_dto(user: hikari.User) -> UserData:
-        bot_user = BotAccessor.get_bot().get_me()
+        bot_user = get_bot().get_me()
         return UserData(
             user_id=str(user.id),
             avatar_url=user.avatar_url and user.avatar_url.url,

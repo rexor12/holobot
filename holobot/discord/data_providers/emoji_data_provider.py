@@ -6,7 +6,7 @@ from hikari.internal import routes
 from holobot.discord.sdk.data_providers import IEmojiDataProvider
 from holobot.discord.sdk.models import Emoji
 from holobot.sdk.ioc.decorators import injectable
-from ..bot import BotAccessor
+from ..bot import get_bot
 from ..transformers.emoji import to_model
 
 EMOJI_REGEX = re.compile(r"<(?P<flags>[^:]*):(?P<name>[^:]*):(?P<id>\d+)>")
@@ -22,13 +22,13 @@ class EmojiDataProvider(IEmojiDataProvider):
 
     async def __find_emoji(self, name_or_mention: str) -> HikariEmoji | Emoji | None:
         if (match := EMOJI_REGEX.match(name_or_mention)) is not None:
-            if emoji := BotAccessor.get_bot().cache.get_emoji(int(match["id"])):
+            if emoji := get_bot().cache.get_emoji(int(match["id"])):
                 return emoji
             else: return EmojiDataProvider.__create_unknown_emoji(match, name_or_mention)
 
         name_or_mention = name_or_mention.lower()
         return next((
-                emoji for emoji in BotAccessor.get_bot().cache.get_emojis_view().values()
+                emoji for emoji in get_bot().cache.get_emojis_view().values()
                 if emoji.name.lower() == name_or_mention
             ),
             None

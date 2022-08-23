@@ -6,7 +6,7 @@ from .interactable_component_base import InteractableComponentBase
 
 @dataclass(kw_only=True)
 class ComboBox(InteractableComponentBase):
-    items: Sequence[ComboBoxItem] = field(default_factory=lambda: [])
+    items: Sequence[ComboBoxItem] = field(default_factory=list)
     placeholder: str | None = None
     selection_count_min: int = 1
     selection_count_max: int = 1

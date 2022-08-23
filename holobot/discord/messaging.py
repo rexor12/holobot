@@ -12,7 +12,7 @@ from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
-from .bot import BotAccessor
+from .bot import get_bot
 
 @injectable(IMessaging)
 class Messaging(IMessaging):
@@ -29,7 +29,7 @@ class Messaging(IMessaging):
         assert_not_none(user_id, "user_id")
         assert_not_none(message, "message")
 
-        if not (user := BotAccessor.get_bot().get_user_by_id(int(user_id))):
+        if not (user := get_bot().get_user_by_id(int(user_id))):
             self.__log.warning("Failed to DM invalid user", user_id=user_id)
             return
         self.__log.trace("Sending DM...", user_id=user_id)
@@ -92,4 +92,4 @@ class Messaging(IMessaging):
                 "The source channel must be a news-type channel."
             )
 
-        await BotAccessor.get_bot().rest.crosspost_message(channel, int(message_id))
+        await get_bot().rest.crosspost_message(channel, int(message_id))

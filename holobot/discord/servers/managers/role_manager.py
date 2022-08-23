@@ -1,6 +1,6 @@
 from hikari import ForbiddenError as HikariForbiddenError, Guild
 
-from holobot.discord.bot import BotAccessor
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.exceptions import (
     ForbiddenError, RoleAlreadyExistsError, ServerNotFoundError
 )
@@ -29,7 +29,7 @@ class RoleManager(IRoleManager):
             raise RoleAlreadyExistsError(server_id, role_name)
 
         try:
-            role = await BotAccessor.get_bot().rest.create_role(
+            role = await get_bot().rest.create_role(
                 guild,
                 name=role_name,
                 reason=description
@@ -40,7 +40,7 @@ class RoleManager(IRoleManager):
 
     @staticmethod
     def __get_guild(server_id: str) -> Guild:
-        guild = BotAccessor.get_bot().cache.get_guild(int(server_id))
+        guild = get_bot().cache.get_guild(int(server_id))
         if not guild:
             raise ServerNotFoundError(server_id)
         return guild

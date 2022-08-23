@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 import hikari
 
-from holobot.discord.bot import BotAccessor
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
@@ -94,7 +94,7 @@ class MemberDataProvider(IMemberDataProvider):
 
     @staticmethod
     def __member_to_basic_data(user: hikari.Member) -> MemberData:
-        bot_user = BotAccessor.get_bot().get_me()
+        bot_user = get_bot().get_me()
         return MemberData(
             user_id=str(user.id),
             avatar_url=user.avatar_url and user.avatar_url.url,
@@ -148,6 +148,6 @@ class MemberDataProvider(IMemberDataProvider):
         if member := get_guild_member(server_id, user_id):
             return member
         try:
-            return await BotAccessor.get_bot().rest.fetch_member(int(server_id), int(user_id))
+            return await get_bot().rest.fetch_member(int(server_id), int(user_id))
         except hikari.NotFoundError as error:
             raise UserNotFoundError(user_id) from error

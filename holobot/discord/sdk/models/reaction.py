@@ -1,8 +1,8 @@
 class Reaction:
     def __init__(self, emoji_id: str, owner_id: str | None = None, message_id: str | None = None) -> None:
-        """Initializes a new instance of ``Reaction``.
+        """Initializes a new instance of `Reaction`.
 
-        Initializes a new instance of ``Reaction`` with the associated properties.
+        Initializes a new instance of `Reaction` with the associated properties.
 
         Parameters
         ----------

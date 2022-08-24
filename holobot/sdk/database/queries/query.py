@@ -10,8 +10,8 @@ class Query:
     ----
     As of the current version, in certain cases, the query builders may result
     in syntactically wrong queries, as syntactical rules between independent
-    query parts aren't always enforced. Such may be the case when an ``ORDER BY``
-    query part is appended to an ``INSERT`` query part. This is due to performance
+    query parts aren't always enforced. Such may be the case when an `ORDER BY`
+    query part is appended to an `INSERT` query part. This is due to performance
     reasons and the simplicity of the builder.
     It's the developer's responsibility to use the feature correctly.
     """
@@ -19,7 +19,7 @@ class Query:
     @staticmethod
     def insert() -> InsertBuilder:
         return InsertBuilder()
-    
+
     @staticmethod
     def select() -> SelectBuilder:
         return SelectBuilder()
@@ -27,7 +27,7 @@ class Query:
     @staticmethod
     def update() -> UpdateBuilder:
         return UpdateBuilder()
-    
+
     @staticmethod
     def delete() -> DeleteBuilder:
         return DeleteBuilder()

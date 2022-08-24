@@ -1,1 +1,1 @@
-worker: python -m holobot
+worker: python -OOm holobot

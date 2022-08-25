@@ -35,7 +35,7 @@ Below are some of the technologies used by this project:
 While you are free to host your own instance of the bot, I would be grateful if you used the official instance that I maintain so that Holo can grow by getting more valuable feedback.
 
 You can use the following authorization link to invite the official instance:
-https://discord.com/api/oauth2/authorize?client_id=791766309611634698&permissions=122707586134&scope=bot%20applications.commands
+https://discord.com/api/oauth2/authorize?client_id=791766309611634698&permissions=122707586134&scope=bot
 
 To enable additional features of the bot, you can provide the necessary permissions in Discord for the bot's role or the bot user itself. When a required permission is missing, the bot should be able to tell you upon invoking the command.
 

@@ -9,8 +9,8 @@ from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import get_or_add
+from . import bot_accessor
 from .bot import Bot
-from .bot_accessor import BotAccessor
 from .bot_service_interface import BotServiceInterface
 
 REQUIRED_INTENTS = (
@@ -32,7 +32,7 @@ class BotService(BotServiceInterface):
         self.__bot: Bot = self.__initialize_bot(configurator)
         self.__bot_task: Task | None = None
         # See the reference for a note about what this is.
-        BotAccessor._bot = self.__bot
+        bot_accessor._bot = self.__bot
 
     async def start(self) -> None:
         if self.__bot_task is not None:

@@ -3,7 +3,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any, Generic, TypeVar
 
 from holobot.sdk.exceptions import ArgumentError
-from holobot.sdk.utils import UNDEFINED, _UndefinedType
+from holobot.sdk.utils import UNDEFINED, UndefinedType
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -15,7 +15,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
         self.__dict: dict[TKey, TValue] = {}
         self.__lock: Lock = Lock()
 
-    async def get(self, key: TKey) -> TValue | _UndefinedType:
+    async def get(self, key: TKey) -> TValue | UndefinedType:
         return self.__dict.get(key, UNDEFINED)
 
     async def get_or_add(self, key: TKey, factory: Callable[[TKey], Awaitable[TValue]]) -> TValue:

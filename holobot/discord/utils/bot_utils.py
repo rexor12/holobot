@@ -1,13 +1,13 @@
 from hikari import Guild, GuildChannel, Member, Role, User
 
-from holobot.discord.bot import BotAccessor
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, RoleNotFoundError, ServerNotFoundError, UserNotFoundError
 )
 from holobot.sdk.utils import first_or_default, rank_match
 
 def get_guild(server_id: str) -> Guild:
-    guild: Guild | None = BotAccessor.get_bot().cache.get_available_guild(int(server_id))
+    guild: Guild | None = get_bot().cache.get_available_guild(int(server_id))
     if not guild:
         raise ServerNotFoundError(server_id)
 
@@ -52,7 +52,7 @@ def get_guild_role(server_id: str, role_id: str) -> Role:
     return role
 
 def get_user(user_id: str) -> User:
-    if not (user := BotAccessor.get_bot().cache.get_user(int(user_id))):
+    if not (user := get_bot().cache.get_user(int(user_id))):
         raise UserNotFoundError(user_id)
 
     return user

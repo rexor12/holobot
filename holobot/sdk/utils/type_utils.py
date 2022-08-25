@@ -8,11 +8,11 @@ class Singleton(type):
             cls.__instance = super().__call__(*args, **kwargs)
         return cls.__instance
 
-class _UndefinedType(metaclass=Singleton):
+class UndefinedType(metaclass=Singleton):
     __slots__ = ()
     __bool__ = lambda self: False
 
-UNDEFINED = _UndefinedType()
+UNDEFINED = UndefinedType()
 
 def get_fully_qualified_name(clazz: type):
     module_name = clazz.__module__

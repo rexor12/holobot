@@ -1,5 +1,5 @@
-from typing import Any
+from typing import Any, Protocol
 
-class IQueryPartBuilder:
+class IQueryPartBuilder(Protocol):
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        raise NotImplementedError
+        ...

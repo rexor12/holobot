@@ -1,9 +1,10 @@
 from collections.abc import Sequence
 from dataclasses import _MISSING_TYPE, fields, is_dataclass
 from types import NoneType, UnionType
-from typing import Any, Callable, NamedTuple, Union, get_args, get_type_hints
+from typing import Any, Callable, NamedTuple, Union, cast, get_args, get_type_hints
 
 from holobot.sdk.exceptions import ArgumentError
+from holobot.sdk.utils import first
 
 class ArgumentInfo(NamedTuple):
     name: str
@@ -54,7 +55,7 @@ def __get_argument_info(
             ))
 
         allows_none = True
-        object_type = args[0] or args[1]
+        object_type = first(cast(tuple[type, ...], args), lambda i: i and i is not NoneType)
         origin = getattr(object_type, "__origin__", None)
 
     if origin is None:

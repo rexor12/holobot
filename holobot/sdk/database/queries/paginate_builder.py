@@ -1,9 +1,10 @@
 from typing import Any
 
 from .compiled_pagination_query import CompiledPaginationQuery
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .iquery_part_builder import IQueryPartBuilder
 
-class PaginateBuilder(IQueryPartBuilder):
+class PaginateBuilder(ICompileableQueryPartBuilder[CompiledPaginationQuery]):
     def __init__(
         self,
         parent_builder: IQueryPartBuilder,

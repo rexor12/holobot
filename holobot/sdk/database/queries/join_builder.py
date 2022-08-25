@@ -1,12 +1,13 @@
 from typing import Any, Literal
 
 from .compiled_query import CompiledQuery
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .where_builder import WhereBuilder
 
 JOIN_TYPE = Literal["LEFT", "RIGHT", "INNER", "OUTER", "FULL OUTER"]
 
-class JoinBuilder(IQueryPartBuilder):
+class JoinBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
     def __init__(
         self,
         parent_builder: IQueryPartBuilder,

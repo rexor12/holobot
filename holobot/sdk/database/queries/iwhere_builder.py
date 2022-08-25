@@ -1,11 +1,14 @@
-from .constraints import IConstraintBuilder
-from .iquery_part_builder import IQueryPartBuilder
+from typing import Protocol
 
-class IWhereBuilder(IQueryPartBuilder):
+from .compiled_query import CompiledQuery
+from .constraints import IConstraintBuilder
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
+
+class IWhereBuilder(ICompileableQueryPartBuilder[CompiledQuery], Protocol):
     @property
     def constraint(self) -> IConstraintBuilder:
-        return self.__constraint
-    
+        ...
+
     @constraint.setter
     def constraint(self, value: IConstraintBuilder) -> None:
-        self.__constraint = value
+        ...

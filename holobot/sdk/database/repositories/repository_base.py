@@ -2,17 +2,20 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from datetime import datetime
 from enum import Enum
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Callable, Generic, TypeVar, cast
 
 from asyncpg.connection import Connection
 
 from holobot.sdk import Lazy
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.exceptions import DatabaseError
-from holobot.sdk.database.queries import Query
+from holobot.sdk.database.queries import (
+    CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder
+)
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag, UpdateCommandTag
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import UTC, set_time_zone
 from holobot.sdk.utils.dataclass_utils import ArgumentInfo, get_argument_infos
 from .entity import Entity
@@ -97,14 +100,9 @@ class RepositoryBase(
         async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                record = await (Query
+                result = await (Query
                     .select()
-                    .columns(
-                        *[
-                            field.name
-                            for field in self.__columns.value
-                        ]
-                    )
+                    .columns(*self.column_names)
                     .from_table(self.table_name)
                     .where()
                     .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
@@ -113,8 +111,7 @@ class RepositoryBase(
                 )
 
                 return (
-                    self._map_record_to_model(self._map_query_result_to_record(record))
-                    if record else None
+                    result and self._map_record_to_model(self._map_query_result_to_record(result))
                 )
 
     async def count(self) -> int | None:
@@ -176,6 +173,73 @@ class RepositoryBase(
     def _map_model_to_record(self, model: TModel) -> TRecord:
         ...
 
+    async def _get_by_filter(
+        self,
+        filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
+    ) -> tuple[TModel, ...]:
+        async with self._database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                query = filter_builder(Query
+                    .select()
+                    .columns(*self.column_names)
+                    .from_table(self.table_name)
+                    .where()
+                )
+                results = await query.compile().fetch(connection)
+
+                return tuple(
+                    self._map_record_to_model(self._map_query_result_to_record(result))
+                    for result in results
+                )
+
+    async def _get_one_by_filter(
+        self,
+        filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
+    ) -> TModel | None:
+        async with self._database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                query = filter_builder(Query
+                    .select()
+                    .columns(*self.column_names)
+                    .from_table(self.table_name)
+                    .where()
+                )
+                result = await query.compile().fetchrow(connection)
+
+                return (
+                    result and self._map_record_to_model(self._map_query_result_to_record(result))
+                )
+
+    async def _paginate(
+        self,
+        ordering_column: str,
+        page_index: int,
+        page_size: int,
+        filter_builder: Callable[[WhereBuilder], ISupportsPagination]
+    ) -> PaginationResult[TModel]:
+        async with self._database_manager.acquire_connection() as connection:
+            connection: Connection
+            async with connection.transaction():
+                query = filter_builder(Query
+                    .select()
+                    .columns(*self.column_names)
+                    .from_table(self.table_name)
+                    .where()
+                ).paginate(ordering_column, page_index, page_size)
+                result = await query.compile().fetch(connection)
+
+                return PaginationResult[TModel](
+                    result.page_index,
+                    result.page_size,
+                    result.total_count,
+                    [
+                        self._map_record_to_model(self._map_query_result_to_record(record))
+                        for record in result.records
+                    ]
+                )
+
     def _map_query_result_to_record(self, columns: dict[str, Any]) -> TRecord:
         """Maps the specified result of a query to a record.
 
@@ -198,14 +262,16 @@ class RepositoryBase(
                     record_value = column.default_value
                 elif column.default_factory:
                     record_value = column.default_factory()
-                else: raise TypeError((
-                    f"Cannot assign None to field '{column.name}'."
-                ))
-            if not isinstance(record_value, column.object_type):
+
+            if (
+                record_value is None and not column.allows_none
+                or record_value is not None and not isinstance(record_value, column.object_type)
+            ):
                 raise TypeError((
                     f"Expected '{column.object_type.__name__}',"
                     f" but got '{type(record_value).__name__}'."
                 ))
+
             arguments[column.name] = record_value
 
         return self.record_type(**arguments)

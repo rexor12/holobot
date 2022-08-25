@@ -56,7 +56,7 @@ class SetReminderWorkflow(WorkflowBase):
 
         try:
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)
-            self.__logger.debug("Set new reminder", user_id=context.author_id, reminder_id=reminder.id)
+            self.__logger.debug("Set new reminder", user_id=context.author_id, reminder_id=reminder.identifier)
             return InteractionResponse(
                 action=ReplyAction(
                     content=self.__i18n_provider.get(

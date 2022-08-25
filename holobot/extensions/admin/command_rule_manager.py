@@ -3,16 +3,16 @@ from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils.exception_utils import assert_not_none
 from .command_registry_interface import CommandRegistryInterface
 from .command_rule_manager_interface import CommandRuleManagerInterface
-from .command_rule_repository_interface import CommandRuleRepositoryInterface
 from .enums import RuleState
 from .exceptions import InvalidCommandError
 from .models import CommandRule
+from .repositories import ICommandRuleRepository
 
 @injectable(CommandRuleManagerInterface)
 class CommandRuleManager(CommandRuleManagerInterface):
-    def __init__(self, command_registry: CommandRegistryInterface, rule_repository: CommandRuleRepositoryInterface) -> None:
+    def __init__(self, command_registry: CommandRegistryInterface, rule_repository: ICommandRuleRepository) -> None:
         super().__init__()
-        self.__repository: CommandRuleRepositoryInterface = rule_repository
+        self.__repository: ICommandRuleRepository = rule_repository
         self.__registry: CommandRegistryInterface = command_registry
 
     async def get_rules_by_server(self, server_id: str, page_index: int, page_size: int, group: str | None = None, subgroup: str | None = None) -> PaginationResult[CommandRule]:
@@ -38,11 +38,11 @@ class CommandRuleManager(CommandRuleManagerInterface):
             if not (group := self.__registry.get_group(rule.group)) or not group.can_disable:
                 raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
 
-        rule.id = await self.__repository.add_or_update(rule)
-        return rule.id
+        rule.identifier = await self.__repository.add_or_update(rule)
+        return rule.identifier
 
     async def remove_rule(self, rule_id: int) -> None:
-        await self.__repository.delete_by_id(rule_id)
+        await self.__repository.delete(rule_id)
 
     async def remove_rules_by_server(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")

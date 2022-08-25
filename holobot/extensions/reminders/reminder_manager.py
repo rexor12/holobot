@@ -8,19 +8,19 @@ from holobot.sdk.queries import PaginationResult
 from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
 from .models import Reminder, ReminderConfig
 from .reminder_manager_interface import ReminderManagerInterface
-from .repositories import ReminderRepositoryInterface
+from .repositories import IReminderRepository
 
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
     def __init__(
         self,
         logger_factory: ILoggerFactory,
-        reminder_repository: ReminderRepositoryInterface,
+        reminder_repository: IReminderRepository,
         configurator: ConfiguratorInterface
     ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(ReminderManager)
-        self.__reminder_repository: ReminderRepositoryInterface = reminder_repository
+        self.__reminder_repository: IReminderRepository = reminder_repository
         self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
         self.__message_length_min: int = configurator.get("Reminders", "MessageLengthMin", 10)
         self.__message_length_max: int = configurator.get("Reminders", "MessageLengthMax", 120)
@@ -64,27 +64,34 @@ class ReminderManager(ReminderManagerInterface):
         return await self.__reminder_repository.get_many(user_id, page_index, page_size)
 
     async def __assert_reminder_count(self, user_id: str) -> None:
-        count = await self.__reminder_repository.count(user_id)
+        count = await self.__reminder_repository.count_by_user(user_id)
         if count >= self.__reminders_per_user_max:
             raise TooManyRemindersError(count)
 
-    async def __set_recurring_reminder(self, user_id: str, message: str, frequency_time: timedelta, at_time: timedelta | None) -> Reminder:
-        reminder = Reminder()
-        reminder.user_id = user_id
-        reminder.message = message
-        reminder.is_repeating = True
-        reminder.frequency_time = frequency_time
-        reminder.base_trigger = self.__calculate_recurring_base_trigger(frequency_time, at_time)
-        reminder.recalculate_next_trigger()
-        await self.__reminder_repository.store(reminder)
+    async def __set_recurring_reminder(
+        self,
+        user_id: str,
+        message: str,
+        frequency_time: timedelta,
+        at_time: timedelta | None
+    ) -> Reminder:
+        reminder = Reminder(
+            user_id=user_id,
+            message=message,
+            is_repeating=True,
+            frequency_time=frequency_time,
+            base_trigger=self.__calculate_recurring_base_trigger(frequency_time, at_time)
+        )
+        await self.__reminder_repository.add(reminder)
         return reminder
 
     async def __set_single_reminder(self, user_id: str, message: str, next_trigger: datetime) -> Reminder:
-        reminder = Reminder()
-        reminder.user_id = user_id
-        reminder.message = message
-        reminder.next_trigger = next_trigger
-        await self.__reminder_repository.store(reminder)
+        reminder = Reminder(
+            user_id=user_id,
+            message=message,
+            next_trigger=next_trigger
+        )
+        await self.__reminder_repository.add(reminder)
         return reminder
 
     def __calculate_recurring_base_trigger(self, frequency_time: timedelta, at_time: timedelta | None):

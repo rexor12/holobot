@@ -129,7 +129,7 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             fields=[EmbedField(
                 name=self.__i18n_provider.get(
                     "extensions.admin.view_command_rules_workflow.embed_name_field",
-                    { "rule_id": rule.id }
+                    { "rule_id": rule.identifier }
                 ),
                 value=rule.textify(),
                 is_inline=False

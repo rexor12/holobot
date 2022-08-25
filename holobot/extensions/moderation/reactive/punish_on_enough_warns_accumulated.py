@@ -14,8 +14,6 @@ from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSetting
 from ..workflows.interactables import ModerationCommand
 from ..workflows.responses import UserWarnedResponse
 
-# TODO Implement sequence registration in IoC to ensure that punish is executed after log.
-# Eg. container.register_sequence(LogListener, PunishListener)
 @injectable(IListener[CommandProcessedEvent])
 class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
     def __init__(self,
@@ -45,8 +43,8 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             or not isinstance(event.response, UserWarnedResponse)):
             return
 
-        warn_settings = await self.__warn_settings_repository.get_warn_settings(event.server_id)
-        if not warn_settings.has_auto_features:
+        warn_settings = await self.__warn_settings_repository.get_by_server(event.server_id)
+        if not warn_settings or not warn_settings.has_auto_features:
             return
 
         warn_count = await self.__warn_repository.get_warn_count_by_user(event.server_id, event.response.user_id)
@@ -65,14 +63,14 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             user_id=event.response.user_id,
             punishment=operation
         )
-        log_channel = await self.__log_settings_repository.get_log_channel(event.server_id)
+        server_settings = await self.__log_settings_repository.get_by_server(event.server_id)
 
-        if not log_channel:
+        if not server_settings:
             return
 
         await self.__messaging.send_channel_message(
             event.server_id,
-            log_channel,
+            server_settings.channel_id,
             f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes."
         )
 

@@ -1,15 +1,13 @@
 from typing import Protocol
 
 from holobot.extensions.giveaways.models import ExternalGiveawayItem, ExternalGiveawayItemMetadata
+from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
-class IExternalGiveawayItemRepository(Protocol):
-    async def count(self, user_id: str) -> int:
-        ...
-
-    async def get(self, item_id: int) -> ExternalGiveawayItem | None:
-        ...
-
+class IExternalGiveawayItemRepository(
+    IRepository[int, ExternalGiveawayItem],
+    Protocol
+):
     async def get_many(
         self,
         page_index: int,
@@ -29,12 +27,6 @@ class IExternalGiveawayItemRepository(Protocol):
         ...
 
     async def exists(self, url: str, active_only: bool = True) -> bool:
-        ...
-
-    async def store(self, item: ExternalGiveawayItem) -> None:
-        ...
-
-    async def delete(self, item_id: int) -> None:
         ...
 
     async def delete_expired(self) -> int:

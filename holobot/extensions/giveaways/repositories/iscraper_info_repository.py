@@ -1,16 +1,8 @@
 from typing import Protocol
 
 from holobot.extensions.giveaways.models import ScraperInfo
+from holobot.sdk.database.repositories import IRepository
 
-class IScraperInfoRepository(Protocol):
-    async def get(self, item_id: int) -> ScraperInfo | None:
-        ...
-
+class IScraperInfoRepository(IRepository[int, ScraperInfo], Protocol):
     async def get_by_name(self, name: str) -> ScraperInfo | None:
-        ...
-
-    async def store(self, item: ScraperInfo) -> None:
-        ...
-
-    async def delete(self, item_id: int) -> None:
         ...

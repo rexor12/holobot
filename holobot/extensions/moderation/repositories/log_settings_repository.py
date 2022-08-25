@@ -1,54 +1,60 @@
 from asyncpg.connection import Connection
 
+from holobot.extensions.moderation.models import LogSettings
+from holobot.extensions.moderation.repositories.records import LogSettingsRecord
 from holobot.sdk.database import DatabaseManagerInterface
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 from .ilog_settings_repository import ILogSettingsRepository
 
-TABLE_NAME = "moderation_log_settings"
-
 @injectable(ILogSettingsRepository)
-class LogSettingsRepository(ILogSettingsRepository):
+class LogSettingsRepository(
+    RepositoryBase[int, LogSettingsRecord, LogSettings],
+    ILogSettingsRepository
+):
+    @property
+    def record_type(self) -> type[LogSettingsRecord]:
+        return LogSettingsRecord
+
+    @property
+    def table_name(self) -> str:
+        return "moderation_log_settings"
+
     def __init__(self, database_manager: DatabaseManagerInterface) -> None:
-        super().__init__()
-        self.__database_manager: DatabaseManagerInterface = database_manager
+        super().__init__(database_manager)
 
-    async def get_log_channel(self, server_id: str) -> str | None:
+    async def get_by_server(self, server_id: str) -> LogSettings | None:
         assert_not_none(server_id, "server_id")
 
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                return await Query.select().from_table(TABLE_NAME).column(
-                    "channel_id"
-                ).where().field(
-                    "server_id", Equality.EQUAL, server_id
-                ).compile().fetchval(connection)
+        return await self._get_one_by_filter(lambda where: (
+            where.field("server_id", Equality.EQUAL, server_id)
+        ))
 
-    async def set_log_channel(self, server_id: str, channel_id: str) -> None:
-        assert_not_none(server_id, "server_id")
-        assert_not_none(channel_id, "channel_id")
-
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await Query.insert().in_table(TABLE_NAME).fields(
-                    ("server_id", server_id),
-                    ("channel_id", channel_id)
-                ).on_conflict("server_id").update().field(
-                    "channel_id", channel_id
-                ).field(
-                    "modified_at", "(NOW() AT TIME ZONE 'utc')", True
-                ).compile().execute(connection)
-
-    async def clear_log_channel(self, server_id: str) -> None:
+    async def delete_by_server(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        async with self.__database_manager.acquire_connection() as connection:
+        async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().field(
+                await Query.delete().from_table(self.table_name).where().field(
                     "server_id", Equality.EQUAL, server_id
                 ).compile().execute(connection)
+
+    def _map_record_to_model(self, record: LogSettingsRecord) -> LogSettings:
+        return LogSettings(
+            identifier=record.id,
+            modified_at=record.modified_at,
+            server_id=record.server_id,
+            channel_id=record.channel_id
+        )
+
+    def _map_model_to_record(self, model: LogSettings) -> LogSettingsRecord:
+        return LogSettingsRecord(
+            id=model.identifier,
+            modified_at=model.modified_at,
+            server_id=model.server_id,
+            channel_id=model.channel_id
+        )

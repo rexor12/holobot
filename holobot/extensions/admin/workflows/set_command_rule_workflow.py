@@ -57,14 +57,15 @@ class SetCommandRuleWorkflow(WorkflowBase):
             )
 
         channel_id = get_channel_id(channel) if channel is not None else None
-        rule = CommandRule()
-        rule.created_by = context.author_id
-        rule.server_id = context.server_id
-        rule.state = RuleState.parse(state)
-        rule.group = group
-        rule.subgroup = subgroup
-        rule.command = command
-        rule.channel_id = channel_id
+        rule = CommandRule(
+            created_by=context.author_id,
+            server_id=context.server_id,
+            state=RuleState.parse(state),
+            group=group,
+            subgroup=subgroup,
+            command=command,
+            channel_id=channel_id
+        )
         try:
             await self.__command_rule_manager.set_rule(rule)
             return InteractionResponse(

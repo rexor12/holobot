@@ -1,81 +1,42 @@
-from asyncpg.connection import Connection
-
 from holobot.extensions.giveaways.models import ScraperInfo
 from holobot.sdk.database import DatabaseManagerInterface
-from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import UTC, set_time_zone
 from .iscraper_info_repository import IScraperInfoRepository
-
-_TABLE_NAME = "scraper_infos"
+from .records import ScraperInfoRecord
 
 @injectable(IScraperInfoRepository)
-class ScraperInfoRepository(IScraperInfoRepository):
-    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
-        self.__database_manager: DatabaseManagerInterface = database_manager
+class ScraperInfoRepository(
+    RepositoryBase[int, ScraperInfoRecord, ScraperInfo],
+    IScraperInfoRepository
+):
+    @property
+    def record_type(self) -> type[ScraperInfoRecord]:
+        return ScraperInfoRecord
 
-    async def get(self, item_id: int) -> ScraperInfo | None:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                record = await (Query
-                    .select()
-                    .columns("id", "scraper_name", "last_scrape_time")
-                    .from_table(_TABLE_NAME)
-                    .where()
-                    .field("id", Equality.EQUAL, item_id)
-                    .compile()
-                    .fetchrow(connection)
-                )
-                return ScraperInfoRepository.__parse_record(record) if record else None
+    @property
+    def table_name(self) -> str:
+        return "scraper_infos"
+
+    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
+        super().__init__(database_manager)
 
     async def get_by_name(self, name: str) -> ScraperInfo | None:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                record = await (Query
-                    .select()
-                    .columns("id", "scraper_name", "last_scrape_time")
-                    .from_table(_TABLE_NAME)
-                    .where()
-                    .field("scraper_name", Equality.EQUAL, name)
-                    .compile()
-                    .fetchrow(connection)
-                )
-                return ScraperInfoRepository.__parse_record(record) if record else None
+        return await self._get_one_by_filter(lambda where: (
+            where.field("scraper_name", Equality.EQUAL, name)
+        ))
 
-    async def store(self, item: ScraperInfo) -> None:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await (Query
-                    .insert()
-                    .in_table(_TABLE_NAME)
-                    .fields(
-                        ("id", item.identifier),
-                        ("scraper_name", item.scraper_name),
-                        ("last_scrape_time", set_time_zone(item.last_scrape_time, None))
-                    )
-                    .on_conflict("id")
-                    .update()
-                    .field("last_scrape_time", set_time_zone(item.last_scrape_time, None))
-                    .compile()
-                    .execute(connection)
-                )
-
-    async def delete(self, item_id: int) -> None:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await Query.delete().from_table(_TABLE_NAME).where().field(
-                    "id", Equality.EQUAL, item_id
-                ).compile().execute(connection)
-
-    @staticmethod
-    def __parse_record(record) -> ScraperInfo:
+    def _map_record_to_model(self, record: ScraperInfoRecord) -> ScraperInfo:
         return ScraperInfo(
-            record["id"],
-            record["scraper_name"],
-            set_time_zone(record["last_scrape_time"], UTC)
+            identifier=record.id,
+            scraper_name=record.scraper_name,
+            last_scrape_time=record.last_scrape_time
+        )
+
+    def _map_model_to_record(self, model: ScraperInfo) -> ScraperInfoRecord:
+        return ScraperInfoRecord(
+            id=model.identifier,
+            scraper_name=model.scraper_name,
+            last_scrape_time=model.last_scrape_time
         )

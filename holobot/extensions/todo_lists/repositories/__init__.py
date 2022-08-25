@@ -1,2 +1,2 @@
+from .itodo_item_repository import ITodoItemRepository
 from .todo_item_repository import TodoItemRepository
-from .todo_item_repository_interface import TodoItemRepositoryInterface

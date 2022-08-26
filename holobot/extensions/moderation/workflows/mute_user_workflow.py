@@ -5,7 +5,7 @@ from datetime import timedelta
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
-from holobot.discord.sdk.servers.managers import IUserManager
+from holobot.discord.sdk.servers.managers import SILENCE_DURATION_MAX, IUserManager
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
@@ -13,17 +13,19 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerUserInteractionContext
 )
+from holobot.extensions.moderation.enums import ModeratorPermission
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from ..enums import ModeratorPermission
+from holobot.sdk.utils import textify_timedelta
 from .interactables.decorators import moderation_command, moderation_menu_item
 from .responses import UserMutedResponse as UserMutedInteractionResponse
 from .responses.menu_item_responses import UserMutedResponse as UserMutedMenuItemResponse
 
-_MENU_ITEM_TIME_OUT_DURATION = timedelta(minutes=15)
+_MIN_MUTE_DURATION = timedelta(seconds=30)
+_MENU_ITEM_MUTE_DURATION = timedelta(minutes=15)
 
 @injectable(IWorkflow)
 class MuteUserWorkflow(WorkflowBase):
@@ -60,7 +62,16 @@ class MuteUserWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         user = user.strip()
         reason = reason.strip()
-        mute_duration = parse_interval(duration.strip()) if duration is not None else None
+        mute_duration = parse_interval(duration.strip()) if duration else None
+        if mute_duration and mute_duration < _MIN_MUTE_DURATION:
+            return InteractionResponse(
+                action=ReplyAction(
+                    content=self.__i18n_provider.get(
+                        "extensions.moderation.duration_out_of_range_error",
+                        { "min": textify_timedelta(_MIN_MUTE_DURATION), "max": SILENCE_DURATION_MAX }
+                    )
+                )
+            )
         if (user_id := get_user_id(user)) is None:
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
@@ -91,7 +102,7 @@ class MuteUserWorkflow(WorkflowBase):
                 action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
         except ForbiddenError as error:
-            self.__logger.error("Failed to mute user.", error)
+            self.__logger.debug("Failed to mute user.", exception=error)
             return InteractionResponse(
                 action=ReplyAction(
                     content=self.__i18n_provider.get(
@@ -146,7 +157,7 @@ class MuteUserWorkflow(WorkflowBase):
             await self.__user_manager.silence_user(
                 context.server_id,
                 context.target_user_id,
-                _MENU_ITEM_TIME_OUT_DURATION
+                _MENU_ITEM_MUTE_DURATION
             )
         except UserNotFoundError:
             return InteractionResponse(

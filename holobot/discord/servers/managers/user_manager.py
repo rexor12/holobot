@@ -3,15 +3,15 @@ from datetime import datetime, timedelta, timezone
 from hikari import ForbiddenError as HikariForbiddenError
 
 from holobot.discord.sdk.exceptions import ForbiddenError
-from holobot.discord.sdk.servers.managers import IUserManager
+from holobot.discord.sdk.servers.managers import (
+    SILENCE_DURATION_MAX, SILENCE_DURATION_MIN, IUserManager
+)
 from holobot.discord.utils import get_guild_member, get_guild_role
-from holobot.sdk.exceptions import ArgumentError
+from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, assert_range, textify_timedelta
 
-_DEFAULT_TIME_OUT_DURATION = timedelta(minutes=1)
-_MIN_TIME_OUT = timedelta(minutes=1)
-_MAX_TIME_OUT = timedelta(days=27)
+_DEFAULT_SILENCE_DURATION = timedelta(minutes=1)
 
 @injectable(IUserManager)
 class UserManager(IUserManager):
@@ -24,14 +24,12 @@ class UserManager(IUserManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         if not duration:
-            duration = _DEFAULT_TIME_OUT_DURATION
-        if duration > _MAX_TIME_OUT or duration < _MIN_TIME_OUT:
-            raise ArgumentError(
+            duration = _DEFAULT_SILENCE_DURATION
+        if duration > SILENCE_DURATION_MAX or duration < SILENCE_DURATION_MIN:
+            raise ArgumentOutOfRangeError(
                 "duration",
-                (
-                    f"The duration must be between {textify_timedelta(_MIN_TIME_OUT)}"
-                    f" and {textify_timedelta(_MAX_TIME_OUT)}."
-                )
+                textify_timedelta(SILENCE_DURATION_MIN),
+                textify_timedelta(SILENCE_DURATION_MAX)
             )
 
         member = get_guild_member(server_id, user_id)

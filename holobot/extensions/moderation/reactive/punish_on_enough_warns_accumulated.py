@@ -91,13 +91,13 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             await action()
             return True
         except ForbiddenError:
-            self.__logger.error("Failed to execute punishment as access was forbidden")
+            self.__logger.debug("Failed to execute punishment as access was forbidden")
             return False
         except ServerNotFoundError:
-            self.__logger.error("Failed to execute punishment as the server was not found")
+            self.__logger.debug("Failed to execute punishment as the server was not found")
             return False
         except UserNotFoundError:
-            self.__logger.error("Failed to execute punishment as the user was not found")
+            self.__logger.debug("Failed to execute punishment as the user was not found")
             return False
 
     @staticmethod

@@ -1,1 +1,1 @@
-from .database_manager_interface import DatabaseManagerInterface
+from .idatabase_manager import IDatabaseManager

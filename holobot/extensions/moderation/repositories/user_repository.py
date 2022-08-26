@@ -1,7 +1,7 @@
 from asyncpg.connection import Connection
 
 from holobot.extensions.moderation.models import User
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.repositories import RepositoryBase
@@ -23,7 +23,7 @@ class UserRepository(
     def table_name(self) -> str:
         return "moderation_users"
 
-    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
+    def __init__(self, database_manager: IDatabaseManager) -> None:
         super().__init__(database_manager)
 
     async def get_by_server(
@@ -34,7 +34,7 @@ class UserRepository(
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        return await self._get_one_by_filter(lambda where: (
+        return await self._get_by_filter(lambda where: (
             where.fields(
                 Connector.AND,
                 ("server_id", Equality.EQUAL, server_id),

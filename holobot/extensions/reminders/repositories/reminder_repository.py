@@ -3,7 +3,7 @@ from typing import cast
 from asyncpg.connection import Connection
 
 from holobot.extensions.reminders.models import Reminder
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.exceptions import DatabaseError
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
@@ -28,7 +28,7 @@ class ReminderRepository(
     def table_name(self) -> str:
         return "reminders"
 
-    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
+    def __init__(self, database_manager: IDatabaseManager) -> None:
         super().__init__(database_manager)
 
     async def count_by_user(self, user_id: str) -> int:
@@ -61,7 +61,7 @@ class ReminderRepository(
         )
 
     async def get_triggerable(self) -> tuple[Reminder, ...]:
-        return await self._get_by_filter(lambda where: (
+        return await self._get_many_by_filter(lambda where: (
             where.field("next_trigger", Equality.LESS_OR_EQUAL, "(NOW() AT TIME ZONE 'utc')", True)
         ))
 

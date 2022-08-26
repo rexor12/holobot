@@ -3,7 +3,7 @@ import asyncio
 
 from holobot.framework.lifecycle import LifecycleManagerInterface
 from holobot.sdk import KernelInterface
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.integration import IntegrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -14,7 +14,7 @@ from holobot.sdk.utils import when_all
 class Kernel(KernelInterface):
     def __init__(self,
         logger_factory: ILoggerFactory,
-        database_manager: DatabaseManagerInterface,
+        database_manager: IDatabaseManager,
         environment: IEnvironment,
         integrations: tuple[IntegrationInterface, ...],
         lifecycle_manager: LifecycleManagerInterface

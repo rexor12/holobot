@@ -7,7 +7,7 @@ from typing import Any, Callable, Generic, TypeVar, cast
 from asyncpg.connection import Connection
 
 from holobot.sdk import Lazy
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.exceptions import DatabaseError
 from holobot.sdk.database.queries import (
     CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder
@@ -61,11 +61,15 @@ class RepositoryBase(
     @property
     @abstractmethod
     def table_name(self) -> str:
-        ...
+        """Gets the name of the table the repository operates on.
+
+        :return: The name of the repository's table.
+        :rtype: str
+        """
 
     def __init__(
         self,
-        database_manager: DatabaseManagerInterface
+        database_manager: IDatabaseManager
     ) -> None:
         super().__init__()
         self._database_manager = database_manager
@@ -111,7 +115,8 @@ class RepositoryBase(
                 )
 
                 return (
-                    result and self._map_record_to_model(self._map_query_result_to_record(result))
+                    self._map_record_to_model(self._map_query_result_to_record(result))
+                    if result is not None else None
                 )
 
     async def count(self) -> int | None:
@@ -167,16 +172,36 @@ class RepositoryBase(
 
     @abstractmethod
     def _map_record_to_model(self, record: TRecord) -> TModel:
-        ...
+        """Maps a record to its domain model counterpart.
+
+        :param record: The record to be mapped.
+        :type record: TRecord
+        :return: The new instance of the model.
+        :rtype: TModel
+        """
 
     @abstractmethod
     def _map_model_to_record(self, model: TModel) -> TRecord:
-        ...
+        """Maps a domain model to its record counterpart.
 
-    async def _get_by_filter(
+        :param model: The model to be mapped.
+        :type model: TModel
+        :return: The new instance of the record.
+        :rtype: TRecord
+        """
+
+    async def _get_many_by_filter(
         self,
         filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
     ) -> tuple[TModel, ...]:
+        """Gets multiple entities matching the specified filter.
+
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
+        :return: A sequence of matching models, if any.
+        :rtype: tuple[TModel, ...]
+        """
+
         async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -193,10 +218,18 @@ class RepositoryBase(
                     for result in results
                 )
 
-    async def _get_one_by_filter(
+    async def _get_by_filter(
         self,
         filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
     ) -> TModel | None:
+        """Gets an entity matching the specified filter.
+
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
+        :return: If exists, a matching model; otherwise, None.
+        :rtype: TModel | None
+        """
+
         async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
@@ -209,7 +242,8 @@ class RepositoryBase(
                 result = await query.compile().fetchrow(connection)
 
                 return (
-                    result and self._map_record_to_model(self._map_query_result_to_record(result))
+                    self._map_record_to_model(self._map_query_result_to_record(result))
+                    if result is not None else None
                 )
 
     async def _paginate(
@@ -219,6 +253,20 @@ class RepositoryBase(
         page_size: int,
         filter_builder: Callable[[WhereBuilder], ISupportsPagination]
     ) -> PaginationResult[TModel]:
+        """Gets a sequence of models matching the specified filter in a paging manner.
+
+        :param ordering_column: The name of the column used for ordering the intermediary results.
+        :type ordering_column: str
+        :param page_index: The index of the page to fetch.
+        :type page_index: int
+        :param page_size: The size of the pages.
+        :type page_size: int
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], ISupportsPagination]
+        :return: A pagination result containing the matching models.
+        :rtype: PaginationResult[TModel]
+        """
+
         async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():

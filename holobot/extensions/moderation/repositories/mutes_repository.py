@@ -3,7 +3,7 @@ from datetime import datetime
 from asyncpg.connection import Connection
 
 from holobot.extensions.moderation.models import Mute
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.repositories import RepositoryBase
@@ -27,7 +27,7 @@ class MutesRepository(
     def table_name(self) -> str:
         return "moderation_mutes"
 
-    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
+    def __init__(self, database_manager: IDatabaseManager) -> None:
         super().__init__(database_manager)
 
     async def upsert_mute(self, server_id: str, user_id: str, expires_at: datetime) -> None:

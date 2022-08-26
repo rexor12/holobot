@@ -3,7 +3,7 @@ from decimal import Decimal
 from asyncpg.connection import Connection
 
 from holobot.discord.sdk import IMessaging
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.ioc.decorators import injectable
@@ -19,7 +19,7 @@ from .models import Alert, SymbolUpdateEvent
 class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
     def __init__(
         self,
-        database_manager: DatabaseManagerInterface,
+        database_manager: IDatabaseManager,
         messaging: IMessaging,
         logger_factory: ILoggerFactory
     ) -> None:

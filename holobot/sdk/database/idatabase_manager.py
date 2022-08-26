@@ -1,12 +1,13 @@
+from typing import Protocol
+
 from asyncpg.pool import PoolAcquireContext
 
-class DatabaseManagerInterface:
+class IDatabaseManager(Protocol):
     async def upgrade_all(self):
-        raise NotImplementedError
+        ...
 
     async def downgrade_many(self, version_by_table: tuple[str, int]):
-        raise NotImplementedError
+        ...
 
-    # TODO Abstract PostgreSQL away.
     def acquire_connection(self) -> PoolAcquireContext:
-        raise NotImplementedError
+        ...

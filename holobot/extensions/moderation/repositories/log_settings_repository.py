@@ -2,7 +2,7 @@ from asyncpg.connection import Connection
 
 from holobot.extensions.moderation.models import LogSettings
 from holobot.extensions.moderation.repositories.records import LogSettingsRecord
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
@@ -23,13 +23,13 @@ class LogSettingsRepository(
     def table_name(self) -> str:
         return "moderation_log_settings"
 
-    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
+    def __init__(self, database_manager: IDatabaseManager) -> None:
         super().__init__(database_manager)
 
     async def get_by_server(self, server_id: str) -> LogSettings | None:
         assert_not_none(server_id, "server_id")
 
-        return await self._get_one_by_filter(lambda where: (
+        return await self._get_by_filter(lambda where: (
             where.field("server_id", Equality.EQUAL, server_id)
         ))
 

@@ -194,11 +194,7 @@
             "DecayThresholdMin": 1800,
             "DecayThresholdMax": 2592000,
             "WarnCleanupInterval": 3600,
-            "WarnCleanupDelay": 60,
-            "MuteDurationMin": 60,
-            "MuteDurationMax": 2592000,
-            "MuteCleanupInterval": 60,
-            "MuteCleanupDelay": 60
+            "WarnCleanupDelay": 60
         }
     },
     "Giveaways": {

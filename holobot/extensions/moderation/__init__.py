@@ -1,4 +1,3 @@
 from .config_provider import ConfigProvider
 from .iconfig_provider import IConfigProvider
-from .mute_cleanup_processor import MuteCleanupProcessor
 from .warn_cleanup_processor import WarnCleanupProcessor

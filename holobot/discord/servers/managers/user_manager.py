@@ -1,13 +1,43 @@
+from datetime import datetime, timedelta, timezone
+
 from hikari import ForbiddenError as HikariForbiddenError
 
 from holobot.discord.sdk.exceptions import ForbiddenError
-from holobot.discord.sdk.servers.managers import IUserManager
+from holobot.discord.sdk.servers.managers import (
+    SILENCE_DURATION_MAX, SILENCE_DURATION_MIN, IUserManager
+)
 from holobot.discord.utils import get_guild_member, get_guild_role
+from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import assert_not_none, assert_range
+from holobot.sdk.utils import assert_not_none, assert_range, textify_timedelta
+
+_DEFAULT_SILENCE_DURATION = timedelta(minutes=1)
 
 @injectable(IUserManager)
 class UserManager(IUserManager):
+    async def silence_user(
+        self,
+        server_id: str,
+        user_id: str,
+        duration: timedelta | None = None
+    ) -> None:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+        if not duration:
+            duration = _DEFAULT_SILENCE_DURATION
+        if duration > SILENCE_DURATION_MAX or duration < SILENCE_DURATION_MIN:
+            raise ArgumentOutOfRangeError(
+                "duration",
+                textify_timedelta(SILENCE_DURATION_MIN),
+                textify_timedelta(SILENCE_DURATION_MAX)
+            )
+
+        member = get_guild_member(server_id, user_id)
+        try:
+            await member.edit(communication_disabled_until=datetime.now(timezone.utc) + duration)
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot time-out server member.") from error
+
     async def kick_user(self, server_id: str, user_id: str, reason: str) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -54,3 +84,17 @@ class UserManager(IUserManager):
             await member.remove_role(role)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot remove role from server member.") from error
+
+    async def unsilence_user(
+        self,
+        server_id: str,
+        user_id: str
+    ) -> None:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_id, "user_id")
+
+        member = get_guild_member(server_id, user_id)
+        try:
+            await member.edit(communication_disabled_until=None)
+        except HikariForbiddenError as error:
+            raise ForbiddenError("Cannot remove time-out of server member.") from error

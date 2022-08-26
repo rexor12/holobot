@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from .compiled_query import CompiledQuery
-from .iquery_part_builder import IQueryPartBuilder
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .on_conflict_builder import OnConflictBuilder
 from .returning_builder import ReturningBuilder
 
-class InsertBuilder(IQueryPartBuilder):
+class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
     def __init__(self) -> None:
         self.__table_name: str = ""
         self.__fields: dict[str, Any | None] = {}

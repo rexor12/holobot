@@ -103,7 +103,7 @@ class ViewTodoItemsWorkflow(WorkflowBase):
                 EmbedField(
                     self.__i18n_provider.get(
                         "extensions.todo_lists.view_todo_items_workflow.embed_field",
-                        { "item_id": item.id }
+                        { "item_id": item.identifier }
                     ),
                     item.message,
                     False

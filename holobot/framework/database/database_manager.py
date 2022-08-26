@@ -8,15 +8,15 @@ from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
 
 from holobot.sdk.configs import ConfiguratorInterface
-from holobot.sdk.database import DatabaseManagerInterface
+from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 
 @injectable(IStartable)
-@injectable(DatabaseManagerInterface)
-class DatabaseManager(DatabaseManagerInterface, IStartable):
+@injectable(IDatabaseManager)
+class DatabaseManager(IDatabaseManager, IStartable):
     def __init__(
         self,
         configurator: ConfiguratorInterface,

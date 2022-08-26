@@ -1,2 +1,2 @@
+from .ireminder_repository import IReminderRepository
 from .reminder_repository import ReminderRepository
-from .reminder_repository_interface import ReminderRepositoryInterface

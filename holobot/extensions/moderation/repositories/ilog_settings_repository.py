@@ -1,9 +1,11 @@
-class ILogSettingsRepository:
-    async def get_log_channel(self, server_id: str) -> str | None:
-        raise NotImplementedError
+from typing import Protocol
 
-    async def set_log_channel(self, server_id: str, channel_id: str) -> None:
-        raise NotImplementedError
+from holobot.extensions.moderation.models import LogSettings
+from holobot.sdk.database.repositories import IRepository
 
-    async def clear_log_channel(self, server_id: str) -> None:
-        raise NotImplementedError
+class ILogSettingsRepository(IRepository[int, LogSettings], Protocol):
+    async def get_by_server(self, server_id: str) -> LogSettings | None:
+        ...
+
+    async def delete_by_server(self, server_id: str) -> None:
+        ...

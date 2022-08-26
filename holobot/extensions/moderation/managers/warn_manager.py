@@ -1,12 +1,12 @@
 from datetime import timedelta
 
+from holobot.extensions.moderation.models import WarnSettings, WarnStrike
+from holobot.extensions.moderation.repositories import IWarnRepository, IWarnSettingsRepository
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import assert_not_none
 from .. import IConfigProvider
-from ..models import WarnStrike
-from ..repositories import IWarnRepository, IWarnSettingsRepository
 from .iwarn_manager import IWarnManager
 
 MIN_WARN_COUNT: int = 1
@@ -46,13 +46,15 @@ class WarnManager(IWarnManager):
         assert_not_none(reason, "reason")
         assert_not_none(warner_id, "warner_id")
 
-        decay_threshold = await self.__warn_settings_repository.get_warn_decay_threshold(server_id)
-        warn_strike = WarnStrike()
-        warn_strike.server_id = server_id
-        warn_strike.user_id = user_id
-        warn_strike.reason = reason
-        warn_strike.warner_id = warner_id
-        warn_strike.id = await self.__warn_repository.add_warn(warn_strike, decay_threshold)
+        warn_settings = await self.__warn_settings_repository.get_by_server(server_id)
+        decay_threshold = warn_settings and warn_settings.decay_threshold
+        warn_strike = WarnStrike(
+            server_id=server_id,
+            user_id=user_id,
+            reason=reason,
+            warner_id=warner_id
+        )
+        warn_strike.identifier = await self.__warn_repository.add_warn(warn_strike, decay_threshold)
         return warn_strike
 
     async def clear_warns_for_user(self, server_id: str, user_id: str) -> int:
@@ -80,12 +82,26 @@ class WarnManager(IWarnManager):
                     str(duration_range.lower_bound),
                     str(duration_range.upper_bound)
                 )
-        await self.__warn_settings_repository.set_auto_mute(server_id, warn_count, duration)
+
+        if warn_settings := await self.__warn_settings_repository.get_by_server(server_id):
+            warn_settings.auto_mute_after = warn_count
+            warn_settings.auto_mute_duration = duration
+            await self.__warn_settings_repository.update(warn_settings)
+            return
+
+        await self.__warn_settings_repository.add(WarnSettings(
+            server_id=server_id,
+            auto_mute_after=warn_count,
+            auto_mute_duration=duration
+        ))
 
     async def disable_auto_mute(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_settings_repository.set_auto_mute(server_id, 0, None)
+        if warn_settings := await self.__warn_settings_repository.get_by_server(server_id):
+            warn_settings.auto_mute_after = 0
+            warn_settings.auto_mute_duration = None
+            await self.__warn_settings_repository.update(warn_settings)
 
     async def enable_auto_kick(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
@@ -93,12 +109,22 @@ class WarnManager(IWarnManager):
         if warn_count < 1 or warn_count > MAX_WARN_COUNT:
             raise ArgumentOutOfRangeError("warn_count", "1", str(MAX_WARN_COUNT))
 
-        await self.__warn_settings_repository.set_auto_kick(server_id, warn_count)
+        if warn_settings := await self.__warn_settings_repository.get_by_server(server_id):
+            warn_settings.auto_kick_after = warn_count
+            await self.__warn_settings_repository.update(warn_settings)
+            return
+
+        await self.__warn_settings_repository.add(WarnSettings(
+            server_id=server_id,
+            auto_kick_after=warn_count
+        ))
 
     async def disable_auto_kick(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_settings_repository.set_auto_kick(server_id, 0)
+        if warn_settings := await self.__warn_settings_repository.get_by_server(server_id):
+            warn_settings.auto_kick_after = 0
+            await self.__warn_settings_repository.update(warn_settings)
 
     async def enable_auto_ban(self, server_id: str, warn_count: int) -> None:
         assert_not_none(server_id, "server_id")
@@ -106,23 +132,39 @@ class WarnManager(IWarnManager):
         if warn_count < 1 or warn_count > MAX_WARN_COUNT:
             raise ArgumentOutOfRangeError("warn_count", "1", str(MAX_WARN_COUNT))
 
-        await self.__warn_settings_repository.set_auto_ban(server_id, warn_count)
+        if warn_settings := await self.__warn_settings_repository.get_by_server(server_id):
+            warn_settings.auto_ban_after = warn_count
+            await self.__warn_settings_repository.update(warn_settings)
+            return
+
+        await self.__warn_settings_repository.add(WarnSettings(
+            server_id=server_id,
+            auto_ban_after=warn_count
+        ))
 
     async def disable_auto_ban(self, server_id: str) -> None:
         assert_not_none(server_id, "server_id")
 
-        await self.__warn_settings_repository.set_auto_ban(server_id, 0)
+        if warn_settings := await self.__warn_settings_repository.get_by_server(server_id):
+            warn_settings.auto_ban_after = 0
+            await self.__warn_settings_repository.update(warn_settings)
 
     async def get_warn_decay(self, server_id: str) -> timedelta | None:
         assert_not_none(server_id, "server_id")
 
-        return await self.__warn_settings_repository.get_warn_decay_threshold(server_id)
+        warn_settings = await self.__warn_settings_repository.get_by_server(server_id)
+        return warn_settings and warn_settings.decay_threshold
 
     async def set_warn_decay(self, server_id: str, decay_time: timedelta | None) -> None:
         assert_not_none(server_id, "server_id")
 
+        warn_settings = await self.__warn_settings_repository.get_by_server(server_id)
         if decay_time is None:
-            await self.__warn_settings_repository.clear_warn_decay_threshold(server_id)
+            if not warn_settings:
+                return
+
+            warn_settings.decay_threshold = None
+            await self.__warn_settings_repository.update(warn_settings)
             return
 
         decay_range = self.__config_provider.get_decay_threshold_range()
@@ -133,4 +175,12 @@ class WarnManager(IWarnManager):
                 str(decay_range.upper_bound)
             )
 
-        await self.__warn_settings_repository.set_warn_decay_threshold(server_id, decay_time)
+        if warn_settings:
+            warn_settings.decay_threshold = decay_time
+            await self.__warn_settings_repository.update(warn_settings)
+            return
+
+        await self.__warn_settings_repository.add(WarnSettings(
+            server_id=server_id,
+            decay_threshold=decay_time
+        ))

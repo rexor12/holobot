@@ -9,7 +9,7 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
-from .repositories import ReminderRepositoryInterface
+from .repositories import IReminderRepository
 
 DEFAULT_RESOLUTION: int = 60
 DEFAULT_DELAY: int = 30
@@ -20,12 +20,12 @@ class ReminderProcessor(IStartable):
         configurator: ConfiguratorInterface,
         messaging: IMessaging,
         logger_factory: ILoggerFactory,
-        reminder_repository: ReminderRepositoryInterface) -> None:
+        reminder_repository: IReminderRepository) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__messaging: IMessaging = messaging
         self.__logger = logger_factory.create(ReminderProcessor)
-        self.__reminder_repository: ReminderRepositoryInterface = reminder_repository
+        self.__reminder_repository: IReminderRepository = reminder_repository
         self.__process_resolution = self.__configurator.get("Reminders", "ProcessorResolution", DEFAULT_RESOLUTION)
         self.__process_delay = self.__configurator.get("Reminders", "ProcessorDelay", DEFAULT_DELAY)
         self.__token_source: CancellationTokenSource | None = None
@@ -68,14 +68,14 @@ class ReminderProcessor(IStartable):
                     if reminder.is_repeating:
                         reminder.last_trigger = datetime.utcnow()
                         reminder.recalculate_next_trigger()
-                        await self.__reminder_repository.update_next_trigger(reminder.id, reminder.next_trigger)
+                        await self.__reminder_repository.update(reminder)
                         self.__logger.trace(
                             "Processed reminder",
-                            reminder_id=reminder.id,
+                            reminder_id=reminder.identifier,
                             next_trigger=reminder.next_trigger
                         )
                     else:
-                        await self.__reminder_repository.delete(reminder.id)
+                        await self.__reminder_repository.delete(reminder.identifier)
                     processed_reminders += 1
             except Exception as error:
                 self.__logger.error("Unexpected failure, processing will stop", error)

@@ -122,7 +122,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
 
         for warn_strike in result.items:
             embed.fields.append(EmbedField(
-                name=f"Strike #{warn_strike.id}",
+                name=f"Strike #{warn_strike.identifier}",
                 value=(
                     f"> Reason: {warn_strike.reason}\n"
                     f"> Warned by <@{warn_strike.warner_id}> at {warn_strike.created_at:%I:%M:%S %p, %m/%d/%Y %Z}"

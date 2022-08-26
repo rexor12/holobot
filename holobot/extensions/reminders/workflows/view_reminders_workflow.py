@@ -109,7 +109,7 @@ class ViewRemindersWorkflow(WorkflowBase):
             embed.fields.append(EmbedField(
                 name=self.__i18n_provider.get(
                     "extensions.reminders.view_reminders_workflow.embed_field_name",
-                    { "reminder_id": reminder.id }
+                    { "reminder_id": reminder.identifier }
                 ),
                 value=self.__i18n_provider.get(
                     "extensions.reminders.view_reminders_workflow.embed_field_value",

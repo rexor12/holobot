@@ -3,32 +3,42 @@ from typing import Any
 
 from asyncpg.connection import Connection
 
-from holobot.sdk.database import DatabaseManagerInterface
-from holobot.sdk.database.queries import Query
+from holobot.extensions.admin.models import CommandRule
+from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
 )
 from holobot.sdk.database.queries.enums import Connector, Equality
+from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
-from .command_rule_repository_interface import CommandRuleRepositoryInterface
-from .enums.rule_state import RuleState
-from .models import CommandRule
+from holobot.sdk.utils import set_time_zone
+from .icommand_rule_repository import ICommandRuleRepository
+from .records import CommandRuleRecord
 
-TABLE_NAME = "admin_rules"
+@injectable(ICommandRuleRepository)
+class CommandRuleRepository(
+    RepositoryBase[int, CommandRuleRecord, CommandRule],
+    ICommandRuleRepository
+):
+    @property
+    def record_type(self) -> type[CommandRuleRecord]:
+        return CommandRuleRecord
 
-@injectable(CommandRuleRepositoryInterface)
-class CommandRuleRepository(CommandRuleRepositoryInterface):
-    def __init__(self, database_manager: DatabaseManagerInterface) -> None:
-        super().__init__()
-        self.__database_manager: DatabaseManagerInterface = database_manager
+    @property
+    def table_name(self) -> str:
+        return "admin_rules"
+
+    def __init__(self, database_manager: IDatabaseManager) -> None:
+        super().__init__(database_manager)
 
     async def add_or_update(self, rule: CommandRule) -> int:
-        async with self.__database_manager.acquire_connection() as connection:
+        async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                id: int | None = await Query.update().table(TABLE_NAME).fields(
-                    ("created_at", rule.created_at),
+                id: int | None = await Query.update().table(self.table_name).fields(
+                    ("created_at", set_time_zone(rule.created_at, None)),
                     ("created_by", rule.created_by),
                     ("state", rule.state)
                 ).where().fields(
@@ -42,8 +52,8 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                 if id is not None:
                     return id
 
-                id = await Query.insert().in_table(TABLE_NAME).fields(
-                    ("created_at", rule.created_at),
+                id = await Query.insert().in_table(self.table_name).fields(
+                    ("created_at", set_time_zone(rule.created_at, None)),
                     ("created_by", rule.created_by),
                     ("server_id", rule.server_id),
                     ("state", rule.state),
@@ -56,17 +66,6 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                     raise ValueError("Unexpected error while creating a new rule.")
                 return id
 
-    async def get(self, id: int) -> CommandRule | None:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                record = await Query.select().columns(
-                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command_subgroup", "command", "channel_id"
-                ).from_table(TABLE_NAME).where().field(
-                    "id", Equality.EQUAL, id
-                ).compile().fetchrow(connection)
-                return CommandRuleRepository.__record_to_entity(record) if record is not None else None
-
     async def get_many(
         self,
         server_id: str,
@@ -75,30 +74,20 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         page_index: int,
         page_size: int
     ) -> PaginationResult[CommandRule]:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                query = Query.select().columns(
-                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command_subgroup", "command", "channel_id"
-                ).from_table(TABLE_NAME).where().field(
-                    "server_id", Equality.EQUAL, server_id
-                )
-                if group is not None:
-                    query = query.and_field("command_group", Equality.EQUAL, group)
-                    if subgroup is not None:
-                        query = query.and_field("command_subgroup", Equality.EQUAL, subgroup)
-                result = await (query
-                    .paginate("id", page_index, page_size)
-                    .compile()
-                    .fetch(connection)
-                )
+        def get_filter(where: WhereBuilder) -> WhereConstraintBuilder:
+            builder = where.field("server_id", Equality.EQUAL, server_id)
+            if group is not None:
+                builder = builder.and_field("command_group", Equality.EQUAL, group)
+                if subgroup is not None:
+                    builder = builder.and_field("command_subgroup", Equality.EQUAL, subgroup)
+            return builder
 
-                return PaginationResult(
-                    result.page_index,
-                    result.page_size,
-                    result.total_count,
-                    [CommandRuleRepository.__record_to_entity(record) for record in result.records]
-                )
+        return await self._paginate(
+            "id",
+            page_index,
+            page_size,
+            get_filter
+        )
 
     async def get_relevant(
         self,
@@ -108,7 +97,7 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
         subgroup: str | None,
         command: str | None
     ) -> Sequence[CommandRule]:
-        async with self.__database_manager.acquire_connection() as connection:
+        async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
                 filters = []
@@ -147,8 +136,8 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                         *filters
                     )
                 records = await Query.select().columns(
-                    "id", "created_at", "created_by", "server_id", "state", "command_group", "command_subgroup", "command", "channel_id"
-                ).from_table(TABLE_NAME).where().expression(
+                    *self.column_names
+                ).from_table(self.table_name).where().expression(
                     and_expression(
                         column_expression("server_id", Equality.EQUAL, server_id),
                         or_expression(
@@ -158,30 +147,40 @@ class CommandRuleRepository(CommandRuleRepositoryInterface):
                         filter_expression
                     )
                 ).compile().fetch(connection)
-                return tuple([CommandRuleRepository.__record_to_entity(record) for record in records])
 
-    async def delete_by_id(self, rule_id: int) -> None:
-        async with self.__database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().field("id", Equality.EQUAL, rule_id).compile().execute(connection)
+                return tuple(
+                    self._map_record_to_model(self._map_query_result_to_record(record))
+                    for record in records
+                )
 
     async def delete_by_server(self, server_id: str) -> None:
-        async with self.__database_manager.acquire_connection() as connection:
+        async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():
-                await Query.delete().from_table(TABLE_NAME).where().field("server_id", Equality.EQUAL, server_id).compile().execute(connection)
+                await Query.delete().from_table(self.table_name).where().field("server_id", Equality.EQUAL, server_id).compile().execute(connection)
 
-    @staticmethod
-    def __record_to_entity(record: dict[str, Any]) -> CommandRule:
-        entity = CommandRule()
-        entity.id = record["id"]
-        entity.created_at = record["created_at"]
-        entity.created_by = record["created_by"]
-        entity.server_id = record["server_id"]
-        entity.state = RuleState(record["state"])
-        entity.group = record["command_group"]
-        entity.subgroup = record["command_subgroup"]
-        entity.command = record["command"]
-        entity.channel_id = record["channel_id"]
-        return entity
+    def _map_record_to_model(self, record: CommandRuleRecord) -> CommandRule:
+        return CommandRule(
+            identifier=record.id,
+            created_at=record.created_at,
+            created_by=record.created_by,
+            server_id=record.server_id,
+            state=record.state,
+            group=record.command_group,
+            subgroup=record.command_subgroup,
+            command=record.command,
+            channel_id=record.channel_id
+        )
+
+    def _map_model_to_record(self, model: CommandRule) -> CommandRuleRecord:
+        return CommandRuleRecord(
+            id=model.identifier,
+            created_at=model.created_at,
+            created_by=model.created_by,
+            server_id=model.server_id,
+            state=model.state,
+            command_group=model.group,
+            command_subgroup=model.subgroup,
+            command=model.command,
+            channel_id=model.channel_id
+        )

@@ -13,9 +13,6 @@ from . import bot_accessor
 from .bot import Bot
 from .bot_service_interface import BotServiceInterface
 
-DEFAULT_BOT_PREFIX = "h!"
-DEBUG_MODE_BOT_PREFIX = "h#"
-
 REQUIRED_INTENTS = (
     hikari.Intents.ALL_DMS
     | hikari.Intents.ALL_GUILDS

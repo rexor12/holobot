@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-@dataclass
+@dataclass(kw_only=True)
 class Mute:
-    server_id: str = ""
-    user_id: str = ""
+    identifier: int = -1
+    server_id: str
+    user_id: str

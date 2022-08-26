@@ -7,6 +7,7 @@ from .constraints import (
 from .enums import Connector, Equality
 from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
+from .isupports_pagination import ISupportsPagination
 from .iwhere_builder import IWhereBuilder
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
@@ -14,7 +15,15 @@ from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
 
-class WhereBuilder(IWhereBuilder):
+class WhereBuilder(IWhereBuilder, ISupportsPagination):
+    @property
+    def constraint(self) -> IConstraintBuilder:
+        return self.__constraint
+
+    @constraint.setter
+    def constraint(self, value: IConstraintBuilder) -> None:
+        self.__constraint = value
+
     def __init__(self, parent_builder: IQueryPartBuilder) -> None:
         self.__parent_builder: IQueryPartBuilder = parent_builder
         self.constraint = EmptyConstraintBuilder()

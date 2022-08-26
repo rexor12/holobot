@@ -4,11 +4,11 @@ from typing import Any
 
 from .compiled_query import CompiledQuery
 from .exists_builder import ExistsBuilder
-from .iquery_part_builder import IQueryPartBuilder
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .join_builder import JOIN_TYPE, JoinBuilder
 from .where_builder import WhereBuilder
 
-class SelectBuilder(IQueryPartBuilder):
+class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
     def __init__(self) -> None:
         super().__init__()
         self.__columns: list[str] = []

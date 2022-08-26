@@ -6,14 +6,18 @@ from .compiled_query import CompiledQuery
 from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 from .enums import Connector, Equality
 from .exists_builder import ExistsBuilder
-from .iquery_part_builder import IQueryPartBuilder
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
+from .isupports_pagination import ISupportsPagination
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
 from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_builder import IWhereBuilder
 
-class WhereConstraintBuilder(IQueryPartBuilder):
+class WhereConstraintBuilder(
+    ICompileableQueryPartBuilder[CompiledQuery],
+    ISupportsPagination
+):
     def __init__(self, where_builder: IWhereBuilder) -> None:
         self.__where_builder: IWhereBuilder = where_builder
 

@@ -3,8 +3,11 @@ from .compiled_query import CompiledQuery
 from .delete_builder import DeleteBuilder
 from .do_nothing_builder import DoNothingBuilder
 from .exists_builder import ExistsBuilder
+from .icompileable_query_part_builder import ICompileableQueryPartBuilder
+from .icompiled_query import ICompiledQuery
 from .insert_builder import InsertBuilder
 from .iquery_part_builder import IQueryPartBuilder
+from .isupports_pagination import ISupportsPagination
 from .iwhere_builder import IWhereBuilder
 from .join_builder import JoinBuilder
 from .limit_builder import LimitBuilder

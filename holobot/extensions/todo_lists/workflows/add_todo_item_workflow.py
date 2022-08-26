@@ -37,9 +37,10 @@ class AddTodoItemWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         description: str
     ) -> InteractionResponse:
-        todo_item = TodoItem()
-        todo_item.user_id = context.author_id
-        todo_item.message = description
+        todo_item = TodoItem(
+            user_id=context.author_id,
+            message=description
+        )
         try:
             await self.__todo_item_manager.add_todo_item(todo_item)
             return InteractionResponse(

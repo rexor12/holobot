@@ -101,13 +101,15 @@ class ScraperRunner(IStartable):
             for item in scraped_giveaway_items:
                 if not await self.__external_giveaway_item_repository.exists(item.url):
                     new_giveaway_items.append(item)
-                    await self.__external_giveaway_item_repository.store(item)
+                    await self.__external_giveaway_item_repository.add(item)
 
             if scraper_info:
                 scraper_info.last_scrape_time = datetime.now(timezone.utc)
-            else: scraper_info = ScraperInfo(0, scraper_name, datetime.now(timezone.utc))
+                await self.__scraper_info_repository.update(scraper_info)
+            else: await self.__scraper_info_repository.add(
+                ScraperInfo(scraper_name=scraper_name, last_scrape_time=datetime.now(timezone.utc))
+            )
 
-            await self.__scraper_info_repository.store(scraper_info)
             return tuple(new_giveaway_items)
         except CircuitBrokenError:
             return ()

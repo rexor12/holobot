@@ -1,8 +1,12 @@
-from dataclasses import dataclass
-from datetime import timedelta
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 
-@dataclass
+@dataclass(kw_only=True)
 class WarnSettings:
+    identifier: int = -1
+    modified_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    server_id: str
+    decay_threshold: timedelta | None = None
     auto_mute_after: int = 0
     auto_mute_duration: timedelta | None = None
     auto_kick_after: int = 0

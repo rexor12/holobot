@@ -2,10 +2,11 @@ from typing import Any
 
 from asyncpg.connection import Connection
 
-from ..statuses import CommandComplete
+from holobot.sdk.database.statuses import CommandComplete
+from .icompiled_query import ICompiledQuery
 
 # TODO Query string tracing.
-class CompiledQuery:
+class CompiledQuery(ICompiledQuery):
     def __init__(self, query: str, arguments: tuple[Any, ...]) -> None:
         self.__query: str = query
         self.__arguments: tuple[Any, ...] = arguments

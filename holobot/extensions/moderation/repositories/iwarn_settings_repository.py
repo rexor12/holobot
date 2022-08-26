@@ -1,25 +1,8 @@
-from datetime import timedelta
+from typing import Protocol
 
-from ..models import WarnSettings
+from holobot.extensions.moderation.models import WarnSettings
+from holobot.sdk.database.repositories import IRepository
 
-class IWarnSettingsRepository:
-    async def get_warn_decay_threshold(self, server_id: str) -> timedelta | None:
-        raise NotImplementedError
-
-    async def set_warn_decay_threshold(self, server_id: str, threshold: timedelta) -> None:
-        raise NotImplementedError
-
-    async def clear_warn_decay_threshold(self, server_id: str) -> None:
-        raise NotImplementedError
-
-    async def get_warn_settings(self, server_id: str) -> WarnSettings:
-        raise NotImplementedError
-
-    async def set_auto_mute(self, server_id: str, warn_count: int, duration: timedelta | None) -> None:
-        raise NotImplementedError
-
-    async def set_auto_kick(self, server_id: str, warn_count: int) -> None:
-        raise NotImplementedError
-
-    async def set_auto_ban(self, server_id: str, warn_count: int) -> None:
-        raise NotImplementedError
+class IWarnSettingsRepository(IRepository[int, WarnSettings], Protocol):
+    async def get_by_server(self, server_id: str) -> WarnSettings | None:
+        ...

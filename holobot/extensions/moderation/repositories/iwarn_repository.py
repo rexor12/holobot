@@ -1,10 +1,12 @@
 from datetime import timedelta
 from typing import Protocol
 
+from holobot.extensions.moderation.models import WarnStrike
+from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
-from ..models import WarnStrike
+from .records import WarnStrikeRecord
 
-class IWarnRepository(Protocol):
+class IWarnRepository(IRepository[int, WarnStrikeRecord], Protocol):
     async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
         ...
 

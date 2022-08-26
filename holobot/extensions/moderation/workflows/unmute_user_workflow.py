@@ -3,6 +3,7 @@ import contextlib
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
@@ -10,10 +11,9 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerUserInteractionContext
 )
+from holobot.extensions.moderation.enums import ModeratorPermission
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from ..enums import ModeratorPermission
-from ..managers import IMuteManager
 from .interactables.decorators import moderation_command, moderation_menu_item
 from .responses import UserUnmutedResponse as UserUnmutedInteractionResponse
 from .responses.menu_item_responses import UserUnmutedResponse as UserUnmutedMenuItemResponse
@@ -24,12 +24,12 @@ class UnmuteUserWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         messaging: IMessaging,
-        mute_manager: IMuteManager
+        user_manager: IUserManager
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
         self.__messaging = messaging
-        self.__mute_manager = mute_manager
+        self.__user_manager = user_manager
 
     @moderation_command(
         description="Removes the muting from a user.",
@@ -52,7 +52,7 @@ class UnmuteUserWorkflow(WorkflowBase):
             )
 
         try:
-            await self.__mute_manager.unmute_user(context.server_id, user_id)
+            await self.__user_manager.unsilence_user(context.server_id, user_id)
         except UserNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
@@ -103,7 +103,7 @@ class UnmuteUserWorkflow(WorkflowBase):
         context: ServerUserInteractionContext
     ) -> InteractionResponse:
         try:
-            await self.__mute_manager.unmute_user(context.server_id, context.target_user_id)
+            await self.__user_manager.unsilence_user(context.server_id, context.target_user_id)
         except UserNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(

@@ -1,9 +1,11 @@
 
 import contextlib
+from datetime import timedelta
 
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
@@ -17,10 +19,11 @@ from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from ..enums import ModeratorPermission
-from ..managers import IMuteManager
 from .interactables.decorators import moderation_command, moderation_menu_item
 from .responses import UserMutedResponse as UserMutedInteractionResponse
 from .responses.menu_item_responses import UserMutedResponse as UserMutedMenuItemResponse
+
+_MENU_ITEM_TIME_OUT_DURATION = timedelta(minutes=15)
 
 @injectable(IWorkflow)
 class MuteUserWorkflow(WorkflowBase):
@@ -29,13 +32,13 @@ class MuteUserWorkflow(WorkflowBase):
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         messaging: IMessaging,
-        mute_manager: IMuteManager
+        user_manager: IUserManager
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(MuteUserWorkflow)
         self.__messaging = messaging
-        self.__mute_manager = mute_manager
+        self.__user_manager = user_manager
 
     @moderation_command(
         description="Mutes a user.",
@@ -64,7 +67,7 @@ class MuteUserWorkflow(WorkflowBase):
             )
 
         try:
-            await self.__mute_manager.mute_user(context.server_id, user_id, reason, mute_duration)
+            await self.__user_manager.silence_user(context.server_id, user_id, mute_duration)
         except ArgumentOutOfRangeError as error:
             if error.argument_name == "reason":
                 return InteractionResponse(
@@ -140,7 +143,11 @@ class MuteUserWorkflow(WorkflowBase):
         context: ServerUserInteractionContext
     ) -> InteractionResponse:
         try:
-            await self.__mute_manager.mute_user(context.server_id, context.target_user_id, "Issued via menu item")
+            await self.__user_manager.silence_user(
+                context.server_id,
+                context.target_user_id,
+                _MENU_ITEM_TIME_OUT_DURATION
+            )
         except UserNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(

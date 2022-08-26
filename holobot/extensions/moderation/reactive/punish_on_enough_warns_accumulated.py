@@ -8,7 +8,6 @@ from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
-from ..managers import IMuteManager
 from ..models import WarnSettings
 from ..repositories import ILogSettingsRepository, IWarnRepository, IWarnSettingsRepository
 from ..workflows.interactables import ModerationCommand
@@ -20,18 +19,16 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         log_settings_repository: ILogSettingsRepository,
         logger_factory: ILoggerFactory,
         messaging: IMessaging,
-        mute_manager: IMuteManager,
         user_manager: IUserManager,
         warn_repository: IWarnRepository,
         warn_settings_repository: IWarnSettingsRepository) -> None:
         super().__init__()
         self.__logger = logger_factory.create(PunishOnEnoughWarnsAccumulated)
-        self.__log_settings_repository: ILogSettingsRepository = log_settings_repository
-        self.__messaging: IMessaging = messaging
-        self.__mute_manager: IMuteManager = mute_manager
-        self.__user_manager: IUserManager = user_manager
-        self.__warn_repository: IWarnRepository = warn_repository
-        self.__warn_settings_repository: IWarnSettingsRepository = warn_settings_repository
+        self.__log_settings_repository = log_settings_repository
+        self.__messaging = messaging
+        self.__user_manager = user_manager
+        self.__warn_repository = warn_repository
+        self.__warn_settings_repository = warn_settings_repository
 
     @property
     def priority(self) -> int:
@@ -84,7 +81,7 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             return (is_success, "kicked", "x")
 
         if warn_settings.auto_mute_after > 0 and warn_count >= warn_settings.auto_mute_after:
-            is_success = await self.__try_execute_punishment(lambda: self.__mute_manager.mute_user(server_id, user_id, self.__get_reason(warn_count), warn_settings.auto_mute_duration))
+            is_success = await self.__try_execute_punishment(lambda: self.__user_manager.silence_user(server_id, user_id, warn_settings.auto_mute_duration))
             return (True, "muted", "mute")
 
         return (False, "", "")

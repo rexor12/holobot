@@ -233,6 +233,16 @@
                 "user_unmuted_dm": "{user_name} requested I unmute you in {server_name}. („• ᴗ •„)",
                 "user_unmuted": "I've successfully unmuted <@{user_id}>."
             },
+            "view_user_permissions_workflow": {
+                "no_moderators_error": "The server has no users with moderator permissions.",
+                "embed_title": "Permissions",
+                "embed_description": "Permissions of <@{user_id}>.",
+                "user_with_name": "{user_name} ({user_id})",
+                "user_without_name": "Unknown ({user_id})",
+                "embed_placeholder": "Choose a user",
+                "has_permission": ":white_check_mark:",
+                "not_has_permission": ":no_entry_sign:"
+            },
             "view_warn_decay_workflow": {
                 "decay_disabled": "I don't invalidate warn strikes over time automatically.",
                 "decay_enabled": "I invalidate warn strikes after {time}."

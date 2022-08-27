@@ -114,6 +114,11 @@
                         "price": {}
                     }
                 },
+                "giveaway": {
+                    "Commands": {
+                        "view": {}
+                    }
+                },
                 "hentai": {
                     "Commands": {
                         "link": {}
@@ -134,7 +139,8 @@
                         "permissions": {
                             "Commands": {
                                 "add": {},
-                                "remove": {}
+                                "remove": {},
+                                "view": {}
                             }
                         },
                         "logs": {

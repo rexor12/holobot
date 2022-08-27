@@ -1,11 +1,13 @@
 from asyncpg.connection import Connection
 
+from holobot.extensions.moderation.enums import ModeratorPermission
 from holobot.extensions.moderation.models import User
 from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import assert_not_none
 from .iuser_repository import IUserRepository
 from .records import UserRecord
@@ -65,6 +67,25 @@ class UserRepository(
                     .compile()
                     .execute(connection)
                 )
+
+    async def get_moderators(
+        self,
+        server_id: str,
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[User]:
+        assert_not_none(server_id, "server_id")
+
+        return await self._paginate(
+            "id",
+            page_index,
+            page_size,
+            lambda where: where.fields(
+                Connector.AND,
+                ("server_id", Equality.EQUAL, server_id),
+                ("permissions", Equality.GREATER, ModeratorPermission.NONE)
+            )
+        )
 
     def _map_record_to_model(self, record: UserRecord) -> User:
         return User(

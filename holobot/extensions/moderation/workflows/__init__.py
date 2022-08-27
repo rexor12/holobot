@@ -14,6 +14,7 @@ from .set_auto_mute_workflow import SetAutoMuteWorkflow
 from .set_log_channel_workflow import SetLogChannelWorkflow
 from .set_warn_decay_workflow import SetWarnDecayWorkflow
 from .unmute_user_workflow import UnmuteUserWorkflow
+from .view_user_permissions_workflow import ViewUserPermissionsWorkflow
 from .view_warn_decay_workflow import ViewWarnDecayWorkflow
 from .view_warn_strikes_workflow import ViewWarnStrikesWorkflow
 from .warn_user_workflow import WarnUserWorkflow

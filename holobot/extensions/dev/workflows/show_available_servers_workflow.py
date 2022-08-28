@@ -56,7 +56,18 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(EditMessageAction(content="This interaction is available in a server only."))
+            return InteractionResponse(
+                action=EditMessageAction(
+                    content="This interaction is available in a server only."
+                )
+            )
+
+        if not isinstance(state, PagerState):
+            return InteractionResponse(
+                action=EditMessageAction(
+                    content="This interaction isn't valid anymore."
+                )
+            )
 
         content, components = await self.__create_page_content(
             max(state.current_page, 0),
@@ -65,12 +76,10 @@ class ShowAvailableServersWorkflow(WorkflowBase):
             state.owner_id
         )
         return InteractionResponse(
-            EditMessageAction(
+            action=EditMessageAction(
                 content=content,
                 components=components
             )
-            if isinstance(state, PagerState)
-            else EditMessageAction(content="This interaction isn't valid anymore.")
         )
 
     @component(
@@ -92,7 +101,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         content, components = await self.__create_page_content(
             max(int(page_index), 0),
             PAGE_SIZE,
-            int(server_index),
+            max(int(server_index), 0),
             state.owner_id
         )
         return InteractionResponse(

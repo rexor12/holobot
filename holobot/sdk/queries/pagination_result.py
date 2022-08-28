@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
@@ -17,5 +16,5 @@ class PaginationResult(Generic[TItem]):
     total_count: int
     """The total number of items matching the query."""
 
-    items: Sequence[TItem] = field(default_factory=list)
+    items: list[TItem] = field(default_factory=list)
     """The items of the current page."""

@@ -71,6 +71,8 @@
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
+                "invalid_action_error": "I'm sorry, but the action you specified isn't valid. Please, try again with a correct option. (｡•́︿•̀｡)",
+                "remote_api_error": "I'm sorry, but something went wrong while fetching an image for you. Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
                 "embed_title": "Reaction",
                 "embed_footer": "Powered by waifu.pics",
                 "actions": {

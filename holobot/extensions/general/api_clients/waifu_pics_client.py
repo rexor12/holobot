@@ -27,7 +27,6 @@ class WaifuPicsClient(IWaifuPicsClient):
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
-        self.__configurator = configurator
         self.__http_client_pool = http_client_pool
         self.__log = logger_factory.create(WaifuPicsClient)
         self.__circuit_breaker = WaifuPicsClient.__create_circuit_breaker(configurator)

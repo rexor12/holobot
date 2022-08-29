@@ -8,6 +8,8 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.providers import IReactionProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
+from holobot.sdk.network.resilience.exceptions import CircuitBrokenError, RateLimitedError
 
 _CATEGORIES = set((
     "awoo", "bite", "blush", "bonk", "bully", "cry", "cuddle", "dance",
@@ -47,9 +49,17 @@ class ReactWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         action = action.strip().lower()
         if action not in _CATEGORIES:
-            pass
+            return self._reply(content=self.__i18n_provider.get(
+                "extensions.general.react_workflow.invalid_action_error"
+            ))
 
-        url = await self.__reaction_provider.get(action)
+        try:
+            url = await self.__reaction_provider.get(action)
+        except (CircuitBrokenError, HttpStatusError, TooManyRequestsError, RateLimitedError):
+            return self._reply(content=self.__i18n_provider.get(
+                "extensions.general.react_workflow.remote_api_error"
+            ))
+
         if not url:
             return self._reply(content=self.__i18n_provider.get(
                 "extensions.general.react_workflow.no_image_error"

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from time import time
+from typing import TypeVar
 
 from .exceptions.circuit_broken_error import CircuitBrokenError
 from .models.circuit_state import CircuitState
+
+TState = TypeVar("TState")
+TResult = TypeVar("TResult")
 
 DEFAULT_FAILURE_THRESHOLD: int = 5
 DEFAULT_RECOVERY_TIMEOUT: int = 30
@@ -25,8 +29,12 @@ class AsyncCircuitBreaker:
         self.__failure_count: int = 0
         self.__close_time: int = 0
 
-    async def __call__(self, *args, **kwds):
-        return await self.call(*args, **kwds)
+    async def __call__(
+        self,
+        callback: Callable[[TState], Awaitable[TResult]],
+        state: TState
+    ) -> TResult:
+        return await self.execute(callback, state)
 
     @property
     def failure_threshold(self) -> int:
@@ -68,12 +76,16 @@ class AsyncCircuitBreaker:
     def time_to_recover(self) -> int:
         return int(self.__close_time - time()) if self.state != CircuitState.CLOSED else 0
 
-    async def call(self, fcoro: Callable[[], Coroutine], *args, **kwargs):
+    async def execute(
+        self,
+        callback: Callable[[TState], Awaitable[TResult]],
+        state: TState
+    ) -> TResult:
         if self.state == CircuitState.OPEN:
             raise CircuitBrokenError("The circuit is broken.")
 
         try:
-            result = await fcoro(*args, **kwargs)
+            result = await callback(state)
         except Exception as error:
             await self.__on_failure(error)
             raise

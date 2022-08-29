@@ -4,6 +4,7 @@ from asyncio.tasks import Task
 from collections.abc import Awaitable
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
 
@@ -77,7 +78,7 @@ class CryptoUpdater(IStartable):
         while not token.is_cancellation_requested:
             self.__log.debug("Updating prices...")
             try:
-                prices = await self.__circuit_breaker(self.__get_symbol_prices)
+                prices = await self.__circuit_breaker(self.__get_symbol_prices, None)
                 if len(prices) > 0:
                     await self.__crypto_repository.update_prices(prices)
                     self.__log.debug("Updated prices", symbol_count=len(prices))
@@ -110,7 +111,7 @@ class CryptoUpdater(IStartable):
                 raise
             await wait(UPDATE_INTERVAL, token)
 
-    async def __get_symbol_prices(self) -> list[PriceData]:
+    async def __get_symbol_prices(self, _: Any) -> list[PriceData]:
         result = await self.__http_client_pool.get(f"{BINANCE_API_BASE_URL}ticker/price")
         now = datetime.utcnow()
         return [PriceData(

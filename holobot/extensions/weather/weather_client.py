@@ -47,13 +47,16 @@ class WeatherClient(WeatherClientInterface):
 
         try:
             response = await self.__circuit_breaker(
-                self.__http_client_pool.get,
-                self.__api_gateway,
-                {
-                    "appid": self.__api_key,
-                    "q": location,
-                    "units": "metric"
-                })
+                lambda s: self.__http_client_pool.get(s[0], s[1]),
+                (
+                    self.__api_gateway,
+                    {
+                        "appid": self.__api_key,
+                        "q": location,
+                        "units": "metric"
+                    }
+                )
+            )
         except TooManyRequestsError:
             raise QueryQuotaExhaustedError
         except HttpStatusError as error:

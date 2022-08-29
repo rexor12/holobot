@@ -5,7 +5,11 @@
             "DiscordToken": "",
             "LogLevel": "Information",
             "HttpPoolSize": 50,
-            "AvatarArtworkArtistName": "unknown"
+            "AvatarArtworkArtistName": "unknown",
+            "WaifuPicsCircuitBreakerFailureThreshold": 1,
+            "WaifuPicsCircuitBreakerRecoveryTime": 300,
+            "WaifuPicsRateLimiterRequestsPerInterval": 2,
+            "WaifuPicsRateLimiterInterval": 5
         }
     },
     "Google": {

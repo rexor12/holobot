@@ -47,15 +47,18 @@ class GoogleClient(IGoogleClient):
 
         try:
             response = await self.__circuit_breaker(
-                self.__http_client_pool.get,
-                "https://www.googleapis.com/customsearch/v1",
-                {
-                    "key": self.__api_key,
-                    "cx": self.__engine_id,
-                    "searchType": GoogleClient.search_types.get(search_type, TEXT_SEARCH_TYPE),
-                    "num": max_results,
-                    "q": query
-                })
+                lambda s: self.__http_client_pool.get(s[0], s[1]),
+                (
+                    "https://www.googleapis.com/customsearch/v1",
+                    {
+                        "key": self.__api_key,
+                        "cx": self.__engine_id,
+                        "searchType": GoogleClient.search_types.get(search_type, TEXT_SEARCH_TYPE),
+                        "num": max_results,
+                        "q": query
+                    }
+                )
+            )
         except TooManyRequestsError as error:
             raise SearchQuotaExhaustedError from error
         except HttpStatusError as error:

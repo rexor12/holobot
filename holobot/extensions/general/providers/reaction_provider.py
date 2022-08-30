@@ -2,9 +2,9 @@ import asyncio
 from collections import deque
 
 from holobot.extensions.general.api_clients import IWaifuPicsClient
-from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.network.resilience.exceptions import RateLimitedError
+from holobot.sdk.utils import add_or_update_async
 from .ireaction_provider import IReactionProvider
 
 @injectable(IReactionProvider)
@@ -15,16 +15,19 @@ class ReactionProvider(IReactionProvider):
     ) -> None:
         super().__init__()
         self.__api_client = waifu_pics_client
-        self.__images_by_category = ConcurrentCache[str, deque[str]]()
+        self.__images_by_category = dict[str, deque[str]]()
+        self.__lock = asyncio.Lock()
 
     async def get(self, category: str) -> str | None:
-        images = await self.__images_by_category.add_or_update(
-            category,
-            lambda k: self.__query_images(k),
-            lambda k, i: self.__query_images(k, i)
-        )
+        async with self.__lock:
+            images = await add_or_update_async(
+                self.__images_by_category,
+                category,
+                lambda k: self.__query_images(k),
+                lambda k,i: self.__query_images(k, i)
+            )
 
-        return images.pop() if images else None
+            return images.pop() if images else None
 
     async def __query_images(
         self,

@@ -1,4 +1,5 @@
 from .magic_eight_ball_workflow import MagicEightBallWorkflow
+from .react_workflow import ReactWorkflow
 from .roll_number_workflow import RollNumberWorkflow
 from .summon_user_workflow import SummonUserWorkflow
 from .view_bot_info_workflow import ViewBotInfoWorkflow

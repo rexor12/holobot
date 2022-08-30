@@ -12,10 +12,10 @@
             "justMyCode": false
         },
         {
-            "name": "Python: __main__",
+            "name": "Python: holobot",
             "type": "python",
             "request": "launch",
-            "program": "__main__.py",
+            "module": "holobot",
             "console": "integratedTerminal",
             "justMyCode": false
         }

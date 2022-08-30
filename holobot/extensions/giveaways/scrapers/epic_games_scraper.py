@@ -71,11 +71,12 @@ class EpicGamesScraper(IScraper):
 
     async def scrape(self) -> Sequence[ExternalGiveawayItem]:
         response = await self.__circuit_breaker(
-            self.__http_client_pool.get,
-            self.__url,
-            {
-                "country": self.__country_code
-            })
+            lambda s: self.__http_client_pool.get(s[0], s[1]),
+            (
+                self.__url,
+                { "country": self.__country_code }
+            )
+        )
 
         promotions = deserialize(FreeGamesPromotions, response)
         if not promotions or not promotions.data.Catalog.searchStore.elements:

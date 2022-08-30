@@ -1,1 +1,2 @@
 from .circuit_broken_error import CircuitBrokenError
+from .rate_limited_error import RateLimitedError

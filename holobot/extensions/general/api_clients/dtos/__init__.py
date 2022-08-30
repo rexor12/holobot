@@ -1,0 +1,1 @@
+from .waifu_pics_batch_result import WaifuPicsBatchResult

@@ -9,3 +9,7 @@ class InteractionContext:
     author_id: str
     author_name: str
     author_nickname: str | None
+
+    @property
+    def author_display_name(self) -> str:
+        return self.author_nickname or self.author_name

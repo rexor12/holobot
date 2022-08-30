@@ -1,5 +1,5 @@
 from .datetime_utils import UTC, set_time_zone, set_time_zone_nullable
-from .dict_utils import get_or_add
+from .dict_utils import add_or_update, add_or_update_async, get_or_add
 from .exception_utils import assert_not_none, assert_range, format_exception
 from .iterable_utils import first, first_or_default, has_any
 from .list_utils import pad_left

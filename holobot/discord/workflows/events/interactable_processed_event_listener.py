@@ -44,6 +44,4 @@ class InteractableProcessedEventListener(IListener[_EVENT_TYPE]):
         if entity_type == EntityType.USER:
             return event.user_id
 
-        if entity_type == EntityType.CHANNEL:
-            return event.channel_id
-        else: return event.server_id
+        return event.channel_id if entity_type == EntityType.CHANNEL else event.server_id

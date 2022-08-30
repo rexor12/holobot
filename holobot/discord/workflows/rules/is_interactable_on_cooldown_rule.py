@@ -71,8 +71,6 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
             return context.author_id
 
         if isinstance(context, _SERVER_CONTEXTS):
-            if entity_type == EntityType.CHANNEL:
-                return context.channel_id
-            else: return context.server_id
+            return context.channel_id if entity_type == EntityType.CHANNEL else context.server_id
 
         return None

@@ -6,7 +6,7 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Component
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 
 def component(
     *,
@@ -16,7 +16,8 @@ def component(
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
     defer_type: DeferType = DeferType.NONE,
-    server_ids: set[str] | None = None
+    server_ids: set[str] | None = None,
+    cooldown: Cooldown | None = None
 ):
     """A decorator that can be used to conveniently turn a function
     of a workflow into a component interaction.
@@ -35,6 +36,8 @@ def component(
     :type defer_type: DeferType, optional
     :param server_ids: The identifiers of the servers the command is available in, defaults to None
     :type server_ids: set[str] | None, optional
+    :param cooldown: Determines how often can the interactable be invoked.
+    :type cooldown: Cooldown | None, optional
     """
 
     def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
@@ -46,7 +49,8 @@ def component(
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,
             defer_type=defer_type,
-            server_ids=server_ids or set()
+            server_ids=server_ids or set(),
+            cooldown=cooldown
         ))
         return target
     return wrapper

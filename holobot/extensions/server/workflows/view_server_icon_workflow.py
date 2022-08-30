@@ -4,7 +4,8 @@ from holobot.discord.sdk.models import Embed
 from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.enums import EntityType
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -23,7 +24,8 @@ class ViewServerIconWorkflow(WorkflowBase):
     @command(
         description="Displays the server's icon.",
         name="icon",
-        group_name="server"
+        group_name="server",
+        cooldown=Cooldown(duration=10, entity_type=EntityType.SERVER)
     )
     async def display_server_icon(
         self,

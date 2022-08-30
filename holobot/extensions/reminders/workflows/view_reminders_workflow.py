@@ -7,7 +7,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -32,7 +32,8 @@ class ViewRemindersWorkflow(WorkflowBase):
     @command(
         description="Displays your reminders.",
         name="view",
-        group_name="reminder"
+        group_name="reminder",
+        cooldown=Cooldown(duration=10)
     )
     async def view_reminders(
         self,

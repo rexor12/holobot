@@ -22,15 +22,18 @@ class CheckModeratorPermissionRule(IWorkflowExecutionRule):
         workflow: IWorkflow,
         interactable: Interactable,
         context: InteractionContext
-    ) -> bool:
+    ) -> tuple[bool, str | None]:
         if (
             not isinstance(interactable, (ModerationCommand, ModerationComponent, ModerationMenuItem))
             or not isinstance(context, (ServerChatInteractionContext, ServerMessageInteractionContext, ServerUserInteractionContext))
         ):
-            return False
+            return (False, None)
 
-        return not await self.__permission_manager.has_permissions(
-            context.server_id,
-            context.author_id,
-            interactable.required_moderator_permissions
+        return (
+            not await self.__permission_manager.has_permissions(
+                context.server_id,
+                context.author_id,
+                interactable.required_moderator_permissions
+            ),
+            None
         )

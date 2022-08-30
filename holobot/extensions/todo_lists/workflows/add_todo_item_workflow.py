@@ -1,12 +1,11 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import ILoggerFactory
 from .. import TodoItemManagerInterface
 from ..exceptions import TooManyTodoItemsError
 from ..models import TodoItem
@@ -16,12 +15,10 @@ class AddTodoItemWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
-        logger_factory: ILoggerFactory,
         todo_item_manager: TodoItemManagerInterface
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
-        self.__logger = logger_factory.create(AddTodoItemWorkflow)
         self.__todo_item_manager = todo_item_manager
 
     @command(
@@ -30,7 +27,8 @@ class AddTodoItemWorkflow(WorkflowBase):
         group_name="todo",
         options=(
             Option("description", "The description of the to-do item."),
-        )
+        ),
+        cooldown=Cooldown(duration=10)
     )
     async def add_todo_item(
         self,

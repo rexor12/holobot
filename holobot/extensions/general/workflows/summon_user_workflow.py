@@ -10,7 +10,7 @@ from holobot.discord.sdk.utils.mention_utils import get_channel_id_or_default
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -37,7 +37,8 @@ class SummonUserWorkflow(WorkflowBase):
             Option("name", "The name or mention of the user.", OptionType.STRING, True),
             Option("message", "An optional message the bot forwards to the user.", OptionType.STRING, False),
             Option("channel", "An optional mention of the channel where the user should be summoned.", OptionType.STRING, False)
-        )
+        ),
+        cooldown=Cooldown(duration=10)
     )
     async def summon_user(
         self,

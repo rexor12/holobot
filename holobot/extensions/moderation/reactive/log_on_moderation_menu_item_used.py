@@ -23,9 +23,11 @@ class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
         self.__log_manager: ILogManager = log_manager
 
     async def on_event(self, event: MenuItemProcessedEvent):
-        if (not event.server_id
-            or not issubclass(event.menu_item_type, ModerationMenuItem)
-            or not (event_message := LogOnModerationMenuItemUsed.__create_event_message(event))):
+        if (
+            not event.server_id
+            or not isinstance(event.interactable, ModerationMenuItem)
+            or not (event_message := LogOnModerationMenuItemUsed.__create_event_message(event))
+        ):
             return
 
         try:
@@ -38,7 +40,7 @@ class LogOnModerationMenuItemUsed(IListener[MenuItemProcessedEvent]):
 
         self.__logger.trace(
             "A loggable moderation menu item has been used",
-            type=event.menu_item_type,
+            type=type(event.interactable),
             user_id=event.user_id,
             server_id=event.server_id
         )

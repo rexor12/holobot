@@ -90,8 +90,9 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
             return
 
         event = MenuItemProcessedEvent(
-            menu_item_type=type(interactable),
+            interactable=interactable,
             server_id=str(interaction.guild_id) if interaction.guild_id else None,
+            channel_id=str(interaction.channel_id),
             user_id=str(interaction.user.id),
             response=response
         )

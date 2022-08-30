@@ -3,7 +3,7 @@ from random import Random
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -33,7 +33,8 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
         name="8ball",
         options=(
             Option("question", "The yes/no question to be answered."),
-        )
+        ),
+        cooldown=Cooldown(duration=10)
     )
     async def answer_question(
         self,

@@ -3,7 +3,9 @@ from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import (
+    Choice, Cooldown, InteractionResponse, Option
+)
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.providers import IReactionProvider
 from holobot.sdk.i18n import II18nProvider
@@ -39,7 +41,8 @@ class ReactWorkflow(WorkflowBase):
                 for category in sorted(_CATEGORIES)
             )),
             Option(name="target", description="The name or mention of the target user.", is_mandatory=False)
-        )
+        ),
+        cooldown=Cooldown(duration=10)
     )
     async def show_reaction(
         self,

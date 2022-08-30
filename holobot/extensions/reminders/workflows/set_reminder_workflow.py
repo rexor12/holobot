@@ -2,7 +2,7 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.chrono import parse_interval
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
@@ -35,7 +35,8 @@ class SetReminderWorkflow(WorkflowBase):
             Option("in_time", "After the specified time passes. Eg. 1h30m or 01:30.", is_mandatory=False),
             Option("at_time", "At a specific moment in time. Eg. 15:30 or 15h30m.", is_mandatory=False),
             Option("every_interval", "Repeat in intervals. Eg. 1h30m, 01:30 or day/week.", is_mandatory=False)
-        )
+        ),
+        cooldown=Cooldown(duration=10)
     )
     async def set_reminder(
         self,

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 class Singleton(type):
     __instance: Any | None = None
@@ -10,7 +10,9 @@ class Singleton(type):
 
 class UndefinedType(metaclass=Singleton):
     __slots__ = ()
-    __bool__ = lambda self: False
+
+    def __bool__(self) -> Literal[False]:
+        return False
 
 UNDEFINED = UndefinedType()
 

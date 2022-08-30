@@ -36,8 +36,11 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         return 1
 
     async def on_event(self, event: CommandProcessedEvent):
-        if (not issubclass(event.command_type, ModerationCommand)
-            or not isinstance(event.response, UserWarnedResponse)):
+        if (
+            not event.server_id
+            or not isinstance(event.interactable, ModerationCommand)
+            or not isinstance(event.response, UserWarnedResponse)
+        ):
             return
 
         warn_settings = await self.__warn_settings_repository.get_by_server(event.server_id)

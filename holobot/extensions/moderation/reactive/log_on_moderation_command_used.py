@@ -26,8 +26,11 @@ class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
         self.__logger = logger_factory.create(LogOnModerationCommandUsed)
 
     async def on_event(self, event: CommandProcessedEvent):
-        if (not issubclass(event.command_type, ModerationCommand)
-            or not (event_message := LogOnModerationCommandUsed.__create_event_message(event))):
+        if (
+            not event.server_id
+            or not isinstance(event.interactable, ModerationCommand)
+            or not (event_message := LogOnModerationCommandUsed.__create_event_message(event))
+        ):
             return
 
         try:
@@ -40,7 +43,7 @@ class LogOnModerationCommandUsed(IListener[CommandProcessedEvent]):
 
         self.__logger.trace(
             "A loggable moderation command has been used",
-            name=event.command,
+            name=event.interactable.name,
             user_id=event.user_id,
             server_id=event.server_id
         )

@@ -25,9 +25,9 @@ class HasRequiredPermissionsRule(IWorkflowExecutionRule):
         workflow: IWorkflow,
         interactable: Interactable,
         context: InteractionContext
-    ) -> bool:
+    ) -> tuple[bool, str | None]:
         if not isinstance(context, VALID_CONTEXTS):
-            return False
+            return (False, None)
 
         permissions = self.__member_data_provider.get_member_permissions(
             context.server_id,
@@ -35,4 +35,7 @@ class HasRequiredPermissionsRule(IWorkflowExecutionRule):
             context.author_id
         )
 
-        return (workflow.required_permissions | interactable.required_permissions) not in permissions
+        return (
+            (workflow.required_permissions | interactable.required_permissions) not in permissions,
+            None
+        )

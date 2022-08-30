@@ -4,7 +4,7 @@ from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -26,7 +26,8 @@ class RollNumberWorkflow(WorkflowBase):
         options=(
             Option("max", "The upper bound.", OptionType.INTEGER, True),
             Option("min", "The lower bound. By default, it's 1.", OptionType.INTEGER, False)
-        )
+        ),
+        cooldown=Cooldown(duration=5)
     )
     async def roll_number(
         self,

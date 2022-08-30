@@ -87,8 +87,9 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
             return
 
         event = ComponentProcessedEvent(
-            component_type=type(interactable),
+            interactable=interactable,
             server_id=str(interaction.guild_id),
+            channel_id=str(interaction.channel_id),
             user_id=str(interaction.user.id),
             response=response
         )

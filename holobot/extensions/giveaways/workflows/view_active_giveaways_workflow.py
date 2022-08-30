@@ -9,7 +9,8 @@ from holobot.discord.sdk.workflows.interactables.components import (
 )
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.enums import EntityType
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.extensions.giveaways.repositories import IExternalGiveawayItemRepository
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.i18n import II18nProvider
@@ -33,7 +34,8 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         description="Displays the currently available giveaways.",
         name="view",
         group_name="giveaway",
-        defer_type=DeferType.DEFER_MESSAGE_CREATION
+        defer_type=DeferType.DEFER_MESSAGE_CREATION,
+        cooldown=Cooldown(duration=10, entity_type=EntityType.CHANNEL)
     )
     async def show_giveaways(
         self,

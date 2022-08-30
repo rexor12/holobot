@@ -145,7 +145,7 @@ class ComponentTransformer(IComponentTransformer):
         if not isinstance(container, endpoints.ActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
 
-        if component.style == ComponentStyle.LINK:
+        if component.style is ComponentStyle.LINK:
             if not component.url:
                 raise ArgumentError(f"The URL of the link-style button '{component.id}' must be specified.")
 

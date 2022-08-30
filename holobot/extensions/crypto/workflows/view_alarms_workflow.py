@@ -85,7 +85,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
             description=f"Cryptocurrency alarms of <@{user_id}>."
         )
         for alert in result.items:
-            arrow = "🔼" if alert.direction == PriceDirection.ABOVE else "🔽"
+            arrow = "🔼" if alert.direction is PriceDirection.ABOVE else "🔽"
             embed.fields.append(EmbedField(
                 name=alert.symbol,
                 value=f"{arrow} {alert.price:,.8f}",

@@ -11,7 +11,8 @@ from .crypto_repository_interface import CryptoRepositoryInterface
 
 @injectable(CryptoRepositoryInterface)
 class CryptoRepository(CryptoRepositoryInterface):
-    def __init__(self,
+    def __init__(
+        self,
         configurator: ConfiguratorInterface,
         database_manager: IDatabaseManager,
         logger_factory: ILoggerFactory,

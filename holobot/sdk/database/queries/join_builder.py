@@ -33,13 +33,9 @@ class JoinBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql = self.__parent_builder.build()
-        base_index = len(parent_sql[1])
-        sql = [parent_sql[0], f"{self.__join_type} JOIN {self.__table_name}"]
+        sql = [parent_sql[0], self.__join_type, "JOIN", self.__table_name]
         if self.__alias:
             sql.append(f"AS {self.__alias}")
-        sql.append("ON")
-        sql.append(self.__left_column)
-        sql.append("=")
-        sql.append(self.__right_column)
+        sql.extend(("ON", self.__left_column, "=", self.__right_column))
 
         return (" ".join(sql), parent_sql[1])

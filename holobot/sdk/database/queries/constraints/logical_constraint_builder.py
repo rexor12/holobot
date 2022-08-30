@@ -4,11 +4,13 @@ from ..enums import Connector
 from .iconstraint_builder import IConstraintBuilder
 
 class LogicalConstraintBuilder(IConstraintBuilder):
-    def __init__(self,
+    def __init__(
+        self,
         connector: Connector,
         constraint1: IConstraintBuilder,
         constraint2: IConstraintBuilder,
-        *constraints: IConstraintBuilder) -> None:
+        *constraints: IConstraintBuilder
+    ) -> None:
         self.__connector: Connector = connector
         self.__constraints: tuple[IConstraintBuilder, ...] = tuple([constraint1, constraint2, *constraints])
 
@@ -27,9 +29,7 @@ class LogicalConstraintBuilder(IConstraintBuilder):
         is_first_constraint = True
         for constraint in self.__constraints:
             if not is_first_constraint:
-                if self.__connector == Connector.OR:
-                    sql.append("OR")
-                else: sql.append("AND")
+                sql.append("OR" if self.__connector is Connector.OR else "AND")
 
             child_sql, child_args = constraint.build(base_param_index)
             sql.append(child_sql)
@@ -37,19 +37,18 @@ class LogicalConstraintBuilder(IConstraintBuilder):
             base_param_index = base_param_index + len(child_args)
             is_first_constraint = False
 
-        return (
-            "({})".format(" ".join(sql)),
-            tuple(arguments)
-        )
+        return (f"({' '.join(sql)})", tuple(arguments))
 
 def and_expression(
     constraint1: IConstraintBuilder,
     constraint2: IConstraintBuilder,
-    *constraints: IConstraintBuilder) -> LogicalConstraintBuilder:
+    *constraints: IConstraintBuilder
+) -> LogicalConstraintBuilder:
     return LogicalConstraintBuilder(Connector.AND, constraint1, constraint2, *constraints)
 
 def or_expression(
     constraint1: IConstraintBuilder,
     constraint2: IConstraintBuilder,
-    *constraints: IConstraintBuilder) -> LogicalConstraintBuilder:
+    *constraints: IConstraintBuilder
+) -> LogicalConstraintBuilder:
     return LogicalConstraintBuilder(Connector.OR, constraint1, constraint2, *constraints)

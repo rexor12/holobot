@@ -35,7 +35,7 @@ class OrderByBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
             if not is_first:
                 sql.append(",")
             sql.append(column_name)
-            if order == Order.DESCENDING:
+            if order is Order.DESCENDING:
                 sql.append("DESC")
 
         return (" ".join(sql), parent_sql[1])

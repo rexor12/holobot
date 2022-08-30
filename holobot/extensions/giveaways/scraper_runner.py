@@ -21,7 +21,8 @@ DEFAULT_DELAY: int = 40
 
 @injectable(IStartable)
 class ScraperRunner(IStartable):
-    def __init__(self,
+    def __init__(
+        self,
         configurator: ConfiguratorInterface,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,
         listeners: tuple[IListener[NewGiveawaysEvent], ...],

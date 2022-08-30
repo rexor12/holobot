@@ -12,10 +12,12 @@ from .repositories import IWarnRepository
 
 @injectable(IStartable)
 class WarnCleanupProcessor(IStartable):
-    def __init__(self,
+    def __init__(
+        self,
         config_provider: IConfigProvider,
         logger_factory: ILoggerFactory,
-        warn_repository: IWarnRepository) -> None:
+        warn_repository: IWarnRepository
+    ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(WarnCleanupProcessor)
         self.__warn_repository: IWarnRepository = warn_repository

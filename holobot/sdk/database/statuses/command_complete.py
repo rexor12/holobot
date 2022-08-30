@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Generic, TypeVar
 
 from holobot.sdk.utils import assert_not_none
@@ -14,19 +16,21 @@ class CommandComplete(Generic[TTag]):
         return self.__command_tag
 
     @staticmethod
-    def parse(value: str) -> 'CommandComplete[Any]':
+    def parse(value: str) -> CommandComplete[Any]:
         assert_not_none(value, "value")
 
         parts = value.split(" ")
-        if parts[0] == "INSERT":
-            tag = InsertCommandTag(parts[1], int(parts[2]), value)
-        elif parts[0] == "DELETE":
-            tag = DeleteCommandTag(int(parts[1]), value)
-        elif parts[0] == "UPDATE":
-            tag = UpdateCommandTag(int(parts[1]), value)
-        else: tag = CommandTag(value)
-        
+        match parts[0]:
+            case "INSERT":
+                tag = InsertCommandTag(parts[1], int(parts[2]), value)
+            case "DELETE":
+                tag = DeleteCommandTag(int(parts[1]), value)
+            case "UPDATE":
+                tag = UpdateCommandTag(int(parts[1]), value)
+            case _:
+                tag = CommandTag(value)
+
         return CommandComplete(tag)
-    
+
     def __repr__(self) -> str:
-        return "CommandComplete(%r)" % self.__command_tag
+        return f"{type(self).__name__}({self.__command_tag!r})"

@@ -18,10 +18,12 @@ async def constant_break(circuit_breaker: AsyncCircuitBreaker, error: Exception)
     return circuit_breaker.recovery_timeout
 
 class AsyncCircuitBreaker:
-    def __init__(self,
+    def __init__(
+        self,
         failure_threshold: int = DEFAULT_FAILURE_THRESHOLD,
         recovery_timeout: int = DEFAULT_RECOVERY_TIMEOUT,
-        error_evaluator = constant_break):
+        error_evaluator = constant_break
+    ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.error_evaluator = error_evaluator
@@ -68,20 +70,20 @@ class AsyncCircuitBreaker:
 
     @property
     def state(self) -> CircuitState:
-        if self.__state == CircuitState.OPEN and self.__close_time < time():
+        if self.__state is CircuitState.OPEN and self.__close_time < time():
             return CircuitState.HALF_OPEN
         return self.__state
 
     @property
     def time_to_recover(self) -> int:
-        return int(self.__close_time - time()) if self.state != CircuitState.CLOSED else 0
+        return int(self.__close_time - time()) if self.state is not CircuitState.CLOSED else 0
 
     async def execute(
         self,
         callback: Callable[[TState], Awaitable[TResult]],
         state: TState
     ) -> TResult:
-        if self.state == CircuitState.OPEN:
+        if self.state is CircuitState.OPEN:
             raise CircuitBrokenError("The circuit is broken.")
 
         try:

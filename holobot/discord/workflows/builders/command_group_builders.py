@@ -16,7 +16,8 @@ class CommandSubGroupBuilder:
         self,
         name: str,
         description: str,
-        parent_builder: CommandGroupBuilder) -> None:
+        parent_builder: CommandGroupBuilder
+    ) -> None:
         self.__name: str = name
         self.__description: str = description
         self.__parent_builder: CommandGroupBuilder = parent_builder

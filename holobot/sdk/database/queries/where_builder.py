@@ -38,11 +38,12 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
         self.constraint = ColumnConstraintBuilder(column_name, equality, value, is_raw_value)
         return WhereConstraintBuilder(self)
 
-    def fields(self,
+    def fields(
+        self,
         connector: Connector,
         field1: tuple[str, Equality, Any | None],
         field2: tuple[str, Equality, Any | None],
-        *fields: tuple[str, Equality, Any | None]) -> 'WhereConstraintBuilder':
+        *fields: tuple[str, Equality, Any | None]) -> WhereConstraintBuilder:
         self.constraint = LogicalConstraintBuilder(
             connector,
             ColumnConstraintBuilder(field1[0], field1[1], field1[2]),

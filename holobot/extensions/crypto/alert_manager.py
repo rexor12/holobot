@@ -27,8 +27,15 @@ class AlertManager(AlertManagerInterface, IListener[SymbolUpdateEvent]):
         self.__messaging = messaging
         self.__log = logger_factory.create(AlertManager)
 
-    async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
-        frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):
+    async def add(
+        self,
+        user_id: str,
+        symbol: str,
+        direction: PriceDirection,
+        value: Decimal,
+        frequency_type: FrequencyType = FrequencyType.DAYS,
+        frequency: int = 1
+    ):
         self.__log.debug("Adding alert...", user_id=user_id, symbol=symbol)
         async with self.__database_manager.acquire_connection() as connection:
             connection: Connection

@@ -46,12 +46,9 @@ class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        arguments = self.__fields.values()
-        sql = " ".join((
-            "INSERT INTO", self.__table_name, "(",
-            ", ".join(self.__fields),
-            ") VALUES (",
-            ", ".join(f"${index + 1}" for index in range(len(arguments))),
-            ")"
-        ))
-        return (sql, tuple(arguments))
+        sql = (
+            f"INSERT INTO {self.__table_name} "
+            f"({', '.join(self.__fields)}) VALUES "
+            f"({', '.join(f'${index + 1}' for index in range(len(self.__fields)))})"
+        )
+        return (sql, tuple(self.__fields.values()))

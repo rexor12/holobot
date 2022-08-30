@@ -13,10 +13,8 @@ class ReturningBuilder(IQueryPartBuilder):
         self.__columns: list[str] = []
 
     def column(self, column_name: str) -> ReturningBuilder:
-        if column_name in self.__columns:
-            return self
-
-        self.__columns.append(column_name)
+        if column_name not in self.__columns:
+            self.__columns.append(column_name)
         return self
 
     def columns(self, column_name: str, *column_names: str) -> ReturningBuilder:
@@ -33,6 +31,6 @@ class ReturningBuilder(IQueryPartBuilder):
         if not self.__columns:
             raise ValueError("The RETURNING clause must have at least one field.")
 
-        parent_sql = self.__parent_builder.build()
-        sql = [parent_sql[0], "RETURNING", ", ".join(self.__columns)]
-        return (" ".join(sql), parent_sql[1])
+        parent_sql, parent_args = self.__parent_builder.build()
+        sql = f"{parent_sql} RETURNING {', '.join(self.__columns)}"
+        return (sql, parent_args)

@@ -83,12 +83,8 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
         if isinstance(self.constraint, EmptyConstraintBuilder):
             raise ValueError("A constraint must be specified.")
 
-        parent_sql = self.__parent_builder.build()
-        sql = [parent_sql[0], "WHERE"]
-        arguments = list(parent_sql[1])
+        parent_sql, parent_args = self.__parent_builder.build()
+        constraint_sql, constraint_args = self.constraint.build(len(parent_args) + 1)
+        sql = f"{parent_sql} WHERE {constraint_sql}"
 
-        constraint_sql, constraint_args = self.constraint.build(len(arguments) + 1)
-        sql.append(constraint_sql)
-        arguments.extend(constraint_args)
-
-        return (" ".join(sql), tuple(arguments))
+        return (sql, parent_args + constraint_args)

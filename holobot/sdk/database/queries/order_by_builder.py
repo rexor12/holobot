@@ -28,14 +28,15 @@ class OrderByBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__columns:
             raise ValueError("The ORDER BY clause must have at least one field.")
 
-        parent_sql = self.__parent_builder.build()
-        sql = [parent_sql[0], "ORDER BY",]
+        parent_sql, parent_args = self.__parent_builder.build()
+        sql = [parent_sql, "ORDER BY"]
         is_first = True
         for column_name, order in self.__columns:
             if not is_first:
-                sql.append(",")
+                sql.append(", ")
             sql.append(column_name)
             if order is Order.DESCENDING:
                 sql.append("DESC")
+            is_first = False
 
-        return (" ".join(sql), parent_sql[1])
+        return (" ".join(sql), parent_args)

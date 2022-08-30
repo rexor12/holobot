@@ -33,9 +33,12 @@ class ConcurrentCache(Generic[TKey, TValue]):
     async def add3(self, key: TKey, add_factory: Callable[[TKey, TParam, TParam2], Awaitable[TValue]], param1: TParam, param2: TParam2) -> TValue:
         return await self.__add(key, add_factory, param1, param2)
 
-    async def add_or_update(self, key: TKey,
+    async def add_or_update(
+        self,
+        key: TKey,
         add_factory: Callable[[TKey], Awaitable[TValue]],
-        update_factory: Callable[[TKey, TValue], Awaitable[TValue]]) -> TValue:
+        update_factory: Callable[[TKey, TValue], Awaitable[TValue]]
+    ) -> TValue:
         async with self.__lock:
             if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
                 value = await add_factory(key)

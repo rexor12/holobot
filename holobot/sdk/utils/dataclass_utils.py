@@ -39,7 +39,8 @@ def __get_argument_info(
     name: str,
     object_type: type,
     default_value: Any,
-    default_factory: Any) -> ArgumentInfo:
+    default_factory: Any
+) -> ArgumentInfo:
     if isinstance(object_type, UnionType):
         origin = UnionType
     elif (origin := getattr(object_type, "__origin__", None)) is None:

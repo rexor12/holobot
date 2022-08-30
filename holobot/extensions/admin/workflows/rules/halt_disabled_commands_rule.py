@@ -17,13 +17,16 @@ class HaltDisabledCommandsRule(IWorkflowExecutionRule):
         workflow: IWorkflow,
         interactable: Interactable,
         context: InteractionContext
-    ) -> bool:
+    ) -> tuple[bool, str | None]:
         if isinstance(interactable, Command) and isinstance(context, ServerChatInteractionContext):
-            return not await self.__rule_manager.can_execute(
-                context.server_id,
-                context.channel_id,
-                interactable.group_name,
-                interactable.subgroup_name,
-                interactable.name
+            return (
+                not await self.__rule_manager.can_execute(
+                    context.server_id,
+                    context.channel_id,
+                    interactable.group_name,
+                    interactable.subgroup_name,
+                    interactable.name
+                ),
+                None
             )
-        return False
+        return (False, None)

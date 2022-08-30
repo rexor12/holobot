@@ -198,7 +198,8 @@ class InteractionProcessorBase(
         context: InteractionContext
     ) -> bool:
         for rule in self.__workflow_execution_rules:
-            if await rule.should_halt(workflow, interactable, context):
+            should_halt, message = await rule.should_halt(workflow, interactable, context)
+            if should_halt:
                 self.__log.debug(
                     "Interactable has been halted",
                     interactable=str(interactable),
@@ -208,7 +209,9 @@ class InteractionProcessorBase(
                 await self.__action_processor.process(
                     interaction,
                     ReplyAction(
-                        content=self.__i18n_provider.get("interactions.halted_interaction_error")
+                        content=message or self.__i18n_provider.get(
+                            "interactions.halted_interaction_error"
+                        )
                     ),
                     DeferType.NONE,
                     True

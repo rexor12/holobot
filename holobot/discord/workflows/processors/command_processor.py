@@ -97,13 +97,12 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
         if not self.__event_listeners:
             return
 
+        interaction.channel_id
         event = CommandProcessedEvent(
-            command_type=type(interactable),
+            interactable=interactable,
             server_id=str(interaction.guild_id),
+            channel_id=str(interaction.channel_id),
             user_id=str(interaction.user.id),
-            command=interactable.name,
-            group=interactable.group_name,
-            subgroup=interactable.subgroup_name,
             response=response
         )
         for event_listener in self.__event_listeners:

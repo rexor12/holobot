@@ -2,7 +2,9 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import (
+    Choice, Cooldown, InteractionResponse, Option
+)
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.i18n import II18nProvider
@@ -35,7 +37,8 @@ class SearchGoogleWorkflow(WorkflowBase):
                 Choice("Text", "text"),
                 Choice("Image", "image")
             ))
-        )
+        ),
+        cooldown=Cooldown(duration=20)
     )
     async def search_google(
         self,

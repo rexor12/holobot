@@ -14,7 +14,9 @@
         "invalid_interaction_error": "I'm sorry, but I couldn't execute your command, because it's invalid. (｡•́︿•̀｡)",
         "server_only_interaction_error": "I'm sorry, but this interaction is available for servers only. (｡•́︿•̀｡)",
         "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)",
-        "unhandled_interaction_error": "I'm sorry, but an internal error has occurred while trying to process your request. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)"
+        "unhandled_interaction_error": "I'm sorry, but an internal error has occurred while trying to process your request. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)",
+        "not_available_for_server_error": "I'm sorry, but this command isn't available for your server. (｡•́︿•̀｡)",
+        "cooldown_error": "I'm sorry, but this command is on cooldown. Please, try again in {seconds_left:,.2f} seconds. (｡•́︿•̀｡)"
     },
 
     "extensions": {

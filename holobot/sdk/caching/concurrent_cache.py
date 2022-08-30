@@ -18,29 +18,94 @@ class ConcurrentCache(Generic[TKey, TValue]):
     async def get(self, key: TKey) -> TValue | UndefinedType:
         return self.__dict.get(key, UNDEFINED)
 
-    async def get_or_add(self, key: TKey, factory: Callable[[TKey], Awaitable[TValue]]) -> TValue:
+    async def get_or_add(
+        self,
+        key: TKey,
+        factory: Callable[[TKey], Awaitable[TValue]]
+    ) -> TValue:
         return await self.__get_or_add(key, factory)
 
-    async def get_or_add2(self, key: TKey, factory: Callable[[TKey, TParam], Awaitable[TValue]], param: TParam) -> TValue:
+    async def get_or_add2(
+        self,
+        key: TKey,
+        factory: Callable[[TKey, TParam], Awaitable[TValue]],
+        param: TParam
+    ) -> TValue:
         return await self.__get_or_add(key, factory, param)
 
-    async def add(self, key: TKey, add_factory: Callable[[TKey], Awaitable[TValue]]) -> TValue:
+    async def get_or_add3(
+        self,
+        key: TKey,
+        factory: Callable[[TKey], TValue]
+    ) -> TValue:
+        return await self.__get_or_add2(key, factory)
+
+    async def add(
+        self,
+        key: TKey,
+        add_factory: Callable[[TKey], Awaitable[TValue]]
+    ) -> TValue:
         return await self.__add(key, add_factory)
 
-    async def add2(self, key: TKey, add_factory: Callable[[TKey, TParam], Awaitable[TValue]], param: TParam) -> TValue:
+    async def add2(
+        self,
+        key: TKey,
+        add_factory: Callable[[TKey, TParam], Awaitable[TValue]],
+        param: TParam
+    ) -> TValue:
         return await self.__add(key, add_factory, param)
 
-    async def add3(self, key: TKey, add_factory: Callable[[TKey, TParam, TParam2], Awaitable[TValue]], param1: TParam, param2: TParam2) -> TValue:
+    async def add3(
+        self,
+        key: TKey,
+        add_factory: Callable[[TKey, TParam, TParam2], Awaitable[TValue]],
+        param1: TParam,
+        param2: TParam2
+    ) -> TValue:
         return await self.__add(key, add_factory, param1, param2)
 
-    async def add_or_update(self, key: TKey,
+    async def add_or_update(
+        self,
+        key: TKey,
         add_factory: Callable[[TKey], Awaitable[TValue]],
-        update_factory: Callable[[TKey, TValue], Awaitable[TValue]]) -> TValue:
+        update_factory: Callable[[TKey, TValue], Awaitable[TValue]]
+    ) -> TValue:
         async with self.__lock:
             if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
                 value = await add_factory(key)
             else:
                 value = await update_factory(key, value)
+
+            self.__dict[key] = value
+            return value
+
+    async def add_or_update2(
+        self,
+        key: TKey,
+        add_factory: Callable[[TKey], TValue],
+        update_factory: Callable[[TKey, TValue], TValue]
+    ) -> TValue:
+        async with self.__lock:
+            if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+                value = add_factory(key)
+            else:
+                value = update_factory(key, value)
+
+            self.__dict[key] = value
+            return value
+
+    async def add_or_update3(
+        self,
+        key: TKey,
+        add_factory: Callable[[TKey, TParam], TValue],
+        update_factory: Callable[[TKey, TValue, TParam], TValue],
+        param: TParam
+    ) -> TValue:
+        async with self.__lock:
+            if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+                value = add_factory(key, param)
+            else:
+                value = update_factory(key, value, param)
 
             self.__dict[key] = value
             return value
@@ -60,6 +125,18 @@ class ConcurrentCache(Generic[TKey, TValue]):
                 return value
 
             value = await factory(key, *args)
+            self.__dict[key] = value
+            return value
+
+    async def __get_or_add2(self, key: TKey, factory: Callable[..., TValue], *args: Any) -> TValue:
+        if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
+            return value
+
+        async with self.__lock:
+            if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
+                return value
+
+            value = factory(key, *args)
             self.__dict[key] = value
             return value
 

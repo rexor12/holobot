@@ -6,7 +6,7 @@ from typing import Any
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums.permission import Permission
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 
 @dataclass(kw_only=True)
 class Interactable:
@@ -46,3 +46,6 @@ class Interactable:
 
     If the set is empty, the interactable will be available globally.
     """
+
+    cooldown: Cooldown | None = None
+    """Determines how often can the interactable be invoked."""

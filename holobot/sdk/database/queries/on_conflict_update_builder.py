@@ -37,9 +37,9 @@ class OnConflictUpdateBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        parent_sql, arguments = self.__parent_builder.build()
+        parent_sql, parent_args = self.__parent_builder.build()
         sql = [parent_sql, "UPDATE", self.__table_name, "SET"]
-        arguments = []
+        arguments = list(parent_args)
         if len(self.__fields) > 1:
             sql.extend(("(", ", ".join(self.__fields), ") = ("))
             is_first_value = True
@@ -50,7 +50,7 @@ class OnConflictUpdateBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
                 if is_raw_value:
                     sql.append(str(value))
                 else:
-                    sql.append(f"${len(arguments) + index}")
+                    sql.append(f"${len(parent_args) + index}")
                     arguments.append(value)
                     index += 1
                 is_first_value = False
@@ -61,7 +61,7 @@ class OnConflictUpdateBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
             if value[1]:
                 sql.append(str(value[0]))
             else:
-                sql.append(f"${len(arguments) + 1}")
+                sql.append(f"${len(parent_args) + 1}")
                 arguments.append(value[0])
 
         return (" ".join(sql), tuple(arguments))

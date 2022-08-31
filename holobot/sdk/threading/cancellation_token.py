@@ -22,9 +22,7 @@ class CancellationToken:
 
         return self.__is_cancellation_requested
 
-    def register(self,
-                 callback: Callable[[Any], None],
-                 state: Any) -> CancellationTokenRegistration:
+    def register(self, callback: Callable[[Any], None], state: Any) -> CancellationTokenRegistration:
         """Registers a method to be called when cancellation is requested.
 
         :param callback: The method to be called.

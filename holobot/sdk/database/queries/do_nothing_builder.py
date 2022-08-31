@@ -13,4 +13,4 @@ class DoNothingBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
         sql, arguments = self.__parent_builder.build()
-        return (f"{sql} NOTHING", tuple(arguments))
+        return (f"{sql} NOTHING", arguments)

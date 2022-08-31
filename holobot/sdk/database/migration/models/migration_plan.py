@@ -3,8 +3,12 @@ from collections.abc import Callable, Coroutine
 from asyncpg.connection import Connection
 
 class MigrationPlan:
-    def __init__(self, old_version: int, new_version: int,
-        function: Callable[[Connection], Coroutine[None, None, None]]):
+    def __init__(
+        self,
+        old_version: int,
+        new_version: int,
+        function: Callable[[Connection], Coroutine[None, None, None]]
+    ):
         self.old_version = old_version
         self.new_version = new_version
         self.__function = function

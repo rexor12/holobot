@@ -53,7 +53,7 @@ class ActionProcessor(IActionProcessor):
         embed = to_dto(action.content) if isinstance(action.content, Embed) else None
         components = self.__component_transformer.transform_to_root_component(action.components)
         with contextlib.suppress(NotFoundError):
-            if deferral == DeferType.NONE:
+            if deferral is DeferType.NONE:
                 await interaction.create_initial_response(
                     ResponseType.MESSAGE_CREATE,
                     content=content,
@@ -64,7 +64,7 @@ class ActionProcessor(IActionProcessor):
                 )
                 return
 
-            if deferral == DeferType.DEFER_MESSAGE_CREATION:
+            if deferral is DeferType.DEFER_MESSAGE_CREATION:
                 await interaction.edit_initial_response(
                     content=content,
                     embed=embed,
@@ -89,7 +89,7 @@ class ActionProcessor(IActionProcessor):
         embed = to_dto(action.content) if isinstance(action.content, Embed) else None
         components = self.__component_transformer.transform_to_root_component(action.components)
         with contextlib.suppress(NotFoundError):
-            if deferral == DeferType.NONE:
+            if deferral is DeferType.NONE:
                 await interaction.create_initial_response(
                     ResponseType.MESSAGE_UPDATE,
                     content=content,
@@ -100,7 +100,7 @@ class ActionProcessor(IActionProcessor):
                 )
                 return
 
-            if deferral == DeferType.DEFER_MESSAGE_UPDATE:
+            if deferral is DeferType.DEFER_MESSAGE_UPDATE:
                 await interaction.edit_initial_response(
                     content=content,
                     embed=embed,

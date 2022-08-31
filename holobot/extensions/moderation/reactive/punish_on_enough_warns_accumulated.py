@@ -15,13 +15,15 @@ from ..workflows.responses import UserWarnedResponse
 
 @injectable(IListener[CommandProcessedEvent])
 class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
-    def __init__(self,
+    def __init__(
+        self,
         log_settings_repository: ILogSettingsRepository,
         logger_factory: ILoggerFactory,
         messaging: IMessaging,
         user_manager: IUserManager,
         warn_repository: IWarnRepository,
-        warn_settings_repository: IWarnSettingsRepository) -> None:
+        warn_settings_repository: IWarnSettingsRepository
+    ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(PunishOnEnoughWarnsAccumulated)
         self.__log_settings_repository = log_settings_repository

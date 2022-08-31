@@ -17,7 +17,8 @@ def assert_range(
     obj: TComparable,
     lower_bound: TComparable,
     upper_bound: TComparable,
-    argument_name: str) -> TComparable:
+    argument_name: str
+) -> TComparable:
     if obj < lower_bound or obj > upper_bound:
         raise ArgumentOutOfRangeError(argument_name, str(lower_bound), str(upper_bound))
 

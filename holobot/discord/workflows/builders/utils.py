@@ -4,11 +4,11 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Option
 
 def transform_option_type(option_type: OptionType) -> hikari.OptionType:
-    if option_type == OptionType.BOOLEAN:
+    if option_type is OptionType.BOOLEAN:
         return hikari.OptionType.BOOLEAN
-    if option_type == OptionType.INTEGER:
+    if option_type is OptionType.INTEGER:
         return hikari.OptionType.INTEGER
-    if option_type == OptionType.FLOAT:
+    if option_type is OptionType.FLOAT:
         return hikari.OptionType.FLOAT
     return hikari.OptionType.STRING
 

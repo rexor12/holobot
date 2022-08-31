@@ -180,7 +180,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         menu_item: MenuItem
     ) -> ContextMenuCommandBuilder:
         builder = bot.rest.context_menu_command_builder(
-            type=CommandType.USER if menu_item.menu_type == MenuType.USER else CommandType.MESSAGE,
+            type=CommandType.USER if menu_item.menu_type is MenuType.USER else CommandType.MESSAGE,
             name=menu_item.title
         )
         self.__log.debug("Registered menu item", name=menu_item.title, type=menu_item.menu_type.value)

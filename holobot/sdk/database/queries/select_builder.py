@@ -45,14 +45,7 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         alias: str | None = None,
         join_type: JOIN_TYPE = "LEFT"
     ) -> JoinBuilder:
-        return JoinBuilder(
-            self,
-            table_name,
-            left_column,
-            right_column,
-            alias,
-            join_type
-        )
+        return JoinBuilder(self, table_name, left_column, right_column, alias, join_type)
 
     def where(self) -> WhereBuilder:
         return WhereBuilder(self)
@@ -67,14 +60,11 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__columns and not self.__is_count_select:
             raise ValueError("At least one column must be specified.")
 
-        sql = ["SELECT"]
-        if self.__is_count_select:
-            sql.append("COUNT(*)")
-        else: sql.append(", ".join(self.__columns))
+        sql = ["SELECT", "COUNT(*)" if self.__is_count_select else ", ".join(self.__columns)]
 
         if self.__table_name:
             sql.extend(("FROM", self.__table_name))
             if self.__table_alias:
-                sql.extend(("AS ", self.__table_alias))
+                sql.extend(("AS", self.__table_alias))
 
         return (" ".join(sql), ())

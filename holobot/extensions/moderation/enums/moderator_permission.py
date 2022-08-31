@@ -17,7 +17,7 @@ class ModeratorPermission(IntFlag):
         return functools.reduce(operator.ior, ModeratorPermission)
 
     def textify(self) -> str:
-        if self == ModeratorPermission.NONE:
+        if self is ModeratorPermission.NONE:
             return "none"
         text = []
         if ModeratorPermission.MUTE_USERS in self:

@@ -36,7 +36,8 @@ async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception)
 
 @injectable(IStartable)
 class CryptoUpdater(IStartable):
-    def __init__(self,
+    def __init__(
+        self,
         http_client_pool: HttpClientPoolInterface,
         crypto_repository: CryptoRepositoryInterface,
         configurator: ConfiguratorInterface,

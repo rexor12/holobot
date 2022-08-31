@@ -14,10 +14,12 @@ MAX_WARN_COUNT: int = 20
 
 @injectable(IWarnManager)
 class WarnManager(IWarnManager):
-    def __init__(self,
+    def __init__(
+        self,
         config_provider: IConfigProvider,
         warn_repository: IWarnRepository,
-        warn_settings_repository: IWarnSettingsRepository) -> None:
+        warn_settings_repository: IWarnSettingsRepository
+    ) -> None:
         super().__init__()
         self.__config_provider: IConfigProvider = config_provider
         self.__warn_repository: IWarnRepository = warn_repository

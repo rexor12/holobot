@@ -12,7 +12,8 @@ from holobot.sdk.utils import when_all
 
 @injectable(KernelInterface)
 class Kernel(KernelInterface):
-    def __init__(self,
+    def __init__(
+        self,
         logger_factory: ILoggerFactory,
         database_manager: IDatabaseManager,
         environment: IEnvironment,

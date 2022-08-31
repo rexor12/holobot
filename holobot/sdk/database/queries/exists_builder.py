@@ -13,7 +13,4 @@ class ExistsBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql, parent_args = self.__parent_builder.build()
-        return (
-            " ".join(("SELECT EXISTS (", parent_sql, ")")),
-            parent_args
-        )
+        return (f"SELECT EXISTS ({parent_sql})", parent_args)

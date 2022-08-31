@@ -71,7 +71,7 @@ class MemberDataProvider(IMemberDataProvider):
 
     @staticmethod
     def __transform_permissions(dto: hikari.Permissions) -> Permission:
-        if dto == hikari.Permissions.NONE:
+        if dto is hikari.Permissions.NONE:
             return Permission.NONE
 
         permissions = Permission.NONE

@@ -16,11 +16,13 @@ DEFAULT_DELAY: int = 30
 
 @injectable(IStartable)
 class ReminderProcessor(IStartable):
-    def __init__(self,
+    def __init__(
+        self,
         configurator: ConfiguratorInterface,
         messaging: IMessaging,
         logger_factory: ILoggerFactory,
-        reminder_repository: IReminderRepository) -> None:
+        reminder_repository: IReminderRepository
+    ) -> None:
         super().__init__()
         self.__configurator: ConfiguratorInterface = configurator
         self.__messaging: IMessaging = messaging

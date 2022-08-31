@@ -29,7 +29,7 @@ class InteractionCreatedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
         if isinstance(event.interaction, hikari.CommandInteraction):
-            if event.interaction.command_type == hikari.CommandType.SLASH:
+            if event.interaction.command_type is hikari.CommandType.SLASH:
                 await self.__command_processor.process(event.interaction)
             elif event.interaction.command_type in (hikari.CommandType.USER, hikari.CommandType.MESSAGE):
                 await self.__menu_item_processor.process(event.interaction)

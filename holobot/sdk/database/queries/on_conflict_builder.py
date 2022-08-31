@@ -22,5 +22,5 @@ class OnConflictBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql, arguments = self.__parent_builder.build()
-        sql = [parent_sql, "ON CONFLICT (", ", ".join(self.__columns), ") DO"]
-        return (" ".join(sql), tuple(arguments))
+        sql = f"{parent_sql} ON CONFLICT ({', '.join(self.__columns)}) DO"
+        return (sql, arguments)

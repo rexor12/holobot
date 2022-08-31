@@ -10,7 +10,8 @@ from .ilog_manager import ILogManager
 
 @injectable(ILogManager)
 class LogManager(ILogManager):
-    def __init__(self,
+    def __init__(
+        self,
         log_settings_repository: ILogSettingsRepository,
         logger_factory: ILoggerFactory,
         messaging: IMessaging

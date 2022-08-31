@@ -46,11 +46,11 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
         options = list(interaction.options) if interaction.options else []
         while options:
             option = options.pop(0)
-            if option.type == OptionType.SUB_COMMAND_GROUP:
+            if option.type is OptionType.SUB_COMMAND_GROUP:
                 group_name = interaction.command_name
                 subgroup_name = option.name
                 options = list(option.options) if option.options else []
-            elif option.type == OptionType.SUB_COMMAND:
+            elif option.type is OptionType.SUB_COMMAND:
                 group_name = group_name or interaction.command_name
                 command_name = option.name
                 options = list(option.options) if option.options else []

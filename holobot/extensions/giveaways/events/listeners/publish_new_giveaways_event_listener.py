@@ -2,7 +2,7 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.extensions.giveaways.events.models import NewGiveawaysEvent
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
@@ -11,7 +11,7 @@ from holobot.sdk.reactive import IListener
 class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         i18n_provider: II18nProvider,
         server_data_provider: IServerDataProvider,
         messaging: IMessaging

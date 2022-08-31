@@ -1,4 +1,4 @@
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -27,12 +27,12 @@ class GoogleClient(IGoogleClient):
 
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         http_client_pool: HttpClientPoolInterface,
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__log = logger_factory.create(GoogleClient)
         self.__api_key: str = self.__configurator.get(CONFIG_SECTION, GCS_API_KEY, "")
@@ -76,7 +76,7 @@ class GoogleClient(IGoogleClient):
         return tuple(SearchResult.from_json(result) for result in results)
 
     @staticmethod
-    def __create_circuit_breaker(configurator: ConfiguratorInterface) -> AsyncCircuitBreaker:
+    def __create_circuit_breaker(configurator: IConfigurator) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
             configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER, 1),
             configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER, 300),

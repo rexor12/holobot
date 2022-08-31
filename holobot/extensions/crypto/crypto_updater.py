@@ -8,7 +8,7 @@ from typing import Any
 
 from aiohttp.client_exceptions import ClientConnectionError, ClientConnectorError
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
@@ -39,12 +39,12 @@ class CryptoUpdater(IStartable):
     def __init__(self,
         http_client_pool: HttpClientPoolInterface,
         crypto_repository: CryptoRepositoryInterface,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         logger_factory: ILoggerFactory
     ) -> None:
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__crypto_repository: CryptoRepositoryInterface = crypto_repository
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
         self.__log = logger_factory.create(CryptoUpdater)
         self.__token_source: CancellationTokenSource | None = None
         self.__background_task: Awaitable[None] | None = None

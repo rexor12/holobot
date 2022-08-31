@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -16,7 +16,7 @@ class ReminderManager(ReminderManagerInterface):
         self,
         logger_factory: ILoggerFactory,
         reminder_repository: IReminderRepository,
-        configurator: ConfiguratorInterface
+        configurator: IConfigurator
     ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(ReminderManager)

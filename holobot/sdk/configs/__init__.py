@@ -1,1 +1,1 @@
-from .configurator_interface import ConfiguratorInterface, TValue
+from .iconfigurator import IConfigurator, TValue

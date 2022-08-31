@@ -1,14 +1,14 @@
 import os
 from json import load
 
-from holobot.sdk.configs import ConfiguratorInterface, TValue
+from holobot.sdk.configs import IConfigurator, TValue
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import IEnvironment
 
 CONFIG_FILE_NAME = "config.json"
 
-@injectable(ConfiguratorInterface)
-class Configurator(ConfiguratorInterface):
+@injectable(IConfigurator)
+class Configurator(IConfigurator):
     def __init__(self, environment: IEnvironment) -> None:
         self.__configs = Configurator.__load_config(environment)
 

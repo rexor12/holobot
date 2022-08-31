@@ -7,7 +7,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -16,7 +16,7 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
     def __init__(
         self,
         channel_manager: IChannelManager,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         i18n_provider: II18nProvider
     ) -> None:
         super().__init__()

@@ -7,7 +7,7 @@ import asyncpg
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -19,11 +19,11 @@ from holobot.sdk.logging import ILoggerFactory
 class DatabaseManager(IDatabaseManager, IStartable):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         migrations: tuple[MigrationInterface, ...],
         logger_factory: ILoggerFactory
     ) -> None:
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
         self.__migrations: tuple[MigrationInterface, ...] = migrations
         self.__logger = logger_factory.create(DatabaseManager)
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())

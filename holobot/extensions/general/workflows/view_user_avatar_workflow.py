@@ -12,7 +12,7 @@ from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -23,7 +23,7 @@ _SERVER_AVATAR_VALUE = "server"
 class ViewUserAvatarWorkflow(WorkflowBase):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         bot_data_provider: IBotDataProvider,
         i18n_provider: II18nProvider,
         member_data_provider: IMemberDataProvider

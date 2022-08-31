@@ -3,7 +3,7 @@ from collections.abc import Awaitable
 from datetime import datetime
 
 from holobot.discord.sdk import IMessaging
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
@@ -17,12 +17,12 @@ DEFAULT_DELAY: int = 30
 @injectable(IStartable)
 class ReminderProcessor(IStartable):
     def __init__(self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         messaging: IMessaging,
         logger_factory: ILoggerFactory,
         reminder_repository: IReminderRepository) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
         self.__messaging: IMessaging = messaging
         self.__logger = logger_factory.create(ReminderProcessor)
         self.__reminder_repository: IReminderRepository = reminder_repository

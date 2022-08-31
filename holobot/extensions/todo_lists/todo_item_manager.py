@@ -1,4 +1,4 @@
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -12,7 +12,7 @@ from .todo_item_manager_interface import TodoItemManagerInterface
 class TodoItemManager(TodoItemManagerInterface):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         logger_factory: ILoggerFactory,
         todo_item_repository: ITodoItemRepository
     ) -> None:

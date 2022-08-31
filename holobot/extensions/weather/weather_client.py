@@ -1,7 +1,7 @@
 from json import dumps
 from typing import Any
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -24,12 +24,12 @@ CONDITION_IMAGE_BASE_URL_PARAMETER = "ConditionImageBaseUrl"
 class WeatherClient(WeatherClientInterface):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         http_client_pool: HttpClientPoolInterface,
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__logger = logger_factory.create(WeatherClient)
         self.__api_gateway: str = self.__configurator.get(CONFIG_SECTION, API_GATEWAY_PARAMETER, "")
@@ -75,7 +75,7 @@ class WeatherClient(WeatherClientInterface):
         return weather_data
 
     @staticmethod
-    def __create_circuit_breaker(configurator: ConfiguratorInterface) -> AsyncCircuitBreaker:
+    def __create_circuit_breaker(configurator: IConfigurator) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
             configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER, 1),
             configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER, 300),

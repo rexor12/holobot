@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from datetime import datetime, time, timedelta, timezone
 
 from holobot.extensions.giveaways.models import ExternalGiveawayItem
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
@@ -33,7 +33,7 @@ EPIC_UPDATE_TIME = time(hour=10)
 class EpicGamesScraper(IScraper):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         http_client_pool: HttpClientPoolInterface,
         logger_factory: ILoggerFactory
     ) -> None:
@@ -110,7 +110,7 @@ class EpicGamesScraper(IScraper):
 
     @staticmethod
     def __create_circuit_breaker(
-        configurator: ConfiguratorInterface
+        configurator: IConfigurator
     ) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
             configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER, 1),

@@ -3,7 +3,7 @@ import contextlib
 from collections.abc import Awaitable
 from datetime import datetime, timezone
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
@@ -22,7 +22,7 @@ DEFAULT_DELAY: int = 40
 @injectable(IStartable)
 class ScraperRunner(IStartable):
     def __init__(self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,
         listeners: tuple[IListener[NewGiveawaysEvent], ...],
         logger_factory: ILoggerFactory,

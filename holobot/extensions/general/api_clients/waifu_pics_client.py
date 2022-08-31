@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
@@ -22,7 +22,7 @@ _RL_INTERVAL_PARAMETER = "WaifuPicsRateLimiterInterval"
 class WaifuPicsClient(IWaifuPicsClient):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         http_client_pool: HttpClientPoolInterface,
         logger_factory: ILoggerFactory
     ) -> None:
@@ -62,7 +62,7 @@ class WaifuPicsClient(IWaifuPicsClient):
         return tuple(dto.files) if dto else ()
 
     @staticmethod
-    def __create_circuit_breaker(configurator: ConfiguratorInterface) -> AsyncCircuitBreaker:
+    def __create_circuit_breaker(configurator: IConfigurator) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
             configurator.get(_CONFIG_SECTION, _CB_FAILURE_THRESHOLD_PARAMETER, 1),
             configurator.get(_CONFIG_SECTION, _CB_RECOVERY_TIME_PARAMETER, 300),
@@ -82,7 +82,7 @@ class WaifuPicsClient(IWaifuPicsClient):
         return circuit_breaker.recovery_timeout
 
     @staticmethod
-    def __create_rate_limiter(configurator: ConfiguratorInterface) -> AsyncRateLimiter:
+    def __create_rate_limiter(configurator: IConfigurator) -> AsyncRateLimiter:
         return AsyncRateLimiter(
             configurator.get(_CONFIG_SECTION, _RL_REQUESTS_PER_INTERVAL_PARAMTER, 2),
             timedelta(

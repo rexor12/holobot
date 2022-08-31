@@ -1,7 +1,7 @@
 from asyncpg.connection import Connection
 
 from holobot.sdk.caching import ConcurrentCache
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -12,12 +12,12 @@ from .crypto_repository_interface import CryptoRepositoryInterface
 @injectable(CryptoRepositoryInterface)
 class CryptoRepository(CryptoRepositoryInterface):
     def __init__(self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         database_manager: IDatabaseManager,
         logger_factory: ILoggerFactory,
         listeners: tuple[IListener[SymbolUpdateEvent], ...]
     ) -> None:
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
         self.__database_manager: IDatabaseManager = database_manager
         self.__log = logger_factory.create(CryptoRepository)
         self.__listeners: tuple[IListener[SymbolUpdateEvent], ...] = listeners

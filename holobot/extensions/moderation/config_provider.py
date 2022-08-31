@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.math import Range
 from .iconfig_provider import IConfigProvider
@@ -9,9 +9,9 @@ SECTION_NAME = "Moderation"
 
 @injectable(IConfigProvider)
 class ConfigProvider(IConfigProvider):
-    def __init__(self, configurator: ConfiguratorInterface) -> None:
+    def __init__(self, configurator: IConfigurator) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = configurator
+        self.__configurator: IConfigurator = configurator
 
     def get_reason_length_range(self) -> Range[int]:
         return Range(

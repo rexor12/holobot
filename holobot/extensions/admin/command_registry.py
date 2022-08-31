@@ -1,4 +1,4 @@
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import assert_not_none
@@ -11,7 +11,7 @@ DEFAULT_GROUP_NAME = ""
 class CommandRegistry(CommandRegistryInterface):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
+        configurator: IConfigurator,
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
@@ -65,7 +65,7 @@ class CommandRegistry(CommandRegistryInterface):
 
     def __parse_command_configs(
         self,
-        configurator: ConfiguratorInterface
+        configurator: IConfigurator
     ) -> dict[str, GroupConfiguration]:
         configs: dict[str, GroupConfiguration] = {}
         self.__log.debug("Parsing command group configurations...")

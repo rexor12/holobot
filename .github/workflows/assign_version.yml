@@ -20,9 +20,9 @@ jobs:
         run: python generate_version.py
 
       - name: Commit the changes
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
           author_name: github-actions
           author_email: 41898282+github-actions[bot]@users.noreply.github.com
           message: 'Generate current version number'
-          add: '*.py'
+          add: ['*.py', 'VERSION']

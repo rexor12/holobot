@@ -94,9 +94,7 @@ class WorkflowRegistry(IWorkflowRegistry):
 
         self.__log.info("Successfully registered commands", count=total_command_count)
         return {
-            server_id: [
-                builder.build() for builder in builders.values()
-            ]
+            server_id: [builder.build() for builder in builders.values()]
             for server_id, builders in builders_by_servers.items()
         }
 
@@ -164,12 +162,10 @@ class WorkflowRegistry(IWorkflowRegistry):
         menu_items: dict[str, tuple[IWorkflow, MenuItem]] = {}
         for workflow in workflows:
             for interactable in workflow.interactables:
-                if isinstance(interactable, Command):
-                    WorkflowRegistry.__add_command(commands, workflow, interactable, debugger)
-                elif isinstance(interactable, Component):
-                    components[interactable.identifier] = (workflow, interactable)
-                elif isinstance(interactable, MenuItem):
-                    menu_items[interactable.title] = (workflow, interactable)
+                match interactable:
+                    case Command(): WorkflowRegistry.__add_command(commands, workflow, interactable, debugger)
+                    case Component(): components[interactable.identifier] = (workflow, interactable)
+                    case MenuItem(): menu_items[interactable.title] = (workflow, interactable)
         self.__commands = commands
         self.__components = components
         self.__menu_items = menu_items

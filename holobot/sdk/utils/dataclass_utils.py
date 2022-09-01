@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import _MISSING_TYPE, fields, is_dataclass
-from types import NoneType, UnionType
-from typing import Any, Callable, NamedTuple, Union, cast, get_args, get_type_hints
+from types import UnionType
+from typing import Any, Callable, NamedTuple, Union, cast, get_args, get_origin, get_type_hints
 
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.utils import first
@@ -41,38 +41,23 @@ def __get_argument_info(
     default_value: Any,
     default_factory: Any
 ) -> ArgumentInfo:
-    if isinstance(object_type, UnionType):
-        origin = UnionType
-    elif (origin := getattr(object_type, "__origin__", None)) is None:
-        return ArgumentInfo(name, object_type, None, False, default_value, default_factory)
+    match origin := get_origin(object_type):
+        case None:
+            return ArgumentInfo(name, object_type, None, False, default_value, default_factory)
+        case Union() | UnionType():
+            args = get_args(object_type)
+            if len(args) != 2 or None not in args:
+                raise ValueError(f"Expected a union with two arguments, the second being None, but got {args!r} instead.")
+            object_type = first(cast(tuple[type, ...], args), lambda i: i and i is not None)
+            origin = get_origin(object_type)
 
-    allows_none = False
-    if origin in (Union, UnionType):
-        args = get_args(object_type)
-        if len(args) != 2 or NoneType not in args:
-            raise ValueError((
-                "Expected an optional type (NoneType or other),"
-                f" but '{name}' in '{object_type}' is diferent ({args})."
-            ))
-
-        allows_none = True
-        object_type = first(cast(tuple[type, ...], args), lambda i: i and i is not NoneType)
-        origin = getattr(object_type, "__origin__", None)
-
-    if origin is None:
-        return ArgumentInfo(name, object_type, None, allows_none, default_value, default_factory)
-
-    if origin == tuple:
-        args = get_args(object_type)
-        if len(args) != 2 or args[-1] != Ellipsis:
-            raise ValueError((
-                "Expected a tuple with two arguments, the second being an ellipsis,"
-                f" but got {args} instead."
-            ))
-        return ArgumentInfo(name, args[0], tuple, allows_none, default_value, default_factory)
-
-    if origin == list:
-        args = get_args(object_type)
-        return ArgumentInfo(name, args[0], list, allows_none, default_value, default_factory)
-
-    raise ValueError(f"Expected a tuple or an optional, tuple or list type, but got '{object_type}'.")
+    match origin:
+        case None:
+            return ArgumentInfo(name, object_type, None, True, default_value, default_factory)
+        case tuple() | list():
+            args = get_args(object_type)
+            if isinstance(origin, tuple) and (len(args) != 2 or args[1] is not Ellipsis):
+                raise ValueError(f"Expected a tuple with two arguments, the second being Ellipsis, but got {args!r} instead.")
+            return ArgumentInfo(name, args[0], type(origin), True, default_value, default_factory)
+        case _:
+            raise ValueError(f"Expected None, tuple or list type, but got '{object_type}'.")

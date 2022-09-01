@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from .layout import Layout
+from .layout_base import LayoutBase
 
 @dataclass(kw_only=True)
-class StackLayout(Layout):
+class StackLayout(LayoutBase):
     pass

@@ -83,7 +83,7 @@ class MemberDataProvider(IMemberDataProvider):
                 continue
 
             flags ^= current_flag
-            if (current_permission := PERMISSION_TO_MODELS.get(hikari.Permissions(current_flag), None)) is None:
+            if (current_permission := PERMISSION_TO_MODELS.get(hikari.Permissions(current_flag))) is None:
                 current_flag <<= 1
                 continue
 

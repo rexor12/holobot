@@ -31,7 +31,7 @@ class CommandRule:
         return self.__get_weight() < other.__get_weight()
 
     def textify(self) -> str:
-        text_bits = [rule_to_emoji_map.get(self.state, None) or "", " "]
+        text_bits = [rule_to_emoji_map.get(self.state, ""), " "]
         if self.group is not None or self.command is not None:
             text_bits.append("`/")
             if self.group is not None:

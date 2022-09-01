@@ -25,12 +25,12 @@ class CommandRegistry(CommandRegistryInterface):
             return False
 
         if not subgroup_name:
-            return command_name in group.commands.keys()
+            return command_name in group.commands
 
         if not (subgroup := group.subgroups.get(subgroup_name)):
             return False
 
-        return command_name in subgroup.commands.keys()
+        return command_name in subgroup.commands
 
     def group_exists(self, group_name: str) -> bool:
         assert_not_none(group_name, "group_name")

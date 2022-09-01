@@ -6,7 +6,7 @@ from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, Paginator
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -104,7 +104,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
+    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
         self.__logger.trace(
             "User requested warn strike page",
             server_id=server_id,

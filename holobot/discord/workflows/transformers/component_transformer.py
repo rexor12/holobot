@@ -7,7 +7,7 @@ import hikari.impl.special_endpoints as endpoints
 import hikari.messages as hikari_messages
 
 from holobot.discord.sdk.workflows.interactables.components import (
-    Button, ComboBox, ComponentBase, Layout, Paginator, StackLayout
+    Button, ComboBox, ComponentBase, LayoutBase, Paginator, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import (
@@ -57,27 +57,15 @@ class ComponentTransformer(IComponentTransformer):
     def transform_component(self, component: ComponentBase) -> endpointsintf.ComponentBuilder:
         return self.__transform_component(component, None)
 
-    def transform_to_root_component(
-        self,
-        components: ComponentBase | list[Layout]
-    ) -> list[endpointsintf.ComponentBuilder]:
-        if not components:
-            return []
-
-        if isinstance(components, list):
-            # Lists don't need to be wrapped.
-            pass
-        elif not isinstance(components, Layout):
-            components = [StackLayout(id="auto_wrapper_stack_layout", children=[components])]
-        else: components = [components]
-
-        if len(components) > 5:
-            raise ArgumentError("components", "A message cannot hold more than 5 layouts.")
-
-        return [
-            self.transform_component(component)
-            for component in components
-        ]
+    def transform_to_root_component(self, components: ComponentBase | list[LayoutBase]) -> list[endpointsintf.ComponentBuilder]:
+        match components:
+            case LayoutBase():
+                components = [components]
+            case ComponentBase():
+                components = [StackLayout(id="auto_wrapper_stack_layout", children=[components])]
+            case list() if len(components) > 5:
+                raise ArgumentError("components", "A message cannot hold more than 5 layouts.")
+        return list(map(self.transform_component, components))
 
     def transform_state(
         self,
@@ -107,7 +95,7 @@ class ComponentTransformer(IComponentTransformer):
         assert_not_none(component, "component")
         assert_range(len(component.id), 1, 100, "component.id")
 
-        if not (transformer := self.__component_transformers.get(type(component), None)):
+        if not (transformer := self.__component_transformers.get(type(component))):
             raise ArgumentError("component", "Invalid component type.")
 
         return transformer(component, container)
@@ -124,10 +112,11 @@ class ComponentTransformer(IComponentTransformer):
         assert_range(child_count, 0, 5, "component.children")
 
         for child in component.children:
-            if isinstance(child, StackLayout):
-                raise ArgumentError("component.children", "A stack layout cannot contain another stack layout as its child.")
-            if isinstance(child, ComboBox) and child_count > 1:
-                raise ArgumentError("component.children", "A stack layout cannot contain more than one child when it contains a combo box.")
+            match child:
+                case StackLayout():
+                    raise ArgumentError("component.children", "A stack layout cannot contain another stack layout as its child.")
+                case ComboBox() if child_count > 1:
+                    raise ArgumentError("component.children", "A stack layout cannot contain more than one child when it contains a combo box.")
 
         builder = endpoints.ActionRowBuilder()
         for child in component.children:
@@ -188,10 +177,7 @@ class ComponentTransformer(IComponentTransformer):
 
         return builder
 
-    def __transform_combo_box_state(
-        self,
-        interaction: hikari.ComponentInteraction
-    ) -> ComboBoxState:
+    def __transform_combo_box_state(self, interaction: hikari.ComponentInteraction) -> ComboBoxState:
         selected_values = []
         owner_id = None
         for value in interaction.values:
@@ -244,10 +230,7 @@ class ComponentTransformer(IComponentTransformer):
             None
         )
 
-    def __transform_pager_state(
-        self,
-        interaction: hikari.ComponentInteraction
-    ) -> PagerState:
+    def __transform_pager_state(self, interaction: hikari.ComponentInteraction) -> PagerState:
         _, data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
         data_parts = data.split(";")
         if len(data_parts) < 2:

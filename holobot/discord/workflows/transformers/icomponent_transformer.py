@@ -3,7 +3,7 @@ from typing import Protocol
 from hikari import ComponentInteraction
 from hikari.api.special_endpoints import ComponentBuilder
 
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.sdk.workflows.interactables.components.models import ComponentStateBase
 
 class IComponentTransformer(Protocol):
@@ -12,7 +12,7 @@ class IComponentTransformer(Protocol):
 
     def transform_to_root_component(
         self,
-        components: ComponentBase | list[Layout]
+        components: ComponentBase | list[LayoutBase]
     ) -> list[ComponentBuilder]:
         ...
 

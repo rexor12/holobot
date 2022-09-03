@@ -90,7 +90,7 @@ class WeatherClient(WeatherClientInterface):
         return circuit_breaker.recovery_timeout
 
     def __assert_result_code(self, location: str, response: dict[str, Any]) -> None:
-        result_code = response.get("cod", None)
+        result_code = response.get("cod")
         if result_code is None:
             # self.__logger.trace(dumps(response))
             self.__logger.error("Received a response with no result code", location=location)

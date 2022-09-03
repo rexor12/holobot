@@ -4,7 +4,7 @@ from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, Paginator
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
@@ -74,7 +74,7 @@ class ViewAlarmsWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
+    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
         self.__log.trace("User requested crypto alarm page", user_id=user_id, page_index=page_index)
         result = await self.__alert_manager.get_many(user_id, page_index, page_size)
         if not result.items:

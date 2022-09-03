@@ -17,9 +17,9 @@ class Configurator(ConfiguratorInterface):
             return env_value
         if not (section := self.__configs.get(section_name)):
             return default_value
-        if not (parameters := section.get("parameters")):
-            return default_value
-        return parameters.get(parameter_name, default_value)
+        if parameters := section.get("parameters"):
+            return parameters.get(parameter_name, default_value)
+        return default_value
 
     @staticmethod
     def __load_config(environment: IEnvironment):
@@ -29,15 +29,11 @@ class Configurator(ConfiguratorInterface):
 
     @staticmethod
     def __get_env(section_name: str, parameter_name: str, default_value: TValue) -> TValue | None:
-        if (value := os.environ.get(f"{section_name}-{parameter_name}", None)) is None:
+        if (value := os.environ.get(f"{section_name}-{parameter_name}")) is None:
             return None
         # Because of this check, only the string/bool/int queries are supported, technically.
-        if type(default_value) is str:
-            return value
-        elif type(default_value) is bool:
-            return value.upper() == "TRUE"
-        elif type(default_value) is int:
-            return int(value)
-        elif type(default_value) is list:
-            return value.split(",")
-        return None
+        match default_value:
+            case bool(): return value.upper() == "TRUE"
+            case int() | str(): return value
+            case list(): return value.split(",")
+            case _: return None

@@ -46,15 +46,17 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
         options = list(interaction.options) if interaction.options else []
         while options:
             option = options.pop(0)
-            if option.type is OptionType.SUB_COMMAND_GROUP:
-                group_name = interaction.command_name
-                subgroup_name = option.name
-                options = list(option.options) if option.options else []
-            elif option.type is OptionType.SUB_COMMAND:
-                group_name = group_name or interaction.command_name
-                command_name = option.name
-                options = list(option.options) if option.options else []
-            else: arguments[option.name] = option.value
+            match option.type:
+                case OptionType.SUB_COMMAND_GROUP:
+                    group_name = interaction.command_name
+                    subgroup_name = option.name
+                    options = list(option.options) if option.options else []
+                case OptionType.SUB_COMMAND:
+                    group_name = group_name or interaction.command_name
+                    command_name = option.name
+                    options = list(option.options) if option.options else []
+                case _:
+                    arguments[option.name] = option.value
 
         invocation_target = self.__workflow_registry.get_command(
             group_name,

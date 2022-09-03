@@ -71,12 +71,12 @@ class WeatherData:
         entity = WeatherData()
         entity.name = json.get("name", "Unknown")
         WeatherData.fill_main_data(entity, json.get("main", {}))
-        entity.condition = ConditionData.from_json(json.get("weather", [])[0]) # Using the primary condition only.
+        entity.condition = ConditionData.from_json(json.get("weather", [{}])[0]) # Using the primary condition only.
         return entity
 
     @staticmethod
     def fill_main_data(weather_data: WeatherData, json: dict[str, Any]) -> None:
-        weather_data.temperature = try_parse_float(json.get("temp", None))
-        weather_data.temperature_feels_like = try_parse_float(json.get("feels_like", None))
-        weather_data.pressure = try_parse_int(json.get("pressure", None))
-        weather_data.humidity = try_parse_int(json.get("humidity", None))
+        weather_data.temperature = try_parse_float(json.get("temp"))
+        weather_data.temperature_feels_like = try_parse_float(json.get("feels_like"))
+        weather_data.pressure = try_parse_int(json.get("pressure"))
+        weather_data.humidity = try_parse_int(json.get("humidity"))

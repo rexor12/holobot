@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from .layout import Layout
+from .layout_base import LayoutBase
 
 @dataclass(kw_only=True)
-class InteractableLayoutBase(Layout):
+class InteractableLayoutBase(LayoutBase):
     """Base class for a layout that can be interacted with."""
 
     owner_id: str

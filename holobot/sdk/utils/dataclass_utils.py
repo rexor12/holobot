@@ -42,23 +42,26 @@ def __get_argument_info(
     default_value: typing.Any,
     default_factory: typing.Any
 ) -> ArgumentInfo:
+    is_argument_nullable = False
     match origin := typing.get_origin(object_type):
         case None:
-            return ArgumentInfo(name, object_type, None, False, default_value, default_factory)
+            return ArgumentInfo(name, object_type, None, is_argument_nullable, default_value, default_factory)
         case typing.Union | types.UnionType:
             args = typing.get_args(object_type)
-            if len(args) != 2 or None not in args:
+            if len(args) != 2 or types.NoneType not in args:
                 raise ValueError(f"Expected a Union with two arguments, the second being None, but got {args!r} instead.")
+
+            is_argument_nullable = True
             object_type = first(typing.cast(tuple[type, ...], args), lambda i: i and i is not None)
             origin = typing.get_origin(object_type)
 
     match origin:
         case None:
-            return ArgumentInfo(name, object_type, None, True, default_value, default_factory)
+            return ArgumentInfo(name, object_type, None, is_argument_nullable, default_value, default_factory)
         case builtins.tuple | builtins.list:  # Needs dot notation: https://peps.python.org/pep-0634/#value-patterns
             args = typing.get_args(object_type)
             if origin is tuple and (len(args) != 2 or args[1] is not Ellipsis):
                 raise ValueError(f"Expected a tuple with two arguments, the second being Ellipsis, but got {args!r} instead.")
-            return ArgumentInfo(name, args[0], origin, True, default_value, default_factory)
+            return ArgumentInfo(name, args[0], origin, is_argument_nullable, default_value, default_factory)
         case _:
             raise ValueError(f"Expected None, tuple or list type, but got '{object_type}'.")

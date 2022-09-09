@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 
+from holobot.sdk.utils import utcnow
 from ..enums import RuleState
 
 rule_to_text_map: dict[RuleState, str] = {
@@ -18,7 +19,7 @@ rule_to_emoji_map: dict[RuleState, str] = {
 @dataclass(kw_only=True)
 class CommandRule:
     identifier: int = -1
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=utcnow)
     created_by: str
     server_id: str
     state: RuleState = RuleState.ALLOW

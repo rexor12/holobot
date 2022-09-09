@@ -10,7 +10,7 @@ from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.serialization.json_serializer import deserialize
-from holobot.sdk.utils import first_or_default
+from holobot.sdk.utils import first_or_default, utcnow
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
 from .iscraper import IScraper
 
@@ -50,7 +50,7 @@ class EpicGamesScraper(IScraper):
 
     def get_next_scrape_time(self, last_scrape_time: datetime | None) -> datetime:
         if last_scrape_time is None:
-            return datetime.now(timezone.utc) - timedelta(minutes=1)
+            return utcnow() - timedelta(minutes=1)
 
         today = datetime.now(EPIC_UPDATE_TIMEZONE).date()
         time_to_nearest_release_day = timedelta(days=EPIC_UPDATE_DAYOFWEEK - today.weekday())
@@ -62,8 +62,8 @@ class EpicGamesScraper(IScraper):
             next_thursday = today + time_to_nearest_release_day
         previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
         if last_scrape_time < previous_release_time:
-            if datetime.now(timezone.utc) > previous_release_time:
-                return datetime.now(timezone.utc) - timedelta(minutes=1)
+            if utcnow() > previous_release_time:
+                return utcnow() - timedelta(minutes=1)
             else: return previous_release_time.astimezone(timezone.utc)
 
         next_release_time = datetime.combine(next_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
@@ -96,7 +96,7 @@ class EpicGamesScraper(IScraper):
 
             giveaway_items.append(ExternalGiveawayItem(
                 0,
-                datetime.now(timezone.utc),
+                utcnow(),
                 giveaway_time.startDate.astimezone(timezone.utc) if giveaway_time.startDate else None,
                 giveaway_time.endDate.astimezone(timezone.utc) if giveaway_time.endDate else datetime.max.astimezone(timezone.utc),
                 self.name,
@@ -150,7 +150,7 @@ class EpicGamesScraper(IScraper):
 
     @staticmethod
     def __is_active_giveaway(offer: ChildPromotionalOffer) -> bool:
-        now = datetime.now(timezone.utc)
+        now = utcnow()
         return ((offer.startDate is None or offer.startDate <= now)
                 and (offer.endDate is None or offer.endDate > now)
                 and offer.discountSetting.discountType is not None

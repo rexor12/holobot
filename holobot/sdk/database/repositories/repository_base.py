@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Generic, TypeVar, cast
 
@@ -16,7 +16,7 @@ from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag, UpdateCommandTag
 from holobot.sdk.queries import PaginationResult
-from holobot.sdk.utils import UTC, set_time_zone
+from holobot.sdk.utils import set_time_zone
 from holobot.sdk.utils.dataclass_utils import ParameterInfo, get_parameter_infos
 from .entity import Entity
 from .irepository import IRepository
@@ -358,7 +358,7 @@ class RepositoryBase(
         if isinstance(value, datetime):
             datetime_value = cast(datetime, value)
             if not datetime_value.tzinfo:
-                return set_time_zone(value, UTC)
+                return set_time_zone(value, timezone.utc)
         return value
 
     @staticmethod

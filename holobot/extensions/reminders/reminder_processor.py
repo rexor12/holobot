@@ -1,7 +1,6 @@
 import asyncio
 from collections.abc import Awaitable
-from datetime import datetime, timezone
-
+from holobot.sdk.utils import utcnow
 from holobot.discord.sdk import IMessaging
 from holobot.sdk.configs import ConfiguratorInterface
 from holobot.sdk.ioc.decorators import injectable
@@ -68,7 +67,7 @@ class ReminderProcessor(IStartable):
                     await self.__messaging.send_private_message(reminder.user_id, f"Your reminder: {reminder.message}")
 
                     if reminder.is_repeating:
-                        reminder.last_trigger = datetime.now(timezone.utc)
+                        reminder.last_trigger = utcnow()
                         reminder.recalculate_next_trigger()
                         await self.__reminder_repository.update(reminder)
                         self.__logger.trace(

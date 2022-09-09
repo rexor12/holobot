@@ -31,7 +31,7 @@ class Reminder:
     def recalculate_next_trigger(self) -> None:
         if not self.is_repeating:
             raise ValueError("A non-recurring reminder cannot have a new trigger date-time.")
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
         repeat_count = int((current_time - self.base_trigger) / self.frequency_time)
         trigger_time = self.base_trigger + (repeat_count + 1) * self.frequency_time
         if trigger_time > self.last_trigger + self.frequency_time:

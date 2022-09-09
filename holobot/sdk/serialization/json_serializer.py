@@ -6,7 +6,7 @@ from typing import Any, TypeVar
 
 from dateutil.parser import isoparse
 
-from holobot.sdk.utils.dataclass_utils import get_argument_infos
+from holobot.sdk.utils.dataclass_utils import get_parameter_infos
 
 T = TypeVar("T")
 
@@ -34,23 +34,24 @@ def __deserialize_instance(object_type: type[T], json_object: Any) -> T | None:
             " It must be either a primitive type or a dataclass."
         ))
 
-    argument_infos = get_argument_infos(object_type)
+    parameter_infos = get_parameter_infos(object_type)
     arguments: dict[str, Any] = {}
-    for argument_info in argument_infos:
-        if argument_info.collection_constructor is not None:
+    for parameter_info in parameter_infos:
+        if parameter_info.collection_constructor is not None:
             argument_items = [
-                __deserialize_instance(argument_info.object_type, item)
-                for item in (json_object.get(argument_info.name) or [])
+                __deserialize_instance(parameter_info.object_type, item)
+                for item in (json_object.get(parameter_info.name) or [])
             ]
-            arguments[argument_info.name] = argument_info.collection_constructor(argument_items)
+            arguments[parameter_info.name] = parameter_info.collection_constructor(argument_items)
         else:
-            argument = __deserialize_instance(argument_info.object_type, json_object.get(argument_info.name))
-            if argument is None and not argument_info.allows_none:
-                if argument_info.default_value:
-                    argument = argument_info.default_value
-                elif argument_info.default_factory:
-                    argument = argument_info.default_factory()
-                else: raise ValueError("Deserialized None where it wasn't allowed.")
-            arguments[argument_info.name] = argument
+            argument = __deserialize_instance(parameter_info.object_type, json_object.get(parameter_info.name))
+            if argument is None and not parameter_info.allows_none:
+                if parameter_info.default_value:
+                    argument = parameter_info.default_value
+                elif parameter_info.default_factory:
+                    argument = parameter_info.default_factory()
+                else:
+                    raise ValueError("Deserialized None where it wasn't allowed.")
+            arguments[parameter_info.name] = argument
 
     return object_type(**arguments)

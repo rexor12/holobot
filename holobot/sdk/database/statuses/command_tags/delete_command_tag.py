@@ -8,6 +8,3 @@ class DeleteCommandTag(CommandTag):
     @property
     def rows(self) -> int:
         return self.__rows
-    
-    def __repr__(self) -> str:
-        return "DeleteCommandTag(%s)" % self.__rows

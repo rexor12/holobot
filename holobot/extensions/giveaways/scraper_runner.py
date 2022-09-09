@@ -107,7 +107,8 @@ class ScraperRunner(IStartable):
             if scraper_info:
                 scraper_info.last_scrape_time = utcnow()
                 await self.__scraper_info_repository.update(scraper_info)
-            else: await self.__scraper_info_repository.add(
+            else:
+                await self.__scraper_info_repository.add(
                 ScraperInfo(scraper_name=scraper_name, last_scrape_time=utcnow())
             )
 

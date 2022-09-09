@@ -26,8 +26,9 @@ class Reminder:
 
     def __str__(self) -> str:
         return (
-            "<Reminder id: {}, repeats: {}, last trigger: {}, next trigger: {}, frequency: {}>"
-        ).format(self.identifier, self.is_repeating, self.last_trigger, self.next_trigger, self.frequency_time)
+            f"<Reminder id: {self.identifier}, repeats: {self.is_repeating}, last trigger: {self.last_trigger},"
+            f" next trigger: {self.next_trigger}, frequency: {self.frequency_time}>"
+        )
 
     def recalculate_next_trigger(self) -> None:
         if not self.is_repeating:
@@ -37,4 +38,5 @@ class Reminder:
         trigger_time = self.base_trigger + (repeat_count + 1) * self.frequency_time
         if trigger_time > self.last_trigger + self.frequency_time:
             self.next_trigger = current_time
-        else: self.next_trigger = trigger_time
+        else:
+            self.next_trigger = trigger_time

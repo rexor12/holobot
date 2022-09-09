@@ -6,15 +6,11 @@ class PriceDirection(IntEnum):
     BELOW = 1
 
     def __str__(self) -> str:
-        if self is PriceDirection.BELOW:
-            return "below"
-        return "above"
+        return "below" if self is PriceDirection.BELOW else "above"
 
     @staticmethod
     def parse(value: str):
-        value = value.upper()
-        if value == "ABOVE":
-            return PriceDirection.ABOVE
-        if value == "BELOW":
-            return PriceDirection.BELOW
-        return None
+        match value.upper():
+            case "ABOVE": return PriceDirection.ABOVE
+            case "BELOW": return PriceDirection.BELOW
+            case _: return None

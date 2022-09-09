@@ -44,13 +44,14 @@ class CommandRule:
                     text_bits.append(" ")
                 text_bits.append(self.command)
             text_bits.append("` is ")
-        else: text_bits.append("All commands are ")
-        text_bits.append(rule_to_text_map.get(self.state, "") or self.state.__str__())
-        if self.channel_id is not None:
-            text_bits.append(f" in <#{self.channel_id}>")
-        else: text_bits.append(" everywhere")
-        text_bits.append(".")
-        return ''.join(text_bits)
+        else:
+            text_bits.append("All commands are ")
+        text_bits.extend((
+            rule_to_text_map.get(self.state, str(self.state)),
+            f" in <#{self.channel_id}>" if self.channel_id is not None else " everywhere",
+            "."
+        ))
+        return "".join(text_bits)
 
     def __get_weight(self) -> int:
-        return 1000 * int(bool(self.group)) + 100 * int(bool(self.subgroup)) + 10 * int(bool(self.command)) + int(bool(self.channel_id))
+        return bool(self.group) << 3 | bool(self.subgroup) << 2 | bool(self.command) << 1 | bool(self.channel_id)

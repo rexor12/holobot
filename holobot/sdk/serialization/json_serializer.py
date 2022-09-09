@@ -12,6 +12,7 @@ T = TypeVar("T")
 
 PRIMITIVE_DESERIALIZERS: dict[type, Callable[[Any], Any]] = {
     str: lambda obj: obj,
+    bool: lambda obj: obj,
     int: lambda obj: int(obj) if obj is not None else 0,
     float: lambda obj: float(obj) if obj is not None else 0.0,
     datetime: lambda obj: isoparse(obj) if obj else None

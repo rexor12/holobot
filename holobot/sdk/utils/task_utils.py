@@ -9,5 +9,5 @@ async def when_all(tasks: tuple[Task, ...]) -> None:
             await task
         except Exception as error:
             exceptions.append(error)
-    if len(exceptions) > 0:
+    if exceptions:
         raise AggregateError(exceptions)

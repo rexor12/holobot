@@ -27,7 +27,7 @@ class LifecycleManager(LifecycleManagerInterface):
                     await startable.start()
                 except BaseException as error:
                     errors.append(error)
-            if len(errors) > 0:
+            if errors:
                 raise AggregateError(errors)
         self.__logger.info("Successfully started all services")
 
@@ -39,6 +39,6 @@ class LifecycleManager(LifecycleManagerInterface):
                     await startable.stop()
                 except BaseException as error:
                     errors.append(error)
-            if len(errors) > 0:
+            if errors:
                 raise AggregateError(errors)
         self.__logger.info("Successfully stopped all services")

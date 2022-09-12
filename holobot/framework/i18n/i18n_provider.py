@@ -7,6 +7,7 @@ from typing import Any
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.system import IEnvironment
 from .types import I18nGroup
 
@@ -20,10 +21,12 @@ class I18nProvider(II18nProvider, IStartable):
 
     def __init__(
         self,
-        environment: IEnvironment
+        environment: IEnvironment,
+        logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
         self.__environment = environment
+        self.__logger = logger_factory.create(I18nProvider)
         self.__languages: dict[str, I18nGroup] = {}
 
     async def start(self):
@@ -49,16 +52,32 @@ class I18nProvider(II18nProvider, IStartable):
     ) -> str:
         if arguments is None:
             arguments = _ARGUMENTS_SENTINEL
-        value = self.__resolve_key(key, arguments, language)
-        return value if isinstance(value, str) else key
+        try:
+            value = self.__resolve_key(key, arguments, language)
+            return value if isinstance(value, str) else key
+        except Exception as error:
+            self.__logger.error(
+                "Failed to resolve I18N key",
+                error,
+                key=key
+            )
+            return key
 
     def get_list(
         self,
         key: str,
         language: str | None = None,
     ) -> tuple[str, ...]:
-        value = self.__resolve_key(key, _ARGUMENTS_SENTINEL, language)
-        return value if isinstance(value, tuple) else ()
+        try:
+            value = self.__resolve_key(key, _ARGUMENTS_SENTINEL, language)
+            return value if isinstance(value, tuple) else ()
+        except Exception as error:
+            self.__logger.error(
+                "Failed to resolve list-type I18N key",
+                error,
+                key=key
+            )
+            return ()
 
     def get_list_items(
         self,
@@ -66,11 +85,19 @@ class I18nProvider(II18nProvider, IStartable):
         item_arguments: Sequence[dict[str, Any]],
         language: str | None = None
     ) -> tuple[str, ...]:
-        value = self.__get_value_by_key(key, language)
-        if value is None or isinstance(value, tuple):
-            return ()
+        try:
+            value = self.__get_value_by_key(key, language)
+            if value is None or isinstance(value, tuple):
+                return ()
 
-        return tuple(value.format(**arguments) for arguments in item_arguments)
+            return tuple(value.format(**arguments) for arguments in item_arguments)
+        except Exception as error:
+            self.__logger.error(
+                "Failed to resolve list item-type I18N key",
+                error,
+                key=key
+            )
+            return ()
 
     @staticmethod
     def __build_map(file_path: str) -> I18nGroup:

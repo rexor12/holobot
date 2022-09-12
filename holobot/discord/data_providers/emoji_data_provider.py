@@ -24,7 +24,8 @@ class EmojiDataProvider(IEmojiDataProvider):
         if (match := EMOJI_REGEX.match(name_or_mention)) is not None:
             if emoji := get_bot().cache.get_emoji(int(match["id"])):
                 return emoji
-            else: return EmojiDataProvider.__create_unknown_emoji(match, name_or_mention)
+            else:
+                return EmojiDataProvider.__create_unknown_emoji(match, name_or_mention)
 
         name_or_mention = name_or_mention.lower()
         return next((

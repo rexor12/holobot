@@ -45,6 +45,7 @@ class ReactionProvider(IReactionProvider):
                 # After the last attempt, we propagate the exception.
                 if index == 2:
                     raise
-                else: await asyncio.sleep(0.5)
+                else:
+                    await asyncio.sleep(0.5)
 
         return deque()

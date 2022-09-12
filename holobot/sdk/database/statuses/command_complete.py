@@ -31,6 +31,3 @@ class CommandComplete(Generic[TTag]):
                 tag = CommandTag(value)
 
         return CommandComplete(tag)
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.__command_tag!r})"

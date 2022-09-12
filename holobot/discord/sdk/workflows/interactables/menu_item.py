@@ -22,4 +22,4 @@ class MenuItem(Interactable):
     """
 
     def __str__(self) -> str:
-        return f"MenuItem({self.title})"
+        return f"{type(self).__name__}({self.title})"

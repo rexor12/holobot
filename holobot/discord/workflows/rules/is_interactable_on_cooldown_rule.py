@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
@@ -11,6 +11,7 @@ from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import IInvocationTracker
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.utils import utcnow
 
 _SERVER_CONTEXTS = (
     ServerChatInteractionContext,
@@ -53,7 +54,7 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
             return (False, None)
 
         duration = timedelta(seconds=interactable.cooldown.duration)
-        time_left = (last_invocation + duration - datetime.now(timezone.utc)).total_seconds()
+        time_left = (last_invocation + duration - utcnow()).total_seconds()
         return (
             True,
             self.__i18n_provider.get(

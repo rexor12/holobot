@@ -15,4 +15,4 @@ class Component(Interactable):
     """The type of the component."""
 
     def __str__(self) -> str:
-        return f"Component({self.identifier})"
+        return f"{type(self).__name__}({self.identifier})"

@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
+
+from holobot.sdk.utils import utcnow
 
 @dataclass(kw_only=True)
 class LogSettings:
     identifier: int = -1
-    modified_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    modified_at: datetime = field(default_factory=utcnow)
     server_id: str
     channel_id: str

@@ -143,11 +143,13 @@ class WorkflowRegistry(IWorkflowRegistry):
 
         if group_name not in command_groups:
             command_groups[group_name] = command_subgroups = {}
-        else: command_subgroups = command_groups[group_name]
+        else:
+            command_subgroups = command_groups[group_name]
 
         if subgroup_name not in command_subgroups:
             command_subgroups[subgroup_name] = commands = {}
-        else: commands = command_subgroups[subgroup_name]
+        else:
+            commands = command_subgroups[subgroup_name]
 
         command_name = f"d{command.name}" if debugger.is_debug_mode_enabled() else command.name
         commands[command_name] = (workflow, command)

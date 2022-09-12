@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from hikari import ForbiddenError as HikariForbiddenError
 
@@ -9,7 +9,7 @@ from holobot.discord.sdk.servers.managers import (
 from holobot.discord.utils import get_guild_member, get_guild_role
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import assert_not_none, assert_range, textify_timedelta
+from holobot.sdk.utils import assert_not_none, assert_range, textify_timedelta, utcnow
 
 _DEFAULT_SILENCE_DURATION = timedelta(minutes=1)
 
@@ -34,7 +34,7 @@ class UserManager(IUserManager):
 
         member = get_guild_member(server_id, user_id)
         try:
-            await member.edit(communication_disabled_until=datetime.now(timezone.utc) + duration)
+            await member.edit(communication_disabled_until=utcnow() + duration)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot time-out server member.") from error
 

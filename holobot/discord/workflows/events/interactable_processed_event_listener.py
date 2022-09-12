@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from holobot.discord.sdk.events import (
     CommandProcessedEvent, ComponentProcessedEvent, MenuItemProcessedEvent
 )
@@ -7,6 +5,7 @@ from holobot.discord.sdk.workflows.interactables.enums import EntityType
 from holobot.discord.workflows import IInvocationTracker
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
+from holobot.sdk.utils import utcnow
 
 _EVENT_TYPE = CommandProcessedEvent | ComponentProcessedEvent | MenuItemProcessedEvent
 
@@ -33,7 +32,7 @@ class InteractableProcessedEventListener(IListener[_EVENT_TYPE]):
         await self.__invocation_tracker.set_invocation(
             cooldown.entity_type,
             entity_id,
-            datetime.now(timezone.utc)
+            utcnow()
         )
 
     @staticmethod

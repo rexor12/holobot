@@ -8,6 +8,3 @@ class UpdateCommandTag(CommandTag):
     @property
     def rows(self) -> int:
         return self.__rows
-    
-    def __repr__(self) -> str:
-        return "UpdateCommandTag(%s)" % self.__rows

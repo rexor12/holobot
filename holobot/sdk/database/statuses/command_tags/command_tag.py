@@ -5,6 +5,3 @@ class CommandTag:
     @property
     def raw_value(self) -> str:
         return self.__raw_value
-    
-    def __repr__(self) -> str:
-        return "CommandTag(%s)" % self.__raw_value

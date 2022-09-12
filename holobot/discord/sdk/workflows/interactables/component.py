@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase
 from .interactable import Interactable
@@ -11,5 +11,8 @@ class Component(Interactable):
     The same identifier CANNOT be used by multiple components to avoid ambiguity.
     """
 
-    component_type: type[ComponentBase] = field(repr=False)
+    component_type: type[ComponentBase]
     """The type of the component."""
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}({self.identifier})"

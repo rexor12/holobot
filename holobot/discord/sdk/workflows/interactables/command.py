@@ -26,4 +26,4 @@ class Command(Interactable):
     """The list of arguments the command takes."""
 
     def __str__(self) -> str:
-        return f"Command({self.group_name}, {self.subgroup_name}, {self.name})"
+        return f"{type(self).__name__}({self.group_name}, {self.subgroup_name}, {self.name})"

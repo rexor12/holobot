@@ -24,12 +24,6 @@ class Reminder:
             return False
         return self.next_trigger.date() > self.until_date
 
-    def __str__(self) -> str:
-        return (
-            f"<Reminder id: {self.identifier}, repeats: {self.is_repeating}, last trigger: {self.last_trigger},"
-            f" next trigger: {self.next_trigger}, frequency: {self.frequency_time}>"
-        )
-
     def recalculate_next_trigger(self) -> None:
         if not self.is_repeating:
             raise ValueError("A non-recurring reminder cannot have a new trigger date-time.")

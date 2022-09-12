@@ -109,8 +109,8 @@ class ScraperRunner(IStartable):
                 await self.__scraper_info_repository.update(scraper_info)
             else:
                 await self.__scraper_info_repository.add(
-                ScraperInfo(scraper_name=scraper_name, last_scrape_time=utcnow())
-            )
+                    ScraperInfo(scraper_name=scraper_name, last_scrape_time=utcnow())
+                )
 
             return tuple(new_giveaway_items)
         except CircuitBrokenError:

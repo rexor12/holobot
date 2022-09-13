@@ -3,12 +3,12 @@ from datetime import datetime, timedelta, timezone
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
-from holobot.discord.sdk.workflows.interactables.enums import EntityType
 from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerMessageInteractionContext, ServerUserInteractionContext
 )
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import IInvocationTracker
+from holobot.discord.workflows.utils import get_entity_id
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -38,11 +38,7 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
         if not interactable.cooldown:
             return (False, None)
 
-        entity_id = IsInteractableOnCooldownRule.__get_entity_id(
-            interactable.cooldown.entity_type,
-            context
-        )
-        if not entity_id:
+        if not (entity_id := IsInteractableOnCooldownRule.__get_entity_id(interactable, context)):
             return (False, None)
 
         last_invocation = await self.__invocation_tracker.get_invocation(
@@ -64,13 +60,13 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
 
     @staticmethod
     def __get_entity_id(
-        entity_type: EntityType,
+        interactable: Interactable,
         context: InteractionContext
     ) -> str | None:
-        if entity_type == EntityType.USER:
-            return context.author_id
-
+        server_id = None
+        channel_id = None
         if isinstance(context, _SERVER_CONTEXTS):
-            return context.channel_id if entity_type == EntityType.CHANNEL else context.server_id
+            server_id = context.server_id
+            channel_id = context.channel_id
 
-        return None
+        return get_entity_id(interactable, server_id, channel_id, context.author_id)

@@ -3,7 +3,6 @@ from datetime import datetime
 from holobot.discord.sdk.workflows.interactables.enums import EntityType
 from holobot.sdk.caching import ConcurrentCache
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import UndefinedType
 from .iinvocation_tracker import IInvocationTracker
 
 @injectable(IInvocationTracker)

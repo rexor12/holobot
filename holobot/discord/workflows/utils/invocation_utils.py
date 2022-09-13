@@ -15,10 +15,10 @@ def get_entity_id(
     # The server ID is always included (when available) to avoid cross-server cooldowns.
     if server_id:
         id_parts.append(("server", server_id))
-    if entity_type is EntityType.CHANNEL and channel_id:
-        id_parts.append(("channel", channel_id))
-    elif entity_type is EntityType.USER:
-        id_parts.append(("user", user_id))
+
+    match entity_type:
+        case EntityType.CHANNEL if channel_id: id_parts.append(("channel", channel_id))
+        case EntityType.USER: id_parts.append(("user", user_id))
 
     # Unknown interactable types share a common cooldown, otherwise it's specific.
     match interactable:

@@ -63,10 +63,10 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
         interactable: Interactable,
         context: InteractionContext
     ) -> str | None:
-        server_id = None
-        channel_id = None
-        if isinstance(context, _SERVER_CONTEXTS):
-            server_id = context.server_id
-            channel_id = context.channel_id
+        server_id, channel_id = (
+            (context.server_id, context.channel_id)
+            if isinstance(context, _SERVER_CONTEXTS)
+            else (None, None)
+        )
 
         return get_entity_id(interactable, server_id, channel_id, context.author_id)

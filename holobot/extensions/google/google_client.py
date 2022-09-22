@@ -73,7 +73,7 @@ class GoogleClient(IGoogleClient):
         if not (results := response.get("items")):
             return ()
 
-        return tuple(SearchResult.from_json(result) for result in results)
+        return tuple(map(SearchResult.from_json, results))
 
     @staticmethod
     def __create_circuit_breaker(configurator: IConfigurator) -> AsyncCircuitBreaker:

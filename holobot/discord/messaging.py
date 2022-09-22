@@ -5,7 +5,7 @@ from hikari import (
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, InvalidChannelError
 from holobot.discord.sdk.models.embed import Embed
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.transformers.embed import to_dto as embed_to_dto
 from holobot.discord.utils import get_guild_channel
 from holobot.discord.workflows.transformers import IComponentTransformer
@@ -43,7 +43,7 @@ class Messaging(IMessaging):
         server_id: str,
         channel_id: str,
         content: str | Embed,
-        components: ComponentBase | list[Layout] | None = None
+        components: ComponentBase | list[LayoutBase] | None = None
     ) -> str:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")

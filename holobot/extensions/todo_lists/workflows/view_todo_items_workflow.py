@@ -4,7 +4,7 @@ from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, Layout, Paginator
+from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
@@ -81,7 +81,7 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
+    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__todo_item_manager.get_by_user(user_id, page_index, page_size)
         if not result.items:

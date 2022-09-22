@@ -30,8 +30,7 @@ class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
     def fields(self, field: tuple[str, Any | None], *fields: tuple[str, Any | None]) -> InsertBuilder:
         self.__fields[field[0]] = field[1]
-        for f in fields:
-            self.__fields[f[0]] = f[1]
+        self.__fields |= fields
         return self
 
     def on_conflict(self, column: str, *columns: str) -> OnConflictBuilder:
@@ -47,14 +46,9 @@ class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        sql = ["INSERT INTO", self.__table_name, "("]
-        columns = []
-        arguments = []
-        for column, value in self.__fields.items():
-            columns.append(column)
-            arguments.append(value)
-        sql.append(", ".join(columns))
-        sql.append(") VALUES (")
-        sql.append(", ".join([f"${index}" for index in range(1, len(arguments) + 1)]))
-        sql.append(")")
-        return (" ".join(sql), tuple(arguments))
+        sql = (
+            f"INSERT INTO {self.__table_name} "
+            f"({', '.join(self.__fields)}) VALUES "
+            f"({', '.join(f'${index + 1}' for index in range(len(self.__fields)))})"
+        )
+        return (sql, tuple(self.__fields.values()))

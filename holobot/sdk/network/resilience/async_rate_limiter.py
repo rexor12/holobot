@@ -1,9 +1,9 @@
 from asyncio import Lock
 from collections import deque
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import TypeVar
-
+from holobot.sdk.utils import utcnow
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.utils import assert_not_none
 from .exceptions import RateLimitedError
@@ -51,7 +51,7 @@ class AsyncRateLimiter:
 
         async with self.__lock:
             if self.__request_timestamps:
-                erase_before = datetime.now(timezone.utc) - self.__interval
+                erase_before = utcnow() - self.__interval
                 while (
                     self.__request_timestamps
                     and self.__request_timestamps[0] < erase_before
@@ -59,9 +59,9 @@ class AsyncRateLimiter:
                     self.__request_timestamps.popleft()
             if len(self.__request_timestamps) >= self.__requests_per_interval:
                 raise RateLimitedError(
-                    self.__request_timestamps[0] + self.__interval - datetime.now(timezone.utc)
+                    self.__request_timestamps[0] + self.__interval - utcnow()
                 )
 
-            self.__request_timestamps.append(datetime.now(timezone.utc))
+            self.__request_timestamps.append(utcnow())
 
         return await callback(state)

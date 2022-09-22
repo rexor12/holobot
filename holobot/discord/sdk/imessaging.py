@@ -1,7 +1,7 @@
 from typing import Protocol
 
 from .models.embed import Embed
-from .workflows.interactables.components import ComponentBase, Layout
+from .workflows.interactables.components import ComponentBase, LayoutBase
 
 class IMessaging(Protocol):
     async def send_private_message(self, user_id: str, message: str) -> None:
@@ -12,7 +12,7 @@ class IMessaging(Protocol):
         server_id: str,
         channel_id: str,
         content: str | Embed,
-        components: ComponentBase | list[Layout] | None = None
+        components: ComponentBase | list[LayoutBase] | None = None
     ) -> str:
         ...
 

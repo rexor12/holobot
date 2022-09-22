@@ -1,12 +1,11 @@
-from datetime import datetime, timezone
-
 from holobot.discord.sdk.events import (
     CommandProcessedEvent, ComponentProcessedEvent, MenuItemProcessedEvent
 )
-from holobot.discord.sdk.workflows.interactables.enums import EntityType
 from holobot.discord.workflows import IInvocationTracker
+from holobot.discord.workflows.utils import get_entity_id
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
+from holobot.sdk.utils import utcnow
 
 _EVENT_TYPE = CommandProcessedEvent | ComponentProcessedEvent | MenuItemProcessedEvent
 
@@ -26,22 +25,16 @@ class InteractableProcessedEventListener(IListener[_EVENT_TYPE]):
         if not cooldown:
             return
 
-        entity_id = InteractableProcessedEventListener.__get_entity_id(event, cooldown.entity_type)
-        if not entity_id:
+        if not (entity_id := get_entity_id(
+            event.interactable,
+            event.server_id,
+            event.channel_id,
+            event.user_id
+        )):
             return
 
         await self.__invocation_tracker.set_invocation(
             cooldown.entity_type,
             entity_id,
-            datetime.now(timezone.utc)
+            utcnow()
         )
-
-    @staticmethod
-    def __get_entity_id(
-        event: _EVENT_TYPE,
-        entity_type: EntityType
-    ) -> str | None:
-        if entity_type == EntityType.USER:
-            return event.user_id
-
-        return event.channel_id if entity_type == EntityType.CHANNEL else event.server_id

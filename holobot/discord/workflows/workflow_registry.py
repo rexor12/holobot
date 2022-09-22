@@ -94,9 +94,7 @@ class WorkflowRegistry(IWorkflowRegistry):
 
         self.__log.info("Successfully registered commands", count=total_command_count)
         return {
-            server_id: [
-                builder.build() for builder in builders.values()
-            ]
+            server_id: [builder.build() for builder in builders.values()]
             for server_id, builders in builders_by_servers.items()
         }
 
@@ -145,11 +143,13 @@ class WorkflowRegistry(IWorkflowRegistry):
 
         if group_name not in command_groups:
             command_groups[group_name] = command_subgroups = {}
-        else: command_subgroups = command_groups[group_name]
+        else:
+            command_subgroups = command_groups[group_name]
 
         if subgroup_name not in command_subgroups:
             command_subgroups[subgroup_name] = commands = {}
-        else: commands = command_subgroups[subgroup_name]
+        else:
+            commands = command_subgroups[subgroup_name]
 
         command_name = f"d{command.name}" if debugger.is_debug_mode_enabled() else command.name
         commands[command_name] = (workflow, command)
@@ -164,12 +164,10 @@ class WorkflowRegistry(IWorkflowRegistry):
         menu_items: dict[str, tuple[IWorkflow, MenuItem]] = {}
         for workflow in workflows:
             for interactable in workflow.interactables:
-                if isinstance(interactable, Command):
-                    WorkflowRegistry.__add_command(commands, workflow, interactable, debugger)
-                elif isinstance(interactable, Component):
-                    components[interactable.identifier] = (workflow, interactable)
-                elif isinstance(interactable, MenuItem):
-                    menu_items[interactable.title] = (workflow, interactable)
+                match interactable:
+                    case Command(): WorkflowRegistry.__add_command(commands, workflow, interactable, debugger)
+                    case Component(): components[interactable.identifier] = (workflow, interactable)
+                    case MenuItem(): menu_items[interactable.title] = (workflow, interactable)
         self.__commands = commands
         self.__components = components
         self.__menu_items = menu_items
@@ -180,7 +178,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         menu_item: MenuItem
     ) -> ContextMenuCommandBuilder:
         builder = bot.rest.context_menu_command_builder(
-            type=CommandType.USER if menu_item.menu_type == MenuType.USER else CommandType.MESSAGE,
+            type=CommandType.USER if menu_item.menu_type is MenuType.USER else CommandType.MESSAGE,
             name=menu_item.title
         )
         self.__log.debug("Registered menu item", name=menu_item.title, type=menu_item.menu_type.value)

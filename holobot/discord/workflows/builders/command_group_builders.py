@@ -16,7 +16,8 @@ class CommandSubGroupBuilder:
         self,
         name: str,
         description: str,
-        parent_builder: CommandGroupBuilder) -> None:
+        parent_builder: CommandGroupBuilder
+    ) -> None:
         self.__name: str = name
         self.__description: str = description
         self.__parent_builder: CommandGroupBuilder = parent_builder
@@ -41,7 +42,8 @@ class CommandGroupBuilder:
         self,
         name: str,
         description: str,
-        slash_command_builder_factory: Callable[[str, str], SlashCommandBuilder]) -> None:
+        slash_command_builder_factory: Callable[[str, str], SlashCommandBuilder]
+    ) -> None:
         self.__name: str = name
         self.__description: str = description
         self.__slash_command_builder_factory: Callable[[str, str], SlashCommandBuilder] = slash_command_builder_factory

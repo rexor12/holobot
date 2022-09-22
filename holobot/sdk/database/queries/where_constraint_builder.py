@@ -27,7 +27,7 @@ class WhereConstraintBuilder(
         equality: Equality,
         value: Any | None,
         is_raw_value: bool = False
-    ) -> 'WhereConstraintBuilder':
+    ) -> WhereConstraintBuilder:
         return self.__append_constraint(Connector.AND, ColumnConstraintBuilder(column_name, equality, value, is_raw_value))
 
     def or_field(
@@ -36,7 +36,7 @@ class WhereConstraintBuilder(
         equality: Equality,
         value: Any | None,
         is_raw_value: bool = False
-    ) -> 'WhereConstraintBuilder':
+    ) -> WhereConstraintBuilder:
         return self.__append_constraint(Connector.OR, ColumnConstraintBuilder(column_name, equality, value, is_raw_value))
 
     def and_expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:
@@ -75,7 +75,7 @@ class WhereConstraintBuilder(
         self,
         connector: Connector,
         constraint: IConstraintBuilder
-    ) -> 'WhereConstraintBuilder':
+    ) -> WhereConstraintBuilder:
         # TODO Optimize this to avoid wrapping when the connectors are identical; append instead.
         self.__where_builder.constraint = LogicalConstraintBuilder(
             connector,

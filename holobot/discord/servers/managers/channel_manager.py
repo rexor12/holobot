@@ -23,9 +23,7 @@ from holobot.sdk.utils import assert_not_none
 class ChannelManager(IChannelManager):
     def get_channels(self, server_id: str) -> Iterable[ServerChannel]:
         assert_not_none(server_id, "server_id")
-
-        guild = get_guild(server_id)
-        return [to_model(channel) for channel in guild.get_channels().values()]
+        return list(map(to_model, get_guild(server_id).get_channels().values()))
 
     async def set_role_permissions(
         self,

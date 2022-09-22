@@ -19,28 +19,22 @@ class PaginateBuilder(ICompileableQueryPartBuilder[CompiledPaginationQuery]):
         self.__page_size: int = page_size
 
     def compile(self) -> CompiledPaginationQuery:
-        return CompiledPaginationQuery(
-            *self.build(),
-            self.__page_index,
-            self.__page_size
-        )
+        return CompiledPaginationQuery(*self.build(), self.__page_index, self.__page_size)
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        parent_sql = self.__parent_builder.build()
-        arguments = [
-            *parent_sql[1],
+        parent_sql, parent_args = self.__parent_builder.build()
+        arguments = (
+            *parent_args,
             self.__ordering_column,
             self.__page_index * self.__page_size,
             self.__page_size
-        ]
-        base_index = len(parent_sql[1])
-        sql = [
-            "WITH Data_CTE AS (",
-            f"{parent_sql[0]}",
-            "),",
-            "Count_CTE AS (SELECT COUNT(*) AS _totalrows FROM Data_CTE)",
-            f"SELECT * FROM Data_CTE CROSS JOIN Count_CTE ORDER BY ${base_index + 1}",
+        )
+        base_index = len(parent_args)
+        sql = (
+            f"WITH Data_CTE AS ({parent_sql}), "
+            "Count_CTE AS (SELECT COUNT(*) AS _totalrows FROM Data_CTE) "
+            f"SELECT * FROM Data_CTE CROSS JOIN Count_CTE ORDER BY ${base_index + 1} "
             f"OFFSET ${base_index + 2} ROWS FETCH NEXT ${base_index + 3} ROWS ONLY"
-        ]
+        )
 
-        return (" ".join(sql), tuple(arguments))
+        return (sql, arguments)

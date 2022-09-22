@@ -17,7 +17,8 @@ class CancellationPromise(Generic[TResult]):
     def __init__(
         self,
         task: asyncio.Task[TResult],
-        token: CancellationToken) -> None:
+        token: CancellationToken
+    ) -> None:
         super().__init__()
         self.__task: asyncio.Task[TResult] = task
         token.register(CancellationPromise.__cancel, self)

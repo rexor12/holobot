@@ -9,7 +9,7 @@ from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooMan
 from .models import Reminder, ReminderConfig
 from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import IReminderRepository
-
+from holobot.sdk.utils import utcnow
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
     def __init__(
@@ -41,7 +41,7 @@ class ReminderManager(ReminderManagerInterface):
         if config.every_interval is not None:
             reminder = await self.__set_recurring_reminder(user_id, config.message, config.every_interval, config.at_time)
         elif config.in_time is not None:
-            next_trigger = datetime.utcnow() + config.in_time
+            next_trigger = utcnow() + config.in_time
             reminder = await self.__set_single_reminder(user_id, config.message, next_trigger)
         elif config.at_time is not None:
             next_trigger = self.__calculate_single_trigger_at(config.at_time)
@@ -95,7 +95,7 @@ class ReminderManager(ReminderManagerInterface):
         return reminder
 
     def __calculate_recurring_base_trigger(self, frequency_time: timedelta, at_time: timedelta | None):
-        current_time = datetime.utcnow()
+        current_time = utcnow()
         if at_time is None:
             return current_time
 
@@ -105,6 +105,6 @@ class ReminderManager(ReminderManagerInterface):
     def __calculate_single_trigger_at(self, at_time: timedelta) -> datetime:
         # TODO Make this aware of the user's locale. We can't expect random people to deal with UTC.
         # https://discordpy.readthedocs.io/en/stable/api.html#discord.ClientUser.locale
-        current_time = datetime.utcnow()
+        current_time = utcnow()
         trigger_time = datetime(current_time.year, current_time.month, current_time.day) + at_time
         return trigger_time + timedelta(1) if trigger_time < current_time else trigger_time

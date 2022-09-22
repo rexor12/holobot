@@ -71,7 +71,7 @@ class MemberDataProvider(IMemberDataProvider):
 
     @staticmethod
     def __transform_permissions(dto: hikari.Permissions) -> Permission:
-        if dto == hikari.Permissions.NONE:
+        if dto is hikari.Permissions.NONE:
             return Permission.NONE
 
         permissions = Permission.NONE
@@ -83,7 +83,7 @@ class MemberDataProvider(IMemberDataProvider):
                 continue
 
             flags ^= current_flag
-            if (current_permission := PERMISSION_TO_MODELS.get(hikari.Permissions(current_flag), None)) is None:
+            if (current_permission := PERMISSION_TO_MODELS.get(hikari.Permissions(current_flag))) is None:
                 current_flag <<= 1
                 continue
 

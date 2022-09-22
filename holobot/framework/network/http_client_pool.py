@@ -53,6 +53,6 @@ class HttpClientPool(HttpClientPoolInterface, IStartable):
             self.__raise_on_error(error)
 
     def __raise_on_error(self, error: HTTPError):
-        if (error_factory := self.__error_map.get(error.status, None)):
+        if (error_factory := self.__error_map.get(error.status)):
             raise error_factory(error.headers)
         raise HttpStatusError(error.status)

@@ -123,7 +123,8 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                     { "artist": self.__avatar_artwork_artist_name }
                 )
             )
-        else: footer = None
+        else:
+            footer = None
 
         return InteractionResponse(
             action=ReplyAction(content=Embed(

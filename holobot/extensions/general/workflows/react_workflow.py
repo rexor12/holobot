@@ -1,3 +1,6 @@
+from holobot.discord.sdk.exceptions import (
+    ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
+)
 from holobot.discord.sdk.models import Embed, EmbedFooter
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils import get_user_id
@@ -70,11 +73,19 @@ class ReactWorkflow(WorkflowBase):
 
         target_user_id = target and get_user_id(target)
         if target and not target_user_id:
-            user_data = await self.__member_data_provider.get_basic_data_by_name(
-                context.server_id,
-                target
-            )
-            target_user_id = user_data.user_id
+            try:
+                user_data = await self.__member_data_provider.get_basic_data_by_name(
+                    context.server_id,
+                    target
+                )
+                target_user_id = user_data.user_id
+            except UserNotFoundError:
+                return self._reply(content=self.__i18n_provider.get("user_not_found_error"))
+            except ServerNotFoundError:
+                return self._reply(content=self.__i18n_provider.get("server_not_found_error"))
+            except ChannelNotFoundError:
+                return self._reply(content=self.__i18n_provider.get("channel_not_found_error"))
+
         if target_user_id == context.author_id:
             target_user_id = None
 

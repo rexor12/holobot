@@ -7,19 +7,15 @@ class FrequencyType(IntEnum):
     MINUTES = 2
 
     def __str__(self) -> str:
-        if self == FrequencyType.HOURS:
-            return "hours"
-        if self == FrequencyType.MINUTES:
-            return "minutes"
-        return "days"
-    
+        match self:
+            case FrequencyType.HOURS: return "hours"
+            case FrequencyType.MINUTES: return "minutes"
+            case _: return "days"
+
     @staticmethod
     def parse(value: str):
-        value = value.upper()
-        if value == "DAYS":
-            return FrequencyType.DAYS
-        if value == "HOURS":
-            return FrequencyType.HOURS
-        if value == "MINUTES":
-            return FrequencyType.MINUTES
-        return None
+        match value.upper():
+            case "DAYS": return FrequencyType.DAYS
+            case "HOURS": return FrequencyType.HOURS
+            case "MINUTES": return FrequencyType.MINUTES
+            case _: return None

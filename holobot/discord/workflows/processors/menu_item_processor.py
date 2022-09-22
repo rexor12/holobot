@@ -56,8 +56,8 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         if not interaction.guild_id:
             raise NotImplementedError("Non-server specific commands are not supported.")
 
-        if interaction.command_type == CommandType.MESSAGE:
-            return ServerMessageInteractionContext(
+        match interaction.command_type:
+            case CommandType.MESSAGE: return ServerMessageInteractionContext(
                 request_id=uuid4(),
                 author_id=str(interaction.user.id),
                 author_name=interaction.user.username,
@@ -67,8 +67,7 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
                 channel_id=str(interaction.channel_id),
                 target_message_id=str(interaction.target_id)
             )
-        elif interaction.command_type == CommandType.USER:
-            return ServerUserInteractionContext(
+            case CommandType.USER: return ServerUserInteractionContext(
                 request_id=uuid4(),
                 author_id=str(interaction.user.id),
                 author_name=interaction.user.username,
@@ -78,7 +77,7 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
                 channel_id=str(interaction.channel_id),
                 target_user_id=str(interaction.target_id)
             )
-        else: raise ValueError(f"The command type '{interaction.command_type}' is not supported.")
+            case _: raise ValueError(f"The command type '{interaction.command_type}' is not supported.")
 
     async def _on_interaction_processed(
         self,

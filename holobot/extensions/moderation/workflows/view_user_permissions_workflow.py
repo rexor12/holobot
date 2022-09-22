@@ -10,7 +10,7 @@ from holobot.discord.sdk.servers.models import MemberData
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComboBox, ComboBoxItem, ComponentBase, Layout, Paginator, StackLayout
+    ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
@@ -173,7 +173,7 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         page_index: int,
         page_size: int,
         user_index: int
-    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
+    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
         pagination = await paginate_with_fallback(
             lambda pindex, psize, sid: self.__user_repository.get_moderators(sid, pindex, psize),
             page_index,

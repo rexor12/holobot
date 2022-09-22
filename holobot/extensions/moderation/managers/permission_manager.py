@@ -15,7 +15,7 @@ class PermissionManager(IPermissionManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        if permissions == ModeratorPermission.NONE:
+        if permissions is ModeratorPermission.NONE:
             return
 
         user = await self.__repository.get_by_server(server_id, user_id)
@@ -35,7 +35,7 @@ class PermissionManager(IPermissionManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        if permissions == ModeratorPermission.NONE:
+        if permissions is ModeratorPermission.NONE:
             return
 
         user = await self.__repository.get_by_server(server_id, user_id)
@@ -64,7 +64,7 @@ class PermissionManager(IPermissionManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        if permissions == ModeratorPermission.NONE:
+        if permissions is ModeratorPermission.NONE:
             return True
 
         user = await self.__repository.get_by_server(server_id, user_id)

@@ -7,7 +7,7 @@ from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComboBox, ComboBoxItem, ComponentBase, Layout, Paginator, StackLayout
+    ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
@@ -117,7 +117,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         page_size: int,
         server_index: int,
         initiator_id: str
-    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
+    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
         server_count, servers = self.__bot_data_provider.get_servers(page_index, page_size)
         if not servers:
             return ("The bot isn't part of any servers.", [])

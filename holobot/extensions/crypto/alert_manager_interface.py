@@ -6,8 +6,15 @@ from .enums import FrequencyType, PriceDirection
 from .models import Alert
 
 class AlertManagerInterface(Protocol):
-    async def add(self, user_id: str, symbol: str, direction: PriceDirection, value: Decimal,
-        frequency_type: FrequencyType = FrequencyType.DAYS, frequency: int = 1):
+    async def add(
+        self,
+        user_id: str,
+        symbol: str,
+        direction: PriceDirection,
+        value: Decimal,
+        frequency_type: FrequencyType = FrequencyType.DAYS,
+        frequency: int = 1
+    ):
         ...
 
     async def get_many(

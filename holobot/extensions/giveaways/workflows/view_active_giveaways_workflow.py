@@ -5,7 +5,7 @@ from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComboBox, ComboBoxItem, ComponentBase, Layout, Paginator, StackLayout
+    ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
@@ -125,7 +125,7 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         item_type: str,
         item_index: int,
         initiator_id: str
-    ) -> tuple[str | Embed, ComponentBase | list[Layout]]:
+    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
         metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
         if page_index > 0 and not metadatas.items:
             page_index = 0

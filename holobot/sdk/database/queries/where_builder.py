@@ -38,11 +38,13 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
         self.constraint = ColumnConstraintBuilder(column_name, equality, value, is_raw_value)
         return WhereConstraintBuilder(self)
 
-    def fields(self,
+    def fields(
+        self,
         connector: Connector,
         field1: tuple[str, Equality, Any | None],
         field2: tuple[str, Equality, Any | None],
-        *fields: tuple[str, Equality, Any | None]) -> 'WhereConstraintBuilder':
+        *fields: tuple[str, Equality, Any | None]
+    ) -> WhereConstraintBuilder:
         self.constraint = LogicalConstraintBuilder(
             connector,
             ColumnConstraintBuilder(field1[0], field1[1], field1[2]),
@@ -82,12 +84,8 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
         if isinstance(self.constraint, EmptyConstraintBuilder):
             raise ValueError("A constraint must be specified.")
 
-        parent_sql = self.__parent_builder.build()
-        sql = [parent_sql[0], "WHERE"]
-        arguments = list(parent_sql[1])
+        parent_sql, parent_args = self.__parent_builder.build()
+        constraint_sql, constraint_args = self.constraint.build(len(parent_args) + 1)
+        sql = f"{parent_sql} WHERE {constraint_sql}"
 
-        constraint_sql, constraint_args = self.constraint.build(len(arguments) + 1)
-        sql.append(constraint_sql)
-        arguments.extend(constraint_args)
-
-        return (" ".join(sql), tuple(arguments))
+        return (sql, parent_args + constraint_args)

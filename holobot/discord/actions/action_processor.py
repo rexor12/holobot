@@ -10,7 +10,7 @@ from holobot.discord.sdk.actions import ActionBase, DoNothingAction, EditMessage
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComponentBase, Layout, StackLayout
+    ComponentBase, LayoutBase, StackLayout
 )
 from holobot.discord.transformers.embed import to_dto
 from holobot.discord.workflows.transformers import IComponentTransformer
@@ -31,13 +31,10 @@ class ActionProcessor(IActionProcessor):
         deferral: DeferType = DeferType.NONE,
         is_ephemeral: bool = False
     ) -> None:
-        if isinstance(action, DoNothingAction):
-            return
-
-        if isinstance(action, ReplyAction):
-            await self.__process_reply(context, action, deferral, is_ephemeral)
-        elif isinstance(action, EditMessageAction):
-            await self.__process_edit_reference_message(context, action, deferral, is_ephemeral)
+        match action:
+            case DoNothingAction(): return
+            case ReplyAction(): await self.__process_reply(context, action, deferral, is_ephemeral)
+            case EditMessageAction(): await self.__process_edit_reference_message(context, action, deferral, is_ephemeral)
 
     async def __process_reply(
         self,
@@ -53,7 +50,7 @@ class ActionProcessor(IActionProcessor):
         embed = to_dto(action.content) if isinstance(action.content, Embed) else None
         components = self.__component_transformer.transform_to_root_component(action.components)
         with contextlib.suppress(NotFoundError):
-            if deferral == DeferType.NONE:
+            if deferral is DeferType.NONE:
                 await interaction.create_initial_response(
                     ResponseType.MESSAGE_CREATE,
                     content=content,
@@ -64,7 +61,7 @@ class ActionProcessor(IActionProcessor):
                 )
                 return
 
-            if deferral == DeferType.DEFER_MESSAGE_CREATION:
+            if deferral is DeferType.DEFER_MESSAGE_CREATION:
                 await interaction.edit_initial_response(
                     content=content,
                     embed=embed,
@@ -89,7 +86,7 @@ class ActionProcessor(IActionProcessor):
         embed = to_dto(action.content) if isinstance(action.content, Embed) else None
         components = self.__component_transformer.transform_to_root_component(action.components)
         with contextlib.suppress(NotFoundError):
-            if deferral == DeferType.NONE:
+            if deferral is DeferType.NONE:
                 await interaction.create_initial_response(
                     ResponseType.MESSAGE_UPDATE,
                     content=content,
@@ -100,7 +97,7 @@ class ActionProcessor(IActionProcessor):
                 )
                 return
 
-            if deferral == DeferType.DEFER_MESSAGE_UPDATE:
+            if deferral is DeferType.DEFER_MESSAGE_UPDATE:
                 await interaction.edit_initial_response(
                     content=content,
                     embed=embed,

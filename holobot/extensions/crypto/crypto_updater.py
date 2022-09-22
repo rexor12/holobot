@@ -36,7 +36,8 @@ async def evaluate_error(circuit_breaker: AsyncCircuitBreaker, error: Exception)
 
 @injectable(IStartable)
 class CryptoUpdater(IStartable):
-    def __init__(self,
+    def __init__(
+        self,
         http_client_pool: HttpClientPoolInterface,
         crypto_repository: CryptoRepositoryInterface,
         configurator: IConfigurator,
@@ -78,11 +79,11 @@ class CryptoUpdater(IStartable):
         while not token.is_cancellation_requested:
             self.__log.debug("Updating prices...")
             try:
-                prices = await self.__circuit_breaker(self.__get_symbol_prices, None)
-                if len(prices) > 0:
+                if prices := await self.__circuit_breaker(self.__get_symbol_prices, None):
                     await self.__crypto_repository.update_prices(prices)
                     self.__log.debug("Updated prices", symbol_count=len(prices))
-                else: self.__log.warning("Got no symbol data")
+                else:
+                    self.__log.warning("Got no symbol data")
             except (TooManyRequestsError, ImATeapotError) as error:
                 self.__log.error(
                     "Update failed",

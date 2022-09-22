@@ -37,35 +37,31 @@ class OnConflictUpdateBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        parent_sql, parent_arguments = self.__parent_builder.build()
-        arguments = list(parent_arguments)
+        parent_sql, parent_args = self.__parent_builder.build()
         sql = [parent_sql, "UPDATE", self.__table_name, "SET"]
-        columns = []
-        argument_count = len(arguments)
+        arguments = list(parent_args)
         if len(self.__fields) > 1:
-            sql.append("(")
-            for column in self.__fields.keys():
-                columns.append(column)
-            sql.append(", ".join(columns))
-            sql.append(") = (")
+            sql.extend(("(", ", ".join(self.__fields), ") = ("))
             is_first_value = True
             index = 1
             for value, is_raw_value in self.__fields.values():
                 if not is_first_value:
                     sql.append(", ")
-                is_first_value = False
-                if not is_raw_value:
-                    sql.append(f"${argument_count + index}")
+                if is_raw_value:
+                    sql.append(str(value))
+                else:
+                    sql.append(f"${len(parent_args) + index}")
                     arguments.append(value)
-                    index = index + 1
-                else: sql.append(str(value))
+                    index += 1
+                is_first_value = False
             sql.append(")")
         else:
             column, value = next(iter(self.__fields.items()))
-            sql.append(column)
-            sql.append("=")
-            if not value[1]:
-                sql.append(f"${argument_count + 1}")
+            sql.extend((column, "="))
+            if value[1]:
+                sql.append(str(value[0]))
+            else:
+                sql.append(f"${len(parent_args) + 1}")
                 arguments.append(value[0])
-            else: sql.append(str(value[0]))
+
         return (" ".join(sql), tuple(arguments))

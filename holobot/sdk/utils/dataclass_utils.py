@@ -1,20 +1,21 @@
+import builtins
+import types
+import typing
 from collections.abc import Sequence
 from dataclasses import _MISSING_TYPE, fields, is_dataclass
-from types import NoneType, UnionType
-from typing import Any, Callable, NamedTuple, Union, cast, get_args, get_type_hints
 
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.utils import first
 
-class ArgumentInfo(NamedTuple):
+class ParameterInfo(typing.NamedTuple):
     name: str
     object_type: type
     collection_constructor: type | None
     allows_none: bool
-    default_value: Any
-    default_factory: Callable[[], Any] | None
+    default_value: typing.Any
+    default_factory: typing.Callable[[], typing.Any] | None
 
-def get_argument_infos(dataclass_type: type) -> Sequence[ArgumentInfo]:
+def get_parameter_infos(dataclass_type: type) -> Sequence[ParameterInfo]:
     if not is_dataclass(dataclass_type):
         raise ArgumentError("dataclass_type", "The type must be a dataclass.")
 
@@ -24,10 +25,10 @@ def get_argument_infos(dataclass_type: type) -> Sequence[ArgumentInfo]:
 
     # Need to explicitly load type hints for dataclasses.
     # See: https://stackoverflow.com/a/55938344
-    resolved_type_hints = get_type_hints(initializer)
+    resolved_type_hints = typing.get_type_hints(initializer)
 
     return [
-        __get_argument_info(
+        __get_parameter_info(
             field_info.name,
             resolved_type_hints[field_info.name],
             None if isinstance(field_info.default, _MISSING_TYPE) else field_info.default,
@@ -35,44 +36,32 @@ def get_argument_infos(dataclass_type: type) -> Sequence[ArgumentInfo]:
         ) for field_info in fields(dataclass_type)
     ]
 
-def __get_argument_info(
-    name: str,
-    object_type: type,
-    default_value: Any,
-    default_factory: Any
-) -> ArgumentInfo:
-    if isinstance(object_type, UnionType):
-        origin = UnionType
-    elif (origin := getattr(object_type, "__origin__", None)) is None:
-        return ArgumentInfo(name, object_type, None, False, default_value, default_factory)
+def __get_parameter_info(
+    parameter_name: str,
+    parameter_type: type,
+    default_value: typing.Any,
+    default_factory: typing.Any
+) -> ParameterInfo:
+    is_argument_nullable = False
+    match origin := typing.get_origin(parameter_type):
+        case None:
+            return ParameterInfo(parameter_name, parameter_type, None, is_argument_nullable, default_value, default_factory)
+        case typing.Union | types.UnionType:
+            args = typing.get_args(parameter_type)
+            if len(args) != 2 or types.NoneType not in args:
+                raise ValueError(f"Expected a Union with two arguments, the second being None, but got {args!r} instead.")
 
-    allows_none = False
-    if origin in (Union, UnionType):
-        args = get_args(object_type)
-        if len(args) != 2 or NoneType not in args:
-            raise ValueError((
-                "Expected an optional type (NoneType or other),"
-                f" but '{name}' in '{object_type}' is diferent ({args})."
-            ))
+            is_argument_nullable = True
+            parameter_type = first(typing.cast(tuple[type, ...], args), lambda i: i and i is not None)
+            origin = typing.get_origin(parameter_type)
 
-        allows_none = True
-        object_type = first(cast(tuple[type, ...], args), lambda i: i and i is not NoneType)
-        origin = getattr(object_type, "__origin__", None)
-
-    if origin is None:
-        return ArgumentInfo(name, object_type, None, allows_none, default_value, default_factory)
-
-    if origin == tuple:
-        args = get_args(object_type)
-        if len(args) != 2 or args[-1] != Ellipsis:
-            raise ValueError((
-                "Expected a tuple with two arguments, the second being an ellipsis,"
-                f" but got {args} instead."
-            ))
-        return ArgumentInfo(name, args[0], tuple, allows_none, default_value, default_factory)
-
-    if origin == list:
-        args = get_args(object_type)
-        return ArgumentInfo(name, args[0], list, allows_none, default_value, default_factory)
-
-    raise ValueError(f"Expected a tuple or an optional, tuple or list type, but got '{object_type}'.")
+    match origin:
+        case None:
+            return ParameterInfo(parameter_name, parameter_type, None, is_argument_nullable, default_value, default_factory)
+        case builtins.tuple | builtins.list:  # Needs dot notation: https://peps.python.org/pep-0634/#value-patterns
+            args = typing.get_args(parameter_type)
+            if origin is tuple and (len(args) != 2 or args[1] is not Ellipsis):
+                raise ValueError(f"Expected a tuple with two arguments, the second being Ellipsis, but got {args!r} instead.")
+            return ParameterInfo(parameter_name, args[0], origin, is_argument_nullable, default_value, default_factory)
+        case _:
+            raise ValueError(f"Expected None, tuple or list type, but got '{parameter_type}'.")

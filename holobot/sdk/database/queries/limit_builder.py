@@ -28,16 +28,12 @@ class LimitBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if self.__start_index is None and self.__max_count is None:
             raise ValueError("The LIMIT clause must have either an offset or a maximum count.")
 
-        parent_sql, parent_args = self.__parent_builder.build()
-        sql = [parent_sql]
-        arguments = list(parent_args)
+        sql, arguments = self.__parent_builder.build()
         if self.__max_count is not None:
-            sql.append("LIMIT")
-            sql.append(f"${len(arguments) + 1}")
-            arguments.append(self.__max_count)
+            sql = f"{sql} LIMIT ${len(arguments) + 1}"
+            arguments = arguments + (self.__max_count,)
         if self.__start_index is not None:
-            sql.append("OFFSET")
-            sql.append(f"${len(arguments) + 1}")
-            arguments.append(self.__start_index)
+            sql = f"{sql} OFFSET ${len(arguments) + 1}"
+            arguments = arguments + (self.__start_index,)
 
-        return (" ".join(sql), tuple(arguments))
+        return (sql, arguments)

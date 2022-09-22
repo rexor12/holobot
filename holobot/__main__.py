@@ -74,5 +74,5 @@ try:
 except CyclicGraphException as error:
     logger.fatal(
         "Failed to resolve the services, because there is a cycle in the dependency graph",
-        nodes=", ".join(str(node) for node in error.nodes)
+        nodes=", ".join(map(str, error.nodes))
     )

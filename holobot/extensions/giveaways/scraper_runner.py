@@ -1,7 +1,6 @@
 import asyncio
 import contextlib
 from collections.abc import Awaitable
-from datetime import datetime, timezone
 
 from holobot.sdk.configs import IConfigurator
 from holobot.sdk.ioc.decorators import injectable
@@ -11,6 +10,7 @@ from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.reactive import IListener
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
+from holobot.sdk.utils import utcnow
 from .events.models import NewGiveawaysEvent
 from .models import ExternalGiveawayItem, ScraperInfo
 from .repositories import IExternalGiveawayItemRepository, IScraperInfoRepository
@@ -21,7 +21,8 @@ DEFAULT_DELAY: int = 40
 
 @injectable(IStartable)
 class ScraperRunner(IStartable):
-    def __init__(self,
+    def __init__(
+        self,
         configurator: IConfigurator,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,
         listeners: tuple[IListener[NewGiveawaysEvent], ...],
@@ -90,7 +91,7 @@ class ScraperRunner(IStartable):
             last_scrape_time = scraper_info.last_scrape_time if scraper_info else None
 
             next_scrape_time = scraper.get_next_scrape_time(last_scrape_time)
-            if datetime.now(timezone.utc) < next_scrape_time:
+            if utcnow() < next_scrape_time:
                 self.__logger.trace("Postponed scraping", name=scraper_name, scrape_at=next_scrape_time)
                 return ()
 
@@ -104,11 +105,12 @@ class ScraperRunner(IStartable):
                     await self.__external_giveaway_item_repository.add(item)
 
             if scraper_info:
-                scraper_info.last_scrape_time = datetime.now(timezone.utc)
+                scraper_info.last_scrape_time = utcnow()
                 await self.__scraper_info_repository.update(scraper_info)
-            else: await self.__scraper_info_repository.add(
-                ScraperInfo(scraper_name=scraper_name, last_scrape_time=datetime.now(timezone.utc))
-            )
+            else:
+                await self.__scraper_info_repository.add(
+                    ScraperInfo(scraper_name=scraper_name, last_scrape_time=utcnow())
+                )
 
             return tuple(new_giveaway_items)
         except CircuitBrokenError:

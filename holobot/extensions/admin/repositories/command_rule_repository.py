@@ -130,11 +130,8 @@ class CommandRuleRepository(
                     column_expression("command_subgroup", Equality.EQUAL, None),
                     column_expression("command", Equality.EQUAL, None)
                 )
-                if len(filters) > 0:
-                    filter_expression = or_expression(
-                        filter_expression,
-                        *filters
-                    )
+                if filters:
+                    filter_expression = or_expression(filter_expression, *filters)
                 records = await Query.select().columns(
                     *self.column_names
                 ).from_table(self.table_name).where().expression(

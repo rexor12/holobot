@@ -84,7 +84,8 @@ class SetReminderWorkflow(WorkflowBase):
                         )
                     )
                 )
-            else: raise
+            else:
+                raise
         except InvalidReminderConfigError as error:
             return InteractionResponse(
                 action=ReplyAction(

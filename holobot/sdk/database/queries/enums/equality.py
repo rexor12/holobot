@@ -10,7 +10,7 @@ class Equality(IntFlag):
     GREATER_OR_EQUAL = GREATER | EQUAL
 
     def to_operator(self) -> str:
-        if self == Equality.NONE:
+        if self is Equality.NONE:
             raise ValueError("Unspecified equality.")
         operator = ""
         if Equality.LESS in self:

@@ -1,16 +1,15 @@
-from datetime import datetime, timezone
-
 from holobot.discord.sdk import IMessaging
 from holobot.extensions.moderation.models import LogSettings
 from holobot.extensions.moderation.repositories import ILogSettingsRepository
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils import assert_not_none, utcnow
 from .ilog_manager import ILogManager
 
 @injectable(ILogManager)
 class LogManager(ILogManager):
-    def __init__(self,
+    def __init__(
+        self,
         log_settings_repository: ILogSettingsRepository,
         logger_factory: ILoggerFactory,
         messaging: IMessaging
@@ -35,7 +34,7 @@ class LogManager(ILogManager):
             ))
             return
 
-        log_settings.modified_at = datetime.now(timezone.utc)
+        log_settings.modified_at = utcnow()
         log_settings.channel_id = channel_id
         await self.__log_settings_repository.update(log_settings)
 

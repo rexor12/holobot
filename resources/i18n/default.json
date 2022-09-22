@@ -83,7 +83,7 @@
                     "bite": "<@{user_id}> wants to bite someone. How odd.",
                     "bite_target": "<@{user_id}> bites <@{target_user_id}>. Why would you do that?",
                     "blush": "<@{user_id}> is blushing. Cute.",
-                    "blush_target": "<@{target_user_id}> is blushing because of <@{target_user_id}>.",
+                    "blush_target": "<@{user_id}> is blushing because of <@{target_user_id}>.",
                     "bonk": "<@{user_id}> performs a mass-bonk attack. It's very effective!",
                     "bonk_target": "<@{user_id}> bonks <@{target_user_id}>. No being lewd here!",
                     "bully": "<@{user_id}> wants to bully someone. Or be bullied maybe?",
@@ -147,7 +147,7 @@
             "summon_user_workflow": {
                 "self_summon": "And thus, be summoned, <@{user_id}>! („• ᴗ •„)",
                 "dm_summon_with_message": "{user_name} requests your presence at <#{channel_id}>:\n> {message}",
-                "dm_summon": "{user_name} requests your presence at <#{channel}>.",
+                "dm_summon": "{user_name} requests your presence at <#{channel_id}>.",
                 "successful_summon": "I'll be back in a moment with <@{user_id}>...",
                 "cannot_summon_bot_error": "I'm sorry, but I'd rather not disturb a fellow bot. (｡•́︿•̀｡)"
             },

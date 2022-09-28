@@ -36,12 +36,6 @@
             "AutoCreateDatabase": false
         }
     },
-    "Crypto": {
-        "parameters": {
-            "PersistPrices": true,
-            "EnableUpdates": true
-        }
-    },
     "Reminders": {
         "parameters": {
             "Enable": true,

@@ -11,9 +11,13 @@ class ReminderMigration(MigrationBase):
     def __init__(self) -> None:
         super().__init__(TABLE_NAME, {
             0: MigrationPlan(0, 1, self.__initialize_table),
-            1: MigrationPlan(1, 2, self.__upgrade_to_v2)
+            1: MigrationPlan(1, 2, self.__upgrade_to_v2),
+            2: MigrationPlan(2, 3, self.__upgrade_to_v3)
         }, {})
-    
+
+    async def __upgrade_to_v3(self, connection: Connection) -> None:
+        await connection.execute("ALTER TABLE reminders ALTER COLUMN message DROP NOT NULL")
+
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute((
             "ALTER TABLE reminders"

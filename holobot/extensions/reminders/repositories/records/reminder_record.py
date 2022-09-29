@@ -7,7 +7,7 @@ from holobot.sdk.database.repositories import Entity
 class ReminderRecord(Entity[int]):
     id: int
     user_id: str
-    message: str
+    message: str | None
     created_at: datetime
     is_repeating: bool
     frequency_time: timedelta

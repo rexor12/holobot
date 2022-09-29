@@ -8,7 +8,7 @@ from holobot.sdk.utils import utcnow
 class Reminder:
     identifier: int = -1
     user_id: str
-    message: str
+    message: str | None = None
     created_at: datetime = field(default_factory=utcnow)
     is_repeating: bool = False
     frequency_time: timedelta = field(default_factory=timedelta)

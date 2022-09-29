@@ -1,9 +1,12 @@
 from hikari import (
-    UNDEFINED, ForbiddenError as HikariForbiddenError, GuildNewsChannel, TextableGuildChannel
+    UNDEFINED, ForbiddenError as HikariForbiddenError, GuildNewsChannel,
+    NotFoundError as HikariNotFoundError, TextableGuildChannel
 )
 
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, InvalidChannelError
+from holobot.discord.sdk.exceptions import (
+    ChannelNotFoundError, ForbiddenError, InvalidChannelError, UserNotFoundError
+)
 from holobot.discord.sdk.models.embed import Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.transformers.embed import to_dto as embed_to_dto
@@ -36,7 +39,13 @@ class Messaging(IMessaging):
         try:
             await user.send(message)
         except HikariForbiddenError as error:
-            raise ForbiddenError("Cannot send DMs to the specified user.") from error
+            raise ForbiddenError(
+                "Cannot send the private message, because the request was forbidden."
+            ) from error
+        except HikariNotFoundError as error:
+            raise UserNotFoundError(
+                "Cannot send the private message, because the user cannot be found."
+            ) from error
 
     async def send_channel_message(
         self,

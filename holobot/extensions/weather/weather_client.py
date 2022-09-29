@@ -1,7 +1,7 @@
 from json import dumps
 from typing import Any
 
-from holobot.sdk.configs import IConfigurator
+from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -10,37 +10,28 @@ from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreaker
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
-from .models import WeatherData
+from .models import OpenWeatherOptions, WeatherData
 from .weather_client_interface import WeatherClientInterface
-
-CONFIG_SECTION = "OpenWeather"
-API_GATEWAY_PARAMETER = "ApiGatewayBaseUrl"
-API_KEY_PARAMETER = "ApiKey"
-CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "CircuitBreakerFailureThreshold"
-CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER = "CircuitBreakerRecoveryTime"
-CONDITION_IMAGE_BASE_URL_PARAMETER = "ConditionImageBaseUrl"
 
 @injectable(WeatherClientInterface)
 class WeatherClient(WeatherClientInterface):
     def __init__(
         self,
-        configurator: IConfigurator,
         http_client_pool: HttpClientPoolInterface,
-        logger_factory: ILoggerFactory
+        logger_factory: ILoggerFactory,
+        options: IOptions[OpenWeatherOptions]
     ) -> None:
         super().__init__()
-        self.__configurator: IConfigurator = configurator
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__logger = logger_factory.create(WeatherClient)
-        self.__api_gateway: str = self.__configurator.get(CONFIG_SECTION, API_GATEWAY_PARAMETER, "")
-        self.__api_key: str = self.__configurator.get(CONFIG_SECTION, API_KEY_PARAMETER, "")
-        self.__condition_image_base_url: str = self.__configurator.get(CONFIG_SECTION, CONDITION_IMAGE_BASE_URL_PARAMETER, "")
-        self.__circuit_breaker: AsyncCircuitBreaker = WeatherClient.__create_circuit_breaker(self.__configurator)
+        self.__options = options
+        self.__circuit_breaker: AsyncCircuitBreaker = WeatherClient.__create_circuit_breaker(options.value)
         # TODO Caching with configurable time based expiry.
         #self.__cache: ConcurrentCache[str, int | None] = ConcurrentCache()
 
     async def get_weather_data(self, location: str) -> WeatherData:
-        if not self.__api_key:
+        options = self.__options.value
+        if not options.ApiKey:
             raise InvalidOperationError("OpenWeather isn't configured.")
         if not location:
             raise ValueError("The city name must be specified.")
@@ -49,9 +40,9 @@ class WeatherClient(WeatherClientInterface):
             response = await self.__circuit_breaker(
                 lambda s: self.__http_client_pool.get(s[0], s[1]),
                 (
-                    self.__api_gateway,
+                    options.ApiGatewayBaseUrl,
                     {
-                        "appid": self.__api_key,
+                        "appid": options.ApiKey,
                         "q": location,
                         "units": "metric"
                     }
@@ -75,11 +66,12 @@ class WeatherClient(WeatherClientInterface):
         return weather_data
 
     @staticmethod
-    def __create_circuit_breaker(configurator: IConfigurator) -> AsyncCircuitBreaker:
+    def __create_circuit_breaker(options: OpenWeatherOptions) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
-            configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER, 1),
-            configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER, 300),
-            WeatherClient.__on_circuit_broken)
+            options.CircuitBreakerFailureThreshold,
+            options.CircuitBreakerRecoveryTime,
+            WeatherClient.__on_circuit_broken
+        )
 
     @staticmethod
     async def __on_circuit_broken(circuit_breaker: AsyncCircuitBreaker, error: Exception) -> int:
@@ -108,11 +100,12 @@ class WeatherClient(WeatherClientInterface):
             raise OpenWeatherError(result_code, location)
 
     def __set_condition_image(self, weather_data: WeatherData) -> None:
-        if (self.__condition_image_base_url is None
+        options = self.__options.value
+        if (options.ConditionImageBaseUrl is None
             or weather_data.condition.icon is None):
             return
         weather_data.condition.condition_image_url = (
-            f"{self.__condition_image_base_url}"
+            f"{options.ConditionImageBaseUrl}"
             f"{weather_data.condition.icon}"
             "@2x.png"
         )

@@ -4,23 +4,28 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.weather import WeatherClientInterface
+from holobot.extensions.weather.exceptions import (
+    InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
+)
+from holobot.extensions.weather.models import OpenWeatherOptions, WeatherData
+from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
-from .. import WeatherClientInterface
-from ..exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
-from ..models import WeatherData
 
 @injectable(IWorkflow)
 class GetBasicWeatherWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
+        options: IOptions[OpenWeatherOptions],
         weather_client: WeatherClientInterface
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
+        self.__options = options
         self.__weather_client = weather_client
 
     @command(
@@ -86,9 +91,10 @@ class GetBasicWeatherWorkflow(WorkflowBase):
             ),
             footer=EmbedFooter(
                 text=self.__i18n_provider.get(
-                "extensions.weather.get_basic_weather_workflow.embed_footer"
-            ),
-                icon_url="https://openweathermap.org/themes/openweathermap/assets/img/mobile_app/android_icon.png")
+                    "extensions.weather.get_basic_weather_workflow.embed_footer"
+                ),
+                icon_url=self.__options.value.IconUrl
+            )
         )
         embed.fields.append(EmbedField(
             name=self.__i18n_provider.get(

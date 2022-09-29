@@ -1,46 +1,44 @@
 import asyncio
 from collections.abc import Awaitable
-from holobot.sdk.utils import utcnow
+
 from holobot.discord.sdk import IMessaging
-from holobot.sdk.configs import IConfigurator
+from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
+from holobot.sdk.utils import utcnow
+from .models import ReminderProcessingOptions
 from .repositories import IReminderRepository
-
-DEFAULT_RESOLUTION: int = 60
-DEFAULT_DELAY: int = 30
 
 @injectable(IStartable)
 class ReminderProcessor(IStartable):
     def __init__(
         self,
-        configurator: IConfigurator,
-        messaging: IMessaging,
         logger_factory: ILoggerFactory,
+        messaging: IMessaging,
+        options: IOptions[ReminderProcessingOptions],
         reminder_repository: IReminderRepository
     ) -> None:
         super().__init__()
-        self.__configurator: IConfigurator = configurator
-        self.__messaging: IMessaging = messaging
         self.__logger = logger_factory.create(ReminderProcessor)
+        self.__messaging: IMessaging = messaging
+        self.__options = options
         self.__reminder_repository: IReminderRepository = reminder_repository
-        self.__process_resolution = self.__configurator.get("Reminders", "ProcessorResolution", DEFAULT_RESOLUTION)
-        self.__process_delay = self.__configurator.get("Reminders", "ProcessorDelay", DEFAULT_DELAY)
         self.__token_source: CancellationTokenSource | None = None
         self.__background_task: Awaitable[None] | None = None
 
     async def start(self):
-        if not self.__configurator.get("Reminders", "Enable", True):
+        options = self.__options.value
+        if not options.IsEnabled:
             self.__logger.info("Reminders are disabled by configuration")
             return
 
         self.__logger.info(
             "Reminders are enabled",
-            delay=self.__process_delay,
-            resolution=self.__process_resolution
+            delay=options.Delay,
+            resolution=options.Resolution
         )
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
@@ -57,7 +55,7 @@ class ReminderProcessor(IStartable):
         self.__logger.debug("Stopped background task")
 
     async def __process_reminders_async(self, token: CancellationToken):
-        await wait(self.__process_delay, token)
+        await wait(self.__options.value.Delay, token)
         while not token.is_cancellation_requested:
             self.__logger.trace("Processing reminders...")
             processed_reminders: int = 0
@@ -83,4 +81,4 @@ class ReminderProcessor(IStartable):
                 raise
             finally:
                 self.__logger.trace("Processed reminders", count=processed_reminders)
-            await wait(self.__process_resolution, token)
+            await wait(self.__options.value.Resolution, token)

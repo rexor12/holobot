@@ -2,11 +2,13 @@ from collections.abc import Callable, Generator
 from types import coroutine
 from typing import Any
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, TCPConnector
 from aiohttp.client import ClientTimeout
 from aiohttp.web_exceptions import HTTPError, HTTPForbidden, HTTPNotFound
 from multidict import CIMultiDict
 
+from holobot.framework.configs import EnvironmentOptions
+from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
@@ -19,14 +21,20 @@ DEFAULT_TIMEOUT = ClientTimeout(total=5)
 @injectable(IStartable)
 @injectable(HttpClientPoolInterface)
 class HttpClientPool(HttpClientPoolInterface, IStartable):
-    def __init__(self, logger_factory: ILoggerFactory):
+    def __init__(
+        self,
+        logger_factory: ILoggerFactory,
+        options: IOptions[EnvironmentOptions]
+    ) -> None:
         self.__error_map: dict[int, Callable[[CIMultiDict], Exception]] = {
             403: lambda _: HTTPForbidden(),
             404: lambda _: HTTPNotFound(),
             ImATeapotError.STATUS_CODE: ImATeapotError.from_headers,
             TooManyRequestsError.STATUS_CODE: TooManyRequestsError.from_headers
         }
-        self.__session: ClientSession = ClientSession()
+        self.__session = ClientSession(
+            connector=TCPConnector(limit=options.value.HttpPoolSize)
+        )
         self.__logger = logger_factory.create(HttpClientPool)
 
     @coroutine

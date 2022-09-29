@@ -12,7 +12,8 @@ from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.configs import IConfigurator
+from holobot.extensions.general.models import AvatarOptions
+from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -23,16 +24,16 @@ _SERVER_AVATAR_VALUE = "server"
 class ViewUserAvatarWorkflow(WorkflowBase):
     def __init__(
         self,
-        configurator: IConfigurator,
         bot_data_provider: IBotDataProvider,
         i18n_provider: II18nProvider,
-        member_data_provider: IMemberDataProvider
+        member_data_provider: IMemberDataProvider,
+        options: IOptions[AvatarOptions]
     ) -> None:
         super().__init__()
         self.__bot_data_provider = bot_data_provider
         self.__i18n_provider = i18n_provider
         self.__member_data_provider = member_data_provider
-        self.__avatar_artwork_artist_name = configurator.get("General", "AvatarArtworkArtistName", "unknown")
+        self.__options = options
 
     @command(
         description="Displays a user's avatar.",
@@ -120,7 +121,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
             footer = EmbedFooter(
                 text=self.__i18n_provider.get(
                     "extensions.general.view_user_avatar_workflow.embed_footer",
-                    { "artist": self.__avatar_artwork_artist_name }
+                    { "artist": self.__options.value.ArtworkArtistName }
                 )
             )
         else:

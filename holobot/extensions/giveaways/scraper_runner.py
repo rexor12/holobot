@@ -2,7 +2,8 @@ import asyncio
 import contextlib
 from collections.abc import Awaitable
 
-from holobot.sdk.configs import IConfigurator
+from holobot.extensions.giveaways.models import GiveawayOptions
+from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
@@ -16,34 +17,30 @@ from .models import ExternalGiveawayItem, ScraperInfo
 from .repositories import IExternalGiveawayItemRepository, IScraperInfoRepository
 from .scrapers import IScraper
 
-DEFAULT_RESOLUTION: int = 60
-DEFAULT_DELAY: int = 40
-
 @injectable(IStartable)
 class ScraperRunner(IStartable):
     def __init__(
         self,
-        configurator: IConfigurator,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,
         listeners: tuple[IListener[NewGiveawaysEvent], ...],
         logger_factory: ILoggerFactory,
+        options: IOptions[GiveawayOptions],
         scraper_info_repository: IScraperInfoRepository,
         scrapers: tuple[IScraper, ...]
     ) -> None:
         super().__init__()
-        self.__configurator = configurator
         self.__external_giveaway_item_repository = external_giveaway_item_repository
         self.__listeners = listeners
         self.__logger = logger_factory.create(ScraperRunner)
+        self.__options = options
         self.__scraper_info_repository = scraper_info_repository
         self.__scrapers = scrapers
-        self.__process_resolution = self.__configurator.get("Giveaways", "RunnerResolution", DEFAULT_RESOLUTION)
-        self.__process_delay = self.__configurator.get("Giveaways", "RunnerDelay", DEFAULT_DELAY)
         self.__token_source: CancellationTokenSource | None = None
         self.__background_task: Awaitable[None] | None = None
 
     async def start(self) -> None:
-        if not self.__configurator.get("Giveaways", "EnableScrapers", True):
+        options = self.__options.value
+        if not options.EnableScrapers:
             self.__logger.info("Giveaway scraping is disabled by configuration")
             return
 
@@ -51,7 +48,7 @@ class ScraperRunner(IStartable):
             self.__logger.info("Giveaway scraping is disabled, because there are no loaded scrapers")
             return
 
-        self.__logger.info("Giveaway scraping is enabled", delay=self.__process_delay, resolution=self.__process_resolution)
+        self.__logger.info("Giveaway scraping is enabled", delay=options.RunnerDelay, resolution=options.RunnerResolution)
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
             self.__run_scrapers(self.__token_source.token)
@@ -66,7 +63,8 @@ class ScraperRunner(IStartable):
         self.__logger.debug("Stopped background task")
 
     async def __run_scrapers(self, token: CancellationToken):
-        await wait(self.__process_delay, token)
+        options = self.__options.value
+        await wait(options.RunnerDelay, token)
         while not token.is_cancellation_requested:
             self.__logger.trace("Running giveaway scrapers...")
             run_count = 0
@@ -82,7 +80,7 @@ class ScraperRunner(IStartable):
             if deleted_count > 0:
                 self.__logger.debug("Deleted expired giveaway items", count=deleted_count)
 
-            await wait(self.__process_resolution, token)
+            await wait(options.RunnerResolution, token)
 
     async def __run_scraper(self, scraper: IScraper) -> tuple[ExternalGiveawayItem, ...]:
         try:

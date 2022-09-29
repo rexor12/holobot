@@ -4,8 +4,9 @@ from collections.abc import Sequence
 
 import hikari
 
+from holobot.discord import DiscordOptions
 from holobot.discord.events import IGenericDiscordEventListener
-from holobot.sdk.configs import IConfigurator
+from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import get_or_add
@@ -24,12 +25,12 @@ REQUIRED_INTENTS = (
 class BotService(BotServiceInterface):
     def __init__(
         self,
-        configurator: IConfigurator,
-        discord_event_listeners: tuple[IGenericDiscordEventListener, ...]
+        discord_event_listeners: tuple[IGenericDiscordEventListener, ...],
+        options: IOptions[DiscordOptions]
     ) -> None:
         super().__init__()
         self.__discord_event_listeners = discord_event_listeners
-        self.__bot: Bot = self.__initialize_bot(configurator)
+        self.__bot: Bot = self.__initialize_bot(options.value)
         self.__bot_task: Task | None = None
         # See the reference for a note about what this is.
         bot_accessor._bot = self.__bot
@@ -48,15 +49,11 @@ class BotService(BotServiceInterface):
         await self.__bot_task
         self.__bot_task = None
 
-    def __initialize_bot(self, configurator: IConfigurator) -> Bot:
-        if not (discord_token := configurator.get("General", "DiscordToken", "")):
+    def __initialize_bot(self, options: DiscordOptions) -> Bot:
+        if not options.BotToken:
             raise ValueError("The Discord token is not configured.")
 
-        bot = Bot(
-            discord_token,
-            intents = REQUIRED_INTENTS
-        )
-
+        bot = Bot(options.BotToken, intents = REQUIRED_INTENTS)
         event_listeners: dict[type[hikari.Event], list[IGenericDiscordEventListener]] = {}
         for listener in self.__discord_event_listeners:
             listeners = get_or_add(event_listeners, listener.event_type, lambda _: [], None)

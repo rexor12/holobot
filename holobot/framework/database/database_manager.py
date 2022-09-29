@@ -7,25 +7,29 @@ import asyncpg
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
 
-from holobot.sdk.configs import IConfigurator
+from holobot.framework.configs import EnvironmentOptions
+from holobot.sdk.configs import IOptions
 from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
+from .database_options import DatabaseOptions
 
 @injectable(IStartable)
 @injectable(IDatabaseManager)
 class DatabaseManager(IDatabaseManager, IStartable):
     def __init__(
         self,
-        configurator: IConfigurator,
-        migrations: tuple[MigrationInterface, ...],
-        logger_factory: ILoggerFactory
+        database_options: IOptions[DatabaseOptions],
+        environment_options: IOptions[EnvironmentOptions],
+        logger_factory: ILoggerFactory,
+        migrations: tuple[MigrationInterface, ...]
     ) -> None:
-        self.__configurator: IConfigurator = configurator
-        self.__migrations: tuple[MigrationInterface, ...] = migrations
+        self.__database_options = database_options
+        self.__environment_options = environment_options
         self.__logger = logger_factory.create(DatabaseManager)
+        self.__migrations: tuple[MigrationInterface, ...] = migrations
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
 
     @coroutine
@@ -59,26 +63,22 @@ class DatabaseManager(IDatabaseManager, IStartable):
         return self.__connection_pool.acquire()
 
     async def __initialize_database(self) -> Pool:
-        database_host = self.__configurator.get("Database", "Host", "127.0.0.1")
-        database_port = self.__configurator.get("Database", "Port", 5432)
-        database_name = self.__configurator.get("Database", "Database", "holobot")
-        database_user = self.__configurator.get("Database", "User", "postgres")
-        database_password = self.__configurator.get("Database", "Password", "")
-
+        options = self.__database_options.value
+        connection_string_base = f"postgres://{options.User}:{options.Password}@{options.Host}:{options.Port}/"
         ssl_object = self.__create_ssl_context()
-        if self.__configurator.get("Database", "AutoCreateDatabase", False):
+        if options.AutoCreateDatabase:
             self.__logger.debug("Connecting to the database 'postgres'...")
-            postgres_dsn = f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/postgres"
+            postgres_dsn = f"{connection_string_base}postgres"
             connection = await asyncpg.connect(postgres_dsn,ssl=ssl_object)
             self.__logger.debug("Successfully connected to the database")
             try:
-                await self.__try_create_database(connection, database_name)
+                await self.__try_create_database(connection, options.Database)
             finally:
                 await connection.close()
 
         self.__logger.debug("Initializing the connection pool...")
         pool = await asyncpg.create_pool(
-            f"postgres://{database_user}:{database_password}@{database_host}:{database_port}/{database_name}",
+            f"{connection_string_base}{options.Database}",
             ssl=ssl_object)
         if not pool:
             raise Exception("Failed to initialize the database connection pool.")
@@ -97,7 +97,7 @@ class DatabaseManager(IDatabaseManager, IStartable):
 
     def __create_ssl_context(self):
         ssl_context = None
-        if not self.__configurator.get("General", "IsDebug", False):
+        if not self.__environment_options.value.IsDebug:
             ssl_context = ssl.create_default_context(cafile="")
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
@@ -106,7 +106,7 @@ class DatabaseManager(IDatabaseManager, IStartable):
     async def __try_create_database(self, connection: Connection, name: str):
         if await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name) != 1:
             self.__logger.debug("Creating a new database", name=name)
-            await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0") # TODO Check why args isn't working.
+            await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0")
             self.__logger.debug("Successfully created the database")
 
     async def __upgrade_table(self, connection: Connection, migration: MigrationInterface):

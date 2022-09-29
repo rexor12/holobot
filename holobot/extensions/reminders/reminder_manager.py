@@ -1,36 +1,36 @@
 from datetime import datetime, timedelta
 
-from holobot.sdk.configs import IConfigurator
+from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
+from holobot.sdk.utils import utcnow
 from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
-from .models import Reminder, ReminderConfig
+from .models import Reminder, ReminderConfig, ReminderOptions
 from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import IReminderRepository
-from holobot.sdk.utils import utcnow
+
 @injectable(ReminderManagerInterface)
 class ReminderManager(ReminderManagerInterface):
     def __init__(
         self,
         logger_factory: ILoggerFactory,
-        reminder_repository: IReminderRepository,
-        configurator: IConfigurator
+        options: IOptions[ReminderOptions],
+        reminder_repository: IReminderRepository
     ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(ReminderManager)
-        self.__reminder_repository: IReminderRepository = reminder_repository
-        self.__reminders_per_user_max: int = configurator.get("Reminders", "RemindersPerUserMax", 5)
-        self.__message_length_min: int = configurator.get("Reminders", "MessageLengthMin", 10)
-        self.__message_length_max: int = configurator.get("Reminders", "MessageLengthMax", 120)
+        self.__reminder_repository = reminder_repository
+        self.__options = options
 
     async def set_reminder(self, user_id: str, config: ReminderConfig) -> Reminder:
-        if not (self.__message_length_min <= len(config.message) <= self.__message_length_max):
+        options = self.__options.value
+        if not (options.MessageLengthMin <= len(config.message) <= options.MessageLengthMax):
             raise ArgumentOutOfRangeError(
                 "message",
-                str(self.__message_length_min),
-                str(self.__message_length_max)
+                str(options.MessageLengthMin),
+                str(options.MessageLengthMax)
             )
         if config.every_interval is not None and config.in_time is not None:
             raise InvalidReminderConfigError("every", "in")
@@ -65,7 +65,7 @@ class ReminderManager(ReminderManagerInterface):
 
     async def __assert_reminder_count(self, user_id: str) -> None:
         count = await self.__reminder_repository.count_by_user(user_id)
-        if count >= self.__reminders_per_user_max:
+        if count >= self.__options.value.RemindersPerUserMax:
             raise TooManyRemindersError(count)
 
     async def __set_recurring_reminder(

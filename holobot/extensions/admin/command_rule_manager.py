@@ -27,15 +27,15 @@ class CommandRuleManager(CommandRuleManagerInterface):
         assert_not_none(rule.created_by, "rule.created_by")
 
         if rule.command is not None:
-            if not (command := self.__registry.get_command(rule.command, rule.group, rule.subgroup)) or not command.can_disable:
+            if not (command := self.__registry.get_command(rule.command, rule.group, rule.subgroup)) or not command.CanDisable:
                 raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
         elif rule.subgroup is not None:
             if (rule.group is None
                 or not (subgroup := self.__registry.get_subgroup(rule.group, rule.subgroup))
-                or not subgroup.can_disable):
+                or not subgroup.CanDisable):
                 raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
         elif rule.group is not None:
-            if not (group := self.__registry.get_group(rule.group)) or not group.can_disable:
+            if not (group := self.__registry.get_group(rule.group)) or not group.CanDisable:
                 raise InvalidCommandError(rule.command, rule.group, rule.subgroup)
 
         rule.identifier = await self.__repository.add_or_update(rule)
@@ -55,7 +55,7 @@ class CommandRuleManager(CommandRuleManagerInterface):
         assert_not_none(command, "command")
 
         command_config = self.__registry.get_command(command, group, subgroup)
-        if not command_config or not command_config.can_disable:
+        if not command_config or not command_config.CanDisable:
             return True
 
         rules = await self.__repository.get_relevant(server_id, channel_id, group, subgroup, command)

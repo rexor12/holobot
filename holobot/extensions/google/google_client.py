@@ -1,4 +1,4 @@
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -9,13 +9,8 @@ from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from .enums import SearchType
 from .exceptions import SearchQuotaExhaustedError
 from .igoogle_client import IGoogleClient
-from .models import SearchResult
+from .models import GoogleClientOptions, SearchResult
 
-CONFIG_SECTION = "Google"
-GCS_API_KEY = "GoogleSearchApiKey"
-GCS_ENGINE_ID = "GoogleSearchEngineId"
-CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "CircuitBreakerFailureThreshold"
-CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER = "CircuitBreakerRecoveryTime"
 TEXT_SEARCH_TYPE = "SEARCH_TYPE_UNDEFINED"
 
 @injectable(IGoogleClient)
@@ -27,20 +22,29 @@ class GoogleClient(IGoogleClient):
 
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
         http_client_pool: HttpClientPoolInterface,
-        logger_factory: ILoggerFactory
+        logger_factory: ILoggerFactory,
+        options: IOptions[GoogleClientOptions]
     ) -> None:
         super().__init__()
-        self.__configurator: ConfiguratorInterface = configurator
-        self.__http_client_pool: HttpClientPoolInterface = http_client_pool
+        self.__http_client_pool = http_client_pool
+        self.__options = options.value
         self.__log = logger_factory.create(GoogleClient)
-        self.__api_key: str = self.__configurator.get(CONFIG_SECTION, GCS_API_KEY, "")
-        self.__engine_id: str = self.__configurator.get(CONFIG_SECTION, GCS_ENGINE_ID, "")
-        self.__circuit_breaker: AsyncCircuitBreaker = GoogleClient.__create_circuit_breaker(self.__configurator)
+        self.__circuit_breaker = AsyncCircuitBreaker(
+            options.value.CircuitBreakerFailureThreshold,
+            options.value.CircuitBreakerRecoveryTime,
+            GoogleClient.__on_circuit_broken
+        )
 
-    async def search(self, search_type: SearchType, query: str, max_results: int = 1) -> tuple[SearchResult, ...]:
-        if not self.__api_key or not self.__engine_id:
+    async def search(
+        self,
+        search_type: SearchType,
+        query: str,
+        max_results: int = 1
+    ) -> tuple[SearchResult, ...]:
+        api_key = self.__options.GoogleSearchApiKey
+        engine_id = self.__options.GoogleSearchEngineId
+        if not api_key or not engine_id:
             raise InvalidOperationError("Google searches aren't configured.")
         if not query:
             raise ValueError("The query must not be empty.")
@@ -51,8 +55,8 @@ class GoogleClient(IGoogleClient):
                 (
                     "https://www.googleapis.com/customsearch/v1",
                     {
-                        "key": self.__api_key,
-                        "cx": self.__engine_id,
+                        "key": api_key,
+                        "cx": engine_id,
                         "searchType": GoogleClient.search_types.get(search_type, TEXT_SEARCH_TYPE),
                         "num": max_results,
                         "q": query
@@ -74,13 +78,6 @@ class GoogleClient(IGoogleClient):
             return ()
 
         return tuple(map(SearchResult.from_json, results))
-
-    @staticmethod
-    def __create_circuit_breaker(configurator: ConfiguratorInterface) -> AsyncCircuitBreaker:
-        return AsyncCircuitBreaker(
-            configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER, 1),
-            configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER, 300),
-            GoogleClient.__on_circuit_broken)
 
     @staticmethod
     async def __on_circuit_broken(circuit_breaker: AsyncCircuitBreaker, error: Exception) -> int:

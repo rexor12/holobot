@@ -1,32 +1,22 @@
 # Welcome
 
-Holo is a gradually growing bot with Discord integration. As it is a hobby project, there is no specific goal: whatever sounds like a good idea and has some use gets added over time.
+Holo is a gradually growing bot with Discord integration. As it is a hobby project, there is no specific goal: when I have an idea I think is good, I implement it. Sometimes these may be new business features and technical refactors at other times.
 
 # Features
 
 Below are some of the feature groups currently available:
 
-* General (avatar, emoji, dice, 8-ball)
-* Administration (command usage permissions)
+* General (avatar, banner, emoji, dice, 8-ball)
 * Moderation (manual/auto mute, kick, ban, logging)
-* Google text and image search
+* Giveaways (Epic Games Store)
 * Reminders
 * To-do lists
-* Weather information
-* Cryptocurrency information (provided by Binance)
+* Weather information (OpenWeather)
+* Google (text, image)
+* Anime reactions (Waifu.pics)
+* Administration (command usage permissions)
 
-For details about each group, please refer to the source code or the bot's help menu.
-
-# Technologies
-
-Below are some of the technologies used by this project:
-* [Python 3](https://www.python.org/)
-* [hikari](https://github.com/hikari-py)
-* [kanata](https://github.com/rexor12/kanata)
-* [asyncpg](https://github.com/MagicStack/asyncpg)
-* [tzlocal](https://github.com/regebro/tzlocal)
-* [Binance API](https://developers.binance.com)
-* [Google API](https://developers.google.com/custom-search/v1/overview)
+For details about each group, please refer to the source code or the bot's commands on Discord.
 
 # Installation
 
@@ -39,7 +29,7 @@ https://discord.com/api/oauth2/authorize?client_id=791766309611634698&permission
 
 To enable additional features of the bot, you can provide the necessary permissions in Discord for the bot's role or the bot user itself. When a required permission is missing, the bot should be able to tell you upon invoking the command.
 
-This instance of the bot is deployed from the _main_ branch, therefore it is usually the latest and greatest version.
+This instance of the bot is deployed from the latest stable branch (develop/x.x.x) while the new development happens on the _main_ branch in an isolated environment.
 
 ## Hosting your own instance
 
@@ -49,7 +39,7 @@ After cloning the repository, you will have to make sure that all the dependenci
 
 ```sh
 # All of the requirements are specified by a text file.
-python3 -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 As we are talking about a Discord bot here, you will have to create an official application to acquire tokens necessary for authentication with the servers. Please, refer to [Discord's development portal](https://discord.com/developers/docs/intro) for details.
@@ -58,19 +48,25 @@ Depending on your environment (such as [Heroku](https://www.heroku.com)), you ca
 
 ```json
 {
-    "General": {
-        "parameters": {
-            "DiscordToken": "<your Discord token goes here>",
-            "LogLevel": "Information"
+    "Core": {
+        "DiscordOptions": {
+            "DiscordToken": "<your Discord token goes here>"
         }
     }
 }
 ```
 
+# Technologies
+
+Below are some of the technologies used by this project:
+* [Python 3](https://www.python.org/)
+* [hikari](https://github.com/hikari-py)
+* [Google API](https://developers.google.com/custom-search/v1/overview)
+* [OpenWeather API](https://openweathermap.org/api)
+* [Waifu.pics API](https://waifu.pics/docs)
+
+Please, refer to the requirements.txt file for a list of PyPI packages.
+
 # Contribution
 
-Your contribution is welcome any time, be it suggestions, bug reports, bug fixes or new features.
-
-There is no specific process for now, therefore - depending on the type of contribution - I suggest either creating an [issue](https://github.com/rexor12/holobot/issues) or forking the repository and creating a [pull request](https://github.com/rexor12/holobot/pulls).
-
-Thank you!
+Any form of contribution is appreciated, therefore if you would like to do so, you can either create an [issue](https://github.com/rexor12/holobot/issues) or fork the repository and create a [pull request](https://github.com/rexor12/holobot/pulls).

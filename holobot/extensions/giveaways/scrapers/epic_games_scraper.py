@@ -2,8 +2,8 @@ import zoneinfo
 from collections.abc import Sequence
 from datetime import datetime, time, timedelta, timezone
 
-from holobot.extensions.giveaways.models import ExternalGiveawayItem
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.extensions.giveaways.models import EpicScraperOptions, ExternalGiveawayItem
+from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
@@ -14,11 +14,6 @@ from holobot.sdk.utils import first_or_default, utcnow
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
 from .iscraper import IScraper
 
-CONFIG_SECTION = "Giveaways"
-CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER = "EpicScraperCircuitBreakerFailureThreshold"
-CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER = "EpicScraperCircuitBreakerRecoveryTime"
-URL_PARAMETER = "EpicScraperUrl"
-COUNTRY_CODE_PARAMETER = "EpicScraperCountryCode"
 SCRAPE_DELAY: timedelta = timedelta(minutes=5)
 OFFER_IMAGE_TYPES: tuple[str, ...] = (
     "OfferImageWide", "DieselStoreFrontWide", "OfferImageTall", "Thumbnail"
@@ -33,16 +28,15 @@ EPIC_UPDATE_TIME = time(hour=10)
 class EpicGamesScraper(IScraper):
     def __init__(
         self,
-        configurator: ConfiguratorInterface,
         http_client_pool: HttpClientPoolInterface,
-        logger_factory: ILoggerFactory
+        logger_factory: ILoggerFactory,
+        options: IOptions[EpicScraperOptions]
     ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(EpicGamesScraper)
         self.__http_client_pool = http_client_pool
-        self.__url = configurator.get(CONFIG_SECTION, URL_PARAMETER, "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
-        self.__country_code = configurator.get(CONFIG_SECTION, COUNTRY_CODE_PARAMETER, "US")
-        self.__circuit_breaker = EpicGamesScraper.__create_circuit_breaker(configurator)
+        self.__options = options
+        self.__circuit_breaker = EpicGamesScraper.__create_circuit_breaker(options.value)
 
     @property
     def name(self) -> str:
@@ -71,11 +65,12 @@ class EpicGamesScraper(IScraper):
         return next_release_time.astimezone(timezone.utc) + SCRAPE_DELAY
 
     async def scrape(self) -> Sequence[ExternalGiveawayItem]:
+        options = self.__options.value
         response = await self.__circuit_breaker(
             lambda s: self.__http_client_pool.get(s[0], s[1]),
             (
-                self.__url,
-                { "country": self.__country_code }
+                options.Url,
+                { "country": options.CountryCode }
             )
         )
 
@@ -110,13 +105,12 @@ class EpicGamesScraper(IScraper):
         return giveaway_items
 
     @staticmethod
-    def __create_circuit_breaker(
-        configurator: ConfiguratorInterface
-    ) -> AsyncCircuitBreaker:
+    def __create_circuit_breaker(options: EpicScraperOptions) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
-            configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_FAILURE_THRESHOLD_PARAMETER, 1),
-            configurator.get(CONFIG_SECTION, CIRCUIT_BREAKER_RECOVERY_TIME_PARAMETER, 300),
-            EpicGamesScraper.__on_circuit_broken)
+            options.CircuitBreakerFailureThreshold,
+            options.CircuitBreakerRecoveryTime,
+            EpicGamesScraper.__on_circuit_broken
+        )
 
     @staticmethod
     async def __on_circuit_broken(

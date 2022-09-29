@@ -1,15 +1,19 @@
 import logging
 
 import structlog
-from kanata import InjectableCatalog, LifetimeScope, find_injectables
+from kanata import LifetimeScope
+from kanata.catalogs import InjectableCatalogBuilder
 from kanata.graphs.exceptions import CyclicGraphException
+from kanata.models import InjectableScopeType
 
 from holobot.framework import Kernel
-from holobot.framework.configs import Configurator
+from holobot.framework.configs import Configurator, OptionsProvider
 from holobot.framework.logging.handlers import ForwardEntryHandler
 from holobot.framework.logging.processors import ignore_loggers_by_name
 from holobot.framework.system import Environment
+from holobot.sdk.configs import IConfigurator, IOptions
 from holobot.sdk.logging.enums import LogLevel
+from holobot.sdk.system import IEnvironment
 
 if __name__ != "__main__":
     exit(0)
@@ -24,11 +28,11 @@ LOG_LEVEL_MAP = {
     LogLevel.CRITICAL: logging.CRITICAL
 }
 
-# TODO Register the Environment/Configurator as instances in Kanata.
-# https://github.com/rexor12/kanata/issues/11
 environment = Environment()
 configurator = Configurator(environment)
-log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
+log_level = LogLevel.parse(
+    configurator.get_parameter(("Core", "EnvironmentOptions"), "LogLevel", "Information")
+)
 
 structlog.configure(
     processors=[
@@ -62,11 +66,14 @@ logger.info("Configured logging", log_level=log_level.name or log_level.value)
 # The idea here is to register the services for each extension independently,
 # however, today it doesn't make sense as they're still in the same package.
 # Therefore, for now we just register everything from the entire package.
-registrations = find_injectables("holobot")
+catalog_builder = InjectableCatalogBuilder()
+catalog_builder.add_module("holobot")
+catalog_builder.register_instance(environment, (IEnvironment,))
+catalog_builder.register_instance(configurator, (IConfigurator,))
+catalog_builder.register_generic(OptionsProvider, (IOptions,), InjectableScopeType.SINGLETON)
 logger.info("Loaded all modules")
 
-catalog = InjectableCatalog(registrations)
-scope = LifetimeScope(catalog)
+scope = LifetimeScope(catalog_builder.build())
 try:
     logger.info("Starting the kernel...")
     scope.resolve(Kernel).run()

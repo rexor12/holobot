@@ -1,43 +1,19 @@
-from __future__ import annotations
-
-from typing import Any
+from dataclasses import dataclass, field
 
 from .command_configuration import CommandConfiguration
 
+@dataclass
 class SubgroupConfiguration:
-    def __init__(self, name: str) -> None:
-        self.name = name
-        self.can_disable = True
-        self.commands = {}
+    Name: str
+    CanDisable: bool = True
+    Commands: list[CommandConfiguration] = field(default_factory=list)
 
     @property
-    def name(self) -> str:
-        return self.__name
+    def commands_by_name(self) -> dict[str, CommandConfiguration]:
+        return self.__commands_by_name
 
-    @name.setter
-    def name(self, value: str) -> None:
-        self.__name = value
-
-    @property
-    def can_disable(self) -> bool:
-        return self.__can_disable
-
-    @can_disable.setter
-    def can_disable(self, value: bool) -> None:
-        self.__can_disable = value
-
-    @property
-    def commands(self) -> dict[str, CommandConfiguration]:
-        return self.__commands
-
-    @commands.setter
-    def commands(self, value: dict[str, CommandConfiguration]) -> None:
-        self.__commands = value
-
-    @staticmethod
-    def from_json(name: str, can_disable_parent: bool, json: dict[str, Any]) -> SubgroupConfiguration:
-        config = SubgroupConfiguration(name)
-        config.can_disable = json.get("CanDisable", can_disable_parent)
-        for key, value in json.get("Commands", {}).items():
-            config.commands[key] = CommandConfiguration.from_json(key, config.can_disable, value)
-        return config
+    def __post_init__(self) -> None:
+        self.__commands_by_name = {
+            command.Name: command
+            for command in self.Commands
+        }

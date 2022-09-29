@@ -1,3 +1,5 @@
+from .epic_scraper_options import EpicScraperOptions
 from .external_giveaway_item import ExternalGiveawayItem
 from .external_giveaway_item_metadata import ExternalGiveawayItemMetadata
+from .giveaway_options import GiveawayOptions
 from .scraper_info import ScraperInfo

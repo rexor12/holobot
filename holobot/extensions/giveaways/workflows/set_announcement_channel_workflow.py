@@ -7,7 +7,8 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.extensions.giveaways.models import GiveawayOptions
+from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -16,15 +17,13 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
     def __init__(
         self,
         channel_manager: IChannelManager,
-        configurator: ConfiguratorInterface,
-        i18n_provider: II18nProvider
+        i18n_provider: II18nProvider,
+        options: IOptions[GiveawayOptions]
     ) -> None:
         super().__init__()
         self.__channel_manager = channel_manager
         self.__i18n_provider = i18n_provider
-        self.__giveaway_announcement_server_id = str(configurator.get("Giveaways", "GiveawayAnnouncementServerId", 0))
-        self.__giveaway_announcement_channel_id = str(configurator.get("Giveaways", "GiveawayAnnouncementChannelId", 0))
-        self.__is_enabled = self.__is_feature_enabled()
+        self.__options = options
 
     @command(
         name="announce",
@@ -47,7 +46,8 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         channel: str | None = None
     ) -> InteractionResponse:
-        if not self.__is_enabled:
+        options = self.__options.value
+        if not SetAnnouncementChannelWorkflow.__is_feature_enabled(options):
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("feature_disabled_error"))
             )
@@ -63,21 +63,21 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
 
                 await self.__channel_manager.unfollow_news_channel_for_all_channels(
                     context.server_id,
-                    self.__giveaway_announcement_server_id,
-                    self.__giveaway_announcement_channel_id
+                    options.AnnouncementServerId,
+                    options.AnnouncementChannelId
                 )
                 await self.__channel_manager.follow_news_channel(
                     context.server_id,
                     channel_id,
-                    self.__giveaway_announcement_server_id,
-                    self.__giveaway_announcement_channel_id
+                    options.AnnouncementServerId,
+                    options.AnnouncementChannelId
                 )
 
             if not channel_id:
                 await self.__channel_manager.unfollow_news_channel_for_all_channels(
                     context.server_id,
-                    self.__giveaway_announcement_server_id,
-                    self.__giveaway_announcement_channel_id
+                    options.AnnouncementServerId,
+                    options.AnnouncementChannelId
                 )
         except ForbiddenError:
             return InteractionResponse(
@@ -107,10 +107,11 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
             )
         )
 
-    def __is_feature_enabled(self) -> bool:
+    @staticmethod
+    def __is_feature_enabled(options: GiveawayOptions) -> bool:
         return (
-            not not self.__giveaway_announcement_server_id
-            and self.__giveaway_announcement_server_id != "0"
-            and not not self.__giveaway_announcement_channel_id
-            and self.__giveaway_announcement_channel_id != "0"
+            not not options.AnnouncementServerId
+            and options.AnnouncementServerId != "0"
+            and not not options.AnnouncementChannelId
+            and options.AnnouncementChannelId != "0"
         )

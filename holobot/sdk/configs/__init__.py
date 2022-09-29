@@ -1,1 +1,3 @@
-from .configurator_interface import ConfiguratorInterface, TValue
+from .iconfigurator import IConfigurator, TValue
+from .ioptions import IOptions
+from .options_definition import OptionsDefinition

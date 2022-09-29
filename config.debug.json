@@ -1,0 +1,22 @@
+{
+    "Core": {
+        "EnvironmentOptions": {
+            "IsDebug": true,
+            "LogLevel": "Trace",
+            "HttpPoolSize": 100
+        },
+        "DatabaseOptions": {
+            "Host": "127.0.0.1",
+            "Port": 5432,
+            "Database": "holobot",
+            "User": "postgres",
+            "Password": "password",
+            "AutoCreateDatabase": false
+        }
+    },
+    "Reminders": {
+        "ReminderProcessingOptions": {
+            "IsEnabled": true
+        }
+    }
+}

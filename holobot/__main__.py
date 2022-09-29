@@ -1,16 +1,17 @@
 import logging
 
 import structlog
-from kanata import LifetimeScope, find_injectables
+from kanata import LifetimeScope
 from kanata.catalogs import InjectableCatalogBuilder
 from kanata.graphs.exceptions import CyclicGraphException
+from kanata.models import InjectableScopeType
 
 from holobot.framework import Kernel
-from holobot.framework.configs import Configurator
+from holobot.framework.configs import Configurator, OptionsProvider
 from holobot.framework.logging.handlers import ForwardEntryHandler
 from holobot.framework.logging.processors import ignore_loggers_by_name
 from holobot.framework.system import Environment
-from holobot.sdk.configs import ConfiguratorInterface
+from holobot.sdk.configs import IConfigurator, IOptions
 from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.system import IEnvironment
 
@@ -29,7 +30,9 @@ LOG_LEVEL_MAP = {
 
 environment = Environment()
 configurator = Configurator(environment)
-log_level = LogLevel.parse(configurator.get("General", "LogLevel", "Information"))
+log_level = LogLevel.parse(
+    configurator.get_parameter(("Core", "EnvironmentOptions"), "LogLevel", "Information")
+)
 
 structlog.configure(
     processors=[
@@ -66,7 +69,8 @@ logger.info("Configured logging", log_level=log_level.name or log_level.value)
 catalog_builder = InjectableCatalogBuilder()
 catalog_builder.add_module("holobot")
 catalog_builder.register_instance(environment, (IEnvironment,))
-catalog_builder.register_instance(configurator, (ConfiguratorInterface,))
+catalog_builder.register_instance(configurator, (IConfigurator,))
+catalog_builder.register_generic(OptionsProvider, (IOptions,), InjectableScopeType.SINGLETON)
 logger.info("Loaded all modules")
 
 scope = LifetimeScope(catalog_builder.build())

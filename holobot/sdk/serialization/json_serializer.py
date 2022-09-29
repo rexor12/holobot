@@ -52,7 +52,10 @@ def __deserialize_instance(object_type: type[T], json_object: Any) -> T | None:
                 elif parameter_info.default_factory:
                     argument = parameter_info.default_factory()
                 else:
-                    raise ValueError("Deserialized None where it wasn't allowed.")
+                    raise ValueError(
+                        f"Deserialized None for attribute '{parameter_info.name}'"
+                        " which doesn't accept it as a valid value."
+                    )
             arguments[parameter_info.name] = argument
 
     return object_type(**arguments)

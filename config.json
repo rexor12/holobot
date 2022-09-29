@@ -1,217 +1,326 @@
 {
-    "General": {
-        "parameters": {
-            "IsDebug": false,
-            "DiscordToken": "",
-            "LogLevel": "Information",
-            "HttpPoolSize": 50,
-            "AvatarArtworkArtistName": "unknown",
-            "WaifuPicsCircuitBreakerFailureThreshold": 1,
-            "WaifuPicsCircuitBreakerRecoveryTime": 300,
-            "WaifuPicsRateLimiterRequestsPerInterval": 2,
-            "WaifuPicsRateLimiterInterval": 5
+    "Admin": {
+        "CommandOptions": {
+            "CommandGroups": [
+                {
+                    "Name": "",
+                    "CanDisable": true,
+                    "Commands": [
+                        {
+                            "Name": "8ball"
+                        },
+                        {
+                            "Name": "avatar"
+                        },
+                        {
+                            "Name": "banner"
+                        },
+                        {
+                            "Name": "emoji"
+                        },
+                        {
+                            "Name": "google"
+                        },
+                        {
+                            "Name": "info",
+                            "CanDisable": false
+                        },
+                        {
+                            "Name": "react"
+                        },
+                        {
+                            "Name": "roll"
+                        },
+                        {
+                            "Name": "summon"
+                        }
+                    ]
+                },
+                {
+                    "Name": "admin",
+                    "CanDisable": false,
+                    "Subgroups": [
+                        {
+                            "Name": "commands",
+                            "Commands": [
+                                {
+                                    "Name": "help"
+                                },
+                                {
+                                    "Name": "removerule"
+                                },
+                                {
+                                    "Name": "setrule"
+                                },
+                                {
+                                    "Name": "test"
+                                },
+                                {
+                                    "Name": "view"
+                                },
+                                {
+                                    "Name": "viewrules"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Name": "giveaway",
+                    "Commands": [
+                        {
+                            "Name": "view"
+                        }
+                    ]
+                },
+                {
+                    "Name": "hentai",
+                    "Commands": [
+                        {
+                            "Name": "link"
+                        }
+                    ]
+                },
+                {
+                    "Name": "moderation",
+                    "Subgroups": [
+                        {
+                            "Name": "auto",
+                            "Commands": [
+                                {
+                                    "Name": "disableban"
+                                },
+                                {
+                                    "Name": "disablekick"
+                                },
+                                {
+                                    "Name": "disablemute"
+                                },
+                                {
+                                    "Name": "setban"
+                                },
+                                {
+                                    "Name": "setkick"
+                                },
+                                {
+                                    "Name": "setmute"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "permissions",
+                            "Commands": [
+                                {
+                                    "Name": "add"
+                                },
+                                {
+                                    "Name": "remove"
+                                },
+                                {
+                                    "Name": "view"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "logs",
+                            "Commands": [
+                                {
+                                    "Name": "clearchannel"
+                                },
+                                {
+                                    "Name": "setchannel"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "warns",
+                            "Commands": [
+                                {
+                                    "Name": "disabledecay"
+                                },
+                                {
+                                    "Name": "setdecay"
+                                },
+                                {
+                                    "Name": "view"
+                                }
+                            ]
+                        }
+                    ],
+                    "Commands": [
+                        {
+                            "Name": "ban"
+                        },
+                        {
+                            "Name": "kick"
+                        },
+                        {
+                            "Name": "mute"
+                        },
+                        {
+                            "Name": "unmute"
+                        },
+                        {
+                            "Name": "warn"
+                        }
+                    ]
+                },
+                {
+                    "Name": "reminder",
+                    "Commands": [
+                        {
+                            "Name": "remove"
+                        },
+                        {
+                            "Name": "set"
+                        },
+                        {
+                            "Name": "view"
+                        }
+                    ]
+                },
+                {
+                    "Name": "server",
+                    "Commands": [
+                        {
+                            "Name": "icon"
+                        },
+                        {
+                            "Name": "banner"
+                        }
+                    ]
+                },
+                {
+                    "Name": "todo",
+                    "Commands": [
+                        {
+                            "Name": "add"
+                        },
+                        {
+                            "Name": "removeall"
+                        },
+                        {
+                            "Name": "remove"
+                        },
+                        {
+                            "Name": "view"
+                        }
+                    ]
+                },
+                {
+                    "Name": "weather",
+                    "Commands": [
+                        {
+                            "Name": "basic"
+                        }
+                    ]
+                }
+            ]
         }
     },
+
+    "Core": {
+        "DiscordOptions": {
+            "BotToken": "__HOLO_BOT_TOKEN__",
+            "DevelopmentServerId": "__HOLO_DEVELOPMENT_SERVER_ID__"
+        },
+        "EnvironmentOptions": {
+            "IsDebug": "__HOLO_IS_DEBUG__",
+            "LogLevel": "__HOLO_LOG_LEVEL__",
+            "HttpPoolSize": "__HOLO_HTTP_POOL_SIZE__"
+        },
+        "DatabaseOptions": {
+            "Host": "__HOLO_DATABASE_HOST__",
+            "Port": "__HOLO_DATABASE_PORT__",
+            "Database": "__HOLO_DATABASE_NAME__",
+            "User": "__HOLO_DATABASE_USER__",
+            "Password": "__HOLO_DATABASE_PASSWORD__",
+            "AutoCreateDatabase": "__HOLO_AUTO_CREATE_DATABASE__"
+        }
+    },
+
+    "General": {
+        "AvatarOptions": {
+            "ArtworkArtistName": "__HOLO_AVATAR_ARTWORK_ARTIST__"
+        },
+        "WaifuPicsOptions": {
+            "CircuitBreakerFailureThreshold": 1,
+            "CircuitBreakerRecoveryTime": 300,
+            "RateLimiterRequestsPerInterval": 2,
+            "RateLimiterInterval": 5,
+            "Url": "https://api.waifu.pics/many/sfw/"
+        }
+    },
+
+    "Giveaways": {
+        "GiveawayOptions": {
+            "EnableScrapers": "__HOLO_ENABLE_GIVEAWAYS__",
+            "RunnerResolution": 60,
+            "RunnerDelay": 40,
+            "AnnouncementServerId": "__HOLO_GIVEAWAY_ANNOUNCE_SERVER_ID__",
+            "AnnouncementChannelId": "__HOLO_GIVEAWAY_ANNOUNCE_CHANNEL_ID__"
+        },
+        "EpicScraperOptions": {
+            "CircuitBreakerFailureThreshold": 1,
+            "CircuitBreakerRecoveryTime": 300,
+            "Url": "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions",
+            "CountryCode": "US"
+        }
+    },
+
     "Google": {
-        "parameters": {
-            "GoogleSearchApiKey": "",
-            "GoogleSearchEngineId": "",
+        "GoogleClientOptions": {
+            "GoogleSearchApiKey": "__HOLO_GOOGLE_SEARCH_API_KEY__",
+            "GoogleSearchEngineId": "__HOLO_GOOGLE_SEARCH_ENGINE_ID__",
             "CircuitBreakerFailureThreshold": 1,
             "CircuitBreakerRecoveryTime": 300
         }
     },
-    "Development": {
-        "parameters": {
-            "DeveloperUserIds": [],
-            "DevelopmentServerId": 0
-        }
-    },
-    "Database": {
-        "parameters": {
-            "Host": "127.0.0.1",
-            "Port": 5432,
-            "Database": "holobot",
-            "User": "postgres",
-            "Password": "",
-            "AutoCreateDatabase": false
-        }
-    },
-    "Reminders": {
-        "parameters": {
-            "Enable": true,
-            "ProcessorResolution": 60,
-            "ProcessorDelay": 30,
-            "RemindersPerUserMax": 5,
-            "MessageLengthMin": 10,
-            "MessageLengthMax": 120
-        }
-    },
-    "TodoLists": {
-        "parameters": {
-            "TodoItemsPerUserMax": 10,
-            "MessageLengthMin": 10,
-            "MessageLengthMax": 192
-        }
-    },
-    "OpenWeather": {
-        "parameters": {
-            "ApiKey": "",
-            "EnableCaching": true,
-            "CacheExpiration": 300,
-            "CircuitBreakerFailureThreshold": 1,
-            "CircuitBreakerRecoveryTime": 300,
-            "ApiGatewayBaseUrl": "https://api.openweathermap.org/data/2.5/weather",
-            "ConditionImageBaseUrl": "https://openweathermap.org/img/wn/"
-        }
-    },
-    "Admin": {
-        "parameters": {
-            "CommandGroups": {
-                "": {
-                    "CanDisable": true,
-                    "Commands": {
-                        "8ball": {},
-                        "avatar": {},
-                        "emoji": {},
-                        "google": {},
-                        "info": {
-                            "CanDisable": false
-                        },
-                        "roll": {},
-                        "summon": {}
-                    }
-                },
-                "admin": {
-                    "CanDisable": false,
-                    "Subgroups": {
-                        "commands": {
-                            "Commands": {
-                                "help": {},
-                                "removerule": {},
-                                "setrule": {},
-                                "test": {},
-                                "view": {},
-                                "viewrules": {}
-                            }
-                        }
-                    },
-                    "Commands": {}
-                },
-                "crypto": {
-                    "Subgroups": {
-                        "alarm": {
-                            "Commands": {
-                                "remove": {},
-                                "removeall": {},
-                                "set": {},
-                                "view": {}
-                            }
-                        }
-                    },
-                    "Commands": {
-                        "price": {}
-                    }
-                },
-                "giveaway": {
-                    "Commands": {
-                        "view": {}
-                    }
-                },
-                "hentai": {
-                    "Commands": {
-                        "link": {}
-                    }
-                },
-                "moderation": {
-                    "Subgroups": {
-                        "auto": {
-                            "Commands": {
-                                "disableban": {},
-                                "disablekick": {},
-                                "disablemute": {},
-                                "setban": {},
-                                "setkick": {},
-                                "setmute": {}
-                            }
-                        },
-                        "permissions": {
-                            "Commands": {
-                                "add": {},
-                                "remove": {},
-                                "view": {}
-                            }
-                        },
-                        "logs": {
-                            "Commands": {
-                                "clearchannel": {},
-                                "setchannel": {}
-                            }
-                        },
-                        "warns": {
-                            "Commands": {
-                                "disabledecay": {},
-                                "setdecay": {},
-                                "view": {}
-                            }
-                        }
-                    },
-                    "Commands": {
-                        "ban": {},
-                        "kick": {},
-                        "mute": {},
-                        "unmute": {},
-                        "warn": {}
-                    }
-                },
-                "reminder": {
-                    "Commands": {
-                        "remove": {},
-                        "set": {},
-                        "view": {}
-                    }
-                },
-                "server": {
-                    "Commands": {
-                        "icon": {}
-                    }
-                },
-                "todo": {
-                    "Commands": {
-                        "add": {},
-                        "removeall": {},
-                        "remove": {},
-                        "view": {}
-                    }
-                },
-                "weather": {
-                    "Commands": {
-                        "basic": {}
-                    }
-                }
-            }
-        }
-    },
+
     "Moderation": {
-        "parameters": {
+        "ModerationOptions": {
             "ReasonLengthMin": 10,
             "ReasonLengthMax": 192,
             "DecayThresholdMin": 1800,
             "DecayThresholdMax": 2592000,
             "WarnCleanupInterval": 3600,
-            "WarnCleanupDelay": 60
+            "WarnCleanupDelay": 60,
+            "MuteDurationMin": 1800,
+            "MuteDurationMax": 2592000,
+            "MuteCleanupInterval": 3600,
+            "MuteCleanupDelay": 60
         }
     },
-    "Giveaways": {
-        "parameters": {
-            "EnableScrapers": true,
-            "RunnerResolution": 60,
-            "RunnerDelay": 40,
-            "EpicScraperCircuitBreakerFailureThreshold": 1,
-            "EpicScraperCircuitBreakerRecoveryTime": 300,
-            "EpicScraperUrl": "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions",
-            "EpicScraperCountryCode": "US",
-            "GiveawayAnnouncementServerId": 0,
-            "GiveawayAnnouncementChannelId": 0
+
+    "Reminders": {
+        "ReminderProcessingOptions": {
+            "IsEnabled": "__HOLO_IS_REMINDERS_ENABLED__",
+            "Resolution": 60,
+            "Delay": 30
+        },
+        "ReminderOptions": {
+            "RemindersPerUserMax": 5,
+            "MessageLengthMin": 10,
+            "MessageLengthMax": 120
+        }
+    },
+
+    "TodoLists": {
+        "TodoOptions": {
+            "TodoItemsPerUserMax": 10,
+            "MessageLengthMin": 10,
+            "MessageLengthMax": 192
+        }
+    },
+
+    "Weather": {
+        "OpenWeatherOptions": {
+            "ApiKey": "__HOLO_OPEN_WEATHER_API_KEY__",
+            "CircuitBreakerFailureThreshold": 1,
+            "CircuitBreakerRecoveryTime": 300,
+            "ApiGatewayBaseUrl": "https://api.openweathermap.org/data/2.5/weather",
+            "ConditionImageBaseUrl": "https://openweathermap.org/img/wn/",
+            "IconUrl": "https://openweathermap.org/themes/openweathermap/assets/vendor/owm/img/icons/logo_60x60.png"
         }
     }
 }

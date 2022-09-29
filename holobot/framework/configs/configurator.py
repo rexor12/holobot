@@ -1,64 +1,95 @@
 import os
+import re
 from json import load
+from queue import Queue
 from typing import Any, cast
 
 from holobot.sdk.configs import IConfigurator, TValue
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.system import IEnvironment
-
-_CONFIG_FILE_NAME = "config.json"
+from holobot.sdk.utils.dict_utils import merge
 
 @injectable(IConfigurator)
 class Configurator(IConfigurator):
+    _MAIN_CONFIG_FILE_NAME = "config.json"
+    _ENV_CONFIG_FILE_NAME = "config.{env}.json"
+    _ENV_VAR_REGEX = re.compile(r"^__(?P<name>\w+)__$")
+
+    @property
+    def effective_config(self) -> dict[str, Any]:
+        return self.__configs
+
     def __init__(self, environment: IEnvironment) -> None:
         self.__configs = Configurator.__load_config(environment)
 
-    def get(self, section_name: str, parameter_name: str, default_value: TValue) -> TValue:
-        if (value := Configurator.__try_get_from_env(section_name, parameter_name, default_value)) is not None:
-            return value
+    def get_parameter(
+        self,
+        section_name: str | tuple[str, ...],
+        parameter_name: str,
+        default_value: TValue
+    ) -> TValue:
+        if not section_name:
+            return default_value
 
-        if not (section := self.__configs.get(section_name)):
+        if isinstance(section_name, str):
+            section_name = (section_name, parameter_name)
+        else:
+            section_name += (parameter_name,)
+
+        section_or_parameter = self.effective_config.get(section_name[0])
+        for subsection_name in section_name[1:]:
+            if not isinstance(section_or_parameter, dict):
+                return default_value
+            section_or_parameter = section_or_parameter.get(subsection_name)
+
+        if section_or_parameter is None or isinstance(section_or_parameter, dict):
             return default_value
-        if not isinstance(section, dict) or not (parameters := section.get("parameters")):
+
+        if isinstance(section_or_parameter, list):
+            if isinstance(default_value, list):
+                return cast(TValue, section_or_parameter)
+            else:
+                return default_value
+
+        try:
+            return type(default_value)(cast(Any, section_or_parameter))
+        except TypeError:
             return default_value
-        if not isinstance(parameters, dict):
-            return default_value
-        if (parameter := parameters.get(parameter_name)) is not None:
-            return Configurator.__get_parameter_value(parameter, default_value)
-        return default_value
 
     @staticmethod
     def __load_config(environment: IEnvironment) -> dict[str, Any]:
-        config_file_path = os.path.join(environment.root_path, _CONFIG_FILE_NAME)
-        with open(config_file_path) as config_file:
-            return load(config_file)
+        config_file_paths = [
+            os.path.join(environment.root_path, Configurator._MAIN_CONFIG_FILE_NAME)
+        ]
+        if (env := os.environ.get("HOLO_ENVIRONMENT", None)):
+            config_file_paths.append(
+                os.path.join(
+                    environment.root_path,
+                    Configurator._ENV_CONFIG_FILE_NAME.format(env=env)
+                )
+            )
+
+        effective_config = dict[str, Any]()
+        for config_file_path in config_file_paths:
+            if os.path.exists(config_file_path) and os.path.isfile(config_file_path):
+                with open(config_file_path) as config_file:
+                    merge(effective_config, load(config_file))
+
+        Configurator.__resolve_environment_variables(effective_config)
+
+        return effective_config
 
     @staticmethod
-    def __try_get_from_env(
-        section_name: str,
-        parameter_name: str,
-        default_value: TValue
-    ) -> TValue | None:
-        if (value := os.environ.get(f"{section_name}-{parameter_name}", None)) is not None:
-            if isinstance(value, type(default_value)):
-                return value
-            return deserialize(type(default_value), f"\"{value}\"")
-
-    @staticmethod
-    def __get_parameter_value(parameter_value: Any, default_value: TValue) -> TValue:
-        if type(default_value) is str and isinstance(parameter_value, str):
-            return cast(TValue, parameter_value)
-        elif type(default_value) is bool:
-            if isinstance(parameter_value, bool):
-                return cast(TValue, parameter_value)
-            elif isinstance(parameter_value, (str, int)):
-                return cast(TValue, bool(parameter_value))
-        elif type(default_value) is int:
-            if isinstance(parameter_value, int):
-                return cast(TValue, parameter_value)
-            elif isinstance(parameter_value, str):
-                return cast(TValue, int(parameter_value))
-        elif type(default_value) is list and isinstance(parameter_value, list):
-            return parameter_value.split(",") # type: ignore
-        return default_value
+    def __resolve_environment_variables(effective_config: dict[str, Any]) -> None:
+        nodes = Queue[dict[str, Any]]()
+        nodes.put(effective_config)
+        while not nodes.empty():
+            node = nodes.get()
+            for key, value in node.items():
+                if isinstance(value, dict):
+                    nodes.put(value)
+                elif (
+                    isinstance(value, str)
+                    and (env_var := Configurator._ENV_VAR_REGEX.match(value))
+                ):
+                    node[key] = os.environ.get(env_var["name"], value)

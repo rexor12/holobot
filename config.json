@@ -300,7 +300,7 @@
         },
         "ReminderOptions": {
             "RemindersPerUserMax": 5,
-            "MessageLengthMin": 10,
+            "MessageLengthMin": 0,
             "MessageLengthMax": 120
         }
     },

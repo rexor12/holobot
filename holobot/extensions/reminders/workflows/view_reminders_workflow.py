@@ -4,7 +4,9 @@ from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
+from holobot.discord.sdk.workflows.interactables.components import (
+    ComponentBase, LayoutBase, Paginator
+)
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
@@ -115,7 +117,7 @@ class ViewRemindersWorkflow(WorkflowBase):
                 value=self.__i18n_provider.get(
                     "extensions.reminders.view_reminders_workflow.embed_field_value",
                     {
-                        "message": reminder.message,
+                        "message": reminder.message or "???",
                         "time": reminder.next_trigger,
                         "repeats": (
                             ":white_check_mark:"

@@ -31,7 +31,7 @@ class SetReminderWorkflow(WorkflowBase):
         name="set",
         group_name="reminder",
         options=(
-            Option("message", "The message you'd like sent to you."),
+            Option("message", "The message you'd like sent to you.", is_mandatory=False),
             Option("in_time", "After the specified time passes. Eg. 1h30m or 01:30.", is_mandatory=False),
             Option("at_time", "At a specific moment in time. Eg. 15:30 or 15h30m.", is_mandatory=False),
             Option("every_interval", "Repeat in intervals. Eg. 1h30m, 01:30 or day/week.", is_mandatory=False)
@@ -41,19 +41,18 @@ class SetReminderWorkflow(WorkflowBase):
     async def set_reminder(
         self,
         context: ServerChatInteractionContext,
-        message: str,
+        message: str | None = None,
         in_time: str | None = None,
         at_time: str | None = None,
         every_interval: str | None = None
     ) -> InteractionResponse:
-        reminder_config = ReminderConfig()
+        reminder_config = ReminderConfig(message=message)
         if in_time is not None and len(in_time) > 0:
             reminder_config.in_time = parse_interval(in_time)
         if at_time is not None and len(at_time) > 0:
             reminder_config.at_time = parse_interval(at_time)
         if every_interval is not None and len(every_interval) > 0:
             reminder_config.every_interval = parse_interval(every_interval)
-        reminder_config.message = message
 
         try:
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)

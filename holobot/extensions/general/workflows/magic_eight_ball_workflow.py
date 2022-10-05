@@ -45,10 +45,7 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
         seed = hash(question.strip("?.!-+").lower())
         return InteractionResponse(
             action=ReplyAction(
-                content=(
-                    f"> {question}\n"
-                    f"{Random(seed).choice(self.__answers)}"
-                ),
+                content=f"> {question}\n{Random(seed).choice(self.__answers)}",
                 suppress_user_mentions=True
             )
         )

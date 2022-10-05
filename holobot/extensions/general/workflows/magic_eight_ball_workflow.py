@@ -41,7 +41,14 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
         context: ServerChatInteractionContext,
         question: str
     ) -> InteractionResponse:
-        seed = hash(question.strip().strip("?.!-+").lower())
+        question = question.strip()
+        seed = hash(question.strip("?.!-+").lower())
         return InteractionResponse(
-            action=ReplyAction(content=Random(seed).choice(self.__answers))
+            action=ReplyAction(
+                content=(
+                    f"> {question}\n"
+                    f"{Random(seed).choice(self.__answers)}"
+                ),
+                suppress_user_mentions=True
+            )
         )

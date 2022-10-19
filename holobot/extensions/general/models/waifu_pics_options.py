@@ -4,7 +4,7 @@ from typing import ClassVar
 from holobot.sdk.configs import OptionsDefinition
 
 @dataclass
-class WaifuPicsoptions(OptionsDefinition):
+class WaifuPicsOptions(OptionsDefinition):
     section_name: ClassVar[str] = "General"
 
     CircuitBreakerFailureThreshold: int = 1

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from holobot.extensions.general.models import WaifuPicsoptions
+from holobot.extensions.general.models import WaifuPicsOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -19,7 +19,7 @@ class WaifuPicsClient(IWaifuPicsClient):
         self,
         http_client_pool: HttpClientPoolInterface,
         logger_factory: ILoggerFactory,
-        options: IOptions[WaifuPicsoptions]
+        options: IOptions[WaifuPicsOptions]
     ) -> None:
         super().__init__()
         self.__http_client_pool = http_client_pool
@@ -62,7 +62,7 @@ class WaifuPicsClient(IWaifuPicsClient):
         return tuple(dto.files) if dto else ()
 
     @staticmethod
-    def __create_circuit_breaker(options: WaifuPicsoptions) -> AsyncCircuitBreaker:
+    def __create_circuit_breaker(options: WaifuPicsOptions) -> AsyncCircuitBreaker:
         return AsyncCircuitBreaker(
             options.CircuitBreakerFailureThreshold,
             options.CircuitBreakerRecoveryTime,
@@ -82,7 +82,7 @@ class WaifuPicsClient(IWaifuPicsClient):
         return circuit_breaker.recovery_timeout
 
     @staticmethod
-    def __create_rate_limiter(options: WaifuPicsoptions) -> AsyncRateLimiter:
+    def __create_rate_limiter(options: WaifuPicsOptions) -> AsyncRateLimiter:
         return AsyncRateLimiter(
             options.RateLimiterRequestsPerInterval,
             timedelta(seconds=options.RateLimiterInterval)

@@ -32,7 +32,7 @@ class ViewServerIconWorkflow(WorkflowBase):
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
         try:
-            server = self.__server_data_provider.get_basic_data_by_id(context.server_id)
+            server = await self.__server_data_provider.get_basic_data_by_id(context.server_id)
         except ServerNotFoundError:
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("server_not_found_error"))

@@ -10,7 +10,6 @@ from holobot.discord.sdk.exceptions import (
 from holobot.discord.sdk.models.embed import Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.transformers.embed import to_dto as embed_to_dto
-from holobot.discord.utils import get_guild_channel
 from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -32,11 +31,9 @@ class Messaging(IMessaging):
         assert_not_none(user_id, "user_id")
         assert_not_none(message, "message")
 
-        if not (user := get_bot().get_user_by_id(int(user_id))):
-            self.__log.warning("Failed to DM invalid user", user_id=user_id)
-            return
-        self.__log.trace("Sending DM...", user_id=user_id)
         try:
+            user = await get_bot().get_user_by_id(int(user_id))
+            self.__log.trace("Sending DM...", user_id=user_id)
             await user.send(message)
         except HikariForbiddenError as error:
             raise ForbiddenError(
@@ -58,14 +55,14 @@ class Messaging(IMessaging):
         assert_not_none(channel_id, "channel_id")
         assert_not_none(content, "content")
 
-        channel = get_guild_channel(server_id, channel_id)
+        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
         if not channel or not isinstance(channel, TextableGuildChannel):
             self.__log.trace(
                 "Tried to send a guild message to a non-messageable channel",
                 channel_id=channel_id,
                 channel_type=type(channel)
             )
-            raise ChannelNotFoundError(channel_id)
+            raise ChannelNotFoundError(channel_id, server_id)
 
         text_content = content if isinstance(content, str) else UNDEFINED
         embed_content = embed_to_dto(content) if isinstance(content, Embed) else UNDEFINED
@@ -93,7 +90,7 @@ class Messaging(IMessaging):
         assert_not_none(channel_id, "channel_id")
         assert_not_none(message_id, "message_id")
 
-        channel = get_guild_channel(server_id, channel_id)
+        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
         if not isinstance(channel, GuildNewsChannel):
             raise InvalidChannelError(
                 server_id,

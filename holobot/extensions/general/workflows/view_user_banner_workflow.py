@@ -45,19 +45,16 @@ class ViewUserBannerWorkflow(WorkflowBase):
         try:
             if user is None:
                 user_data = await self.__user_data_provider.get_user_data_by_id(
-                    context.author_id,
-                    True
+                    context.author_id
                 )
             elif (user_id := get_user_id(user.strip())) is not None:
                 user_data = await self.__user_data_provider.get_user_data_by_id(
-                    user_id,
-                    True
+                    user_id
                 )
             else:
                 user_data = await self.__user_data_provider.get_user_data_by_name(
                     context.server_id,
-                    user.strip(),
-                    True
+                    user.strip()
                 )
 
             user_name = user_data.name

@@ -2,11 +2,11 @@ from datetime import timedelta
 
 from hikari import ForbiddenError as HikariForbiddenError
 
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.discord.sdk.servers.managers import (
     SILENCE_DURATION_MAX, SILENCE_DURATION_MIN, IUserManager
 )
-from holobot.discord.utils import get_guild_member, get_guild_role
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, assert_range, textify_timedelta, utcnow
@@ -32,7 +32,7 @@ class UserManager(IUserManager):
                 textify_timedelta(SILENCE_DURATION_MAX)
             )
 
-        member = get_guild_member(server_id, user_id)
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.edit(communication_disabled_until=utcnow() + duration)
         except HikariForbiddenError as error:
@@ -43,7 +43,7 @@ class UserManager(IUserManager):
         assert_not_none(user_id, "user_id")
         assert_not_none(reason, "reason")
 
-        member = get_guild_member(server_id, user_id)
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.kick(reason=reason)
         except HikariForbiddenError as error:
@@ -55,7 +55,7 @@ class UserManager(IUserManager):
         assert_not_none(reason, "reason")
         assert_range(delete_message_days, 0, 7, "delete_message_days")
 
-        member = get_guild_member(server_id, user_id)
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.ban(reason=reason, delete_message_days=delete_message_days)
         except HikariForbiddenError as error:
@@ -66,8 +66,8 @@ class UserManager(IUserManager):
         assert_not_none(user_id, "user_id")
         assert_not_none(role_id, "role_id")
 
-        member = get_guild_member(server_id, user_id)
-        role = get_guild_role(server_id, role_id)
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        role = await get_bot().get_guild_role(int(server_id), int(role_id))
         try:
             await member.add_role(role)
         except HikariForbiddenError as error:
@@ -78,8 +78,8 @@ class UserManager(IUserManager):
         assert_not_none(user_id, "user_id")
         assert_not_none(role_id, "role_id")
 
-        member = get_guild_member(server_id, user_id)
-        role = get_guild_role(server_id, role_id)
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        role = await get_bot().get_guild_role(int(server_id), int(role_id))
         try:
             await member.remove_role(role)
         except HikariForbiddenError as error:
@@ -93,7 +93,7 @@ class UserManager(IUserManager):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        member = get_guild_member(server_id, user_id)
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.edit(communication_disabled_until=None)
         except HikariForbiddenError as error:

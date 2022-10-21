@@ -29,7 +29,7 @@ class HasRequiredPermissionsRule(IWorkflowExecutionRule):
         if not isinstance(context, VALID_CONTEXTS):
             return (False, None)
 
-        permissions = self.__member_data_provider.get_member_permissions(
+        permissions = await self.__member_data_provider.get_member_permissions(
             context.server_id,
             context.channel_id,
             context.author_id

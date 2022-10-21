@@ -6,7 +6,9 @@ from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
+from holobot.discord.sdk.workflows.interactables.components import (
+    ComponentBase, LayoutBase, Paginator
+)
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -52,7 +54,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 action=ReplyAction(content="You must mention a user correctly.")
             )
 
-        if not self.__member_data_provider.is_member(context.server_id, user_id):
+        if not await self.__member_data_provider.is_member(context.server_id, user_id):
             return InteractionResponse(
                 action=ReplyAction(content="The user you mentioned cannot be found.")
             )

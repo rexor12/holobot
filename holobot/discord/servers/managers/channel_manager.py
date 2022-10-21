@@ -14,16 +14,17 @@ from holobot.discord.sdk.exceptions import (
 from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.discord.sdk.servers.models import ServerChannel
 from holobot.discord.transformers.server_channel import to_model
-from holobot.discord.utils import get_guild
 from holobot.discord.utils.permission_utils import PERMISSION_TO_DTOS
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 
 @injectable(IChannelManager)
 class ChannelManager(IChannelManager):
-    def get_channels(self, server_id: str) -> Iterable[ServerChannel]:
+    async def get_channels(self, server_id: str) -> Iterable[ServerChannel]:
         assert_not_none(server_id, "server_id")
-        return list(map(to_model, get_guild(server_id).get_channels().values()))
+
+        guild = await get_bot().get_guild_by_id(int(server_id))
+        return list(map(to_model, guild.get_channels().values()))
 
     async def set_role_permissions(
         self,
@@ -39,11 +40,11 @@ class ChannelManager(IChannelManager):
         if not permissions:
             return
 
-        guild = get_guild(server_id)
-        if not (channel := guild.get_channel(int(channel_id))):
+        guild = await get_bot().get_guild_by_id(int(server_id))
+        if not (channel := await get_bot().get_guild_channel(guild, int(channel_id))):
             raise ChannelNotFoundError(channel_id)
 
-        if not guild.get_role(int(role_id)):
+        if not await get_bot().get_guild_role(guild, int(role_id)):
             raise RoleNotFoundError(server_id, role_id)
 
         allowed_permissions = Permissions.NONE
@@ -83,12 +84,12 @@ class ChannelManager(IChannelManager):
         assert_not_none(source_server_id, "source_server_id")
         assert_not_none(source_channel_id, "source_channel_id")
 
-        guild = get_guild(server_id)
-        if not (channel := guild.get_channel(int(channel_id))):
+        guild = await get_bot().get_guild_by_id(int(server_id))
+        if not (channel := await get_bot().get_guild_channel(guild, int(channel_id))):
             raise ChannelNotFoundError(channel_id)
 
-        source_guild = get_guild(source_server_id)
-        if not (source_channel := source_guild.get_channel(int(source_channel_id))):
+        source_guild = await get_bot().get_guild_by_id(int(source_server_id))
+        if not (source_channel := await get_bot().get_guild_channel(guild, int(source_channel_id))):
             raise ChannelNotFoundError(source_channel_id)
 
         if not isinstance(source_channel, GuildNewsChannel):
@@ -119,7 +120,7 @@ class ChannelManager(IChannelManager):
         assert_not_none(source_server_id, "source_server_id")
         assert_not_none(source_channel_id, "source_channel_id")
 
-        guild = get_guild(server_id)
+        guild = await get_bot().get_guild_by_id(int(server_id))
         try:
             webhooks = await get_bot().rest.fetch_guild_webhooks(guild)
             for webhook in webhooks:

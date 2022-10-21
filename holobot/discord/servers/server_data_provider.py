@@ -1,17 +1,17 @@
 from hikari import Guild
 
+from holobot.discord.bot import get_bot
 from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.discord.sdk.servers.models import ServerData
-from holobot.discord.utils import get_guild
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 
 @injectable(IServerDataProvider)
 class ServerDataProvider(IServerDataProvider):
-    def get_basic_data_by_id(self, server_id: str) -> ServerData:
+    async def get_basic_data_by_id(self, server_id: str) -> ServerData:
         assert_not_none(server_id, "server_id")
 
-        guild = get_guild(server_id)
+        guild = await get_bot().get_guild_by_id(int(server_id))
         return ServerDataProvider.__guild_to_basic_data(guild)
 
     @staticmethod

@@ -5,7 +5,7 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.servers.models import ServerChannel
 
 class IChannelManager(Protocol):
-    def get_channels(
+    async def get_channels(
         self,
         server_id: str
     ) -> Iterable[ServerChannel]:

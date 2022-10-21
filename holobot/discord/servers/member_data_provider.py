@@ -7,12 +7,9 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
-from holobot.discord.utils import (
-    get_guild, get_guild_channel, get_guild_member, get_guild_member_by_name
-)
 from holobot.discord.utils.permission_utils import PERMISSION_TO_MODELS
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import assert_not_none, first_or_default
+from holobot.sdk.utils import assert_not_none
 
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):
@@ -24,7 +21,7 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        user = await MemberDataProvider.__get_or_fetch_member(server_id, user_id)
+        user = await get_bot().get_guild_member(int(server_id), int(user_id))
         return MemberDataProvider.__member_to_basic_data(user)
 
     async def get_basic_data_by_name(
@@ -35,34 +32,37 @@ class MemberDataProvider(IMemberDataProvider):
         assert_not_none(server_id, "server_id")
         assert_not_none(name, "name")
 
-        member = get_guild_member_by_name(server_id, name)
+        member = await get_bot().get_guild_member_by_name(int(server_id), name)
         return MemberDataProvider.__member_to_basic_data(member)
 
-    def is_member(self, server_id: str, user_id: str) -> bool:
+    async def is_member(self, server_id: str, user_id: str) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        guild = get_guild(server_id)
-        return first_or_default(guild.get_members().values(), lambda member: str(member.id) == user_id) is not None
+        try:
+            await get_bot().get_guild_member(int(server_id), int(user_id))
+            return True
+        except UserNotFoundError:
+            return False
 
-    def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
+    async def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(user_id, "user_id")
 
-        guild = get_guild(server_id)
-        member = get_guild_member(server_id, user_id)
+        guild = await get_bot().get_guild_by_id(int(server_id))
+        member = await get_bot().get_guild_member(guild, int(user_id))
         # Check if the user the owner of the server, in which case all permissions are granted.
         if member.id == guild.owner_id:
             return Permission.all_permissions()
 
         # Check if any of the user's roles has the administrator permission.
-        roles = guild.get_roles()
+        roles = await get_bot().get_guild_roles(guild)
         base_permissions = MemberDataProvider._get_role_permissions(member, roles)
         if base_permissions & base_permissions.ADMINISTRATOR:
             return Permission.all_permissions()
 
-        channel = get_guild_channel(server_id, channel_id)
+        channel = await get_bot().get_guild_channel(guild, int(channel_id))
         if not channel:
             return MemberDataProvider.__transform_permissions(base_permissions)
 
@@ -142,12 +142,3 @@ class MemberDataProvider(IMemberDataProvider):
                 permissions |= role.permissions
 
         return permissions
-
-    @staticmethod
-    async def __get_or_fetch_member(server_id: str, user_id: str) -> hikari.Member:
-        if member := get_guild_member(server_id, user_id):
-            return member
-        try:
-            return await get_bot().rest.fetch_member(int(server_id), int(user_id))
-        except hikari.NotFoundError as error:
-            raise UserNotFoundError(user_id) from error

@@ -71,7 +71,9 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
     async def __try_notify_admin_on_error(self) -> None:
         options = self.__options.value
         try:
-            server_data = self.__server_data_provider.get_basic_data_by_id(options.AnnouncementServerId)
+            server_data = await self.__server_data_provider.get_basic_data_by_id(
+                options.AnnouncementServerId
+            )
             await self.__messaging.send_private_message(
                 server_data.owner_id,
                 self.__i18n_provider.get(

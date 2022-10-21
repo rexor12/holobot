@@ -18,10 +18,10 @@ class IMemberDataProvider(Protocol):
     ) -> MemberData:
         ...
 
-    def is_member(self, server_id: str, user_id: str) -> bool:
+    async def is_member(self, server_id: str, user_id: str) -> bool:
         ...
 
-    def get_member_permissions(
+    async def get_member_permissions(
         self,
         server_id: str,
         channel_id: str,

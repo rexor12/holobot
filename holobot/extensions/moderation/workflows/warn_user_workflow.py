@@ -71,7 +71,7 @@ class WarnUserWorkflow(WorkflowBase):
                 )
             )
 
-        if not self.__member_data_provider.is_member(context.server_id, user_id):
+        if not await self.__member_data_provider.is_member(context.server_id, user_id):
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )
@@ -117,7 +117,7 @@ class WarnUserWorkflow(WorkflowBase):
         self,
         context: ServerUserInteractionContext
     ) -> InteractionResponse:
-        if not self.__member_data_provider.is_member(context.server_id, context.target_user_id):
+        if not await self.__member_data_provider.is_member(context.server_id, context.target_user_id):
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
             )

@@ -1,4 +1,6 @@
+from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import InteractionContext
+from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.models import (
@@ -13,9 +15,14 @@ from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IWorkflowExecutionRule)
 class CheckModeratorPermissionRule(IWorkflowExecutionRule):
-    def __init__(self, permission_manager: IPermissionManager) -> None:
+    def __init__(
+        self,
+        member_data_provider: IMemberDataProvider,
+        permission_manager: IPermissionManager
+    ) -> None:
         super().__init__()
-        self.__permission_manager: IPermissionManager = permission_manager
+        self.__member_data_provider = member_data_provider
+        self.__permission_manager = permission_manager
 
     async def should_halt(
         self,
@@ -27,6 +34,14 @@ class CheckModeratorPermissionRule(IWorkflowExecutionRule):
             not isinstance(interactable, (ModerationCommand, ModerationComponent, ModerationMenuItem))
             or not isinstance(context, (ServerChatInteractionContext, ServerMessageInteractionContext, ServerUserInteractionContext))
         ):
+            return (False, None)
+
+        permissions = await self.__member_data_provider.get_member_permissions(
+            context.server_id,
+            context.channel_id,
+            context.author_id
+        )
+        if permissions & Permission.ADMINISTRATOR is Permission.ADMINISTRATOR:
             return (False, None)
 
         return (

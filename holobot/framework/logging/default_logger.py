@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 import structlog
@@ -14,18 +14,58 @@ class DefaultLogger(ILogger):
         super().__init__()
         self.__logger = structlog.get_logger(logger_name=name)
 
-    def trace(self, message: str, **kwargs: Any) -> None:
+    def trace(
+        self,
+        message: str,
+        exception: Exception | None = None,
+        **kwargs: Any
+    ) -> None:
         # Forwarding to debug, because trace is not a valid structlog log level.
-        self.__logger.debug(message, **kwargs)
+        DefaultLogger.__log(
+            message,
+            exception,
+            kwargs,
+            self.__logger.debug
+        )
 
-    def debug(self, message: str, **kwargs: Any) -> None:
-        self.__logger.debug(message, **kwargs)
+    def debug(
+        self,
+        message: str,
+        exception: Exception | None = None,
+        **kwargs: Any
+    ) -> None:
+        DefaultLogger.__log(
+            message,
+            exception,
+            kwargs,
+            self.__logger.debug
+        )
 
-    def info(self, message: str, **kwargs: Any) -> None:
-        self.__logger.info(message, **kwargs)
+    def info(
+        self,
+        message: str,
+        exception: Exception | None = None,
+        **kwargs: Any
+    ) -> None:
+        DefaultLogger.__log(
+            message,
+            exception,
+            kwargs,
+            self.__logger.info
+        )
 
-    def warning(self, message: str, **kwargs: Any) -> None:
-        self.__logger.warning(message, **kwargs)
+    def warning(
+        self,
+        message: str,
+        exception: Exception | None = None,
+        **kwargs: Any
+    ) -> None:
+        DefaultLogger.__log(
+            message,
+            exception,
+            kwargs,
+            self.__logger.warning
+        )
 
     def error(
         self,
@@ -33,14 +73,25 @@ class DefaultLogger(ILogger):
         exception: Exception | None = None,
         **kwargs: Any
     ) -> None:
-        self.__logger.error(
+        DefaultLogger.__log(
             message,
-            exception=format_exception(exception) if exception else None,
-            **kwargs
+            exception,
+            kwargs,
+            self.__logger.error
         )
 
-    def critical(self, message: str, **kwargs: Any) -> None:
-        self.__logger.critical(message, **kwargs)
+    def critical(
+        self,
+        message: str,
+        exception: Exception | None = None,
+        **kwargs: Any
+    ) -> None:
+        DefaultLogger.__log(
+            message,
+            exception,
+            kwargs,
+            self.__logger.critical
+        )
 
     def exception(self, message: str, **kwargs: Any) -> None:
         self.__logger.exception(message, **kwargs)
@@ -54,3 +105,16 @@ class DefaultLogger(ILogger):
                 arguments[extra_info_name] = extra_info_value
 
         self.__logger.debug(message, **arguments)
+
+    @staticmethod
+    def __log(
+        message: str,
+        exception: Exception | None,
+        arguments: dict[str, Any],
+        method: Callable[..., None]
+    ) -> None:
+        method(
+            message,
+            exception=format_exception(exception) if exception else None,
+            **arguments
+        )

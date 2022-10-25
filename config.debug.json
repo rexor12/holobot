@@ -14,9 +14,31 @@
             "AutoCreateDatabase": false
         }
     },
+
+    "Giveaways": {
+        "GiveawayOptions": {
+            "EnableScrapers": "",
+            "AnnouncementServerId": "",
+            "AnnouncementChannelId": ""
+        }
+    },
+
+    "Google": {
+        "GoogleClientOptions": {
+            "GoogleSearchApiKey": "",
+            "GoogleSearchEngineId": ""
+        }
+    },
+
     "Reminders": {
         "ReminderProcessingOptions": {
             "IsEnabled": true
+        }
+    },
+
+    "Weather": {
+        "OpenWeatherOptions": {
+            "ApiKey": ""
         }
     }
 }

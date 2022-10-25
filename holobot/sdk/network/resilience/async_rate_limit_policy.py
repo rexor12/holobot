@@ -1,23 +1,33 @@
-from asyncio import Lock
+import asyncio
 from collections import deque
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta
-from typing import TypeVar
-from holobot.sdk.utils import utcnow
+from typing import Generic, TypeVar
+
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
-from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils import assert_not_none, utcnow
 from .exceptions import RateLimitedError
+from .iresilience_policy import IResiliencePolicy
 
 TState = TypeVar("TState")
 TResult = TypeVar("TResult")
 
-class AsyncRateLimiter:
+class AsyncRateLimitPolicy(Generic[TState, TResult], IResiliencePolicy[TState, TResult]):
+    """A resilience policy for limiting the rate at which operations are performed."""
+
     @property
     def requests_per_interval(self) -> int:
+        """The number of requests allowed in an interval.
+
+        Any excess requests result in an exception.
+        """
+
         return self.__requests_per_interval
 
     @property
     def interval(self) -> timedelta:
+        """The length of the sliding window."""
+
         return self.__interval
 
     def __init__(
@@ -32,7 +42,7 @@ class AsyncRateLimiter:
 
         self.__requests_per_interval = requests_per_interval
         self.__interval = interval
-        self.__lock = Lock()
+        self.__lock = asyncio.Lock()
         self.__request_timestamps = deque[datetime](maxlen=requests_per_interval)
 
     def __call__(

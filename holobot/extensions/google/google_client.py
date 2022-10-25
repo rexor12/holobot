@@ -1,10 +1,12 @@
+from typing import Any
+
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
-from holobot.sdk.network.resilience import AsyncCircuitBreaker
+from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from .enums import SearchType
 from .exceptions import SearchQuotaExhaustedError
@@ -30,7 +32,7 @@ class GoogleClient(IGoogleClient):
         self.__http_client_pool = http_client_pool
         self.__options = options.value
         self.__log = logger_factory.create(GoogleClient)
-        self.__circuit_breaker = AsyncCircuitBreaker(
+        self.__circuit_breaker = AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any](
             options.value.CircuitBreakerFailureThreshold,
             options.value.CircuitBreakerRecoveryTime,
             GoogleClient.__on_circuit_broken
@@ -80,7 +82,10 @@ class GoogleClient(IGoogleClient):
         return tuple(map(SearchResult.from_json, results))
 
     @staticmethod
-    async def __on_circuit_broken(circuit_breaker: AsyncCircuitBreaker, error: Exception) -> int:
+    async def __on_circuit_broken(
+        circuit_breaker: AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any],
+        error: Exception
+    ) -> int:
         if (isinstance(error, TooManyRequestsError)
             and error.retry_after is not None
             and isinstance(error.retry_after, int)):

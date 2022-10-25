@@ -7,7 +7,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
-from holobot.sdk.network.resilience import AsyncCircuitBreaker
+from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
 from .models import OpenWeatherOptions, WeatherData
@@ -25,7 +25,7 @@ class WeatherClient(WeatherClientInterface):
         self.__http_client_pool: HttpClientPoolInterface = http_client_pool
         self.__logger = logger_factory.create(WeatherClient)
         self.__options = options
-        self.__circuit_breaker: AsyncCircuitBreaker = WeatherClient.__create_circuit_breaker(options.value)
+        self.__circuit_breaker: AsyncCircuitBreakerPolicy = WeatherClient.__create_circuit_breaker(options.value)
         # TODO Caching with configurable time based expiry.
         #self.__cache: ConcurrentCache[str, int | None] = ConcurrentCache()
 
@@ -66,15 +66,20 @@ class WeatherClient(WeatherClientInterface):
         return weather_data
 
     @staticmethod
-    def __create_circuit_breaker(options: OpenWeatherOptions) -> AsyncCircuitBreaker:
-        return AsyncCircuitBreaker(
+    def __create_circuit_breaker(
+        options: OpenWeatherOptions
+    ) -> AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any]:
+        return AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any](
             options.CircuitBreakerFailureThreshold,
             options.CircuitBreakerRecoveryTime,
             WeatherClient.__on_circuit_broken
         )
 
     @staticmethod
-    async def __on_circuit_broken(circuit_breaker: AsyncCircuitBreaker, error: Exception) -> int:
+    async def __on_circuit_broken(
+        circuit_breaker: AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any],
+        error: Exception
+    ) -> int:
         if (isinstance(error, TooManyRequestsError)
             and error.retry_after is not None
             and isinstance(error.retry_after, int)):

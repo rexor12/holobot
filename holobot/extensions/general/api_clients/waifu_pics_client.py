@@ -1,4 +1,4 @@
-from datetime import timedelta
+from typing import Any
 
 from holobot.extensions.general.models import WaifuPicsOptions
 from holobot.sdk.configs import IOptions
@@ -6,7 +6,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
-from holobot.sdk.network.resilience import AsyncCircuitBreaker, AsyncRateLimiter
+from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy, CombinedPolicyBuilder
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.utils import assert_not_none
@@ -25,8 +25,18 @@ class WaifuPicsClient(IWaifuPicsClient):
         self.__http_client_pool = http_client_pool
         self.__log = logger_factory.create(WaifuPicsClient)
         self.__options = options
-        self.__circuit_breaker = WaifuPicsClient.__create_circuit_breaker(options.value)
-        self.__rate_limiter = WaifuPicsClient.__create_rate_limiter(options.value)
+        self.__resilience_policy = (CombinedPolicyBuilder[str, Any]()
+            .circuit_breaker(
+                options.value.CircuitBreakerFailureThreshold,
+                options.value.CircuitBreakerRecoveryTime,
+                WaifuPicsClient.__on_circuit_broken
+            )
+            .rate_limiter(
+                options.value.RateLimiterRequestsPerInterval,
+                options.value.RateLimiterInterval
+            )
+            .build()
+        )
 
     async def get_batch(
         self,
@@ -39,11 +49,8 @@ class WaifuPicsClient(IWaifuPicsClient):
             return ()
 
         try:
-            response = await self.__circuit_breaker(
-                lambda url: self.__rate_limiter.execute(
-                    lambda u: self.__http_client_pool.post(u, {}),
-                    url
-                ),
+            response = await self.__resilience_policy.execute(
+                lambda url: self.__http_client_pool.post(url, {}),
                 f"{options.Url}{category}"
             )
         except TooManyRequestsError as error:
@@ -62,16 +69,8 @@ class WaifuPicsClient(IWaifuPicsClient):
         return tuple(dto.files) if dto else ()
 
     @staticmethod
-    def __create_circuit_breaker(options: WaifuPicsOptions) -> AsyncCircuitBreaker:
-        return AsyncCircuitBreaker(
-            options.CircuitBreakerFailureThreshold,
-            options.CircuitBreakerRecoveryTime,
-            WaifuPicsClient.__on_circuit_broken
-        )
-
-    @staticmethod
     async def __on_circuit_broken(
-        circuit_breaker: AsyncCircuitBreaker,
+        circuit_breaker: AsyncCircuitBreakerPolicy[str, Any],
         error: Exception
     ) -> int:
         if (isinstance(error, TooManyRequestsError)
@@ -80,10 +79,3 @@ class WaifuPicsClient(IWaifuPicsClient):
         ):
             return error.retry_after
         return circuit_breaker.recovery_timeout
-
-    @staticmethod
-    def __create_rate_limiter(options: WaifuPicsOptions) -> AsyncRateLimiter:
-        return AsyncRateLimiter(
-            options.RateLimiterRequestsPerInterval,
-            timedelta(seconds=options.RateLimiterInterval)
-        )

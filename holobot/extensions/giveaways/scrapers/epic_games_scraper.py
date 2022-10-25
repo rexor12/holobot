@@ -1,6 +1,7 @@
 import zoneinfo
 from collections.abc import Sequence
 from datetime import datetime, time, timedelta, timezone
+from typing import Any
 
 from holobot.extensions.giveaways.models import EpicScraperOptions, ExternalGiveawayItem
 from holobot.sdk.configs import IOptions
@@ -8,7 +9,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import TooManyRequestsError
-from holobot.sdk.network.resilience import AsyncCircuitBreaker
+from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.utils import first_or_default, utcnow
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
@@ -105,8 +106,10 @@ class EpicGamesScraper(IScraper):
         return giveaway_items
 
     @staticmethod
-    def __create_circuit_breaker(options: EpicScraperOptions) -> AsyncCircuitBreaker:
-        return AsyncCircuitBreaker(
+    def __create_circuit_breaker(
+        options: EpicScraperOptions
+    ) -> AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any]:
+        return AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any](
             options.CircuitBreakerFailureThreshold,
             options.CircuitBreakerRecoveryTime,
             EpicGamesScraper.__on_circuit_broken
@@ -114,7 +117,7 @@ class EpicGamesScraper(IScraper):
 
     @staticmethod
     async def __on_circuit_broken(
-        circuit_breaker: AsyncCircuitBreaker,
+        circuit_breaker: AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any],
         error: Exception
     ) -> int:
         if (isinstance(error, TooManyRequestsError)

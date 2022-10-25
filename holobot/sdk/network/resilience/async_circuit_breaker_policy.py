@@ -120,10 +120,14 @@ class AsyncCircuitBreakerPolicy(Generic[TState, TResult], IResiliencePolicy[TSta
         callback: Callable[[TState], Awaitable[TResult]],
         state: TState
     ) -> TResult:
+        # Double checking outside the lock as a fast fail optimization.
         if self.state is CircuitState.OPEN:
             raise CircuitBrokenError("The circuit is broken.")
 
         async with self.__lock:
+            if self.state is CircuitState.OPEN:
+                raise CircuitBrokenError("The circuit is broken.")
+
             try:
                 result = await callback(state)
             except Exception as error:

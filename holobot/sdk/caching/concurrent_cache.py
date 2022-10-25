@@ -16,7 +16,8 @@ class ConcurrentCache(Generic[TKey, TValue]):
         self.__lock: Lock = Lock()
 
     async def get(self, key: TKey) -> TValue | UndefinedType:
-        return self.__dict.get(key, UNDEFINED)
+        async with self.__lock:
+            return self.__dict.get(key, UNDEFINED)
 
     async def get_or_add(
         self,
@@ -69,30 +70,30 @@ class ConcurrentCache(Generic[TKey, TValue]):
         key: TKey,
         add_factory: Callable[[TKey], Awaitable[TValue]],
         update_factory: Callable[[TKey, TValue], Awaitable[TValue]]
-    ) -> TValue:
+    ) -> tuple[TValue | UndefinedType, TValue]:
         async with self.__lock:
-            if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
-                value = await add_factory(key)
+            if (old_value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+                new_value = await add_factory(key)
             else:
-                value = await update_factory(key, value)
+                new_value = await update_factory(key, old_value)
 
-            self.__dict[key] = value
-            return value
+            self.__dict[key] = new_value
+            return (old_value, new_value)
 
     async def add_or_update2(
         self,
         key: TKey,
         add_factory: Callable[[TKey], TValue],
         update_factory: Callable[[TKey, TValue], TValue]
-    ) -> TValue:
+    ) -> tuple[TValue | UndefinedType, TValue]:
         async with self.__lock:
-            if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
-                value = add_factory(key)
+            if (old_value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+                new_value = add_factory(key)
             else:
-                value = update_factory(key, value)
+                new_value = update_factory(key, old_value)
 
-            self.__dict[key] = value
-            return value
+            self.__dict[key] = new_value
+            return (old_value, new_value)
 
     async def add_or_update3(
         self,
@@ -100,15 +101,15 @@ class ConcurrentCache(Generic[TKey, TValue]):
         add_factory: Callable[[TKey, TParam], TValue],
         update_factory: Callable[[TKey, TValue, TParam], TValue],
         param: TParam
-    ) -> TValue:
+    ) -> tuple[TValue | UndefinedType, TValue]:
         async with self.__lock:
-            if (value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
-                value = add_factory(key, param)
+            if (old_value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+                new_value = add_factory(key, param)
             else:
-                value = update_factory(key, value, param)
+                new_value = update_factory(key, old_value, param)
 
-            self.__dict[key] = value
-            return value
+            self.__dict[key] = new_value
+            return (old_value, new_value)
 
     async def remove(self, key: TKey) -> TValue:
         async with self.__lock:
@@ -117,9 +118,6 @@ class ConcurrentCache(Generic[TKey, TValue]):
             return value
 
     async def __get_or_add(self, key: TKey, factory: Callable[..., Awaitable[TValue]], *args: Any) -> TValue:
-        if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
-            return value
-
         async with self.__lock:
             if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
                 return value
@@ -129,9 +127,6 @@ class ConcurrentCache(Generic[TKey, TValue]):
             return value
 
     async def __get_or_add2(self, key: TKey, factory: Callable[..., TValue], *args: Any) -> TValue:
-        if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
-            return value
-
         async with self.__lock:
             if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
                 return value

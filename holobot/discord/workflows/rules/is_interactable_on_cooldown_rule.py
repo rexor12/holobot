@@ -42,14 +42,16 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
         if not (entity_id := IsInteractableOnCooldownRule.__get_entity_id(interactable, context)):
             return (False, None)
 
-        last_invocation = await self.__invocation_tracker.get_invocation(
+        duration = timedelta(seconds=interactable.cooldown.duration)
+        last_invocation = await self.__invocation_tracker.update_invocation(
             interactable.cooldown.entity_type,
-            entity_id
+            entity_id,
+            utcnow(),
+            duration
         )
         if not last_invocation:
             return (False, None)
 
-        duration = timedelta(seconds=interactable.cooldown.duration)
         time_left = (last_invocation + duration - utcnow()).total_seconds()
         return (
             True,

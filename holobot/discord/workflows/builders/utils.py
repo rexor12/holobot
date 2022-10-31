@@ -18,11 +18,13 @@ def transform_option(option: Option) -> hikari.CommandOption:
         name=option.name,
         description=option.description,
         is_required=option.is_mandatory,
+        autocomplete=option.is_autocomplete,
         choices=[
             hikari.CommandChoice(
                 name=choice.name,
                 value=choice.value
             )
             for choice in option.choices
-        ]
+        ] if not option.is_autocomplete
+        else ()
     )

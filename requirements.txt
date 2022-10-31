@@ -1,3 +1,4 @@
+aiogoogle==4.3.0                    # Used for interacting with Google Cloud APIs.
 asyncpg==0.26.0                     # Used for working with PostgreSQL databases.
 hikari==2.0.0.dev110                # Discord bot framework.
 kanata==2.0.0.0                     # Dependency injection framework.

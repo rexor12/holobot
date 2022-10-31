@@ -1,8 +1,8 @@
 from typing import Protocol
 
-from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.actions import AutocompleteAction, ReplyAction
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.models import Embed
+from holobot.discord.sdk.models import AutocompleteChoice, Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
@@ -61,5 +61,15 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
                 content=content,
                 components=components or [],
                 suppress_user_mentions=suppress_user_mentions
+            )
+        )
+
+    def _autocomplete(
+        self,
+        choices: AutocompleteChoice | list[AutocompleteChoice]
+    ) -> InteractionResponse:
+        return InteractionResponse(
+            action=AutocompleteAction(
+                choices=choices if isinstance(choices, list) else [choices]
             )
         )

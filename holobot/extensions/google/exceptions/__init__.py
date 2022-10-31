@@ -1,1 +1,1 @@
-from .search_quota_exhausted_error import SearchQuotaExhaustedError
+from .quota_exhausted_error import QuotaExhaustedError

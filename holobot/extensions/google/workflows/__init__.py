@@ -1,1 +1,2 @@
 from .search_google_workflow import SearchGoogleWorkflow
+from .translate_text_workflow import TranslateTextWorkflow

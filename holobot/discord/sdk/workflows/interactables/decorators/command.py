@@ -5,8 +5,7 @@ from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Command
-from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
-from ..models import Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 
 def command(
     *,
@@ -31,7 +30,7 @@ def command(
     :type name: str | None, optional
     :param group_name: The optional name of the group the command belongs to, defaults to None
     :type group_name: str | None, optional
-    :param subgroup_name: The optional nem fo the subgroup the command belongs to, defaults to None
+    :param subgroup_name: The optional name of the subgroup the command belongs to, defaults to None
     :type subgroup_name: str | None, optional
     :param options: The list of command arguments, defaults to ()
     :type options: tuple[Option, ...], optional

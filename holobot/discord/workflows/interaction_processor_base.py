@@ -59,6 +59,39 @@ class InteractionProcessorBase(
                 self.__log.exception("An unhandled exception occurred while processing an interaction")
                 await self.__try_send_error_response(interaction)
 
+    @abstractmethod
+    def _get_interactable_descriptor(
+        self,
+        interaction: TInteraction
+    ) -> InteractionDescriptor[TInteractable]:
+        ...
+
+    @abstractmethod
+    def _get_interaction_context(
+        self,
+        interaction: TInteraction
+    ) -> InteractionContext:
+        ...
+
+    @abstractmethod
+    def _on_interaction_processed(
+        self,
+        interaction: TInteraction,
+        interactable: TInteractable,
+        response: InteractionResponse
+    ) -> Coroutine[Any, Any, None]:
+        ...
+
+    async def _send_error_response(self, interaction: TInteraction) -> None:
+        await self.__action_processor.process(
+            interaction,
+            ReplyAction(
+                content=self.__i18n_provider.get("interactions.unhandled_interaction_error")
+            ),
+            DeferType.NONE,
+            True
+        )
+
     async def __process_interaction(
         self,
         interaction: TInteraction,
@@ -112,35 +145,15 @@ class InteractionProcessorBase(
         with execution_context.start("Post-processing performed"):
             await self._on_interaction_processed(interaction, interactable, response)
 
-    @abstractmethod
-    def _get_interactable_descriptor(
-        self,
-        interaction: TInteraction
-    ) -> InteractionDescriptor[TInteractable]:
-        ...
-
-    @abstractmethod
-    def _get_interaction_context(
-        self,
-        interaction: TInteraction
-    ) -> InteractionContext:
-        ...
-
-    @abstractmethod
-    def _on_interaction_processed(
-        self,
-        interaction: TInteraction,
-        interactable: TInteractable,
-        response: InteractionResponse
-    ) -> Coroutine[Any, Any, None]:
-        ...
-
     @coroutine
     def __try_create_initial_response(
         self,
         interaction: TInteraction,
         interactable: TInteractable
     ) -> Generator[Any, Any, None]:
+        if not isinstance(interaction, hikari.MessageResponseMixin):
+            return
+
         match interactable.defer_type:
             case DeferType.DEFER_MESSAGE_CREATION:
                 yield from interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
@@ -225,14 +238,7 @@ class InteractionProcessorBase(
         interaction: TInteraction
     ) -> None:
         try:
-            await self.__action_processor.process(
-                interaction,
-                ReplyAction(
-                    content=self.__i18n_provider.get("interactions.unhandled_interaction_error")
-                ),
-                DeferType.NONE,
-                True
-            )
+            await self._send_error_response(interaction)
         except Exception as error:
             self.__log.debug(
                 "Failed to send the default interaction error response",

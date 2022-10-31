@@ -1,17 +1,15 @@
 import contextlib
 
-import hikari.api.special_endpoints as hikari_endpoints
 from hikari import (
-    UNDEFINED, CommandInteraction, ComponentInteraction, MessageFlag, NotFoundError,
-    PartialInteraction, ResponseType
+    UNDEFINED, AutocompleteInteraction, CommandChoice, CommandInteraction, ComponentInteraction,
+    MessageFlag, NotFoundError, PartialInteraction, ResponseType
 )
 
-from holobot.discord.sdk.actions import ActionBase, DoNothingAction, EditMessageAction, ReplyAction
+from holobot.discord.sdk.actions import (
+    ActionBase, AutocompleteAction, DoNothingAction, EditMessageAction, ReplyAction
+)
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed
-from holobot.discord.sdk.workflows.interactables.components import (
-    ComponentBase, LayoutBase, StackLayout
-)
 from holobot.discord.transformers.embed import to_dto
 from holobot.discord.workflows.transformers import IComponentTransformer
 from holobot.sdk.exceptions import ArgumentError
@@ -35,6 +33,7 @@ class ActionProcessor(IActionProcessor):
             case DoNothingAction(): return
             case ReplyAction(): await self.__process_reply(context, action, deferral, is_ephemeral)
             case EditMessageAction(): await self.__process_edit_reference_message(context, action, deferral, is_ephemeral)
+            case AutocompleteAction(): await self.__process_autocomplete(context, action)
 
     async def __process_reply(
         self,
@@ -107,3 +106,22 @@ class ActionProcessor(IActionProcessor):
                 return
 
             raise ArgumentError(f"Cannot edit an interaction deferred as '{deferral}'.")
+
+    async def __process_autocomplete(
+        self,
+        interaction: PartialInteraction,
+        action: AutocompleteAction,
+    ) -> None:
+        if not isinstance(interaction, (AutocompleteInteraction)):
+            raise ArgumentError("Responding to an autocompletion is valid for autocomplete interactions only.")
+
+        with contextlib.suppress(NotFoundError):
+            await interaction.create_response(
+                choices=[
+                    CommandChoice(
+                        name=choice.name,
+                        value=choice.value
+                    )
+                    for choice in action.choices
+                ]
+            )

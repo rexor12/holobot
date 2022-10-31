@@ -1,9 +1,9 @@
 from collections.abc import Coroutine
 from typing import Any, Generic, Protocol, TypeVar
 
-from hikari import MessageResponseMixin
+from hikari import PartialInteraction
 
-TInteraction = TypeVar("TInteraction", bound=MessageResponseMixin, contravariant=True)
+TInteraction = TypeVar("TInteraction", bound=PartialInteraction, contravariant=True)
 
 class IInteractionProcessor(Generic[TInteraction], Protocol):
     """Interface for an interaction processor."""

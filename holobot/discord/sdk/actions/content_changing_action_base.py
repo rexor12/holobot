@@ -8,3 +8,6 @@ from .action_base import ActionBase
 class ContentChangingActionBase(ActionBase):
     content: str | Embed
     components: ComponentBase | list[LayoutBase] = field(default_factory=list)
+
+    suppress_user_mentions: bool = False
+    """Determines whether user mentions should avoid sending a notification."""

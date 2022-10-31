@@ -1,19 +1,18 @@
-
-from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.actions.enums import DeferType
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
 )
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.google.endpoints import IGoogleClient
+from holobot.extensions.google.enums import SearchType
+from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.exceptions import HttpStatusError
-from ..enums import SearchType
-from ..exceptions import SearchQuotaExhaustedError
-from ..igoogle_client import IGoogleClient
 
 @injectable(IWorkflow)
 class SearchGoogleWorkflow(WorkflowBase):
@@ -30,7 +29,8 @@ class SearchGoogleWorkflow(WorkflowBase):
 
     @command(
         description="Searches Google with a specific query.",
-        name="google",
+        name="search",
+        group_name="google",
         options=(
             Option("query", "The keywords to search for."),
             Option("type", "The type of the search.", is_mandatory=False, choices=(
@@ -38,11 +38,12 @@ class SearchGoogleWorkflow(WorkflowBase):
                 Choice("Image", "image")
             ))
         ),
-        cooldown=Cooldown(duration=20)
+        cooldown=Cooldown(duration=20),
+        defer_type=DeferType.DEFER_MESSAGE_CREATION
     )
     async def search_google(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         query: str,
         type: str | None = None
     ) -> InteractionResponse:
@@ -50,31 +51,21 @@ class SearchGoogleWorkflow(WorkflowBase):
         try:
             results = await self.__google_client.search(search_type, query)
             if not results or not results[0].link:
-                return InteractionResponse(
-                    action=ReplyAction(content=self.__i18n_provider.get(
+                return self._reply(
+                    content=self.__i18n_provider.get(
                         "extensions.google.search_google_workflow.no_results"
-                    ))
+                    )
                 )
 
             link = results[0].link
-            return InteractionResponse(action=ReplyAction(content=link))
+            return self._reply(content=link)
         except InvalidOperationError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("feature_disabled_error"))
-            )
-        except SearchQuotaExhaustedError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
-                    "feature_quota_exhausted_error"
-                ))
-            )
+            return self._reply(content=self.__i18n_provider.get("feature_disabled_error"))
+        except QuotaExhaustedError:
+            return self._reply(content=self.__i18n_provider.get("feature_quota_exhausted_error"))
         except HttpStatusError as error:
             self.__logger.error(
                 "An error has occurred during a Google search HTTP request.",
                 error
             )
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
-                    "extensions.google.search_google_workflow.google_error"
-                ))
-            )
+            return self._reply(content=self.__i18n_provider.get("extensions.google.google_error"))

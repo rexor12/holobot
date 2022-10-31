@@ -6,7 +6,9 @@ from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommand
 
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.workflows import IWorkflow
-from holobot.discord.sdk.workflows.interactables import Command, Component, Interactable, MenuItem
+from holobot.discord.sdk.workflows.interactables import (
+    Autocomplete, Command, Component, Interactable, MenuItem
+)
 
 TInteractable = TypeVar("TInteractable", bound=Interactable)
 
@@ -35,6 +37,31 @@ class IWorkflowRegistry(metaclass=ABCMeta):
         name: str
     ) ->tuple[IWorkflow, MenuItem] | None:
         ...
+
+    @abstractmethod
+    def get_autocomplete(
+        self,
+        group_name: str | None,
+        subgroup_name: str | None,
+        command_name: str,
+        option_name: str
+    ) -> tuple[IWorkflow, Autocomplete] | None:
+        """Gets the autocomplete interactable for the specified command and option.
+
+        If there is no autocomplete interactable for the specified option,
+        then the one suitable for every option is returned, if exists.
+
+        :param group_name: The name of the command's group.
+        :type group_name: str | None
+        :param subgroup_name: The name of the command's subgroup.
+        :type subgroup_name: str | None
+        :param command_name: The name of the command.
+        :type command_name: str
+        :param option_name: The name of the option.
+        :type option_name: str
+        :return: If exists, a suitable autocomplete interactable.
+        :rtype: tuple[IWorkflow, Autocomplete] | None
+        """
 
     @abstractmethod
     def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:

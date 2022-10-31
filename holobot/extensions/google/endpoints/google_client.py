@@ -1,5 +1,10 @@
 from typing import Any
 
+from holobot.extensions.google.enums import SearchType
+from holobot.extensions.google.exceptions import QuotaExhaustedError
+from holobot.extensions.google.models import (
+    GoogleClientOptions, Language, SearchResult, Translation
+)
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
@@ -8,10 +13,8 @@ from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
-from .enums import SearchType
-from .exceptions import SearchQuotaExhaustedError
 from .igoogle_client import IGoogleClient
-from .models import GoogleClientOptions, SearchResult
+from .translation_endpoint import TranslationEndpoint
 
 TEXT_SEARCH_TYPE = "SEARCH_TYPE_UNDEFINED"
 
@@ -37,6 +40,7 @@ class GoogleClient(IGoogleClient):
             options.value.CircuitBreakerRecoveryTime,
             GoogleClient.__on_circuit_broken
         )
+        self.__translation_endpoint = TranslationEndpoint(logger_factory, options)
 
     async def search(
         self,
@@ -66,9 +70,9 @@ class GoogleClient(IGoogleClient):
                 )
             )
         except TooManyRequestsError as error:
-            raise SearchQuotaExhaustedError from error
+            raise QuotaExhaustedError from error
         except HttpStatusError as error:
-            self.__log.error("An HTTP error has occurred during a Google search request.", error)
+            self.__log.error("An HTTP error has occurred during a Google search request", error)
             raise
         except CircuitBrokenError:
             raise
@@ -80,6 +84,21 @@ class GoogleClient(IGoogleClient):
             return ()
 
         return tuple(map(SearchResult.from_json, results))
+
+    async def translate_text(
+        self,
+        text: str,
+        target_language: str,
+        source_language: str | None = None
+    ) -> Translation | None:
+        return await self.__translation_endpoint.translate_text(
+            text,
+            target_language,
+            source_language
+        )
+
+    async def get_languages(self) -> dict[str, Language]:
+        return await self.__translation_endpoint.get_languages()
 
     @staticmethod
     async def __on_circuit_broken(

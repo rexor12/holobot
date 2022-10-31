@@ -4,6 +4,8 @@ from ..enums import Permission
 from .interactables import Interactable
 
 class IWorkflow(Protocol):
+    """Interface for an interactable workflow."""
+
     @property
     def name(self) -> str:
         """Gets the name of the workflow which is also its unique identifier.

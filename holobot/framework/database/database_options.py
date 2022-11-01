@@ -13,3 +13,4 @@ class DatabaseOptions(OptionsDefinition):
     User: str = "postgres"
     Password: str = ""
     AutoCreateDatabase: bool = False
+    IsSslEnabled: bool = True

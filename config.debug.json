@@ -11,7 +11,8 @@
             "Database": "holobot",
             "User": "postgres",
             "Password": "password",
-            "AutoCreateDatabase": false
+            "AutoCreateDatabase": false,
+            "IsSslEnabled": false
         }
     },
 

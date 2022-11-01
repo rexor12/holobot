@@ -235,7 +235,8 @@
             "Database": "__HOLO_DATABASE_NAME__",
             "User": "__HOLO_DATABASE_USER__",
             "Password": "__HOLO_DATABASE_PASSWORD__",
-            "AutoCreateDatabase": "__HOLO_AUTO_CREATE_DATABASE__"
+            "AutoCreateDatabase": "__HOLO_AUTO_CREATE_DATABASE__",
+            "IsSslEnabled": "__HOLO_IS_DATABASE_SSL_ENABLED__"
         }
     },
 

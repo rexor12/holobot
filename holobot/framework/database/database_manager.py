@@ -7,7 +7,6 @@ import asyncpg
 from asyncpg.connection import Connection
 from asyncpg.pool import Pool, PoolAcquireContext
 
-from holobot.framework.configs import EnvironmentOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.migration import MigrationInterface
@@ -22,12 +21,10 @@ class DatabaseManager(IDatabaseManager, IStartable):
     def __init__(
         self,
         database_options: IOptions[DatabaseOptions],
-        environment_options: IOptions[EnvironmentOptions],
         logger_factory: ILoggerFactory,
         migrations: tuple[MigrationInterface, ...]
     ) -> None:
         self.__database_options = database_options
-        self.__environment_options = environment_options
         self.__logger = logger_factory.create(DatabaseManager)
         self.__migrations: tuple[MigrationInterface, ...] = migrations
         self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
@@ -97,7 +94,7 @@ class DatabaseManager(IDatabaseManager, IStartable):
 
     def __create_ssl_context(self):
         ssl_context = None
-        if not self.__environment_options.value.IsDebug:
+        if self.__database_options.value.IsSslEnabled:
             ssl_context = ssl.create_default_context(cafile="")
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE

@@ -5,7 +5,7 @@ from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommand
 
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.workflows import IWorkflow
-from holobot.discord.sdk.workflows.interactables import Command, Component, MenuItem
+from holobot.discord.sdk.workflows.interactables import Autocomplete, Command, Component, MenuItem
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.workflows.builders import (
     CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
@@ -16,9 +16,17 @@ from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
 from .iworkflow_registry import IWorkflowRegistry
 
+# key: command name
 TCommandGroup = dict[str, tuple[IWorkflow, Command]]
 TSubGroup = dict[str, TCommandGroup]
 TGroup = dict[str, TSubGroup]
+
+# 1st key: command name, 2nd key: option name (or empty string)
+TAutocompleteMap = dict[str, dict[str, tuple[IWorkflow, Autocomplete]]]
+# key: command subgroup name
+TAutocompleteSubgroupMap = dict[str, TAutocompleteMap]
+# key: command group name
+TAutocompleteGroupMap = dict[str, TAutocompleteSubgroupMap]
 
 @injectable(IWorkflowRegistry)
 class WorkflowRegistry(IWorkflowRegistry):
@@ -55,6 +63,23 @@ class WorkflowRegistry(IWorkflowRegistry):
         name: str
     ) -> tuple[IWorkflow, MenuItem] | None:
         return self.__menu_items.get(name)
+
+    def get_autocomplete(
+        self,
+        group_name: str | None,
+        subgroup_name: str | None,
+        command_name: str,
+        option_name: str
+    ) -> tuple[IWorkflow, Autocomplete] | None:
+        if (not (group := self.__autocompletes.get(group_name or ""))
+            or not (sub_group := group.get(subgroup_name or ""))
+            or not (options := sub_group.get(command_name))):
+            return None
+
+        if option_name in options:
+            return options[option_name]
+
+        return options[""] if "" in options else None
 
     def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
         self.__log.info("Registering commands...")
@@ -154,6 +179,39 @@ class WorkflowRegistry(IWorkflowRegistry):
         command_name = f"d{command.name}" if debugger.is_debug_mode_enabled() else command.name
         commands[command_name] = (workflow, command)
 
+    @staticmethod
+    def __add_autocomplete(
+        autocomplete_groups: TAutocompleteGroupMap,
+        workflow: IWorkflow,
+        autocomplete: Autocomplete,
+        debugger: DebuggerInterface
+    ) -> None:
+        group_name = autocomplete.group_name or ""
+        subgroup_name = autocomplete.subgroup_name or ""
+
+        if group_name not in autocomplete_groups:
+            autocomplete_groups[group_name] = autocomplete_subgroups = {}
+        else:
+            autocomplete_subgroups = autocomplete_groups[group_name]
+
+        if subgroup_name not in autocomplete_subgroups:
+            autocomplete_subgroups[subgroup_name] = autocomplete_options = {}
+        else:
+            autocomplete_options = autocomplete_subgroups[subgroup_name]
+
+        for option_name in (autocomplete.options or ("")):
+            autocomplete_name = (
+                f"d{autocomplete.name}"
+                if debugger.is_debug_mode_enabled()
+                else autocomplete.name
+            )
+            if autocomplete_name not in autocomplete_options:
+                autocomplete_options[autocomplete_name] = autocomplete_option = {}
+            else:
+                autocomplete_option = autocomplete_options[autocomplete_name]
+
+            autocomplete_option[option_name] = (workflow, autocomplete)
+
     def __initialize_groups(
         self,
         workflows: tuple[IWorkflow, ...],
@@ -162,15 +220,19 @@ class WorkflowRegistry(IWorkflowRegistry):
         commands: TGroup = {}
         components: dict[str, tuple[IWorkflow, Component]] = {}
         menu_items: dict[str, tuple[IWorkflow, MenuItem]] = {}
+        autocompletes: TAutocompleteGroupMap = {}
         for workflow in workflows:
             for interactable in workflow.interactables:
                 match interactable:
                     case Command(): WorkflowRegistry.__add_command(commands, workflow, interactable, debugger)
                     case Component(): components[interactable.identifier] = (workflow, interactable)
                     case MenuItem(): menu_items[interactable.title] = (workflow, interactable)
+                    case Autocomplete(): WorkflowRegistry.__add_autocomplete(autocompletes, workflow, interactable, debugger)
+                    case _: self.__log.warning("Ignored unknown interactable type", type=type(interactable).__name__)
         self.__commands = commands
         self.__components = components
         self.__menu_items = menu_items
+        self.__autocompletes = autocompletes
 
     def __get_user_menu_item_builder(
         self,

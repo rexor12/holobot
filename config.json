@@ -274,7 +274,8 @@
             "GoogleSearchApiKey": "__HOLO_GOOGLE_SEARCH_API_KEY__",
             "GoogleSearchEngineId": "__HOLO_GOOGLE_SEARCH_ENGINE_ID__",
             "CircuitBreakerFailureThreshold": 1,
-            "CircuitBreakerRecoveryTime": 300
+            "CircuitBreakerRecoveryTime": 300,
+            "ServiceAccountCredentialFile": "__HOLO_GOOGLE_SERVICE_ACCOUNT_CREDENTIAL_FILE__"
         }
     },
 

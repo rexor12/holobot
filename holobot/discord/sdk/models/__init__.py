@@ -1,3 +1,4 @@
+from .autocomplete_choice import AutocompleteChoice
 from .channel import Channel
 from .embed import Embed
 from .embed_field import EmbedField

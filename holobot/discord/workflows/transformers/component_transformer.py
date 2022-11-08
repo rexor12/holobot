@@ -210,7 +210,6 @@ class ComponentTransformer(IComponentTransformer):
             StackLayout(
                 id=component.id,
                 children=[
-                    # TODO Dedicated data field (implemented on the main/FreeEpicGamesCommand branch).
                     Button(
                         id=f"{component.id}~{component.current_page - 1};{component.owner_id};{custom_data}",
                         owner_id=component.owner_id,

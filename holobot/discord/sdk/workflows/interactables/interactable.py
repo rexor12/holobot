@@ -25,7 +25,6 @@ class Interactable:
     in addition to those requires by the associated workflow itself.
     """
 
-    # TODO Bound interactions are currently not supported.
     is_bound: bool = False
     """Determines if the interactable is bound to the user who invoked it.
 

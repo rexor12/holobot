@@ -1,15 +1,14 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Generic, TypeVar, cast
 
 T = TypeVar("T")
 
-class Lazy(Generic[T]):
-    @property
-    def value(self) -> T:
+class AsyncLazy(Generic[T]):
+    async def get_value(self) -> T:
         if self.__is_value_created:
             return cast(T, self.__value)
         self.__is_value_created = True
-        self.__value = self.__factory()
+        self.__value = await self.__factory()
         return self.__value
 
     @property
@@ -18,7 +17,7 @@ class Lazy(Generic[T]):
 
     def __init__(
         self,
-        factory: Callable[[], T]
+        factory: Callable[[], Awaitable[T]]
     ) -> None:
         super().__init__()
         self.__factory = factory

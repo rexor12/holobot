@@ -19,5 +19,11 @@ class Option:
     is_mandatory: bool = True
     """Determines whether this option must always be specified."""
 
+    is_autocomplete: bool = False
+    """Determines whether choices are populated by autocompletion.
+
+    When set to true, specified choices are ignored.
+    """
+
     choices: tuple[Choice, ...] = field(default_factory=tuple)
     """An optional list of pre-defined choices that can be selected."""

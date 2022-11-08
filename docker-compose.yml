@@ -1,0 +1,41 @@
+version: "3.8"
+
+x-logging: &logging
+  logging:
+    driver: "json-file"
+    options:
+      max-file: "5"
+      max-size: "10m"
+
+x-restart-policy: &restart_policy
+  restart: unless-stopped
+
+services:
+  postgres:
+    << : *logging
+    << : *restart_policy
+    image: postgres:15-alpine
+    ports:
+      - 5455:5432
+    environment:
+      POSTGRES_DB: holobot
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: holobot
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U holobot"]
+      interval: 2s
+      timeout: 1s
+      retries: 5
+
+  bot:
+    << : *logging
+    << : *restart_policy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rexor12/holobot
+    volumes:
+      - .:/holobot:ro
+    tty: true
+    env_file:
+      - .env

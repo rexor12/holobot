@@ -35,6 +35,29 @@ This instance of the bot is deployed from the latest stable branch (develop/x.x.
 
 **Python 3.10 or higher is required.**
 
+### Docker
+
+If you have Docker installed, clone the repository and build the image first:
+```sh
+docker build -t rexor12/holobot .
+```
+
+Open the `.env` file and configure the necessary environment variables:
+```ini
+HOLO_ENVIRONMENT=docker
+HOLO_BOT_TOKEN=<your Discord bot token here>
+HOLO_DEVELOPMENT_SERVER_ID=<your own Discord server ID here>
+```
+
+Once that's done, fire up the container:
+```sh
+docker-compose up -d
+```
+
+### Standalone
+
+If Docker is not an option for you, you may choose to host the bot directly.
+
 After cloning the repository, you will have to make sure that all the dependencies are installed correctly. This can be achieved by the following command:
 
 ```sh

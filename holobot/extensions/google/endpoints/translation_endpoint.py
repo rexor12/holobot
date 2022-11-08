@@ -78,6 +78,10 @@ class TranslationEndpoint:
     async def get_languages(self) -> dict[str, Language]:
         return await self.__languages.get_value()
 
+    async def get_language_by_code(self, code: str) -> Language | None:
+        languages = await self.__languages.get_value()
+        return languages.get(code)
+
     @staticmethod
     async def __on_circuit_broken(
         circuit_breaker: AsyncCircuitBreakerPolicy[tuple[dict[str, Any], dict[str, Any]], Any],

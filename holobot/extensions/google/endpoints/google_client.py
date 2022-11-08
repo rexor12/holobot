@@ -100,6 +100,9 @@ class GoogleClient(IGoogleClient):
     async def get_languages(self) -> dict[str, Language]:
         return await self.__translation_endpoint.get_languages()
 
+    async def get_language_by_code(self, code: str) -> Language | None:
+        return await self.__translation_endpoint.get_language_by_code(code)
+
     @staticmethod
     async def __on_circuit_broken(
         circuit_breaker: AsyncCircuitBreakerPolicy[tuple[str, dict[str, Any]], Any],

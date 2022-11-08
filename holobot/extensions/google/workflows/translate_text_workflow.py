@@ -80,13 +80,19 @@ class TranslateTextWorkflow(WorkflowBase):
                     )
                 )
 
+            source_language = await self.__google_client.get_language_by_code(
+                translation.source_language
+            )
+            target_language = await self.__google_client.get_language_by_code(
+                translation.result_language
+            )
             return self._reply(
                 content=Embed(
                     title=self.__i18n_provider.get(
                         "extensions.google.translate_text_workflow.embed_title",
                         {
-                            "source": translation.source_language,
-                            "target": translation.result_language
+                            "source": source_language.name if source_language else translation.source_language,
+                            "target": target_language.name if target_language else translation.result_language
                         }
                     ),
                     footer=EmbedFooter(
@@ -147,14 +153,21 @@ class TranslateTextWorkflow(WorkflowBase):
                     for language in islice(languages.values(), 10)
                 ])
 
-            return self._autocomplete([
-                AutocompleteChoice(
+            target_value = target_option.value.lower()
+            choices = []
+            for language in languages.values():
+                if target_value not in language.name.lower():
+                    continue
+
+                choices.append(AutocompleteChoice(
                     name=language.name,
                     value=language.code
-                )
-                for language in languages.values()
-                if target_option.value.lower() in language.name.lower()
-            ])
+                ))
+
+                if len(choices) == 10:
+                    break
+
+            return self._autocomplete(choices)
         except:
             return self._autocomplete([])
 

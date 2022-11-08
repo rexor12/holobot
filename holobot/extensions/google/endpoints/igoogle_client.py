@@ -25,3 +25,7 @@ class IGoogleClient(metaclass=ABCMeta):
     @abstractmethod
     async def get_languages(self) -> dict[str, Language]:
         ...
+
+    @abstractmethod
+    async def get_language_by_code(self, code: str) -> Language | None:
+        ...

@@ -1,0 +1,51 @@
+{
+    "Core": {
+        "EnvironmentOptions": {
+            "IsDebug": true,
+            "LogLevel": "Trace",
+            "HttpPoolSize": 100
+        },
+        "DatabaseOptions": {
+            "Host": "postgres",
+            "Port": 5432,
+            "Database": "holobot",
+            "User": "holobot",
+            "Password": "password",
+            "AutoCreateDatabase": false,
+            "IsSslEnabled": false
+        }
+    },
+
+    "General": {
+        "AvatarOptions": {
+            "ArtworkArtistName": "Holo"
+        }
+    },
+
+    "Giveaways": {
+        "GiveawayOptions": {
+            "EnableScrapers": true,
+            "AnnouncementServerId": 0,
+            "AnnouncementChannelId": 0
+        }
+    },
+
+    "Google": {
+        "GoogleClientOptions": {
+            "GoogleSearchApiKey": "",
+            "GoogleSearchEngineId": ""
+        }
+    },
+
+    "Reminders": {
+        "ReminderProcessingOptions": {
+            "IsEnabled": true
+        }
+    },
+
+    "Weather": {
+        "OpenWeatherOptions": {
+            "ApiKey": ""
+        }
+    }
+}

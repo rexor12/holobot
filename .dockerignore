@@ -1,0 +1,8 @@
+__pycache__
+.github
+.venv
+.vscode
+scripts
+simulator
+.gitignore
+generate_version.py

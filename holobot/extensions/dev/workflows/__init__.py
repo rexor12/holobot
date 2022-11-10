@@ -1,1 +1,2 @@
+from .set_operating_mode_workflow import SetOperatingModeWorkflow
 from .show_available_servers_workflow import ShowAvailableServersWorkflow

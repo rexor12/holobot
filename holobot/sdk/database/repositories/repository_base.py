@@ -18,6 +18,7 @@ from holobot.sdk.database.statuses.command_tags import DeleteCommandTag, UpdateC
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import set_time_zone
 from holobot.sdk.utils.dataclass_utils import ParameterInfo, get_parameter_infos
+from .constants import MANUALLY_GENERATED_KEY_NAME
 from .entity import Entity
 from .irepository import IRepository
 
@@ -82,7 +83,8 @@ class RepositoryBase(
 
     async def add(self, model: TModel) -> TIdentifier:
         record = self._map_model_to_record(model)
-        fields = self._get_fields(record, True)
+        is_manually_generated_key = getattr(record, MANUALLY_GENERATED_KEY_NAME, False)
+        fields = self._get_fields(record, not is_manually_generated_key)
         async with self._database_manager.acquire_connection() as connection:
             connection: Connection
             async with connection.transaction():

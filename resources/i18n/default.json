@@ -50,6 +50,15 @@
             }
         },
 
+        "dev": {
+            "maintenance_mode_enabled_error": "I'm sorry, but I'm undergoing maintenance right now. Please, try again a bit later. („• ᴗ •„)",
+
+            "set_operating_mode_workflow": {
+                "normal_mode_enabled": "Normal operating mode has been enabled.",
+                "maintenance_mode_enabled": "Maintenance mode has been enabled."
+            }
+        },
+
         "general": {
             "magic_eight_ball_workflow": {
                 "responses": [

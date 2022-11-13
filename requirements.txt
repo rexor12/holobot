@@ -1,6 +1,6 @@
 aiogoogle==4.3.0                    # Used for interacting with Google Cloud APIs.
 asyncpg==0.26.0                     # Used for working with PostgreSQL databases.
-hikari==2.0.0.dev110                # Discord bot framework.
+hikari==2.0.0.dev112                # Discord bot framework.
 kanata==2.0.1.0                     # Dependency injection framework.
 python-dateutil==2.8.2              # Utilities for date and time.
 structlog==22.1.0                   # Used for structured logging.

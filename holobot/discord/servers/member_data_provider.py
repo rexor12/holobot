@@ -111,6 +111,9 @@ class MemberDataProvider(IMemberDataProvider):
         channel: hikari.GuildChannel,
         permissions: hikari.Permissions
     ) -> hikari.Permissions:
+        if not isinstance(channel, hikari.PermissibleGuildChannel):
+            return hikari.Permissions.NONE
+
         # Get the permissions of "everyone" first.
         if everyone_overwrite := channel.permission_overwrites.get(member.guild_id):
             permissions &= ~everyone_overwrite.deny

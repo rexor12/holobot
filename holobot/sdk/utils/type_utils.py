@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
 class Singleton(type):
     __instance: Any | None = None
@@ -15,6 +15,10 @@ class UndefinedType(metaclass=Singleton):
         return False
 
 UNDEFINED: UndefinedType = UndefinedType()
+
+T = TypeVar("T", covariant=True)
+UndefinedOr = UndefinedType | T
+UndefinedOrNoneOr = UndefinedOr[T] | None
 
 def get_fully_qualified_name(clazz: type):
     module_name = clazz.__module__

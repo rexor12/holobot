@@ -32,8 +32,8 @@ class ViewBotInfoWorkflow(WorkflowBase):
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
         current_time = datetime.now(tzlocal.get_localzone())
-        return InteractionResponse(
-            action=ReplyAction(content=Embed(
+        return self._reply(
+            embed=Embed(
                 title=self.__i18n_provider.get(
                     "extensions.general.view_bot_info_workflow.embed_title"
                 ),
@@ -78,5 +78,5 @@ class ViewBotInfoWorkflow(WorkflowBase):
                     ),
                     "https://avatars.githubusercontent.com/u/15330052"
                 )
-            ))
+            )
         )

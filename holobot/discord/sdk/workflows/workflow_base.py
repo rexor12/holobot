@@ -5,6 +5,7 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import AutocompleteChoice, Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr, UndefinedType
 from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
 from .interactables import Interactable
 from .iworkflow import IWorkflow
@@ -52,13 +53,15 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
     def _reply(
         self,
         *,
-        content: str | Embed,
+        content: str | None = None,
+        embed: Embed | None = None,
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False
     ) -> InteractionResponse:
         return InteractionResponse(
             action=ReplyAction(
                 content=content,
+                embed=embed,
                 components=components or [],
                 suppress_user_mentions=suppress_user_mentions
             )
@@ -67,13 +70,15 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
     def _edit_message(
         self,
         *,
-        content: str | Embed,
+        content: UndefinedOrNoneOr[str] = UNDEFINED,
+        embed: UndefinedOrNoneOr[Embed] = UNDEFINED,
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False
     ) -> InteractionResponse:
         return InteractionResponse(
             action=EditMessageAction(
                 content=content,
+                embed=embed,
                 components=components or [],
                 suppress_user_mentions=suppress_user_mentions
             )

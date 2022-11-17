@@ -1,6 +1,5 @@
 from typing import Any
 
-from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -16,6 +15,7 @@ from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import try_parse_int
+from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 _ITEMS_PER_PAGE: int = 5
 
@@ -41,15 +41,18 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         self,
         context: InteractionContext
     ) -> InteractionResponse:
-        content, layout = await self.__create_page_content(
+        content, embed, layout = await self.__create_page_content(
             0,
             _ITEMS_PER_PAGE,
             "game",
             0,
             context.author_id
         )
-        return InteractionResponse(
-            action=ReplyAction(content=content, components=layout)
+
+        return self._reply(
+            content=content if isinstance(content, str) else None,
+            embed=embed if isinstance(embed, Embed) else None,
+            components=layout
         )
 
     @component(
@@ -63,31 +66,31 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(state, ComboBoxState):
-            return InteractionResponse(EditMessageAction(
+            return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            ))
+            )
 
         identifier, page_index, item_index, item_type = state.selected_values[0].split(";")
         if (not identifier
             or not item_type
             or (page_index := try_parse_int(page_index)) is None
             or (item_index := try_parse_int(item_index)) is None):
-            return InteractionResponse(EditMessageAction(
+            return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            ))
+            )
 
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             page_index,
             _ITEMS_PER_PAGE,
             item_type,
             item_index,
             context.author_id
         )
-        return InteractionResponse(
-            EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     @component(
@@ -100,22 +103,22 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(state, PagerState):
-            return InteractionResponse(EditMessageAction(
+            return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            ))
+            )
 
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             state.current_page,
             _ITEMS_PER_PAGE,
             state.custom_data.get("item_type", "game") or "game",
             0,
             context.author_id
         )
-        return InteractionResponse(
-            EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     async def __create_page_content(
@@ -125,7 +128,11 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         item_type: str,
         item_index: int,
         initiator_id: str
-    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
+    ) -> tuple[
+            UndefinedOrNoneOr[str],
+            UndefinedOrNoneOr[Embed],
+            ComponentBase | list[LayoutBase] | None
+        ]:
         metadatas = await self.__repository.get_metadatas(page_index, page_size, item_type)
         if page_index > 0 and not metadatas.items:
             page_index = 0
@@ -137,13 +144,15 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
                 self.__i18n_provider.get(
                     "extensions.giveaways.view_active_giveaways_workflow.no_active_giveaways"
                 ),
-                []
+                None,
+                None
             )
 
         if item_index >= len(metadatas.items):
             item_index = 0
 
         return (
+            None,
             await self.__create_embed(metadatas.items[item_index].identifier),
             [
                 StackLayout(id="combo_box_container", children=[

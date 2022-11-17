@@ -18,7 +18,7 @@ from holobot.extensions.google.endpoints import IGoogleClient
 from holobot.extensions.google.enums import SearchType
 from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.extensions.google.models import (
-    ExpandingSearchResult, GoogleClientOptions, SearchResult, SearchResultItem
+    ExpandingSearchResult, GoogleClientOptions, SearchResult
 )
 from holobot.sdk.caching import EvictingConcurrentCache, SlidingExpirationCacheEntryPolicy
 from holobot.sdk.configs import IOptions
@@ -28,6 +28,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.exceptions import HttpStatusError
+from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr
 from holobot.sdk.utils.uuid_utils import random_uuid
 
 @injectable(IStartable)
@@ -60,7 +61,7 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
             await self.__search_results.dispose()
 
     @command(
-        description="Searches Google with a specific query.",
+        description="Searches Google with a specific query. Results expire after a while.",
         name="search",
         group_name="google",
         options=(
@@ -101,9 +102,11 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
                 result
             )
 
-            content, components = await self.__create_page(context.author_id, result_id, 0)
+            content, embed, components = await self.__create_page(context.author_id, result_id, 0)
+
             return self._reply(
-                content=content,
+                content=content if isinstance(content, str) else None,
+                embed=embed if isinstance(embed, Embed) else None,
                 components=components
             )
         except InvalidOperationError:
@@ -132,7 +135,7 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
 
-        content, components = await self.__create_page(
+        content, embed, components = await self.__create_page(
             state.owner_id,
             state.custom_data.get("r", ""),
             state.current_page
@@ -140,6 +143,7 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
 
         return self._edit_message(
             content=content,
+            embed=embed,
             components=components
         )
 
@@ -216,7 +220,11 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
         owner_id: str,
         results_id: str,
         result_index: int
-    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase] | None]:
+    ) -> tuple[
+            UndefinedOrNoneOr[str],
+            UndefinedOrNoneOr[Embed],
+            ComponentBase | list[LayoutBase] | None
+        ]:
         # By the time we receive the first request,
         # the cache must have already been initialized (IStartable).
         assert self.__search_results
@@ -224,9 +232,8 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
         cache_key = SearchGoogleWorkflow.__get_cache_key(owner_id, results_id)
         if not (results := await self.__search_results.get(cache_key)):
             return (
-                self.__i18n_provider.get(
-                    "extensions.google.search_google_workflow.results_expired"
-                ),
+                UNDEFINED,
+                UNDEFINED,
                 None
             )
 
@@ -249,16 +256,18 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
 
             result = results.items[result_index]
             available_result_count = max(results.available_result_count, len(results.items))
+            content, embed = self.__create_page_view(
+                result.title,
+                result.link,
+                result_index,
+                available_result_count,
+                out_of_results,
+                results.search_type
+            )
 
             return (
-                self.__create_page_view(
-                    result.title,
-                    result.link,
-                    result_index,
-                    available_result_count,
-                    out_of_results,
-                    results.search_type
-                ),
+                content,
+                embed,
                 Paginator(
                     id="gsearchpagi",
                     owner_id=owner_id,
@@ -277,14 +286,17 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
         available_result_count: int,
         out_of_results: bool,
         search_type: SearchType
-    ):
+    ) -> tuple[str | None, Embed | None]:
         if search_type == SearchType.IMAGE:
-            return self.__create_image_embed(
-                result_title,
-                result_url,
-                result_index,
-                available_result_count,
-                out_of_results
+            return (
+                None,
+                self.__create_image_embed(
+                    result_title,
+                    result_url,
+                    result_index,
+                    available_result_count,
+                    out_of_results
+                )
             )
 
         l10n_context = {
@@ -292,20 +304,21 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
             "result_count": available_result_count,
             "url": result_url
         }
-        if available_result_count == 1:
-            return self.__i18n_provider.get(
-                "extensions.google.search_google_workflow.text_result_expired",
-                l10n_context
-            )
-        elif out_of_results:
-            return self.__i18n_provider.get(
-                "extensions.google.search_google_workflow.text_result_with_error",
-                l10n_context
+        if out_of_results:
+            return (
+                self.__i18n_provider.get(
+                    "extensions.google.search_google_workflow.text_result_with_error",
+                    l10n_context
+                ),
+                None
             )
         else:
-            return self.__i18n_provider.get(
-                "extensions.google.search_google_workflow.text_result",
-                l10n_context
+            return (
+                self.__i18n_provider.get(
+                    "extensions.google.search_google_workflow.text_result",
+                    l10n_context
+                ),
+                None
             )
 
     def __create_image_embed(
@@ -316,12 +329,7 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
         result_count: int,
         out_of_results: bool
     ) -> Embed:
-        if result_count == 1:
-            description = self.__i18n_provider.get(
-                "extensions.google.search_google_workflow.embed_description_expired",
-                { "result_title": result_title }
-            )
-        elif out_of_results:
+        if out_of_results:
             description = self.__i18n_provider.get(
                 "extensions.google.search_google_workflow.embed_description_with_error",
                 { "result_title": result_title }

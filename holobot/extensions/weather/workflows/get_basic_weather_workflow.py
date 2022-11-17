@@ -1,4 +1,3 @@
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -44,41 +43,33 @@ class GetBasicWeatherWorkflow(WorkflowBase):
         try:
             weather_data = await self.__weather_client.get_weather_data(city)
             if weather_data.temperature is None:
-                return InteractionResponse(
-                    action=ReplyAction(content=self.__i18n_provider.get(
+                return self._reply(
+                    content=self.__i18n_provider.get(
                         "extensions.weather.get_basic_weather_workflow.no_information_error"
-                    ))
+                    )
                 )
-            return InteractionResponse(
-                action=ReplyAction(content=self.__create_embed(weather_data))
+            return self._reply(
+                embed=self.__create_embed(weather_data)
             )
         except InvalidLocationError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
+            return self._reply(
+                content=self.__i18n_provider.get(
                     "extensions.weather.get_basic_weather_workflow.invalid_location_error"
-                ))
+                )
             )
         except OpenWeatherError as error:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
+            return self._reply(
+                content=self.__i18n_provider.get(
                     "extensions.weather.get_basic_weather_workflow.openweather_error",
                     { "code": error.error_code }
-                ))
+                )
             )
         except InvalidOperationError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("feature_disabled_error"))
-            )
+            return self._reply(content=self.__i18n_provider.get("feature_disabled_error"))
         except QueryQuotaExhaustedError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
-                    "feature_quota_exhausted_error"
-                ))
-            )
+            return self._reply(content=self.__i18n_provider.get("feature_quota_exhausted_error"))
         except CircuitBrokenError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("rate_limit_error"))
-            )
+            return self._reply(content=self.__i18n_provider.get("rate_limit_error"))
 
     def __create_embed(self, weather_data: WeatherData) -> Embed:
         embed = Embed(

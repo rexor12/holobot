@@ -1,4 +1,3 @@
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.data_providers import IUserDataProvider
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
@@ -63,35 +62,33 @@ class ViewUserBannerWorkflow(WorkflowBase):
             ):
                 user_name = member.display_name
         except UserNotFoundError:
-            return InteractionResponse(ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("user_not_found_error")
-            ))
+            )
         except ServerNotFoundError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("server_not_found_error")
-            ))
+            )
         except ChannelNotFoundError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("channel_not_found_error")
-            ))
-
-        if not user_data.banner_url:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.general.view_user_banner_workflow.no_banner_error",
-                        { "user_id": user_data.user_id }
-                    ),
-                    suppress_user_mentions=True
-                )
             )
 
-        return InteractionResponse(
-            action=ReplyAction(content=Embed(
+        if not user_data.banner_url:
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.general.view_user_banner_workflow.no_banner_error",
+                    { "user_id": user_data.user_id }
+                ),
+                suppress_user_mentions=True
+            )
+
+        return self._reply(
+            embed=Embed(
                 title=self.__i18n_provider.get(
                     "extensions.general.view_user_banner_workflow.embed_title",
                     { "user": user_name }
                 ),
                 image_url=user_data.banner_url
-            ))
+            )
         )

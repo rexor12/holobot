@@ -1,4 +1,3 @@
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ServerNotFoundError
 from holobot.discord.sdk.models import Embed
 from holobot.discord.sdk.servers import IServerDataProvider
@@ -34,21 +33,21 @@ class ViewServerIconWorkflow(WorkflowBase):
         try:
             server = await self.__server_data_provider.get_basic_data_by_id(context.server_id)
         except ServerNotFoundError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("server_not_found_error"))
-            )
+            return self._reply(content=self.__i18n_provider.get("server_not_found_error"))
 
         if not server.icon_url:
-            return InteractionResponse(ReplyAction(content=self.__i18n_provider.get(
+            return self._reply(
+                content=self.__i18n_provider.get(
                     "extensions.server.view_server_icon_workflow.no_server_icon"
-                )))
+                )
+            )
 
-        return InteractionResponse(
-            action=ReplyAction(content=Embed(
+        return self._reply(
+            embed=Embed(
                 title=self.__i18n_provider.get(
                     "extensions.server.view_server_icon_workflow.embed_title",
                     { "name": server.name }
                 ),
                 image_url=server.icon_url
-            ))
+            )
         )

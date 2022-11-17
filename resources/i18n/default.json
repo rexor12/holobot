@@ -219,11 +219,9 @@
                 "no_results": "I couldn't find any good results for you. Please, refine your keywords and try again. („• ᴗ •„)",
                 "embed_title": "Search results",
                 "embed_description_with_error": "I'm sorry, but Google couldn't provide any more valid results.\n\n{result_title}",
-                "embed_description_expired": "These search results have expired. Showing the last active one:\n\n{result_title}",
                 "embed_footer": "Showing result {result_index} of {result_count}. Discord may choose not to display certain images.",
                 "text_result": "Showing result {result_index} of {result_count}:\n{url}",
-                "text_result_with_error": "I'm sorry, but Google couldn't provide any more valid results.\n\nShowing result {result_index} of {result_count}:\n{url}",
-                "text_result_expired": "These search results have expired. Showing the last active one:\n{url}"
+                "text_result_with_error": "I'm sorry, but Google couldn't provide any more valid results.\n\nShowing result {result_index} of {result_count}:\n{url}"
             },
             "translate_text_workflow": {
                 "no_result": "I'm sorry, but I'm unable to translate your text. (｡•́︿•̀｡)",

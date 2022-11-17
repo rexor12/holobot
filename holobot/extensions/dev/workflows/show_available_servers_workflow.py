@@ -1,6 +1,5 @@
 from typing import Any
 
-from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
@@ -14,6 +13,7 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 PAGE_SIZE = 10
 
@@ -41,9 +41,11 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         self,
         context: InteractionContext,
     ) -> InteractionResponse:
-        content, layout = await self.__create_page_content(0, PAGE_SIZE, 0, context.author_id)
-        return InteractionResponse(
-            action=ReplyAction(content=content, components=layout)
+        content, embed, layout = await self.__create_page_content(0, PAGE_SIZE, 0, context.author_id)
+        return self._reply(
+            content=content if isinstance(content, str) else None,
+            embed=embed if isinstance(embed, Embed) else None,
+            components=layout
         )
 
     @component(
@@ -56,30 +58,24 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(
-                action=EditMessageAction(
-                    content="This interaction is available in a server only."
-                )
+            return self._edit_message(
+                content="This interaction is available in a server only."
             )
 
         if not isinstance(state, PagerState):
-            return InteractionResponse(
-                action=EditMessageAction(
-                    content="This interaction isn't valid anymore."
-                )
-            )
+            return self._edit_message(content="This interaction isn't valid anymore.")
 
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             max(state.current_page, 0),
             PAGE_SIZE,
             0,
             state.owner_id
         )
-        return InteractionResponse(
-            action=EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     @component(
@@ -92,23 +88,23 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(EditMessageAction(content="This interaction is available in a server only."))
+            return self._edit_message(content="This interaction is available in a server only.")
 
         if not isinstance(state, ComboBoxState):
-            return InteractionResponse(EditMessageAction(content="This interaction isn't valid anymore."))
+            return self._edit_message(content="This interaction isn't valid anymore.")
 
         page_index, server_index = state.selected_values[0].split(";")
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             max(int(page_index), 0),
             PAGE_SIZE,
             max(int(server_index), 0),
             state.owner_id
         )
-        return InteractionResponse(
-            EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     async def __create_page_content(
@@ -117,13 +113,17 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         page_size: int,
         server_index: int,
         initiator_id: str
-    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
+    ) -> tuple[
+            UndefinedOrNoneOr[str],
+            UndefinedOrNoneOr[Embed],
+            ComponentBase | list[LayoutBase] | None
+        ]:
         server_count, servers = self.__bot_data_provider.get_servers(page_index, page_size)
         if not servers:
-            return ("The bot isn't part of any servers.", [])
+            return ("The bot isn't part of any servers.", None, None)
 
         if server_index >= len(servers):
-            return ("You selected an inexistent server.", [])
+            return ("You selected an inexistent server.", None, None)
 
         server = servers[server_index]
         owner_name = server.owner_name
@@ -136,6 +136,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
             owner_name = owner.name if owner else "N/A"
 
         return (
+            None,
             Embed(
                 title=server.name,
                 thumbnail_url=server.icon_url,

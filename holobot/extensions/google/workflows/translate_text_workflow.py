@@ -87,7 +87,7 @@ class TranslateTextWorkflow(WorkflowBase):
                 translation.result_language
             )
             return self._reply(
-                content=Embed(
+                embed=Embed(
                     title=self.__i18n_provider.get(
                         "extensions.google.translate_text_workflow.embed_title",
                         {

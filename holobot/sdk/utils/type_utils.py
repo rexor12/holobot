@@ -14,7 +14,7 @@ class UndefinedType(metaclass=Singleton):
     def __bool__(self) -> Literal[False]:
         return False
 
-UNDEFINED = UndefinedType()
+UNDEFINED: UndefinedType = UndefinedType()
 
 def get_fully_qualified_name(clazz: type):
     module_name = clazz.__module__

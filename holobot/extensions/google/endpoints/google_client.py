@@ -3,7 +3,7 @@ from typing import Any
 from holobot.extensions.google.enums import SearchType
 from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.extensions.google.models import (
-    GoogleClientOptions, Language, SearchResult, Translation
+    GoogleClientOptions, Language, SearchResult, SearchResultItem, Translation
 )
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
@@ -13,6 +13,8 @@ from holobot.sdk.network import HttpClientPoolInterface
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from holobot.sdk.serialization.json_serializer import deserialize
+from .dtos.search_response import SearchResponse
 from .igoogle_client import IGoogleClient
 from .translation_endpoint import TranslationEndpoint
 
@@ -46,8 +48,9 @@ class GoogleClient(IGoogleClient):
         self,
         search_type: SearchType,
         query: str,
-        max_results: int = 1
-    ) -> tuple[SearchResult, ...]:
+        max_results: int = 1,
+        page_index: int = 1
+    ) -> SearchResult:
         api_key = self.__options.GoogleSearchApiKey
         engine_id = self.__options.GoogleSearchEngineId
         if not api_key or not engine_id:
@@ -65,7 +68,8 @@ class GoogleClient(IGoogleClient):
                         "cx": engine_id,
                         "searchType": GoogleClient.search_types.get(search_type, TEXT_SEARCH_TYPE),
                         "num": max_results,
-                        "q": query
+                        "q": query,
+                        "start": page_index * max_results
                     }
                 )
             )
@@ -80,10 +84,21 @@ class GoogleClient(IGoogleClient):
             self.__log.error("An unexpected error has occurred during a Google request", error)
             raise
 
-        if not (results := response.get("items")):
-            return ()
+        response_dto = deserialize(SearchResponse, response)
+        if not response_dto:
+            return SearchResult()
 
-        return tuple(map(SearchResult.from_json, results))
+        return SearchResult(
+            total_result_count=response_dto.searchInformation.totalResults,
+            items=[
+                SearchResultItem(
+                    title=item.title,
+                    link=item.link,
+                    fileSize=item.image.byteSize
+                )
+                for item in response_dto.items
+            ]
+        )
 
     async def translate_text(
         self,

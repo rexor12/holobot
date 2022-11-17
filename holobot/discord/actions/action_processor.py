@@ -89,7 +89,7 @@ class ActionProcessor(IActionProcessor):
                 await interaction.create_initial_response(
                     ResponseType.MESSAGE_UPDATE,
                     content=content,
-                    embed=embed or UNDEFINED,
+                    embed=embed,
                     components=components,
                     flags=MessageFlag.EPHEMERAL if is_ephemeral else MessageFlag.NONE,
                     user_mentions=not action.suppress_user_mentions or UNDEFINED

@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from holobot.discord.sdk.actions import AutocompleteAction, ReplyAction
+from holobot.discord.sdk.actions import AutocompleteAction, EditMessageAction, ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import AutocompleteChoice, Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
@@ -58,6 +58,21 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
     ) -> InteractionResponse:
         return InteractionResponse(
             action=ReplyAction(
+                content=content,
+                components=components or [],
+                suppress_user_mentions=suppress_user_mentions
+            )
+        )
+
+    def _edit_message(
+        self,
+        *,
+        content: str | Embed,
+        components: ComponentBase | list[LayoutBase] | None = None,
+        suppress_user_mentions: bool = False
+    ) -> InteractionResponse:
+        return InteractionResponse(
+            action=EditMessageAction(
                 content=content,
                 components=components or [],
                 suppress_user_mentions=suppress_user_mentions

@@ -2,7 +2,7 @@ from collections.abc import Awaitable, Callable
 from queue import Queue
 from typing import Any, TypeVar
 
-from holobot.sdk.utils.type_utils import UNDEFINED
+from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedType
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -25,7 +25,7 @@ def add_or_update(
     add_factory: Callable[[TKey], TValue],
     update_factory: Callable[[TKey, TValue], TValue]
 ) -> TValue:
-    if (value := dictionary.get(key, UNDEFINED)) is UNDEFINED:
+    if isinstance(value := dictionary.get(key, UNDEFINED), UndefinedType):
         value = add_factory(key)
     else:
         value = update_factory(key, value)
@@ -39,7 +39,7 @@ async def add_or_update_async(
     add_factory: Callable[[TKey], Awaitable[TValue]],
     update_factory: Callable[[TKey, TValue], Awaitable[TValue]]
 ) -> TValue:
-    if (value := dictionary.get(key, UNDEFINED)) is UNDEFINED:
+    if isinstance(value := dictionary.get(key, UNDEFINED), UndefinedType):
         value = await add_factory(key)
     else:
         value = await update_factory(key, value)

@@ -1,21 +1,8 @@
-from __future__ import annotations
+from dataclasses import dataclass, field
 
-from typing import Any
+from .search_result_item import SearchResultItem
 
+@dataclass(kw_only=True)
 class SearchResult:
-    def __init__(self, link: str) -> None:
-        self.link = link
-
-    @property
-    def link(self) -> str:
-        return self.__link
-
-    @link.setter
-    def link(self, value: str) -> None:
-        self.__link = value
-
-    @staticmethod
-    def from_json(json: dict[str, Any]) -> SearchResult:
-        return SearchResult(
-            link=json.get("link", "")
-        )
+    total_result_count: int = 0
+    items: list[SearchResultItem] = field(default_factory=list)

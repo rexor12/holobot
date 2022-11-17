@@ -7,6 +7,7 @@ from typing import Generic, TypeVar
 
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils.timedelta_utils import ZERO_TIMEDELTA
 from .iresilience_policy import IResiliencePolicy
 
 TState = TypeVar("TState")
@@ -14,8 +15,6 @@ TResult = TypeVar("TResult")
 
 class AsyncRetryPolicy(Generic[TState, TResult], IResiliencePolicy[TState, TResult]):
     """A resilience policy for retrying an operation on errors."""
-
-    __ZERO_TIMEDELTA = timedelta()
 
     @property
     def max_attempt_count(self) -> int:
@@ -83,7 +82,7 @@ class AsyncRetryPolicy(Generic[TState, TResult], IResiliencePolicy[TState, TResu
                         if isinstance(self.retry_after, timedelta)
                         else self.retry_after(self, index, error)
                     )
-                    if retry_after > AsyncRetryPolicy.__ZERO_TIMEDELTA:
+                    if retry_after > ZERO_TIMEDELTA:
                         await asyncio.sleep(retry_after.total_seconds())
 
         # We must never reach this point, because of one of the following:

@@ -222,7 +222,9 @@
     "Core": {
         "DiscordOptions": {
             "BotToken": "__HOLO_BOT_TOKEN__",
-            "DevelopmentServerId": "__HOLO_DEVELOPMENT_SERVER_ID__"
+            "DevelopmentServerId": "__HOLO_DEVELOPMENT_SERVER_ID__",
+            "PaginatorPreviousEmoji": "1041667997951086652",
+            "PaginatorNextEmoji": "1041668000815796316"
         },
         "EnvironmentOptions": {
             "IsDebug": "__HOLO_IS_DEBUG__",
@@ -275,6 +277,7 @@
             "GoogleSearchEngineId": "__HOLO_GOOGLE_SEARCH_ENGINE_ID__",
             "CircuitBreakerFailureThreshold": 1,
             "CircuitBreakerRecoveryTime": 300,
+            "MaxResultsPerQuery": 20,
             "ServiceAccountCredentialFile": "__HOLO_GOOGLE_SERVICE_ACCOUNT_CREDENTIAL_FILE__"
         }
     },

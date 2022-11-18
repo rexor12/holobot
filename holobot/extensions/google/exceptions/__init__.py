@@ -1,1 +1,2 @@
+from .feature_disabled_error import FeatureDisabledError
 from .quota_exhausted_error import QuotaExhaustedError

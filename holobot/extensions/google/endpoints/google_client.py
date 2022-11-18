@@ -1,12 +1,11 @@
 from typing import Any
 
 from holobot.extensions.google.enums import SearchType
-from holobot.extensions.google.exceptions import QuotaExhaustedError
+from holobot.extensions.google.exceptions import FeatureDisabledError, QuotaExhaustedError
 from holobot.extensions.google.models import (
     GoogleClientOptions, Language, SearchResult, SearchResultItem, Translation
 )
 from holobot.sdk.configs import IOptions
-from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import HttpClientPoolInterface
@@ -54,7 +53,7 @@ class GoogleClient(IGoogleClient):
         api_key = self.__options.GoogleSearchApiKey
         engine_id = self.__options.GoogleSearchEngineId
         if not api_key or not engine_id:
-            raise InvalidOperationError("Google searches aren't configured.")
+            raise FeatureDisabledError("Google searches aren't configured.")
         if not query:
             raise ValueError("The query must not be empty.")
 

@@ -14,8 +14,7 @@ from holobot.discord.sdk.workflows.interactables.models import (
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.google.endpoints import IGoogleClient
-from holobot.extensions.google.exceptions import QuotaExhaustedError
-from holobot.sdk.exceptions import InvalidOperationError
+from holobot.extensions.google.exceptions import FeatureDisabledError, QuotaExhaustedError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -120,7 +119,7 @@ class TranslateTextWorkflow(WorkflowBase):
                     ]
                 )
             )
-        except InvalidOperationError:
+        except FeatureDisabledError:
             return self._reply(content=self.__i18n_provider.get("feature_disabled_error"))
         except QuotaExhaustedError:
             return self._reply(content=self.__i18n_provider.get("feature_quota_exhausted_error"))

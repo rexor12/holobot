@@ -1,8 +1,7 @@
 import asyncio
 import os
-from abc import ABCMeta, abstractmethod
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Generic, TypeVar
 
 from holobot.sdk.concurrency import IAsyncDisposable
@@ -10,8 +9,10 @@ from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
 from holobot.sdk.utils import UNDEFINED, UndefinedType
-from holobot.sdk.utils.datetime_utils import utcnow
 from holobot.sdk.utils.timedelta_utils import ZERO_TIMEDELTA
+from .cache_entry_policy import CacheEntryPolicy
+from .icache import ICache
+from .no_expiration_cache_entry_policy import NoExpirationCacheEntryPolicy
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -25,56 +26,6 @@ DEGREE_OF_PARALLELISM = (
 )
 
 DEFAULT_CLEANUP_INTERVAL = timedelta(seconds=20)
-
-class CacheEntryPolicy(metaclass=ABCMeta):
-    @abstractmethod
-    def is_expired(self) -> bool:
-        ...
-
-    def on_entry_accessed(self) -> None:
-        pass
-
-class NoExpirationCacheEntryPolicy(CacheEntryPolicy):
-    def is_expired(self) -> bool:
-        return False
-
-class AbsoluteExpirationCacheEntryPolicy(CacheEntryPolicy):
-    @property
-    def expires_at(self) -> datetime:
-        return self.__expires_at
-
-    def __init__(
-        self,
-        expires_at: datetime
-    ) -> None:
-        super().__init__()
-        self.__expires_at = expires_at
-
-    def is_expired(self) -> bool:
-        return utcnow() >= self.__expires_at
-
-class SlidingExpirationCacheEntryPolicy(CacheEntryPolicy):
-    @property
-    def expires_after(self) -> timedelta:
-        return self.__expires_after
-
-    @property
-    def expires_at(self) -> datetime:
-        return self.__expires_at
-
-    def __init__(
-        self,
-        expires_after: timedelta
-    ) -> None:
-        super().__init__()
-        self.__expires_after = expires_after
-        self.__expires_at = utcnow() + expires_after
-
-    def is_expired(self) -> bool:
-        return utcnow() >= self.__expires_at
-
-    def on_entry_accessed(self) -> None:
-        self.__expires_at = utcnow() + self.__expires_after
 
 class _CacheEntryKey(Generic[TKey]):
     @property
@@ -230,7 +181,7 @@ class _ItemStore(Generic[TKey, TValue], IAsyncDisposable):
 
 _DEFAULT_NO_EXPIRATION_POLICY = NoExpirationCacheEntryPolicy()
 
-class EvictingConcurrentCache(Generic[TKey, TValue], IAsyncDisposable):
+class ConcurrentMemoryCache(ICache, Generic[TKey, TValue], IAsyncDisposable):
     def __init__(
         self,
         cleanup_interval: timedelta | None = None

@@ -16,24 +16,21 @@ from holobot.discord.sdk.workflows.interactables.models import (
 )
 from holobot.extensions.google.endpoints import IGoogleClient
 from holobot.extensions.google.enums import SearchType
-from holobot.extensions.google.exceptions import QuotaExhaustedError
+from holobot.extensions.google.exceptions import FeatureDisabledError, QuotaExhaustedError
 from holobot.extensions.google.models import (
     ExpandingSearchResult, GoogleClientOptions, SearchResult
 )
-from holobot.sdk.caching import EvictingConcurrentCache, SlidingExpirationCacheEntryPolicy
+from holobot.sdk.caching import IObjectCache, SlidingExpirationCacheEntryPolicy
 from holobot.sdk.configs import IOptions
-from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.exceptions import HttpStatusError
 from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr
 from holobot.sdk.utils.uuid_utils import random_uuid
 
-@injectable(IStartable)
 @injectable(IWorkflow)
-class SearchGoogleWorkflow(WorkflowBase, IStartable):
+class SearchGoogleWorkflow(WorkflowBase):
     _HTTP_REGEX = re.compile(r"^http[s]?:\/\/", re.IGNORECASE)
     _RESULTS_PER_PAGE = 10 # Limitation by Google.
     _GOOGLE_MAX_RESULTS = 100 # Limitation by Google.
@@ -41,24 +38,18 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
 
     def __init__(
         self,
+        cache: IObjectCache,
         google_client: IGoogleClient,
         options: IOptions[GoogleClientOptions],
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory
     ) -> None:
         super().__init__()
+        self.__cache = cache
         self.__google_client = google_client
         self.__options = options
         self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(SearchGoogleWorkflow)
-        self.__search_results: EvictingConcurrentCache[str, ExpandingSearchResult] | None = None
-
-    async def start(self):
-        self.__search_results = EvictingConcurrentCache()
-
-    async def stop(self):
-        if self.__search_results:
-            await self.__search_results.dispose()
 
     @command(
         description="Searches Google with a specific query. Results expire after a while.",
@@ -81,10 +72,6 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
         type: str | None = None,
         defer_type=DeferType.DEFER_MESSAGE_CREATION
     ) -> InteractionResponse:
-        # By the time we receive the first request,
-        # the cache must have already been initialized (IStartable).
-        assert self.__search_results
-
         search_type = SearchType.IMAGE if type == "image" else SearchType.TEXT
         try:
             result = await self.__search(search_type, query)
@@ -109,7 +96,7 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
                 embed=embed if isinstance(embed, Embed) else None,
                 components=components
             )
-        except InvalidOperationError:
+        except FeatureDisabledError:
             return self._reply(content=self.__i18n_provider.get("feature_disabled_error"))
         except QuotaExhaustedError:
             return self._reply(content=self.__i18n_provider.get("feature_quota_exhausted_error"))
@@ -149,7 +136,7 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
 
     @staticmethod
     def __get_cache_key(user_id: str, results_id: str) -> str:
-        return f"{user_id}/{results_id}"
+        return f"google_search/{user_id}/{results_id}"
 
     async def __search(self, search_type: SearchType, query: str) -> SearchResult:
         result = await self.__google_client.search(
@@ -173,12 +160,8 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
         search_type: SearchType,
         result: SearchResult
     ) -> str:
-        # By the time we receive the first request,
-        # the cache must have already been initialized (IStartable).
-        assert self.__search_results
-
         result_id = random_uuid(8)
-        await self.__search_results.add_or_replace(
+        await self.__cache.add_or_replace(
             SearchGoogleWorkflow.__get_cache_key(author_id, result_id),
             ExpandingSearchResult(
                 query=query,
@@ -225,12 +208,8 @@ class SearchGoogleWorkflow(WorkflowBase, IStartable):
             UndefinedOrNoneOr[Embed],
             ComponentBase | list[LayoutBase] | None
         ]:
-        # By the time we receive the first request,
-        # the cache must have already been initialized (IStartable).
-        assert self.__search_results
-
         cache_key = SearchGoogleWorkflow.__get_cache_key(owner_id, results_id)
-        if not (results := await self.__search_results.get(cache_key)):
+        if not (results := await self.__cache.get(cache_key)):
             return (
                 UNDEFINED,
                 UNDEFINED,

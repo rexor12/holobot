@@ -62,23 +62,24 @@
         "general": {
             "magic_eight_ball_workflow": {
                 "responses": [
-                    "Yes.",
-                    "But of course!",
-                    "Certainly.",
-                    "Without a doubt.",
-                    "Yes, definitely.",
-                    "Most likely.",
-                    "It seems to be the case.",
-                    "No.",
-                    "Of course, not!",
-                    "Quite unlikely.",
-                    "Don't count on it.",
+                    "yes.",
+                    "but of course!",
+                    "certainly.",
+                    "without a doubt.",
+                    "yes, definitely.",
+                    "most likely.",
+                    "it seems to be the case.",
+                    "no.",
+                    "of course, not!",
+                    "quite unlikely.",
+                    "don't count on it.",
                     "I don't think so.",
-                    "Maybe.",
-                    "You don't have to know that.",
-                    "That's not your cup of tea.",
-                    "Who knows..."
-                ]
+                    "maybe.",
+                    "you don't have to know that.",
+                    "that's not your cup of tea.",
+                    "who knows..."
+                ],
+                "response_message": "{user_name} asked:\n> {question}\n\nHere's my wisdom: {answer}"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",

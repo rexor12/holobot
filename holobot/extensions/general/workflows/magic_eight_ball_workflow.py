@@ -1,6 +1,5 @@
 from random import Random
 
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
@@ -43,9 +42,15 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
     ) -> InteractionResponse:
         question = question.strip()
         seed = hash(question.strip("?.!-+").lower())
-        return InteractionResponse(
-            action=ReplyAction(
-                content=f"> {question}\n{Random(seed).choice(self.__answers)}",
-                suppress_user_mentions=True
-            )
+
+        return self._reply(
+            content=self.__i18n_provider.get(
+                "extensions.general.magic_eight_ball_workflow.response_message",
+                {
+                    "user_name": context.author_display_name,
+                    "question": question,
+                    "answer": Random(seed).choice(self.__answers)
+                }
+            ),
+            suppress_user_mentions=True
         )

@@ -1,5 +1,3 @@
-
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
@@ -79,17 +77,17 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                     user.strip()
                 )
         except UserNotFoundError:
-            return InteractionResponse(ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("user_not_found_error")
-            ))
+            )
         except ServerNotFoundError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("server_not_found_error")
-            ))
+            )
         except ChannelNotFoundError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("channel_not_found_error")
-            ))
+            )
 
         avatar_url = None
         no_avatar_i18n = None
@@ -107,14 +105,12 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                 no_avatar_i18n = "extensions.general.view_user_avatar_workflow.no_global_avatar_error"
 
         if no_avatar_i18n:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        no_avatar_i18n,
-                        { "user_id": member.user_id }
-                    ),
-                    suppress_user_mentions=True
-                )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    no_avatar_i18n,
+                    { "user_id": member.user_id }
+                ),
+                suppress_user_mentions=True
             )
 
         if member.user_id == self.__bot_data_provider.get_user_id():
@@ -127,13 +123,13 @@ class ViewUserAvatarWorkflow(WorkflowBase):
         else:
             footer = None
 
-        return InteractionResponse(
-            action=ReplyAction(content=Embed(
+        return self._reply(
+            embed=Embed(
                 title=self.__i18n_provider.get(
                     "extensions.general.view_user_avatar_workflow.embed_title",
                     { "user": member.display_name }
                 ),
                 image_url=avatar_url,
                 footer=footer
-            ))
+            )
         )

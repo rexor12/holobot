@@ -9,3 +9,5 @@ class DiscordOptions(OptionsDefinition):
 
     BotToken: str = ""
     DevelopmentServerId: int = 0
+    PaginatorPreviousEmoji: str | None = None
+    PaginatorNextEmoji: str | None = None

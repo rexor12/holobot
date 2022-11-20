@@ -1,4 +1,5 @@
 from .channel_not_found_error import ChannelNotFoundError
+from .feature_disabled_error import FeatureDisabledError
 from .forbidden_error import ForbiddenError
 from .invalid_channel_error import InvalidChannelError
 from .message_not_found_error import MessageNotFoundError

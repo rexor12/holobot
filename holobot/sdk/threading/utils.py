@@ -1,16 +1,17 @@
 import asyncio
+from datetime import timedelta
 
 from .cancellation_promise import CancellationPromise
 from .cancellation_token import CancellationToken
 
 def wait(
-    timeout: int,
+    timeout: timedelta | int,
     cancellation_token: CancellationToken,
     loop: asyncio.BaseEventLoop | None = None) -> asyncio.Task[None]:
     """Asynchronously waits for the specified duration.
 
-    :param timeout: The time to wait for in seconds.
-    :type timeout: int
+    :param timeout: The time to wait for, either as a timedelta or in seconds.
+    :type timeout: timedelta | int
     :param cancellation_token: An optional cancellation token used for cancelling the operation.
     :type cancellation_token: CancellationToken
     :param loop: An optional asyncio event loop, defaults to None.
@@ -20,7 +21,8 @@ def wait(
     """
 
     active_loop = loop or asyncio.get_event_loop()
+    timeout_seconds = timeout if isinstance(timeout, int) else timeout.total_seconds()
     return CancellationPromise(
-        active_loop.create_task(asyncio.sleep(timeout, None)),
+        active_loop.create_task(asyncio.sleep(timeout_seconds, None)),
         cancellation_token
     )()

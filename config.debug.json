@@ -24,13 +24,6 @@
         }
     },
 
-    "Google": {
-        "GoogleClientOptions": {
-            "GoogleSearchApiKey": "",
-            "GoogleSearchEngineId": ""
-        }
-    },
-
     "Reminders": {
         "ReminderProcessingOptions": {
             "IsEnabled": true

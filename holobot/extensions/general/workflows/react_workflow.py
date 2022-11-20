@@ -90,7 +90,7 @@ class ReactWorkflow(WorkflowBase):
             target_user_id = None
 
         return self._reply(
-            content=Embed(
+            embed=Embed(
                 title=self.__i18n_provider.get(
                     "extensions.general.react_workflow.embed_title",
                     { "user": context.author_display_name }

@@ -1,10 +1,11 @@
 from typing import Any
 
-from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
+from holobot.discord.sdk.workflows.interactables.components import (
+    ComponentBase, LayoutBase, Paginator
+)
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
@@ -12,6 +13,7 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 from .. import TodoItemManagerInterface
 
 DEFAULT_PAGE_SIZE = 5
@@ -39,15 +41,17 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             context.author_id,
             0,
             DEFAULT_PAGE_SIZE
         )
-        return InteractionResponse(ReplyAction(
-            content=content,
+
+        return self._reply(
+            content=content if isinstance(content, str) else None,
+            embed=embed if isinstance(embed, Embed) else None,
             components=components
-        ))
+        )
 
     @component(
         identifier="todo_paginator",
@@ -60,20 +64,22 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         context: InteractionContext,
         state: Any
     ) -> InteractionResponse:
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             state.owner_id,
             max(state.current_page, 0),
             DEFAULT_PAGE_SIZE
         )
-        return InteractionResponse(
-            EditMessageAction(
+
+        return (
+            self._edit_message(
                 content=content,
+                embed=embed,
                 components=components
             )
             if isinstance(state, PagerState)
-            else EditMessageAction(content=self.__i18n_provider.get(
-                "interactions.invalid_interaction_data_error"
-            ))
+            else self._edit_message(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            )
         )
 
     async def __create_page_content(
@@ -81,7 +87,11 @@ class ViewTodoItemsWorkflow(WorkflowBase):
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
+    ) -> tuple[
+            UndefinedOrNoneOr[str],
+            UndefinedOrNoneOr[Embed],
+            ComponentBase | list[LayoutBase] | None
+        ]:
         self.__logger.trace("User requested to-do list page", user_id=user_id, page_index=page_index)
         result = await self.__todo_item_manager.get_by_user(user_id, page_index, page_size)
         if not result.items:
@@ -89,10 +99,11 @@ class ViewTodoItemsWorkflow(WorkflowBase):
                 self.__i18n_provider.get(
                     "extensions.todo_lists.view_todo_items_workflow.no_todo_items"
                 ),
-                []
+                None,
+                None
             )
 
-        content = Embed(
+        embed = Embed(
             title=self.__i18n_provider.get(
                 "extensions.todo_lists.view_todo_items_workflow.embed_title"
             ),
@@ -124,4 +135,4 @@ class ViewTodoItemsWorkflow(WorkflowBase):
             total_count=result.total_count
         )
 
-        return (content, component)
+        return (None, embed, component)

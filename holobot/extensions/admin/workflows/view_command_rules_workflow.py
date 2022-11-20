@@ -1,11 +1,12 @@
 from typing import Any
 
-from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase, Paginator
+from holobot.discord.sdk.workflows.interactables.components import (
+    ComponentBase, LayoutBase, Paginator
+)
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -14,6 +15,7 @@ from holobot.extensions.admin import CommandRuleManagerInterface
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -47,13 +49,11 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         subgroup: str | None = None
     ) -> InteractionResponse:
         if not group and subgroup:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
-                    "extensions.admin.view_command_rules_workflow.subgroup_requires_group_error"
-                ))
-            )
+            return self._reply(content=self.__i18n_provider.get(
+                "extensions.admin.view_command_rules_workflow.subgroup_requires_group_error"
+            ))
 
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             context.server_id,
             context.author_id,
             group,
@@ -61,10 +61,12 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             0,
             DEFAULT_PAGE_SIZE
         )
-        return InteractionResponse(action=ReplyAction(
-            content=content,
+
+        return self._reply(
+            content=content if isinstance(content, str) else None,
+            embed=embed if isinstance(embed, Embed) else None,
             components=components
-        ))
+        )
 
     @component(
         identifier="avrc_paginator",
@@ -81,13 +83,13 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             not isinstance(context, ServerChatInteractionContext)
             or not isinstance(state, PagerState)
         ):
-            return InteractionResponse(EditMessageAction(
+            return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            ))
+            )
 
         group = state.custom_data.get("group")
         subgroup = state.custom_data.get("subgroup")
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             context.server_id,
             state.owner_id,
             group,
@@ -95,11 +97,11 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             max(state.current_page, 0),
             DEFAULT_PAGE_SIZE
         )
-        return InteractionResponse(
-            EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     async def __create_page_content(
@@ -110,15 +112,23 @@ class ViewCommandRulesWorkflow(WorkflowBase):
         subgroup: str | None,
         page_index: int,
         page_size: int
-    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
+    ) -> tuple[
+            UndefinedOrNoneOr[str],
+            UndefinedOrNoneOr[Embed],
+            ComponentBase | list[LayoutBase]
+        ]:
         self.__log.trace("User requested command rule list page", user_id=user_id, page_index=page_index)
         result = await self.__command_manager.get_rules_by_server(server_id, page_index, page_size, group, subgroup)
         if not result.items:
-            return (self.__i18n_provider.get(
-                "extensions.admin.view_command_rules_workflow.no_command_rules_configured"
-            ), [])
+            return (
+                self.__i18n_provider.get(
+                    "extensions.admin.view_command_rules_workflow.no_command_rules_configured"
+                ),
+                None,
+                []
+            )
 
-        content = Embed(
+        embed = Embed(
             title=self.__i18n_provider.get(
                 "extensions.admin.view_command_rules_workflow.embed_title"
             ),
@@ -144,4 +154,4 @@ class ViewCommandRulesWorkflow(WorkflowBase):
             total_count=result.total_count
         )
 
-        return (content, component)
+        return (None, embed, component)

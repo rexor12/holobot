@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from datetime import timedelta
 
+ZERO_TIMEDELTA = timedelta()
+
 __COMPONENT_I18N: tuple[tuple[str, str], ...] = (
     ("days", "day"),
     ("hours", "hour"),

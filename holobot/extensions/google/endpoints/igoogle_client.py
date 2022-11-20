@@ -9,8 +9,9 @@ class IGoogleClient(metaclass=ABCMeta):
         self,
         search_type: SearchType,
         query: str,
-        max_results: int = 1
-    ) -> tuple[SearchResult, ...]:
+        max_results: int = 1,
+        page_index: int = 1
+    ) -> SearchResult:
         ...
 
     @abstractmethod

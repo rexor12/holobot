@@ -72,7 +72,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
         update_factory: Callable[[TKey, TValue], Awaitable[TValue]]
     ) -> tuple[TValue | UndefinedType, TValue]:
         async with self.__lock:
-            if (old_value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+            if isinstance(old_value := self.__dict.get(key, UNDEFINED), UndefinedType):
                 new_value = await add_factory(key)
             else:
                 new_value = await update_factory(key, old_value)
@@ -87,7 +87,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
         update_factory: Callable[[TKey, TValue], TValue]
     ) -> tuple[TValue | UndefinedType, TValue]:
         async with self.__lock:
-            if (old_value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+            if isinstance(old_value := self.__dict.get(key, UNDEFINED), UndefinedType):
                 new_value = add_factory(key)
             else:
                 new_value = update_factory(key, old_value)
@@ -103,7 +103,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
         param: TParam
     ) -> tuple[TValue | UndefinedType, TValue]:
         async with self.__lock:
-            if (old_value := self.__dict.get(key, UNDEFINED)) is UNDEFINED:
+            if isinstance(old_value := self.__dict.get(key, UNDEFINED), UndefinedType):
                 new_value = add_factory(key, param)
             else:
                 new_value = update_factory(key, old_value, param)
@@ -113,13 +113,13 @@ class ConcurrentCache(Generic[TKey, TValue]):
 
     async def remove(self, key: TKey) -> TValue:
         async with self.__lock:
-            if (value := self.__dict.pop(key, UNDEFINED)) is UNDEFINED:
+            if isinstance(value := self.__dict.pop(key, UNDEFINED), UndefinedType):
                 raise ArgumentError("key", "The specified key is not present.")
             return value
 
     async def __get_or_add(self, key: TKey, factory: Callable[..., Awaitable[TValue]], *args: Any) -> TValue:
         async with self.__lock:
-            if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
+            if not isinstance(value := self.__dict.pop(key, UNDEFINED), UndefinedType):
                 return value
 
             value = await factory(key, *args)
@@ -128,7 +128,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
 
     async def __get_or_add2(self, key: TKey, factory: Callable[..., TValue], *args: Any) -> TValue:
         async with self.__lock:
-            if (value := self.__dict.get(key, UNDEFINED)) is not UNDEFINED:
+            if not isinstance(value := self.__dict.pop(key, UNDEFINED), UndefinedType):
                 return value
 
             value = factory(key, *args)

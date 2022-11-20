@@ -1,6 +1,5 @@
 from typing import Any
 
-from holobot.discord.sdk.actions import EditMessageAction, ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import ServerNotFoundError, UserNotFoundError
@@ -22,6 +21,7 @@ from holobot.extensions.moderation.repositories import IUserRepository
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import paginate_with_fallback
+from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 _DEFAULT_PAGE_SIZE = 10
 
@@ -67,31 +67,27 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(
-                action=EditMessageAction(
-                    content=self.__i18n_provider.get("interactions.server_only_interaction_error")
-                )
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
         if not isinstance(state, PagerState):
-            return InteractionResponse(
-                action=EditMessageAction(
-                    content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-                )
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
 
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             context.server_id,
             state.owner_id,
             state.current_page,
             _DEFAULT_PAGE_SIZE,
             0
         )
-        return InteractionResponse(
-            action=EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     @component(identifier="modpermscb", component_type=ComboBox)
@@ -101,32 +97,28 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return InteractionResponse(
-                action=EditMessageAction(
-                    content=self.__i18n_provider.get("interactions.server_only_interaction_error")
-                )
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
         if not isinstance(state, ComboBoxState):
-            return InteractionResponse(
-                action=EditMessageAction(
-                    content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-                )
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
 
         page_index, user_index = state.selected_values[0].split(";")
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             context.server_id,
             state.owner_id,
             max(int(page_index), 0),
             _DEFAULT_PAGE_SIZE,
             max(int(user_index), 0)
         )
-        return InteractionResponse(
-            EditMessageAction(
-                content=content,
-                components=components
-            )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components
         )
 
     async def __view_user_permissions(
@@ -135,15 +127,16 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         user_name_or_mention: str
     ) -> InteractionResponse:
         user = await self.__try_get_moderator_user(context.server_id, user_name_or_mention)
-        return InteractionResponse(
-            action=ReplyAction(
-                content=(
-                    self.__create_embed(
-                        user,
-                        await self.__try_get_user_data(context.server_id, user.user_id)
-                    )
-                    if user else self.__i18n_provider.get("user_not_found_error")
+        return (
+            self._reply(
+                embed=self.__create_embed(
+                    user,
+                    await self.__try_get_user_data(context.server_id, user.user_id)
                 )
+            )
+            if user
+            else self._reply(
+                content=self.__i18n_provider.get("user_not_found_error")
             )
         )
 
@@ -151,7 +144,7 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
     ) -> InteractionResponse:
-        content, components = await self.__create_page_content(
+        content, embed, components = await self.__create_page_content(
             context.server_id,
             context.author_id,
             0,
@@ -159,11 +152,10 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
             0
         )
 
-        return InteractionResponse(
-            action=ReplyAction(
-                content=content,
-                components=components
-            )
+        return self._reply(
+            content=content if isinstance(content, str) else None,
+            embed = embed if isinstance(embed, Embed) else None,
+            components=components
         )
 
     async def __create_page_content(
@@ -173,7 +165,11 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         page_index: int,
         page_size: int,
         user_index: int
-    ) -> tuple[str | Embed, ComponentBase | list[LayoutBase]]:
+    ) -> tuple[
+            UndefinedOrNoneOr[str],
+            UndefinedOrNoneOr[Embed],
+            ComponentBase | list[LayoutBase] | None
+        ]:
         pagination = await paginate_with_fallback(
             lambda pindex, psize, sid: self.__user_repository.get_moderators(sid, pindex, psize),
             page_index,
@@ -185,7 +181,8 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
                 self.__i18n_provider.get(
                     "extensions.moderation.view_user_permissions_workflow.no_moderators_error"
                 ),
-                []
+                None,
+                None
             )
 
         user_index = min(user_index, len(pagination.items) - 1)
@@ -215,6 +212,7 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
             )
 
         return (
+            None,
             self.__create_embed(pagination.items[user_index], current_member_data),
             [
                 StackLayout(id="modperms1", children=[

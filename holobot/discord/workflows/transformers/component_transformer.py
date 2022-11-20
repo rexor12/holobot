@@ -1,11 +1,12 @@
 from collections.abc import Callable
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 import hikari
 import hikari.api.special_endpoints as endpointsintf
 import hikari.impl.special_endpoints as endpoints
 import hikari.messages as hikari_messages
 
+from holobot.discord import DiscordOptions
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComboBox, ComponentBase, LayoutBase, Paginator, StackLayout
 )
@@ -13,6 +14,7 @@ from holobot.discord.sdk.workflows.interactables.components.enums import Compone
 from holobot.discord.sdk.workflows.interactables.components.models import (
     ComboBoxState, ComponentStateBase, EmptyState, PagerState
 )
+from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, assert_range, try_parse_int
@@ -39,8 +41,12 @@ class _ComponentData(NamedTuple):
 
 @injectable(IComponentTransformer)
 class ComponentTransformer(IComponentTransformer):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        options: IOptions[DiscordOptions]
+    ) -> None:
         super().__init__()
+        self.__options = options
         self.__component_transformers: dict[type[ComponentBase], _TComponentBuilder] = {
             StackLayout: self.__transform_stack_layout,
             Button: self.__transform_button,
@@ -130,23 +136,32 @@ class ComponentTransformer(IComponentTransformer):
         container: endpointsintf.ComponentBuilder | None
     ) -> endpointsintf.ComponentBuilder:
         assert_not_none(container, "container")
-        assert_range(len(component.text), 1, 80, "component.text")
+        if not component.emoji_id:
+            assert_not_none(component.text, "component.text")
+            assert_range(len(cast(str, component.text)), 1, 80, "component.text")
         if not isinstance(container, endpoints.ActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
+        if not component.text and not component.emoji_id:
+            raise ArgumentError("component", "At least one of the button's text or emoji must be specified.")
 
         if component.style is ComponentStyle.LINK:
             if not component.url:
                 raise ArgumentError(f"The URL of the link-style button '{component.id}' must be specified.")
 
-            return container.add_button(
-                hikari_messages.ButtonStyle.LINK,
-                component.url
-            ).set_label(component.text).set_is_disabled(not component.is_enabled).add_to_container()
+            button = container.add_button(hikari_messages.ButtonStyle.LINK, component.url)
+        else:
+            button = container.add_button(
+                COMPONENT_STYLE_MAP.get(component.style, hikari_messages.ButtonStyle.PRIMARY),
+                component.id
+            )
 
-        return container.add_button(
-            COMPONENT_STYLE_MAP.get(component.style, hikari_messages.ButtonStyle.PRIMARY),
-            component.id
-        ).set_label(component.text).set_is_disabled(not component.is_enabled).add_to_container()
+        if component.text:
+            button.set_label(component.text)
+
+        if component.emoji_id:
+            button.set_emoji(int(component.emoji_id))
+
+        return button.set_is_disabled(not component.is_enabled).add_to_container()
 
     def __transform_combo_box(
         self,
@@ -213,16 +228,18 @@ class ComponentTransformer(IComponentTransformer):
                     Button(
                         id=f"{component.id}~{component.current_page - 1};{component.owner_id};{custom_data}",
                         owner_id=component.owner_id,
-                        text="Previous",
+                        text=None if self.__options.value.PaginatorPreviousEmoji else "Previous",
                         style=ComponentStyle.SECONDARY,
-                        is_enabled=not component.is_first_page()
+                        is_enabled=not component.is_first_page(),
+                        emoji_id=self.__options.value.PaginatorPreviousEmoji
                     ),
                     Button(
                         id=f"{component.id}~{component.current_page + 1};{component.owner_id};{custom_data}",
                         owner_id=component.owner_id,
-                        text="Next",
+                        text=None if self.__options.value.PaginatorNextEmoji else "Next",
                         style=ComponentStyle.SECONDARY,
-                        is_enabled=not component.is_last_page()
+                        is_enabled=not component.is_last_page(),
+                        emoji_id=self.__options.value.PaginatorNextEmoji
                     )
                 ]
             ),

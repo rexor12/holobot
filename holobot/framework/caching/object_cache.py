@@ -7,6 +7,8 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.utils.type_utils import UndefinedType
 
 class ObjectCache(IObjectCache, IStartable):
+    """In-memory cache meant to be used as a global singleton in the application."""
+
     def __init__(self) -> None:
         super().__init__()
         self.__cache: ConcurrentMemoryCache[Any, Any] | None = None

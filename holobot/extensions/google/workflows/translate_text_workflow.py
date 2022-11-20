@@ -2,7 +2,7 @@ from itertools import islice
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.data_providers import IUserDataProvider
-from holobot.discord.sdk.exceptions import UserNotFoundError
+from holobot.discord.sdk.exceptions import FeatureDisabledError, UserNotFoundError
 from holobot.discord.sdk.models import (
     AutocompleteChoice, Embed, EmbedField, EmbedFooter, InteractionContext
 )
@@ -14,7 +14,7 @@ from holobot.discord.sdk.workflows.interactables.models import (
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.google.endpoints import IGoogleClient
-from holobot.extensions.google.exceptions import FeatureDisabledError, QuotaExhaustedError
+from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory

@@ -182,6 +182,8 @@ class _ItemStore(Generic[TKey, TValue], IAsyncDisposable):
 _DEFAULT_NO_EXPIRATION_POLICY = NoExpirationCacheEntryPolicy()
 
 class ConcurrentMemoryCache(ICache, Generic[TKey, TValue], IAsyncDisposable):
+    """Default implementation of an in-memory cache that supports concurrent access."""
+
     def __init__(
         self,
         cleanup_interval: timedelta | None = None

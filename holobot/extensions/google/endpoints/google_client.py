@@ -1,7 +1,9 @@
+from math import ceil
 from typing import Any
 
+from holobot.discord.sdk.exceptions import FeatureDisabledError
 from holobot.extensions.google.enums import SearchType
-from holobot.extensions.google.exceptions import FeatureDisabledError, QuotaExhaustedError
+from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.extensions.google.models import (
     GoogleClientOptions, Language, SearchResult, SearchResultItem, Translation
 )
@@ -13,16 +15,19 @@ from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.serialization.json_serializer import deserialize
+from holobot.sdk.utils.exception_utils import assert_range
 from .dtos.search_response import SearchResponse
 from .igoogle_client import IGoogleClient
 from .translation_endpoint import TranslationEndpoint
 
-TEXT_SEARCH_TYPE = "SEARCH_TYPE_UNDEFINED"
+_TEXT_SEARCH_TYPE = "SEARCH_TYPE_UNDEFINED"
+_MAX_RESULTS_PER_PAGE = 10 # Limitation by Google.
+_MAX_RESULTS_TOTAL = 100 # Limitation by Google.
 
 @injectable(IGoogleClient)
 class GoogleClient(IGoogleClient):
     search_types: dict[SearchType, str] = {
-        SearchType.TEXT: TEXT_SEARCH_TYPE,
+        SearchType.TEXT: _TEXT_SEARCH_TYPE,
         SearchType.IMAGE: "IMAGE"
     }
 
@@ -56,6 +61,8 @@ class GoogleClient(IGoogleClient):
             raise FeatureDisabledError("Google searches aren't configured.")
         if not query:
             raise ValueError("The query must not be empty.")
+        assert_range(max_results, 1, _MAX_RESULTS_PER_PAGE, "max_results")
+        assert_range(page_index, 1, ceil(_MAX_RESULTS_TOTAL / max_results), "page_index")
 
         try:
             response = await self.__circuit_breaker(
@@ -65,7 +72,7 @@ class GoogleClient(IGoogleClient):
                     {
                         "key": api_key,
                         "cx": engine_id,
-                        "searchType": GoogleClient.search_types.get(search_type, TEXT_SEARCH_TYPE),
+                        "searchType": GoogleClient.search_types.get(search_type, _TEXT_SEARCH_TYPE),
                         "num": max_results,
                         "q": query,
                         "start": page_index * max_results

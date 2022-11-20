@@ -1,9 +1,10 @@
 import re
 from datetime import timedelta
 from math import ceil
-from typing import Any
+from typing import Any, cast
 
 from holobot.discord.sdk.actions.enums import DeferType
+from holobot.discord.sdk.exceptions import FeatureDisabledError
 from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
@@ -16,7 +17,7 @@ from holobot.discord.sdk.workflows.interactables.models import (
 )
 from holobot.extensions.google.endpoints import IGoogleClient
 from holobot.extensions.google.enums import SearchType
-from holobot.extensions.google.exceptions import FeatureDisabledError, QuotaExhaustedError
+from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.extensions.google.models import (
     ExpandingSearchResult, GoogleClientOptions, SearchResult
 )
@@ -168,7 +169,7 @@ class SearchGoogleWorkflow(WorkflowBase):
                 search_type=search_type,
                 total_result_count=result.total_result_count,
                 available_result_count=min(
-                    min(self.__options.value.MaxResultsPerQuery, SearchGoogleWorkflow._GOOGLE_MAX_RESULTS),
+                    min(self.__options.value.MaxSearchResultsPerQuery, SearchGoogleWorkflow._GOOGLE_MAX_RESULTS),
                     result.total_result_count
                 ),
                 items=result.items,
@@ -177,7 +178,9 @@ class SearchGoogleWorkflow(WorkflowBase):
                     ceil(result.total_result_count / 10)
                 )
             ),
-            SlidingExpirationCacheEntryPolicy(timedelta(minutes=3))
+            SlidingExpirationCacheEntryPolicy(timedelta(
+                seconds=self.__options.value.SearchResultExpirationTime
+            ))
         )
 
         return result_id
@@ -209,7 +212,7 @@ class SearchGoogleWorkflow(WorkflowBase):
             ComponentBase | list[LayoutBase] | None
         ]:
         cache_key = SearchGoogleWorkflow.__get_cache_key(owner_id, results_id)
-        if not (results := await self.__cache.get(cache_key)):
+        if not (results := cast(ExpandingSearchResult, await self.__cache.get(cache_key))):
             return (
                 UNDEFINED,
                 UNDEFINED,

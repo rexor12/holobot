@@ -141,6 +141,8 @@ class ComponentTransformer(IComponentTransformer):
             assert_range(len(cast(str, component.text)), 1, 80, "component.text")
         if not isinstance(container, endpoints.ActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
+        if not component.text and not component.emoji_id:
+            raise ArgumentError("component", "At least one of the button's text or emoji must be specified.")
 
         if component.style is ComponentStyle.LINK:
             if not component.url:
@@ -152,7 +154,6 @@ class ComponentTransformer(IComponentTransformer):
                 COMPONENT_STYLE_MAP.get(component.style, hikari_messages.ButtonStyle.PRIMARY),
                 component.id
             )
-
 
         if component.text:
             button.set_label(component.text)

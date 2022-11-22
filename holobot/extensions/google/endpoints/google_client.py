@@ -10,7 +10,7 @@ from holobot.extensions.google.models import (
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
@@ -33,7 +33,7 @@ class GoogleClient(IGoogleClient):
 
     def __init__(
         self,
-        http_client_pool: HttpClientPoolInterface,
+        http_client_pool: IHttpClientPool,
         logger_factory: ILoggerFactory,
         options: IOptions[GoogleClientOptions]
     ) -> None:

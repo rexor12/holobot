@@ -5,7 +5,7 @@ from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
@@ -17,12 +17,12 @@ from .weather_client_interface import WeatherClientInterface
 class WeatherClient(WeatherClientInterface):
     def __init__(
         self,
-        http_client_pool: HttpClientPoolInterface,
+        http_client_pool: IHttpClientPool,
         logger_factory: ILoggerFactory,
         options: IOptions[OpenWeatherOptions]
     ) -> None:
         super().__init__()
-        self.__http_client_pool: HttpClientPoolInterface = http_client_pool
+        self.__http_client_pool: IHttpClientPool = http_client_pool
         self.__logger = logger_factory.create(WeatherClient)
         self.__options = options
         self.__circuit_breaker: AsyncCircuitBreakerPolicy = WeatherClient.__create_circuit_breaker(options.value)

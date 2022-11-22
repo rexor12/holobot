@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Any
 
 # NOTE: The HTTP methods return the JSON responses.
-class HttpClientPoolInterface(metaclass=ABCMeta):
+class IHttpClientPool(metaclass=ABCMeta):
     async def close(self):
         pass
 

@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile
     image: rexor12/holobot
     volumes:
-      - .:/holobot:ro
+      - ./secrets:/holobot/secrets:ro
     tty: true
     env_file:
       - .env

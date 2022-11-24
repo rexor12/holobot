@@ -2,6 +2,7 @@ __pycache__
 .github
 .venv
 .vscode
+secrets
 scripts
 simulator
 .gitignore

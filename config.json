@@ -310,6 +310,15 @@
         }
     },
 
+    "Steam": {
+        "SteamOptions": {
+            "MaxSearchResults": 10
+        },
+        "SteamAppsOptions": {
+            "BaseUrl": "https://api.steampowered.com/ISteamApps/"
+        }
+    },
+
     "TodoLists": {
         "TodoOptions": {
             "TodoItemsPerUserMax": 10,

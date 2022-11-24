@@ -47,6 +47,7 @@ Open the `.env` file and configure the necessary environment variables:
 HOLO_ENVIRONMENT=docker
 HOLO_BOT_TOKEN=<your Discord bot token here>
 HOLO_DEVELOPMENT_SERVER_ID=<your own Discord server ID here>
+...other settings...
 ```
 
 Once that's done, fire up the container:

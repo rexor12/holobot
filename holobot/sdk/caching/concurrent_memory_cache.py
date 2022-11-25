@@ -17,10 +17,10 @@ from .no_expiration_cache_entry_policy import NoExpirationCacheEntryPolicy
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
 
-# On most Linux systems, sched_getaffinity returns the number of processor cores
+# On most Linux systems, sched_getaffinity returns the processor cores
 # available to the executing Python process. When unavailable, we fall back to 4.
 DEGREE_OF_PARALLELISM = (
-    os.sched_getaffinity(0) # type: ignore
+    len(os.sched_getaffinity(0)) # type: ignore
     if hasattr(os, "sched_getaffinity")
     else 4
 )

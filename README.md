@@ -42,11 +42,12 @@ If you have Docker installed, clone the repository and build the image first:
 docker build -t rexor12/holobot .
 ```
 
-Open the `.env` file and configure the necessary environment variables:
+Open the `.env` file in the secrets directory and configure the necessary environment variables:
 ```ini
 HOLO_ENVIRONMENT=docker
 HOLO_BOT_TOKEN=<your Discord bot token here>
 HOLO_DEVELOPMENT_SERVER_ID=<your own Discord server ID here>
+...other settings...
 ```
 
 Once that's done, fire up the container:

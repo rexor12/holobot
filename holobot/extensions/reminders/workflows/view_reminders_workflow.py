@@ -125,7 +125,7 @@ class ViewRemindersWorkflow(WorkflowBase):
                     "extensions.reminders.view_reminders_workflow.embed_field_value",
                     {
                         "message": reminder.message or "???",
-                        "time": reminder.next_trigger,
+                        "time": int(reminder.next_trigger.timestamp()),
                         "repeats": (
                             ":white_check_mark:"
                             if reminder.is_repeating

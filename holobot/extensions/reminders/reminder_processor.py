@@ -89,15 +89,15 @@ class ReminderProcessor(IStartable):
             await self.__reminder_repository.delete(reminder.identifier)
 
     async def __process_reminder(self, reminder: Reminder) -> None:
+        is_belated = (utcnow() - reminder.next_trigger).total_seconds() > self.__options.value.BelatedReminderAfter
         await self.__messaging.send_private_message(
             reminder.user_id,
             self.__i18n_provider.get(
-                (
-                    "extensions.reminders.reminder_processor.reminder_dm"
-                    if reminder.message
-                    else "extensions.reminders.reminder_processor.reminder_dm_no_message"
-                ),
-                { "message": reminder.message }
+                self.__get_dm_localization_key(is_belated, bool(reminder.message)),
+                {
+                    "message": reminder.message,
+                    "trigger_time": int(reminder.next_trigger.timestamp())
+                }
             )
         )
 
@@ -111,5 +111,20 @@ class ReminderProcessor(IStartable):
         self.__logger.trace(
             "Processed reminder",
             reminder_id=reminder.identifier,
-            next_trigger=reminder.next_trigger
+            next_trigger=int(reminder.next_trigger.timestamp())
         )
+
+    def __get_dm_localization_key(
+        self,
+        is_belated: bool,
+        has_message: bool
+    ) -> str:
+        match is_belated:
+            case True if has_message:
+                return "extensions.reminders.reminder_processor.reminder_dm_belated"
+            case True:
+                return "extensions.reminders.reminder_processor.reminder_dm_belated_no_message"
+            case False if has_message:
+                return "extensions.reminders.reminder_processor.reminder_dm"
+            case _:
+                return "extensions.reminders.reminder_processor.reminder_dm_no_message"

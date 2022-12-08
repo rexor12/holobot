@@ -345,7 +345,7 @@
                 "reminder_not_found_error": "I'm sorry, but I couldn't find this one among your reminders. Please, double check for any typos. (｡•́︿•̀｡)"
             },
             "set_reminder_workflow": {
-                "reminder_set": "I'll remind you at {time:%I:%M:%S %p, %m/%d/%Y} UTC.",
+                "reminder_set": "I'll remind you at <t:{time}:f>.",
                 "message_out_of_range_error": "I'm sorry, but the message's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
                 "missing_time_error": "I'm sorry, but I need to know either the frequency of the reminder or the date and time at which I should remind you. Please, double check and try again. (｡•́︿•̀｡)",
                 "invalid_params_error": "I'm sorry, but the parameters {param1} and {param2} cannot be used together. Please, double check and try again. (｡•́︿•̀｡)",
@@ -357,11 +357,13 @@
                 "embed_description": "Embeds of <@{user_id}>.",
                 "embed_footer": "Use the reminder's number for removal.",
                 "embed_field_name": "#{reminder_id}",
-                "embed_field_value": "> Message: {message}\n> Next trigger: {time:%I:%M:%S %p, %m/%d/%Y} UTC\n> Repeats: {repeats}"
+                "embed_field_value": "> Message: {message}\n> Next trigger: <t:{time}:f>\n> Repeats: {repeats}"
             },
             "reminder_processor": {
                 "reminder_dm": "It's time for me to remind you:\n> {message}",
-                "reminder_dm_no_message": "It's time for me to remind you... hmm, about what, though?"
+                "reminder_dm_no_message": "It's time for me to remind you... hmm, about what, though?",
+                "reminder_dm_belated": "I'm a bit late, but here's your reminder:\n> {message}\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)",
+                "reminder_dm_belated_no_message": "I'm a bit late, but here's your reminder... hmm, about what, though?\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)"
             }
         },
 

@@ -1,5 +1,3 @@
-
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
@@ -57,48 +55,40 @@ class SetReminderWorkflow(WorkflowBase):
         try:
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)
             self.__logger.debug("Set new reminder", user_id=context.author_id, reminder_id=reminder.identifier)
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.reminders.set_reminder_workflow.reminder_set",
-                        { "time": reminder.next_trigger }
-                    )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.reminders.set_reminder_workflow.reminder_set",
+                    {
+                        "time": int(reminder.next_trigger.timestamp())
+                    }
                 )
             )
         except ArgumentOutOfRangeError as error:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.reminders.set_reminder_workflow.message_out_of_range_error",
-                        { "min": error.lower_bound, "max": error.upper_bound }
-                    )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.reminders.set_reminder_workflow.message_out_of_range_error",
+                    { "min": error.lower_bound, "max": error.upper_bound }
                 )
             )
         except ArgumentError as error:
             if error.argument_name == "occurrence":
-                return InteractionResponse(
-                    action=ReplyAction(
-                        content=self.__i18n_provider.get(
-                            "extensions.reminders.set_reminder_workflow.missing_time_error"
-                        )
+                return self._reply(
+                    content=self.__i18n_provider.get(
+                        "extensions.reminders.set_reminder_workflow.missing_time_error"
                     )
                 )
             else:
                 raise
         except InvalidReminderConfigError as error:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.reminders.set_reminder_workflow.invalid_params_error",
-                        { "param1": error.param1, "param2": error.param2 }
-                    )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.reminders.set_reminder_workflow.invalid_params_error",
+                    { "param1": error.param1, "param2": error.param2 }
                 )
             )
         except TooManyRemindersError:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.reminders.set_reminder_workflow.too_many_reminders_error"
-                    )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.reminders.set_reminder_workflow.too_many_reminders_error"
                 )
             )

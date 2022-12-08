@@ -4,5 +4,4 @@ from .idiscord_event_listener import IDiscordEventListener
 from .igeneric_discord_event_listener import IGenericDiscordEventListener
 from .interaction_created_event_listener import InteractionCreatedEventListener
 from .member_deleted_event_listener import MemberDeletedEventListener
-from .started_event_listener import StartedEventListener
 from .starting_event_listener import StartingEventListener

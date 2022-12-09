@@ -4,7 +4,6 @@ from typing import Any, NamedTuple, cast
 import hikari
 import hikari.api.special_endpoints as endpointsintf
 import hikari.impl.special_endpoints as endpoints
-import hikari.messages as hikari_messages
 
 from holobot.discord import DiscordOptions
 from holobot.discord.sdk.workflows.interactables.components import (
@@ -22,12 +21,12 @@ from .icomponent_transformer import IComponentTransformer
 
 PRIMARY_COMPONENT_STYLE_ID: int = 1
 
-COMPONENT_STYLE_MAP: dict[ComponentStyle, hikari_messages.ButtonStyle] = {
-    ComponentStyle.PRIMARY: hikari_messages.ButtonStyle.PRIMARY,
-    ComponentStyle.SECONDARY: hikari_messages.ButtonStyle.SECONDARY,
-    ComponentStyle.SUCCESS: hikari_messages.ButtonStyle.SUCCESS,
-    ComponentStyle.DANGER: hikari_messages.ButtonStyle.DANGER,
-    ComponentStyle.LINK: hikari_messages.ButtonStyle.LINK
+COMPONENT_STYLE_MAP: dict[ComponentStyle, hikari.ButtonStyle] = {
+    ComponentStyle.PRIMARY: hikari.ButtonStyle.PRIMARY,
+    ComponentStyle.SECONDARY: hikari.ButtonStyle.SECONDARY,
+    ComponentStyle.SUCCESS: hikari.ButtonStyle.SUCCESS,
+    ComponentStyle.DANGER: hikari.ButtonStyle.DANGER,
+    ComponentStyle.LINK: hikari.ButtonStyle.LINK
 }
 
 _TComponentBuilder = Callable[
@@ -124,7 +123,7 @@ class ComponentTransformer(IComponentTransformer):
                 case ComboBox() if child_count > 1:
                     raise ArgumentError("component.children", "A stack layout cannot contain more than one child when it contains a combo box.")
 
-        builder = endpoints.ActionRowBuilder()
+        builder = endpoints.MessageActionRowBuilder()
         for child in component.children:
             self.__transform_component(child, builder)
 
@@ -139,7 +138,7 @@ class ComponentTransformer(IComponentTransformer):
         if not component.emoji_id:
             assert_not_none(component.text, "component.text")
             assert_range(len(cast(str, component.text)), 1, 80, "component.text")
-        if not isinstance(container, endpoints.ActionRowBuilder):
+        if not isinstance(container, endpoints.MessageActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
         if not component.text and not component.emoji_id:
             raise ArgumentError("component", "At least one of the button's text or emoji must be specified.")
@@ -148,10 +147,10 @@ class ComponentTransformer(IComponentTransformer):
             if not component.url:
                 raise ArgumentError(f"The URL of the link-style button '{component.id}' must be specified.")
 
-            button = container.add_button(hikari_messages.ButtonStyle.LINK, component.url)
+            button = container.add_button(hikari.ButtonStyle.LINK, component.url)
         else:
             button = container.add_button(
-                COMPONENT_STYLE_MAP.get(component.style, hikari_messages.ButtonStyle.PRIMARY),
+                COMPONENT_STYLE_MAP.get(component.style, hikari.ButtonStyle.PRIMARY),
                 component.id
             )
 
@@ -172,7 +171,7 @@ class ComponentTransformer(IComponentTransformer):
         assert_range(len(component.items), 1, 25, "component.items")
         assert_range(component.selection_count_min, 1, 25, "component.selection_count_min")
         assert_range(component.selection_count_max, 1, 25, "component.selection_count_max")
-        if not isinstance(container, endpoints.ActionRowBuilder):
+        if not isinstance(container, endpoints.MessageActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
         if component.selection_count_max < component.selection_count_min:
             raise ArgumentError("component.selection_count_max", "The maximum number of selected items must be greater than or equal to the minimum.")

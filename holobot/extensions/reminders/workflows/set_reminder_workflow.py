@@ -2,7 +2,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.chrono import parse_interval
+from holobot.sdk.chrono import InvalidInputError, parse_interval
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -45,12 +45,19 @@ class SetReminderWorkflow(WorkflowBase):
         every_interval: str | None = None
     ) -> InteractionResponse:
         reminder_config = ReminderConfig(message=message)
-        if in_time is not None and len(in_time) > 0:
-            reminder_config.in_time = parse_interval(in_time)
-        if at_time is not None and len(at_time) > 0:
-            reminder_config.at_time = parse_interval(at_time)
-        if every_interval is not None and len(every_interval) > 0:
-            reminder_config.every_interval = parse_interval(every_interval)
+        try:
+            if in_time is not None and len(in_time) > 0:
+                reminder_config.in_time = parse_interval(in_time)
+            if at_time is not None and len(at_time) > 0:
+                reminder_config.at_time = parse_interval(at_time)
+            if every_interval is not None and len(every_interval) > 0:
+                reminder_config.every_interval = parse_interval(every_interval)
+        except (InvalidInputError, ArgumentOutOfRangeError):
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.reminders.set_reminder_workflow.invalid_time_input_error"
+                )
+            )
 
         try:
             reminder = await self.__reminder_manager.set_reminder(context.author_id, reminder_config)

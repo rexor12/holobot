@@ -254,6 +254,7 @@
             "reason_out_of_range_error": "I'm sorry, but the reason's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
             "warn_count_out_of_range_error": "I'm sorry, but the number of warn strikes must fall between {min} and {max}. Please, correct it and try again. (｡•́︿•̀｡)",
             "duration_out_of_range_error": "I'm sorry, but the duration must fall between {min} and {max}. Please, correct it and try again. (｡•́︿•̀｡)",
+            "invalid_time_input_error": "I'm sorry, but the amount of time you've specified is invalid. Please, use one of the following formats: `1h 15m`, `1h15m`, `1000s`, `2d` or `1:15`. Valid quantifiers are `d` (days), `h` (hours), `m` (minutes) and `s` (seconds).",
             "add_moderator_permission_workflow": {
                 "permission_assigned": "I've assigned <@{user_id}> the permission to {permission}."
             },
@@ -349,7 +350,8 @@
                 "message_out_of_range_error": "I'm sorry, but the message's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
                 "missing_time_error": "I'm sorry, but I need to know either the frequency of the reminder or the date and time at which I should remind you. Please, double check and try again. (｡•́︿•̀｡)",
                 "invalid_params_error": "I'm sorry, but the parameters {param1} and {param2} cannot be used together. Please, double check and try again. (｡•́︿•̀｡)",
-                "too_many_reminders_error": "I'm sorry, but you've reached the maximum number of reminders you can have. Please, remove at least one and try again. (｡•́︿•̀｡)"
+                "too_many_reminders_error": "I'm sorry, but you've reached the maximum number of reminders you can have. Please, remove at least one and try again. (｡•́︿•̀｡)",
+                "invalid_time_input_error": "I'm sorry, but the amount of time you've specified is invalid. Please, use one of the following formats: `1h 15m`, `1h15m`, `1000s`, `2d` or `1:15`. Valid quantifiers are `d` (days), `h` (hours), `m` (minutes) and `s` (seconds)."
             },
             "view_reminders_workflow": {
                 "no_reminders": "You don't have any reminders.",

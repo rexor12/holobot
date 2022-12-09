@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
@@ -122,5 +122,5 @@ class ReminderManager(ReminderManagerInterface):
         # TODO Make this aware of the user's locale. We can't expect random people to deal with UTC.
         # https://discordpy.readthedocs.io/en/stable/api.html#discord.ClientUser.locale
         current_time = utcnow()
-        trigger_time = datetime(current_time.year, current_time.month, current_time.day) + at_time
+        trigger_time = datetime(current_time.year, current_time.month, current_time.day, tzinfo=timezone.utc) + at_time
         return trigger_time + timedelta(1) if trigger_time < current_time else trigger_time

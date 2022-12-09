@@ -22,18 +22,18 @@ def parse_interval(value: str) -> timedelta:
         if not (match := DELIMITED_INPUT_REGEX.match(value)):
             raise InvalidInputError()
 
-        days = match["day"]
-        hours = match["hour"]
-        minutes = match["minute"]
-        seconds = match["second"]
+        days = "0"
+        hours = match["high"]
+        minutes = match["mid"]
+        seconds = match["low"] if match["low"] else "0"
     else:
         if not (match := DENOTED_INPUT_REGEX.match(value)):
             raise InvalidInputError()
 
-        days = "0"
-        hours = match["top"]
-        minutes = match["mid"]
-        seconds = match["low"] if match["low"] else "0"
+        days = match["day"]
+        hours = match["hour"]
+        minutes = match["minute"]
+        seconds = match["second"]
 
     return timedelta(
         days=__parse_time_component(days or "0", 0, None),

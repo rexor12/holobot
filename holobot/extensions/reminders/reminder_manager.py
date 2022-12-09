@@ -93,6 +93,7 @@ class ReminderManager(ReminderManagerInterface):
             frequency_time=frequency_time,
             base_trigger=self.__calculate_recurring_base_trigger(frequency_time, at_time)
         )
+        reminder.recalculate_next_trigger()
         await self.__reminder_repository.add(reminder)
         return reminder
 
@@ -115,7 +116,7 @@ class ReminderManager(ReminderManagerInterface):
         if at_time is None:
             return current_time
 
-        base_trigger = datetime(current_time.year, current_time.month, current_time.day) + at_time
+        base_trigger = datetime(current_time.year, current_time.month, current_time.day, tzinfo=timezone.utc) + at_time
         return base_trigger - frequency_time if base_trigger > current_time else base_trigger
 
     def __calculate_single_trigger_at(self, at_time: timedelta) -> datetime:

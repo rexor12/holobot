@@ -1,11 +1,10 @@
-
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.chrono import parse_interval
+from holobot.sdk.chrono import InvalidInputError, parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -41,25 +40,27 @@ class SetAutoMuteWorkflow(WorkflowBase):
         warn_count: int,
         duration: str | None = None
     ) -> InteractionResponse:
-        mute_duration = parse_interval(duration.strip()) if duration is not None else None
+        try:
+            mute_duration = parse_interval(duration.strip()) if duration is not None else None
+        except (ArgumentOutOfRangeError, InvalidInputError):
+            return self._reply(
+                content=self.__i18n_provider.get("extensions.moderation.invalid_time_input_error")
+            )
+
         try:
             await self.__warn_manager.enable_auto_mute(context.server_id, warn_count, mute_duration)
         except ArgumentOutOfRangeError as error:
             if error.argument_name == "duration":
-                return InteractionResponse(
-                    action=ReplyAction(
-                        content=self.__i18n_provider.get(
-                            "extensions.moderation.duration_out_of_range_error",
-                            { "min": error.lower_bound, "max": error.upper_bound }
-                        )
-                    )
-                )
-            return InteractionResponse(
-                action=ReplyAction(
+                return self._reply(
                     content=self.__i18n_provider.get(
-                        "extensions.moderation.warn_count_out_of_range_error",
+                        "extensions.moderation.duration_out_of_range_error",
                         { "min": error.lower_bound, "max": error.upper_bound }
                     )
+                )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.warn_count_out_of_range_error",
+                    { "min": error.lower_bound, "max": error.upper_bound }
                 )
             )
 

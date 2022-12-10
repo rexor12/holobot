@@ -39,7 +39,7 @@ class AddModeratorPermissionWorkflow(WorkflowBase):
         ),
         required_permissions=Permission.ADMINISTRATOR
     )
-    async def add_moderator_Permission(
+    async def add_moderator_permission(
         self,
         context: ServerChatInteractionContext,
         user: str,

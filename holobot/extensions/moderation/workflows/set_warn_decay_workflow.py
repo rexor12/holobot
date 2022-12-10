@@ -3,7 +3,7 @@ from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.sdk.chrono import parse_interval
+from holobot.sdk.chrono import InvalidInputError, parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -38,16 +38,20 @@ class SetWarnDecayWorkflow(WorkflowBase):
         context: ServerChatInteractionContext,
         duration: str
     ) -> InteractionResponse:
-        decay_threshold = parse_interval(duration.strip())
+        try:
+            decay_threshold = parse_interval(duration.strip())
+        except (ArgumentOutOfRangeError, InvalidInputError):
+            return self._reply(
+                content=self.__i18n_provider.get("extensions.moderation.invalid_time_input_error")
+            )
+
         try:
             await self.__warn_manager.set_warn_decay(context.server_id, decay_threshold)
         except ArgumentOutOfRangeError as error:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.moderation.duration_out_of_range_error",
-                        { "min": error.lower_bound, "max": error.upper_bound }
-                    )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.duration_out_of_range_error",
+                    { "min": error.lower_bound, "max": error.upper_bound }
                 )
             )
 

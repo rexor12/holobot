@@ -1,4 +1,3 @@
-
 import contextlib
 from datetime import timedelta
 
@@ -14,7 +13,7 @@ from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerUserInteractionContext
 )
 from holobot.extensions.moderation.enums import ModeratorPermission
-from holobot.sdk.chrono import parse_interval
+from holobot.sdk.chrono import InvalidInputError, parse_interval
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -62,55 +61,49 @@ class MuteUserWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         user = user.strip()
         reason = reason.strip()
-        mute_duration = parse_interval(duration.strip()) if duration else None
+        try:
+            mute_duration = parse_interval(duration.strip()) if duration else None
+        except (ArgumentOutOfRangeError, InvalidInputError):
+            return self._reply(
+                content=self.__i18n_provider.get("extensions.moderation.invalid_time_input_error")
+            )
+
         if mute_duration and mute_duration < _MIN_MUTE_DURATION:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.moderation.duration_out_of_range_error",
-                        { "min": textify_timedelta(_MIN_MUTE_DURATION), "max": SILENCE_DURATION_MAX }
-                    )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.duration_out_of_range_error",
+                    { "min": textify_timedelta(_MIN_MUTE_DURATION), "max": SILENCE_DURATION_MAX }
                 )
             )
         if (user_id := get_user_id(user)) is None:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
-            )
+            return self._reply(content=self.__i18n_provider.get("user_not_found_error"))
 
         try:
             await self.__user_manager.silence_user(context.server_id, user_id, mute_duration)
         except ArgumentOutOfRangeError as error:
             if error.argument_name == "reason":
-                return InteractionResponse(
-                    action=ReplyAction(
-                        content=self.__i18n_provider.get(
-                            "extensions.moderation.reason_out_of_range_error",
-                            { "min": error.lower_bound, "max": error.upper_bound }
-                        )
-                    )
-                )
-            return InteractionResponse(
-                action=ReplyAction(
+                return self._reply(
                     content=self.__i18n_provider.get(
-                        "extensions.moderation.duration_out_of_range_error",
+                        "extensions.moderation.reason_out_of_range_error",
                         { "min": error.lower_bound, "max": error.upper_bound }
                     )
                 )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.duration_out_of_range_error",
+                    { "min": error.lower_bound, "max": error.upper_bound }
+                )
             )
         except UserNotFoundError:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
-            )
+            return self._reply(content=self.__i18n_provider.get("user_not_found_error"))
         except ForbiddenError as error:
             self.__logger.debug("Failed to mute user.", exception=error)
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.moderation.mute_user_workflow.cannot_mute_user_error",
-                        { "user_id": user_id }
-                    ),
-                    suppress_user_mentions=True
-                )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.mute_user_workflow.cannot_mute_user_error",
+                    { "user_id": user_id }
+                ),
+                suppress_user_mentions=True
             )
 
         with contextlib.suppress(ForbiddenError):
@@ -160,20 +153,14 @@ class MuteUserWorkflow(WorkflowBase):
                 _MENU_ITEM_MUTE_DURATION
             )
         except UserNotFoundError:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get("user_not_found_error")
-                )
-            )
+            return self._reply(content=self.__i18n_provider.get("user_not_found_error"))
         except ForbiddenError:
-            return InteractionResponse(
-                action=ReplyAction(
-                    content=self.__i18n_provider.get(
-                        "extensions.moderation.mute_user_workflow.cannot_mute_user_error",
-                        { "user_id": context.target_user_id }
-                    ),
-                    suppress_user_mentions=True
-                )
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.moderation.mute_user_workflow.cannot_mute_user_error",
+                    { "user_id": context.target_user_id }
+                ),
+                suppress_user_mentions=True
             )
 
         with contextlib.suppress(ForbiddenError):

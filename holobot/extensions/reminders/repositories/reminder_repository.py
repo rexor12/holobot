@@ -2,6 +2,7 @@ from typing import cast
 
 from asyncpg.connection import Connection
 
+from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
 from holobot.sdk.database import IDatabaseManager
 from holobot.sdk.database.exceptions import DatabaseError
@@ -91,7 +92,10 @@ class ReminderRepository(
         return Reminder(
             identifier=record.id,
             user_id=record.user_id,
+            server_id=record.server_id,
+            channel_id=record.channel_id,
             message=record.message,
+            location=ReminderLocation(record.location),
             created_at=record.created_at,
             is_repeating=record.is_repeating,
             frequency_time=record.frequency_time,
@@ -106,7 +110,10 @@ class ReminderRepository(
         return ReminderRecord(
             id=model.identifier,
             user_id=model.user_id,
+            server_id=model.server_id,
+            channel_id=model.channel_id,
             message=model.message,
+            location=model.location.value,
             created_at=model.created_at,
             is_repeating=model.is_repeating,
             frequency_time=model.frequency_time,

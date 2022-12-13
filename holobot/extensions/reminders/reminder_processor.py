@@ -3,6 +3,7 @@ from collections.abc import Awaitable
 
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
@@ -81,7 +82,7 @@ class ReminderProcessor(IStartable):
             await self.__process_reminder(reminder)
         except (ForbiddenError, UserNotFoundError) as error:
             self.__logger.debug(
-                "Failed to send reminder DM, will not retry.",
+                "Failed to send reminder notification, will not retry.",
                 exception=error,
                 reminder_id=reminder.identifier,
                 user_id=reminder.user_id
@@ -89,18 +90,7 @@ class ReminderProcessor(IStartable):
             await self.__reminder_repository.delete(reminder.identifier)
 
     async def __process_reminder(self, reminder: Reminder) -> None:
-        is_belated = (utcnow() - reminder.next_trigger).total_seconds() > self.__options.value.BelatedReminderAfter
-        await self.__messaging.send_private_message(
-            reminder.user_id,
-            self.__i18n_provider.get(
-                self.__get_dm_localization_key(is_belated, bool(reminder.message)),
-                {
-                    "message": reminder.message,
-                    "trigger_time": int(reminder.next_trigger.timestamp())
-                }
-            )
-        )
-
+        await self.__send_notification(reminder)
         if not reminder.is_repeating:
             await self.__reminder_repository.delete(reminder.identifier)
             return
@@ -112,6 +102,35 @@ class ReminderProcessor(IStartable):
             "Processed reminder",
             reminder_id=reminder.identifier,
             next_trigger=int(reminder.next_trigger.timestamp())
+        )
+
+    async def __send_notification(self, reminder: Reminder) -> None:
+        is_belated = (utcnow() - reminder.next_trigger).total_seconds() > self.__options.value.BelatedReminderAfter
+        localized_message = self.__i18n_provider.get(
+            self.__get_dm_localization_key(is_belated, bool(reminder.message)),
+            {
+                "message": reminder.message,
+                "trigger_time": int(reminder.next_trigger.timestamp())
+            }
+        )
+        if reminder.location == ReminderLocation.DIRECT_MESSAGE:
+            try:
+                await self.__messaging.send_private_message(reminder.user_id, localized_message)
+                return
+            except UserNotFoundError:
+                raise
+            except ForbiddenError:
+                # Try to send a message in the source channel.
+                if not reminder.server_id or not reminder.channel_id:
+                    raise
+
+        if not reminder.server_id or not reminder.channel_id:
+            return
+
+        await self.__messaging.send_channel_message(
+            reminder.server_id,
+            reminder.channel_id,
+            localized_message
         )
 
     def __get_dm_localization_key(

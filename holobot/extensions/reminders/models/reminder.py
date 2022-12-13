@@ -1,14 +1,17 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from holobot.extensions.reminders.enums import DayOfWeek
+from holobot.extensions.reminders.enums import DayOfWeek, ReminderLocation
 from holobot.sdk.utils import utcnow
 
 @dataclass(kw_only=True)
 class Reminder:
     identifier: int = -1
     user_id: str
+    server_id: str | None = None
+    channel_id: str | None = None
     message: str | None = None
+    location: ReminderLocation = ReminderLocation.DIRECT_MESSAGE
     created_at: datetime = field(default_factory=utcnow)
     is_repeating: bool = False
     frequency_time: timedelta = field(default_factory=timedelta)

@@ -1,37 +1,52 @@
+import re
 from datetime import timedelta
 
-from ..utils import pad_left, try_parse_int
+from holobot.sdk.exceptions import ArgumentOutOfRangeError
+from holobot.sdk.utils.string_utils import try_parse_int
+from .invalid_input_error import InvalidInputError
 
-TIME_PARTS: list[str] = [ "D", "H", "M", "S" ]
 FIXED_INTERVALS: dict[str, timedelta] = {
     "WEEK": timedelta(weeks=1),
     "DAY": timedelta(days=1),
     "HOUR": timedelta(hours=1)
 }
+DELIMITED_INPUT_REGEX = re.compile(r"^(?P<high>\d+):(?P<mid>\d+)(?::(?P<low>\d+))?$")
+DENOTED_INPUT_REGEX = re.compile(r"^(?:(?P<day>\d+)D)? *(?:(?P<hour>\d+)H)? *(?:(?P<minute>\d+)M)? *(?:(?P<second>\d+)S)?$")
 
 def parse_interval(value: str) -> timedelta:
-    args: dict[str, int] = dict.fromkeys(TIME_PARTS, 0)
     value = value.upper()
     if (fixed_interval := FIXED_INTERVALS.get(value)) is not None:
         return fixed_interval
-    (__parse_delimited_into if ":" in value else __parse_denoted_into)(value, args)
-    return timedelta(days=args["D"], hours=args["H"], minutes=args["M"], seconds=args["S"])
 
-def __parse_delimited_into(value: str, args: dict[str, int]) -> None:
-    split_values = value.split(":")
-    padded_values = pad_left(split_values, "0", len(TIME_PARTS))
-    for index in range(len(TIME_PARTS)):
-        args[TIME_PARTS[index]] = try_parse_int(padded_values[index]) or 0
-    if len(split_values) == 2:
-        args["H"] = args["M"]
-        args["M"] = args["S"]
-        args["S"] = 0
+    if ":" in value:
+        if not (match := DELIMITED_INPUT_REGEX.match(value)):
+            raise InvalidInputError()
 
-def __parse_denoted_into(value: str, args: dict[str, int]) -> None:
-    for time_part in args:
-        split_values = value.split(time_part, 1)
-        if len(split_values) == 2:
-            args[time_part] = try_parse_int(split_values[0]) or 0
-            value = split_values[1]
-            continue
-        value = split_values[0]
+        days = ""
+        hours = match["high"]
+        minutes = match["mid"]
+        seconds = match["low"]
+    else:
+        if not (match := DENOTED_INPUT_REGEX.match(value)):
+            raise InvalidInputError()
+
+        days = match["day"]
+        hours = match["hour"]
+        minutes = match["minute"]
+        seconds = match["second"]
+
+    return timedelta(
+        days=__parse_time_component(days or "0", 0, None),
+        hours=__parse_time_component(hours or "0", 0, 23 if days else None),
+        minutes=__parse_time_component(minutes or "0", 0, 59 if hours else None),
+        seconds=__parse_time_component(seconds or "0", 0, 59 if minutes else None)
+    )
+
+def __parse_time_component(value: str, min: int, max: int | None) -> int:
+    if (int_value := try_parse_int(value)) is None:
+        raise InvalidInputError()
+
+    if int_value < min or (max is not None and int_value > max):
+        raise ArgumentOutOfRangeError("value", str(min), str(max))
+
+    return int_value

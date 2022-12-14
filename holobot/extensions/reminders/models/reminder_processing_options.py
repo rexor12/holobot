@@ -10,3 +10,6 @@ class ReminderProcessingOptions(OptionsDefinition):
     IsEnabled: bool = True
     Resolution: int = 60
     Delay: int = 30
+
+    BelatedReminderAfter: int = 300
+    """The time, in seconds, after which a reminder counts as a belated reminder."""

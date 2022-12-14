@@ -1,6 +1,5 @@
 
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.actions import DoNothingAction, ReplyAction
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, ServerNotFoundError, UserNotFoundError
 )
@@ -48,9 +47,11 @@ class SummonUserWorkflow(WorkflowBase):
         channel: str | None = None
     ) -> InteractionResponse:
         if not name:
-            return InteractionResponse(ReplyAction(content=self.__i18n_provider.get(
-                "missing_required_argument_error", { "argname": "name" }
-            )))
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "missing_required_argument_error", { "argname": "name" }
+                )
+            )
 
         try:
             name = name.strip()
@@ -61,28 +62,30 @@ class SummonUserWorkflow(WorkflowBase):
                 else await self.__member_data_provider.get_basic_data_by_name(context.server_id, name)
             )
             if not member:
-                return InteractionResponse(action=ReplyAction(
+                return self._reply(
                     content=self.__i18n_provider.get("user_not_found_error")
-                ))
+                )
             if member.is_self:
-                return InteractionResponse(action=ReplyAction(
+                return self._reply(
                     content=self.__i18n_provider.get(
                         "extensions.general.summon_user_workflow.cannot_summon_self_error"
                     )
-                ))
+                )
             if member.is_bot:
-                return InteractionResponse(action=ReplyAction(
+                return self._reply(
                     content=self.__i18n_provider.get(
                         "extensions.general.summon_user_workflow.cannot_summon_bot_error"
                     )
-                ))
+                )
 
             user_id = member.user_id
             if user_id == context.author_id:
-                return InteractionResponse(ReplyAction(content=self.__i18n_provider.get(
-                    "extensions.general.summon_user_workflow.self_summon",
-                    { "user_id": context.author_id }
-                )))
+                return self._reply(
+                    content=self.__i18n_provider.get(
+                        "extensions.general.summon_user_workflow.self_summon",
+                        { "user_id": context.author_id }
+                    )
+                )
 
             channel_id = get_channel_id_or_default(channel, context.channel_id) if channel else context.channel_id
             dm_message_key = "extensions.general.summon_user_workflow.dm_summon"
@@ -102,26 +105,25 @@ class SummonUserWorkflow(WorkflowBase):
                 )
             )
         except ForbiddenError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("missing_dm_permission_error")
-            ))
+            )
         except UserNotFoundError:
-            return InteractionResponse(ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("user_not_found_error")
-            ))
+            )
         except ServerNotFoundError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("server_not_found_error")
-            ))
+            )
         except ChannelNotFoundError:
-            return InteractionResponse(action=ReplyAction(
+            return self._reply(
                 content=self.__i18n_provider.get("channel_not_found_error")
-            ))
+            )
 
-        return InteractionResponse(action=ReplyAction(
+        return self._reply(
             content=self.__i18n_provider.get(
                 "extensions.general.summon_user_workflow.successful_summon",
                 { "user_id": user_id }
-            ),
-            suppress_user_mentions=True
-        ))
+            )
+        )

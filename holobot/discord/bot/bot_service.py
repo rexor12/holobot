@@ -9,6 +9,7 @@ from holobot.discord.events import IGenericDiscordEventListener
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.system import IEnvironment
 from holobot.sdk.utils import get_or_add
 from . import bot_accessor
 from .bot import Bot
@@ -26,10 +27,12 @@ class BotService(BotServiceInterface):
     def __init__(
         self,
         discord_event_listeners: tuple[IGenericDiscordEventListener, ...],
+        environment: IEnvironment,
         options: IOptions[DiscordOptions]
     ) -> None:
         super().__init__()
         self.__discord_event_listeners = discord_event_listeners
+        self.__environment = environment
         self.__bot: Bot = self.__initialize_bot(options.value)
         self.__bot_task: Task | None = None
         # See the reference for a note about what this is.
@@ -39,7 +42,14 @@ class BotService(BotServiceInterface):
         if self.__bot_task is not None:
             raise InvalidOperationError("The bot is running already.")
 
-        self.__bot_task = asyncio.get_event_loop().create_task(self.__bot.start())
+        self.__bot_task = asyncio.get_event_loop().create_task(
+            self.__bot.start(
+                activity=hikari.Activity(
+                    name=f"v{self.__environment.version}",
+                    type=hikari.ActivityType.PLAYING
+                )
+            )
+        )
 
     async def stop(self) -> None:
         if self.__bot_task is None:

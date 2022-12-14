@@ -301,7 +301,8 @@
         "ReminderProcessingOptions": {
             "IsEnabled": "__HOLO_IS_REMINDERS_ENABLED__",
             "Resolution": 60,
-            "Delay": 30
+            "Delay": 30,
+            "BelatedReminderAfter": 300
         },
         "ReminderOptions": {
             "RemindersPerUserMax": 5,

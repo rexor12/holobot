@@ -14,7 +14,7 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
-    "python.sortImports.args": [
+    "isort.args": [
         "--project", "holobot",
         "--line-length", "100",
         "--lines-after-imports", "1",

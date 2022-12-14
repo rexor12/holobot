@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Protocol, TypeVar
 
 from holobot.sdk.utils.type_utils import UndefinedType
@@ -23,7 +23,7 @@ class ICache(Protocol[TKey, TValue]):
     async def get_or_add(
         self,
         key: TKey,
-        value_or_factory: TValue | Callable[[TKey], TValue],
+        value_or_factory: TValue | Callable[[TKey], Awaitable[TValue]],
         policy: CacheEntryPolicy | None = None
     ) -> TValue | UndefinedType:
         """Gets the item with the given key, if exists; otherwise adds it.
@@ -31,7 +31,7 @@ class ICache(Protocol[TKey, TValue]):
         :param key: The key that identifies the item.
         :type key: TKey
         :param value_or_factory: A factory method that creates the value, or the value itself, to be added.
-        :type value_or_factory: TValue | Callable[[TKey], TValue]
+        :type value_or_factory: TValue | Callable[[TKey], Awaitable[TValue]]
         :param policy: The eviction policy for this item, defaults to None
         :type policy: CacheEntryPolicy | None, optional
         :return: The found or newly added item, if valid; otherwise, an undefined.

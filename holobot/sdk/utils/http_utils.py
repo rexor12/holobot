@@ -11,7 +11,12 @@ def build_url(
         args = __DEFAULT_ARGS
 
     relative_path_full = (
-        "/".join(map(lambda p: p.strip("/"), relative_path))
+        "/".join(
+            map(
+                lambda p: urllib.parse.quote_plus(p.strip("/")),
+                relative_path
+            )
+        )
         if isinstance(relative_path, tuple)
         else relative_path.strip("/")
     )

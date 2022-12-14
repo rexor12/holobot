@@ -311,11 +311,15 @@
     },
 
     "Steam": {
-        "SteamOptions": {
+        "GeneralOptions": {
+            "StoreAppPageUrl": "https://store.steampowered.com/app/{appid}",
             "MaxSearchResults": 10
         },
-        "SteamAppsOptions": {
-            "BaseUrl": "https://api.steampowered.com/ISteamApps/"
+        "SteamAppDetailsOptions": {
+            "BaseUrl": "https://store.steampowered.com/api/appdetails"
+        },
+        "SteamCommunityOptions": {
+            "BaseUrl": "https://steamcommunity.com/actions/"
         }
     },
 

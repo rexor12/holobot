@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from holobot.sdk.caching import CacheEntryPolicy, ConcurrentMemoryCache, IObjectCache
@@ -29,7 +29,7 @@ class ObjectCache(IObjectCache, IStartable):
     async def get_or_add(
         self,
         key: Any,
-        value_or_factory: Any | Callable[[Any], Any],
+        value_or_factory: Any | Callable[[Any], Awaitable[Any]],
         policy: CacheEntryPolicy | None = None
     ) -> Any | UndefinedType:
         if not self.__cache:

@@ -1,6 +1,8 @@
+from itertools import islice
 from typing import Any
 
-from holobot.extensions.steam.models import SteamApp, SteamAppsOptions
+from holobot.extensions.steam.endpoints.dtos.search_apps_response import SearchAppsItem
+from holobot.extensions.steam.models import SteamApp, SteamCommunityOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -10,58 +12,54 @@ from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
 from holobot.sdk.serialization.json_serializer import deserialize
 from holobot.sdk.utils.http_utils import build_url
-from .dtos.get_app_list_response import GetAppListResponse
-from .isteam_apps_client import ISteamAppsClient
+from .isteam_community_client import ISteamCommunityClient
 
-@injectable(ISteamAppsClient)
-class SteamAppsClient(ISteamAppsClient):
+@injectable(ISteamCommunityClient)
+class SteamCommunityClient(ISteamCommunityClient):
     def __init__(
         self,
         http_client_pool: IHttpClientPool,
         logger_factory: ILoggerFactory,
-        options: IOptions[SteamAppsOptions]
+        options: IOptions[SteamCommunityOptions]
     ) -> None:
         super().__init__()
         self.__http_client_pool = http_client_pool
-        self.__log = logger_factory.create(SteamAppsClient)
-        self.__get_app_list_api_url = build_url(
-            options.value.BaseUrl,
-            ("GetAppList", "v2")
-        )
+        self.__log = logger_factory.create(SteamCommunityClient)
+        self.__options = options
         self.__circuit_breaker = AsyncCircuitBreakerPolicy[str, Any](
             options.value.CircuitBreakerFailureThreshold,
             options.value.CircuitBreakerRecoveryTime,
-            SteamAppsClient.__on_circuit_broken
+            SteamCommunityClient.__on_circuit_broken
         )
 
-    async def get_app_list(self) -> tuple[SteamApp, ...]:
+    async def search_apps(self, search_text: str) -> tuple[SteamApp, ...]:
         try:
-            response = await self.__circuit_breaker(
+            response = await self.__circuit_breaker.execute(
                 lambda s: self.__http_client_pool.get(s),
-                self.__get_app_list_api_url
+                build_url(self.__options.value.BaseUrl, ("SearchApps", search_text))
             )
-        # TODO Don't forget to handle TooManyRequestsError outside.
-        # except TooManyRequestsError as error:
-        #     raise QuotaExhaustedError from error
         except HttpStatusError as error:
-            self.__log.error("An HTTP error has occurred during a SteamApps->GetAppList request", error)
+            self.__log.error("An HTTP error has occurred during a SteamCommunity->SearchApps request", error)
             raise
         except CircuitBrokenError:
             raise
         except Exception as error:
-            self.__log.error("An unexpected error has occurred during a SteamApps->GetAppList request", error)
+            self.__log.error("An unexpected error has occurred during a SteamCommunity->SearchApps request", error)
             raise
 
-        response_dto = deserialize(GetAppListResponse, response)
-        if not response_dto:
+        if not response or not isinstance(response, list):
             return ()
+
+        response_apps = [deserialize(SearchAppsItem, item) for item in response]
 
         return tuple(
             SteamApp(
                 identifier=item.appid,
-                name=item.name
+                name=item.name,
+                logo_url=item.logo
             )
-            for item in response_dto.applist.apps
+            for item in islice(response_apps, self.__options.value.MaxSearchResults)
+            if item
         )
 
     @staticmethod

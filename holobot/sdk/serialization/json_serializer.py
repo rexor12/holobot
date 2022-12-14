@@ -38,7 +38,9 @@ def __deserialize_instance(object_type: type[T], json_object: Any) -> T | None:
     parameter_infos = get_parameter_infos(object_type)
     arguments: dict[str, Any] = {}
     for parameter_info in parameter_infos:
-        if parameter_info.collection_constructor is not None:
+        if parameter_info.collection_constructor is dict:
+            pass
+        elif parameter_info.collection_constructor is not None:
             argument_items = [
                 __deserialize_instance(parameter_info.object_type, item)
                 for item in (json_object.get(parameter_info.name) or [])

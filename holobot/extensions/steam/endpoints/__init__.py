@@ -1,2 +1,4 @@
-from .isteam_apps_client import ISteamAppsClient
-from .steam_apps_client import SteamAppsClient
+from .isteam_app_details_client import ISteamAppDetailsClient
+from .isteam_community_client import ISteamCommunityClient
+from .steam_app_details_client import SteamAppDetailsClient
+from .steam_community_client import SteamCommunityClient

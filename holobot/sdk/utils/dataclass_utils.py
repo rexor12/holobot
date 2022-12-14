@@ -63,5 +63,8 @@ def __get_parameter_info(
             if origin is tuple and (len(args) != 2 or args[1] is not Ellipsis):
                 raise ValueError(f"Expected a tuple with two arguments, the second being Ellipsis, but got {args!r} instead.")
             return ParameterInfo(parameter_name, args[0], origin, is_argument_nullable, default_value, default_factory)
+        case builtins.dict:
+            args = typing.get_args(parameter_type)
+            return ParameterInfo(parameter_name, NameValuePair[int, str], dict, is_argument_nullable, default_value, default_factory)
         case _:
             raise ValueError(f"Expected None, tuple or list type, but got '{parameter_type}'.")

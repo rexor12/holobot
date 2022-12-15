@@ -20,10 +20,13 @@ def build_url(
         if isinstance(relative_path, tuple)
         else relative_path.strip("/")
     )
-    return (
-        base_url.rstrip("/")
-        + "/"
-        + relative_path_full
-        + "?"
-        + urllib.parse.urlencode(args)
-    )
+
+    url_parts = [base_url.rstrip("/")]
+    if relative_path_full:
+        url_parts.append("/")
+        url_parts.append(relative_path_full)
+    if args:
+        url_parts.append("?")
+        url_parts.append(urllib.parse.urlencode(args))
+
+    return "".join(url_parts)

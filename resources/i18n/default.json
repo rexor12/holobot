@@ -385,7 +385,9 @@
             "search_app_workflow": {
                 "no_results": "I couldn't find any good results for you. Please, refine your keywords and try again. („• ᴗ •„)",
                 "embed_footer": "Showing result {result_index} of {result_count}. Discord may choose not to display certain images.",
-                "embed_field_store_link": "Store page"
+                "embed_field_store_link": "Store page",
+                "embed_field_required_age": "Required age",
+                "embed_field_is_free": "Free?"
             }
         },
 

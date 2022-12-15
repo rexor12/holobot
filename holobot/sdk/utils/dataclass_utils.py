@@ -2,14 +2,27 @@ import builtins
 import types
 import typing
 from collections.abc import Sequence
-from dataclasses import _MISSING_TYPE, fields, is_dataclass
+from dataclasses import _MISSING_TYPE, dataclass, fields, is_dataclass
 
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.utils import first
 
+@dataclass(kw_only=True, frozen=True)
+class TypeDescriptor:
+    pass
+
+@dataclass(kw_only=True, frozen=True)
+class ObjectTypeDescriptor(TypeDescriptor):
+    value: type
+
+@dataclass(kw_only=True, frozen=True)
+class DictionaryTypeDescriptor(TypeDescriptor):
+    key_type: type
+    value_type: type
+
 class ParameterInfo(typing.NamedTuple):
     name: str
-    object_type: type
+    object_type: TypeDescriptor
     collection_constructor: type | None
     allows_none: bool
     default_value: typing.Any
@@ -45,7 +58,14 @@ def __get_parameter_info(
     is_argument_nullable = False
     match origin := typing.get_origin(parameter_type):
         case None:
-            return ParameterInfo(parameter_name, parameter_type, None, is_argument_nullable, default_value, default_factory)
+            return ParameterInfo(
+                parameter_name,
+                ObjectTypeDescriptor(value=parameter_type),
+                None,
+                is_argument_nullable,
+                default_value,
+                default_factory
+            )
         case typing.Union | types.UnionType:
             args = typing.get_args(parameter_type)
             if len(args) != 2 or types.NoneType not in args:
@@ -57,14 +77,35 @@ def __get_parameter_info(
 
     match origin:
         case None:
-            return ParameterInfo(parameter_name, parameter_type, None, is_argument_nullable, default_value, default_factory)
+            return ParameterInfo(
+                parameter_name,
+                ObjectTypeDescriptor(value=parameter_type),
+                None,
+                is_argument_nullable,
+                default_value,
+                default_factory
+            )
         case builtins.tuple | builtins.list:  # Needs dot notation: https://peps.python.org/pep-0634/#value-patterns
             args = typing.get_args(parameter_type)
             if origin is tuple and (len(args) != 2 or args[1] is not Ellipsis):
                 raise ValueError(f"Expected a tuple with two arguments, the second being Ellipsis, but got {args!r} instead.")
-            return ParameterInfo(parameter_name, args[0], origin, is_argument_nullable, default_value, default_factory)
+            return ParameterInfo(
+                parameter_name,
+                ObjectTypeDescriptor(value=args[0]),
+                origin,
+                is_argument_nullable,
+                default_value,
+                default_factory
+            )
         case builtins.dict:
             args = typing.get_args(parameter_type)
-            return ParameterInfo(parameter_name, NameValuePair[int, str], dict, is_argument_nullable, default_value, default_factory)
+            return ParameterInfo(
+                parameter_name,
+                DictionaryTypeDescriptor(key_type=args[0], value_type=args[1]),
+                dict,
+                is_argument_nullable,
+                default_value,
+                default_factory
+            )
         case _:
             raise ValueError(f"Expected None, tuple or list type, but got '{parameter_type}'.")

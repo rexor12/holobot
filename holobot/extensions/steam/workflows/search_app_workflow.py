@@ -175,7 +175,7 @@ class SearchAppWorkflow(WorkflowBase):
             app_required_age = app_detail.required_age
             app_short_description = app_detail.short_description
             app_screenshot = app_detail.screenshot_urls[0] if app_detail.screenshot_urls else result.logo_url
-            app_description = app_short_description + "\n\n" + app_description
+            app_description = app_short_description + "\n\n" + app_description[:400]
         else:
             app_is_free = None
             app_required_age = None

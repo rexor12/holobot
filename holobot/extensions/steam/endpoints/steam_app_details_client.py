@@ -1,6 +1,6 @@
 from typing import Any
 
-from holobot.extensions.steam.endpoints.dtos.get_app_details_response import GetAppDetailsResponse
+from holobot.extensions.steam.endpoints.dtos.get_app_details_response import AppDetails
 from holobot.extensions.steam.models import SteamAppDetails, SteamAppDetailsOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
@@ -49,11 +49,10 @@ class SteamAppDetailsClient(ISteamAppDetailsClient):
         if not response:
             return None
 
-        response_dto = deserialize(GetAppDetailsResponse, response)
+        appdetails = deserialize(dict[str, AppDetails], response)
         if (
-            not response_dto
-            or not response_dto.apps
-            or not (app := response_dto.apps.get(identifier))
+            not appdetails
+            or not (app := appdetails.get(identifier))
             or not app.success
         ):
             return None

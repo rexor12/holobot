@@ -316,9 +316,6 @@
             "StoreAppPageUrl": "https://store.steampowered.com/app/{appid}",
             "MaxSearchResults": 10
         },
-        "SteamAppDetailsOptions": {
-            "BaseUrl": "https://store.steampowered.com/api/appdetails"
-        },
         "SteamCommunityOptions": {
             "BaseUrl": "https://steamcommunity.com/actions/"
         }

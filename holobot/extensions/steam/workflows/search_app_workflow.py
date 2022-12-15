@@ -1,10 +1,9 @@
 from datetime import timedelta
-from math import ceil
 from typing import Any, cast
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.exceptions import FeatureDisabledError
-from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
+from holobot.discord.sdk.models import Embed, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
@@ -14,8 +13,8 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
 )
-from holobot.extensions.steam.endpoints import ISteamAppDetailsClient, ISteamCommunityClient
-from holobot.extensions.steam.models import GeneralOptions, SteamApp, SteamAppDetails
+from holobot.extensions.steam.endpoints import ISteamCommunityClient
+from holobot.extensions.steam.models import GeneralOptions, SteamApp
 from holobot.sdk.caching import IObjectCache, SlidingExpirationCacheEntryPolicy
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
@@ -33,14 +32,12 @@ class SearchAppWorkflow(WorkflowBase):
         options: IOptions[GeneralOptions],
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
-        steam_app_details_client: ISteamAppDetailsClient,
         steam_community_client: ISteamCommunityClient
     ) -> None:
         super().__init__()
         self.__cache = cache
         self.__options = options
         self.__i18n_provider = i18n_provider
-        self.__steam_app_details_client = steam_app_details_client
         self.__steam_community_client = steam_community_client
         self.__logger = logger_factory.create(SearchAppWorkflow)
 
@@ -58,7 +55,6 @@ class SearchAppWorkflow(WorkflowBase):
         self,
         context: InteractionContext,
         name: str,
-        defer_type=DeferType.DEFER_MESSAGE_CREATION
     ) -> InteractionResponse:
         try:
             matching_apps = await self.__steam_community_client.search_apps(name)
@@ -118,10 +114,6 @@ class SearchAppWorkflow(WorkflowBase):
     def __get_cache_key(user_id: str, results_id: str) -> str:
         return f"steam_app_search/{user_id}/{results_id}"
 
-    @staticmethod
-    def __get_detail_cache_key(app_id: str) -> str:
-        return f"steam_app_detail/{app_id}"
-
     async def __save_search_results(
         self,
         author_id: str,
@@ -161,57 +153,10 @@ class SearchAppWorkflow(WorkflowBase):
             result_index = 0
 
         result = results[result_index]
-        app_detail = await self.__cache.get_or_add(
-            SearchAppWorkflow.__get_detail_cache_key(result.identifier),
-            lambda _: self.__steam_app_details_client.get_app_details(result.identifier),
-            SlidingExpirationCacheEntryPolicy(timedelta(
-                seconds=self.__options.value.AppDetailExpirationTime
-            ))
-        )
-
-        app_description = self.__options.value.StoreAppPageUrl.format(appid=result.identifier)
-        if isinstance(app_detail, SteamAppDetails):
-            app_is_free = app_detail.is_free
-            app_required_age = app_detail.required_age
-            app_short_description = app_detail.short_description
-            app_screenshot = app_detail.screenshot_urls[0] if app_detail.screenshot_urls else result.logo_url
-            app_description = app_short_description + "\n\n" + app_description[:400]
-        else:
-            app_is_free = None
-            app_required_age = None
-            app_short_description = None
-            app_screenshot = result.logo_url
 
         return (
+            self.__options.value.StoreAppPageUrl.format(appid=result.identifier),
             UNDEFINED,
-            Embed(
-                title=result.name,
-                description=app_description,
-                image_url=app_screenshot,
-                fields=[
-                    EmbedField(
-                        self.__i18n_provider.get(
-                            "extensions.steam.search_app_workflow.embed_field_required_age"
-                        ),
-                        f"{app_required_age}+" if app_required_age else "-"
-                    ),
-                    EmbedField(
-                        self.__i18n_provider.get(
-                            "extensions.steam.search_app_workflow.embed_field_is_free"
-                        ),
-                        "✅" if app_is_free else "❌" if app_is_free == False else "N/A"
-                    )
-                ],
-                footer=EmbedFooter(
-                    text=self.__i18n_provider.get(
-                        "extensions.steam.search_app_workflow.embed_footer",
-                        {
-                            "result_index": result_index + 1,
-                            "result_count": result_count
-                        }
-                    )
-                )
-            ),
             Paginator(
                 id="stesearchpagi",
                 owner_id=owner_id,

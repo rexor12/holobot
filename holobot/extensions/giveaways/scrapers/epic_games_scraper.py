@@ -87,7 +87,8 @@ class EpicGamesScraper(IScraper):
                 continue
 
             product_slug = first_or_default(item.catalogNs.mappings, lambda i: i.pageType == "productHome")
-            if not product_slug or not product_slug.pageSlug:
+            page_slug = product_slug.pageSlug if product_slug else item.productSlug
+            if not page_slug:
                 self.__logger.debug("Ignored item, because it has no product slug", title=item.title)
                 continue
 
@@ -98,7 +99,7 @@ class EpicGamesScraper(IScraper):
                 giveaway_time.endDate.astimezone(timezone.utc) if giveaway_time.endDate else datetime.max.astimezone(timezone.utc),
                 self.name,
                 "game",
-                f"https://store.epicgames.com/en-US/p/{product_slug.pageSlug}",
+                f"https://store.epicgames.com/en-US/p/{page_slug}",
                 EpicGamesScraper.__get_preview_image(item),
                 item.title or "Unknown game"
             ))

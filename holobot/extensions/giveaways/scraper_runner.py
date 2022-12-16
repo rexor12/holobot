@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 from collections.abc import Awaitable
+from datetime import datetime, timedelta
 
 from holobot.extensions.giveaways.models import GiveawayOptions
 from holobot.sdk.configs import IOptions
@@ -13,12 +14,14 @@ from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
 from holobot.sdk.utils import utcnow
 from .events.models import NewGiveawaysEvent
+from .iscraper_manager import IScraperManager
 from .models import ExternalGiveawayItem, ScraperInfo
 from .repositories import IExternalGiveawayItemRepository, IScraperInfoRepository
 from .scrapers import IScraper
 
 @injectable(IStartable)
-class ScraperRunner(IStartable):
+@injectable(IScraperManager)
+class ScraperRunner(IScraperManager, IStartable):
     def __init__(
         self,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,
@@ -61,6 +64,14 @@ class ScraperRunner(IStartable):
             with contextlib.suppress(asyncio.exceptions.CancelledError):
                 await self.__background_task
         self.__logger.debug("Stopped background task")
+
+    async def invalidate_scrape_time(self, scraper_name: str) -> None:
+        scraper_info = await self.__scraper_info_repository.get_by_name(scraper_name)
+        if not scraper_info:
+            return
+
+        scraper_info.last_scrape_time = utcnow() - timedelta(days=30)
+        await self.__scraper_info_repository.update(scraper_info)
 
     async def __run_scrapers(self, token: CancellationToken):
         options = self.__options.value

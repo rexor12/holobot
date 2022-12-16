@@ -1,2 +1,3 @@
+from .reset_scraper_workflow import ResetScraperWorkflow
 from .set_announcement_channel_workflow import SetAnnouncementChannelWorkflow
 from .view_active_giveaways_workflow import ViewActiveGiveawaysWorkflow

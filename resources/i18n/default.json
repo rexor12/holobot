@@ -196,6 +196,9 @@
                 "new_giveaways_crosspost_list_item": "   ⦁ [{source}] {title}",
                 "cannot_announce_error": "I'm sorry, but I cannot announce new giveaways in <#{channel_id}> in {server_name}. Please, make sure I have the permissions to send messages there. (｡•́︿•̀｡)"
             },
+            "reset_scraper_workflow": {
+                "done": "The scraper has been reset."
+            },
             "set_announcement_channel_workflow": {
                 "channel_set": "From now on I'll announce new giveaways in <#{channel_id}>.",
                 "channel_unset": "From now on I won't announce new giveaways in any channel.",

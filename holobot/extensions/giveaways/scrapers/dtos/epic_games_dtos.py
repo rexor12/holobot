@@ -46,6 +46,7 @@ class Offer:
     keyImages: list[Image] = field(default_factory=list)
     catalogNs: CatalogNs = field(default_factory=CatalogNs)
     customAttributes: list[CustomAttribute] = field(default_factory=list)
+    productSlug: str | None = None
 
 @dataclass
 class SearchStore:

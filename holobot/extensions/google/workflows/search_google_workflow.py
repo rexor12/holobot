@@ -324,7 +324,7 @@ class SearchGoogleWorkflow(WorkflowBase):
                 "extensions.google.search_google_workflow.embed_title"
             ),
             description=description,
-            image_url=result_url ,
+            image_url=result_url,
             footer=EmbedFooter(
                 text=self.__i18n_provider.get(
                     "extensions.google.search_google_workflow.embed_footer",

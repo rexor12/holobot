@@ -417,6 +417,13 @@
             }
         },
 
+        "steam": {
+            "steam_api_error": "I'm sorry, but a Steam internal error has occurred. Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
+            "search_app_workflow": {
+                "no_results": "I couldn't find any good results for you. Please, refine your keywords and try again. („• ᴗ •„)"
+            }
+        },
+
         "todo_lists": {
             "add_todo_item_workflow": {
                 "item_added": "I've added the item to your to-do list. Make sure you don't forget to do it! („• ᴗ •„)",

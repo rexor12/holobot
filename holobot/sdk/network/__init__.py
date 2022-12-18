@@ -1,1 +1,1 @@
-from .http_client_pool_interface import HttpClientPoolInterface
+from .ihttp_client_pool import IHttpClientPool

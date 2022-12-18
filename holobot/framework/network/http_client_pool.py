@@ -12,15 +12,15 @@ from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
 
 DEFAULT_TIMEOUT = ClientTimeout(total=5)
 
 # https://julien.danjou.info/python-and-fast-http-clients/
 @injectable(IStartable)
-@injectable(HttpClientPoolInterface)
-class HttpClientPool(HttpClientPoolInterface, IStartable):
+@injectable(IHttpClientPool)
+class HttpClientPool(IHttpClientPool, IStartable):
     def __init__(
         self,
         logger_factory: ILoggerFactory,

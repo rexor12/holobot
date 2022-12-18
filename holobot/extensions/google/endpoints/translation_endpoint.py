@@ -99,7 +99,7 @@ class TranslationEndpoint:
         if not self.__options.value.ServiceAccountCredentialFile:
             return None
 
-        service_account_key = json.load(open(self.__options.value.ServiceAccountCredentialFile))
+        service_account_key = json.load(open(file=self.__options.value.ServiceAccountCredentialFile))
         creds = aiogoogle_creds.ServiceAccountCreds(
             scopes=[
                 "https://www.googleapis.com/auth/cloud-translation",

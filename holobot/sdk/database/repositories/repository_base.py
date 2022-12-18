@@ -17,7 +17,9 @@ from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag, UpdateCommandTag
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import set_time_zone
-from holobot.sdk.utils.dataclass_utils import ParameterInfo, get_parameter_infos
+from holobot.sdk.utils.dataclass_utils import (
+    ObjectTypeDescriptor, ParameterInfo, get_parameter_infos
+)
 from .constants import MANUALLY_GENERATED_KEY_NAME
 from .entity import Entity
 from .irepository import IRepository
@@ -302,10 +304,16 @@ class RepositoryBase(
 
         arguments = dict[str, Any]()
         for column in self.__columns.value:
+            if not isinstance(column.object_type, ObjectTypeDescriptor):
+                raise TypeError(
+                    f"Expected the type descriptor of column {column.name} to be an"
+                    f"ObjectTypeDescriptor, but got {type(column.object_type).__name__}."
+                )
+
             raw_value = columns.get(column.name)
             record_value = RepositoryBase.__convert_field_to_model(
                 raw_value,
-                column.object_type
+                column.object_type.value
             )
             if record_value is None and not column.allows_none:
                 if column.default_value:
@@ -315,10 +323,10 @@ class RepositoryBase(
 
             if (
                 record_value is None and not column.allows_none
-                or record_value is not None and not isinstance(record_value, column.object_type)
+                or record_value is not None and not isinstance(record_value, column.object_type.value)
             ):
                 raise TypeError((
-                    f"Expected '{column.object_type.__name__}',"
+                    f"Expected '{column.object_type.value.__name__}',"
                     f" but got '{type(record_value).__name__}'."
                 ))
 

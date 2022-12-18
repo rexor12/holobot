@@ -1,6 +1,6 @@
 import asyncio
 import os
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import timedelta
 from typing import Generic, TypeVar
 
@@ -90,7 +90,7 @@ class _ItemStore(Generic[TKey, TValue], IAsyncDisposable):
     async def get_or_add(
         self,
         key: _CacheEntryKey[TKey],
-        value_or_factory: TValue | Callable[[TKey], TValue],
+        value_or_factory: TValue | Callable[[TKey], Awaitable[TValue]],
         policy: CacheEntryPolicy
     ) -> TValue | UndefinedType:
         if policy.is_expired():
@@ -102,7 +102,7 @@ class _ItemStore(Generic[TKey, TValue], IAsyncDisposable):
                 return entry
 
             value = (
-                value_or_factory(key.key)
+                await value_or_factory(key.key)
                 if isinstance(value_or_factory, Callable)
                 else value_or_factory
             )
@@ -205,7 +205,7 @@ class ConcurrentMemoryCache(ICache, Generic[TKey, TValue], IAsyncDisposable):
     async def get_or_add(
         self,
         key: TKey,
-        value_or_factory: TValue | Callable[[TKey], TValue],
+        value_or_factory: TValue | Callable[[TKey], Awaitable[TValue]],
         policy: CacheEntryPolicy | None = None
     ) -> TValue | UndefinedType:
         if not policy:
@@ -235,6 +235,6 @@ class ConcurrentMemoryCache(ICache, Generic[TKey, TValue], IAsyncDisposable):
 
         return await store.add_or_replace(cache_key, value, policy)
 
-    def __get_store(self, key: _CacheEntryKey[TKey]) -> _ItemStore:
+    def __get_store(self, key: _CacheEntryKey[TKey]) -> _ItemStore[TKey, TValue]:
         index = key.hash_value % len(self.__stores)
         return self.__stores[index]

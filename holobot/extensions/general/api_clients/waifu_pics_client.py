@@ -4,7 +4,7 @@ from holobot.extensions.general.models import WaifuPicsOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.network import HttpClientPoolInterface
+from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy, CombinedPolicyBuilder
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
@@ -17,7 +17,7 @@ from .iwaifu_pics_client import IWaifuPicsClient
 class WaifuPicsClient(IWaifuPicsClient):
     def __init__(
         self,
-        http_client_pool: HttpClientPoolInterface,
+        http_client_pool: IHttpClientPool,
         logger_factory: ILoggerFactory,
         options: IOptions[WaifuPicsOptions]
     ) -> None:

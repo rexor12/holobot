@@ -317,6 +317,16 @@
         }
     },
 
+    "Steam": {
+        "GeneralOptions": {
+            "StoreAppPageUrl": "https://store.steampowered.com/app/{appid}",
+            "MaxSearchResults": 10
+        },
+        "SteamCommunityOptions": {
+            "BaseUrl": "https://steamcommunity.com/actions/"
+        }
+    },
+
     "TodoLists": {
         "TodoOptions": {
             "TodoItemsPerUserMax": 10,

@@ -81,6 +81,40 @@
                 ],
                 "response_message": "{user_name} asked:\n> {question}\n\nHere's my wisdom: {answer}"
             },
+            "match_users_workflow": {
+                "love_types": [
+                    "Eros - romantic, passionate love of the body",
+                    "Storge - unconditional, familial love",
+                    "Agape - selfless, universal love",
+                    "Philia - affectionate, friendly love",
+                    "Ludus - playful, flirtatious love",
+                    "Pragma - committed, long-lasting love"
+                ],
+                "self_love_type": "Philautia",
+                "description_base": "This is what I think about the relationship between <@{user_id1}> and <@{user_id2}>:\n\n",
+                "descriptions": [
+                    "This relationship is based on lust, so it won't work for anything serious.",
+                    "This is just the kind of love between siblings.",
+                    "While it may work, this is one really open relationship. Like some WiFi networks.",
+                    "It feels almost as if I were looking at two best friends.",
+                    "If you keep flirting just a little longer, this relationship may develop into something serious.",
+                    "This relationship has reached a new high. It's the embodiment of love."
+                ],
+                "self_description": "Always love yourself, <@{user_id}>, you're a great addition to the world.",
+                "title": "Matchmaker's Insight",
+                "chemistry": "Chemistry",
+                "communication": "Communication",
+                "trust": "Trust",
+                "commitment": "Commitment",
+                "security": "Security",
+                "type": "Type of love",
+                "overall_score": "Overall score",
+                "overall_score_value": "{score}/10 {emoji}",
+                "overall_score_emojis": [
+                    "💔", "👩‍❤️‍💋‍👨", "💓", "🤼", "❤️", "💙"
+                ],
+                "footer": "Data will refresh in {refresh_in} minute(s)."
+            },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
                 "invalid_action_error": "I'm sorry, but the action you specified isn't valid. Please, try again with a correct option. (｡•́︿•̀｡)",

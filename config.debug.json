@@ -16,14 +16,6 @@
         }
     },
 
-    "Giveaways": {
-        "GiveawayOptions": {
-            "EnableScrapers": "",
-            "AnnouncementServerId": "",
-            "AnnouncementChannelId": ""
-        }
-    },
-
     "Reminders": {
         "ReminderProcessingOptions": {
             "IsEnabled": true

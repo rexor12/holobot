@@ -79,6 +79,33 @@ class I18nProvider(II18nProvider, IStartable):
             )
             return ()
 
+    def get_list_item(
+        self,
+        key: str,
+        item_index: int,
+        arguments: dict[str, Any] | None = None,
+        language: str | None = None
+    ) -> str:
+        if item_index < 0:
+            return key
+        if arguments is None:
+            arguments = _ARGUMENTS_SENTINEL
+
+        try:
+            value = self.__get_value_by_key(key, language)
+            if value is None or not isinstance(value, tuple) or len(value) <= item_index:
+                return key
+
+            return value[item_index].format(arguments)
+        except Exception as error:
+            self.__logger.error(
+                "Failed to resolve list item-type I18N key",
+                error,
+                key=key,
+                item_index=item_index
+            )
+            return key
+
     def get_list_items(
         self,
         key: str,

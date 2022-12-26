@@ -10,23 +10,24 @@ from holobot.sdk.utils import assert_not_none
 class UserDataProvider(IUserDataProvider):
     async def get_user_data_by_id(
         self,
-        user_id: str
+        user_id: str,
+        use_cache: bool = True
     ) -> UserData:
         assert_not_none(user_id, "user_id")
 
-        user = await get_bot().get_user_by_id(int(user_id))
-        return UserDataProvider.__transform_user_dto(user)
+        return await UserDataProvider.__safe_get_user_data_by_id(int(user_id), use_cache)
 
     async def get_user_data_by_name(
         self,
         server_id: str,
-        user_name: str
+        user_name: str,
+        use_cache: bool = True
     ) -> UserData:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_name, "user_name")
 
-        member = await get_bot().get_guild_member_by_name(int(server_id), user_name)
-        return UserDataProvider.__transform_user_dto(member.user)
+        member = await get_bot().get_guild_member_by_name(int(server_id), user_name, True)
+        return await UserDataProvider.__safe_get_user_data_by_id(member.id, use_cache)
 
     @staticmethod
     def __transform_user_dto(user: hikari.User) -> UserData:
@@ -39,3 +40,11 @@ class UserDataProvider(IUserDataProvider):
             is_bot=user.is_bot,
             name=user.username
         )
+
+    @staticmethod
+    async def __safe_get_user_data_by_id(
+        user_id: hikari.Snowflakeish,
+        use_cache: bool
+    ) -> UserData:
+        user = await get_bot().get_user_by_id(user_id, use_cache)
+        return UserDataProvider.__transform_user_dto(user)

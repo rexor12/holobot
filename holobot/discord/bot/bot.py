@@ -16,8 +16,8 @@ class Bot(GatewayBot, IBot):
     def __init__(self, token: str, intents: Intents):
         super().__init__(token, intents=intents)
 
-    async def get_user_by_id(self, user_id: Snowflakeish) -> User:
-        if user := self.cache.get_user(user_id):
+    async def get_user_by_id(self, user_id: Snowflakeish, use_cache: bool = True) -> User:
+        if use_cache and (user := self.cache.get_user(user_id)):
             return user
 
         try:
@@ -70,14 +70,15 @@ class Bot(GatewayBot, IBot):
     async def get_guild_member(
         self,
         guild_or_id: Snowflakeish | Guild,
-        user_id: Snowflakeish
+        user_id: Snowflakeish,
+        use_cache: bool = True
     ) -> Member:
         guild = (
             guild_or_id
             if isinstance(guild_or_id, Guild)
             else await self.get_guild_by_id(guild_or_id)
         )
-        if member := guild.get_member(int(user_id)):
+        if use_cache and (member := guild.get_member(int(user_id))):
             return member
 
         try:
@@ -93,7 +94,8 @@ class Bot(GatewayBot, IBot):
     async def get_guild_member_by_name(
         self,
         guild_or_id: Snowflakeish | Guild,
-        user_name: str
+        user_name: str,
+        use_cache: bool = True
     ) -> Member:
         guild = (
             guild_or_id
@@ -110,7 +112,10 @@ class Bot(GatewayBot, IBot):
         if not best_match:
             raise UserNotFoundError(user_name)
 
-        return best_match[0]
+        if use_cache:
+            return best_match[0]
+
+        return await self.get_guild_member(guild, best_match[0].id, False)
 
     async def get_guild_role(
         self,

@@ -250,7 +250,7 @@
             "ProgressBarRedEmoji": "<:barr2:1053832599807725638>",
             "ProgressBarOrangeEmoji": "<:baro2:1053832598494908456>",
             "ProgressBarGreenEmoji": "<:barg2:1053832597173719100>",
-            "RefreshRelationshipsAfterMinutes": 30
+            "RefreshRelationshipsAfterMinutes": 10
         },
         "WaifuPicsOptions": {
             "CircuitBreakerFailureThreshold": 1,

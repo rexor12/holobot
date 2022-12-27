@@ -108,10 +108,10 @@
                 "commitment": "Commitment",
                 "security": "Security",
                 "type": "Type of love",
-                "overall_score": "Overall score",
+                "overall_score": "Overall score (1-10)",
                 "overall_score_value": "{score}/10 {emoji}",
                 "overall_score_emojis": [
-                    "💔", "👩‍❤️‍💋‍👨", "💓", "🤼", "❤️", "💙"
+                    "💔", "👩‍❤️‍💋‍👨", "💓", "🤼", "❤️", "💙", "🤍"
                 ],
                 "footer": "Data will refresh in {refresh_in} minute(s)."
             },

@@ -5,7 +5,7 @@ from hikari import Guild, GuildChannel, Member, Role, Snowflake, Snowflakeish, U
 
 class IBot(metaclass=ABCMeta):
     @abstractmethod
-    async def get_user_by_id(self, user_id: Snowflakeish) -> User:
+    async def get_user_by_id(self, user_id: Snowflakeish, use_cache: bool = True) -> User:
         ...
 
     @abstractmethod
@@ -24,7 +24,8 @@ class IBot(metaclass=ABCMeta):
     async def get_guild_member(
         self,
         guild_or_id: Snowflakeish | Guild,
-        user_id: Snowflakeish
+        user_id: Snowflakeish,
+        use_cache: bool = True
     ) -> Member:
         ...
 
@@ -32,7 +33,8 @@ class IBot(metaclass=ABCMeta):
     async def get_guild_member_by_name(
         self,
         guild_or_id: Snowflakeish | Guild,
-        user_name: str
+        user_name: str,
+        use_cache: bool = True
     ) -> Member:
         ...
 

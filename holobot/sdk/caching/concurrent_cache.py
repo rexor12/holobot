@@ -119,7 +119,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
 
     async def __get_or_add(self, key: TKey, factory: Callable[..., Awaitable[TValue]], *args: Any) -> TValue:
         async with self.__lock:
-            if not isinstance(value := self.__dict.pop(key, UNDEFINED), UndefinedType):
+            if not isinstance(value := self.__dict.get(key, UNDEFINED), UndefinedType):
                 return value
 
             value = await factory(key, *args)
@@ -128,7 +128,7 @@ class ConcurrentCache(Generic[TKey, TValue]):
 
     async def __get_or_add2(self, key: TKey, factory: Callable[..., TValue], *args: Any) -> TValue:
         async with self.__lock:
-            if not isinstance(value := self.__dict.pop(key, UNDEFINED), UndefinedType):
+            if not isinstance(value := self.__dict.get(key, UNDEFINED), UndefinedType):
                 return value
 
             value = factory(key, *args)

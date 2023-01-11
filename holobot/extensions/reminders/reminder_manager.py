@@ -9,12 +9,12 @@ from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import utcnow
 from .exceptions import InvalidReminderConfigError, InvalidReminderError, TooManyRemindersError
+from .ireminder_manager import IReminderManager
 from .models import Reminder, ReminderConfig, ReminderOptions
-from .reminder_manager_interface import ReminderManagerInterface
 from .repositories import IReminderRepository
 
-@injectable(ReminderManagerInterface)
-class ReminderManager(ReminderManagerInterface):
+@injectable(IReminderManager)
+class ReminderManager(IReminderManager):
     def __init__(
         self,
         logger_factory: ILoggerFactory,
@@ -108,7 +108,7 @@ class ReminderManager(ReminderManagerInterface):
             )
         )
         reminder.recalculate_next_trigger()
-        await self.__reminder_repository.add(reminder)
+        reminder.identifier = await self.__reminder_repository.add(reminder)
         return reminder
 
     async def __set_single_reminder(
@@ -125,7 +125,7 @@ class ReminderManager(ReminderManagerInterface):
             location=config.location,
             next_trigger=next_trigger
         )
-        await self.__reminder_repository.add(reminder)
+        reminder.identifier = await self.__reminder_repository.add(reminder)
         return reminder
 
     def __calculate_recurring_base_trigger(self, frequency_time: timedelta, at_time: timedelta | None):

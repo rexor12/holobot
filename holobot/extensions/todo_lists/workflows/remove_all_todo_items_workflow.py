@@ -5,14 +5,14 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from .. import TodoItemManagerInterface
+from .. import ITodoItemManager
 
 @injectable(IWorkflow)
 class RemoveAllTodoItemsWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
-        todo_item_manager: TodoItemManagerInterface
+        todo_item_manager: ITodoItemManager
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider

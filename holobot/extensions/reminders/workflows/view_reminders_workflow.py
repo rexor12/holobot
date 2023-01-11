@@ -4,17 +4,17 @@ from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComponentBase, LayoutBase, Paginator
+    Button, ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import ButtonState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.reminders import IReminderManager
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
-from .. import ReminderManagerInterface
 
 DEFAULT_PAGE_SIZE = 5
 
@@ -24,7 +24,7 @@ class ViewRemindersWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
-        reminder_manager: ReminderManagerInterface
+        reminder_manager: IReminderManager
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
@@ -47,6 +47,32 @@ class ViewRemindersWorkflow(WorkflowBase):
             DEFAULT_PAGE_SIZE
         )
         return self._reply(
+            content=content if isinstance(content, str) else None,
+            embed=embed if isinstance(embed, Embed) else None,
+            components=components
+        )
+
+    @component(
+        identifier="reminder_viewall",
+        component_type=Button,
+        is_bound=True
+    )
+    async def view_reminders_by_button(
+        self,
+        context: InteractionContext,
+        state: Any
+    ) -> InteractionResponse:
+        if not isinstance(state, ButtonState):
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            )
+
+        content, embed, components = await self.__create_page_content(
+            context.author_id,
+            0,
+            DEFAULT_PAGE_SIZE
+        )
+        return self._edit_message(
             content=content if isinstance(content, str) else None,
             embed=embed if isinstance(embed, Embed) else None,
             components=components

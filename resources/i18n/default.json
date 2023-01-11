@@ -19,6 +19,14 @@
         "cooldown_error": "I'm sorry, but this command is on cooldown. Please, try again in {seconds_left:,.2f} seconds. (｡•́︿•̀｡)"
     },
 
+    "common": {
+        "buttons": {
+            "cancel": "Cancel",
+            "remove": "Remove",
+            "view_all": "View all"
+        }
+    },
+
     "extensions": {
         "admin": {
             "help_workflow": {
@@ -379,11 +387,11 @@
 
         "reminders": {
             "remove_reminder_workflow": {
-                "reminder_deleted": "I've deleted your reminder. Make sure you don't forget about it if it's important, though. („• ᴗ •„)",
-                "reminder_not_found_error": "I'm sorry, but I couldn't find this one among your reminders. Please, double check for any typos. (｡•́︿•̀｡)"
+                "reminder_deleted": "I've removed your reminder. Make sure you don't forget about it if it's important, though. („• ᴗ •„)",
+                "reminder_not_found_error": "I'm sorry, but I couldn't find this one among your reminders. It may have already been delivered to you. (｡•́︿•̀｡)"
             },
             "set_reminder_workflow": {
-                "reminder_set": "I'll remind you at <t:{time}:f>.",
+                "reminder_set": "I'll remind you at <t:{time}:f>. If you'd like, you may remove this reminder later using the identifier {reminder_id} or by cancelling it now.",
                 "message_out_of_range_error": "I'm sorry, but the message's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
                 "missing_time_error": "I'm sorry, but I need to know either the frequency of the reminder or the date and time at which I should remind you. Please, double check and try again. (｡•́︿•̀｡)",
                 "invalid_params_error": "I'm sorry, but the parameters {param1} and {param2} cannot be used together. Please, double check and try again. (｡•́︿•̀｡)",
@@ -426,7 +434,7 @@
 
         "todo_lists": {
             "add_todo_item_workflow": {
-                "item_added": "I've added the item to your to-do list. Make sure you don't forget to do it! („• ᴗ •„)",
+                "item_added": "I've added the item to your to-do list. If you'd like, you may remove this to-do item later using the identifier {todo_item_id} or by removing it now. Make sure you don't forget to do it! („• ᴗ •„)",
                 "message_too_long_error": "I'm sorry, but I'm afraid your message is a bit too short or long. Please, make sure the length is between {lower_bound} and {upper_bound} characters. (｡•́︿•̀｡)",
                 "list_full_error": "I'm sorry, but your to-do list is full. I think it's about time to get a few things done. („• ᴗ •„)"
             },
@@ -436,7 +444,7 @@
             },
             "remove_todo_item_workflow": {
                 "item_deleted": "I've removed the to-do item. Make sure you don't slack, though. („• ᴗ •„)",
-                "no_todo_item_error": "I'm sorry, but I couldn't find such a to-do item in your list. Please, double check for any typos. (｡•́︿•̀｡)"
+                "no_todo_item_error": "I'm sorry, but I couldn't find such a to-do item in your list. It may have been removed already. (｡•́︿•̀｡)"
             },
             "view_todo_items_workflow": {
                 "no_todo_items": "You don't have any to-do items.",

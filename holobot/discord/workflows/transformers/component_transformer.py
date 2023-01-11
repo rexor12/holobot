@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from itertools import islice
 from typing import Any, NamedTuple, cast
 
 import hikari
@@ -11,7 +12,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
 )
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import (
-    ComboBoxState, ComponentStateBase, EmptyState, PagerState
+    ButtonState, ComboBoxState, ComponentStateBase, EmptyState, PagerState
 )
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import ArgumentError
@@ -54,7 +55,7 @@ class ComponentTransformer(IComponentTransformer):
         }
         self.__state_transformers: dict[type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
             StackLayout: lambda i: EmptyState(owner_id=str(i.user.id)),
-            Button: lambda i: EmptyState(owner_id=str(i.user.id)),
+            Button: self.__transform_button_state,
             ComboBox: self.__transform_combo_box_state,
             Paginator: self.__transform_pager_state
         }
@@ -149,9 +150,10 @@ class ComponentTransformer(IComponentTransformer):
 
             button = container.add_button(hikari.ButtonStyle.LINK, component.url)
         else:
+            custom_data = ";".join((f"{key}={value}" for key, value in component.custom_data.items()))
             button = container.add_button(
                 COMPONENT_STYLE_MAP.get(component.style, hikari.ButtonStyle.PRIMARY),
-                component.id
+                f"{component.id}~{component.owner_id};{custom_data}"
             )
 
         if component.text:
@@ -161,6 +163,25 @@ class ComponentTransformer(IComponentTransformer):
             button.set_emoji(int(component.emoji_id))
 
         return button.set_is_disabled(not component.is_enabled).add_to_container()
+
+    def __transform_button_state(self, interaction: hikari.ComponentInteraction) -> ButtonState:
+        component_data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
+        parts = component_data.data.split(";")
+        if len(parts) < 2:
+            raise ValueError("Invalid component state. Required 'owner_id' is missing for the button.")
+
+        custom_data = {}
+        for mapping in islice(parts, 2):
+            mapping_parts = mapping.split("=", maxsplit=1)
+            if len(mapping_parts) != 2:
+                continue
+
+            custom_data[mapping_parts[0]] = mapping_parts[1]
+
+        return ButtonState(
+            owner_id=parts[0],
+            custom_data=custom_data
+        )
 
     def __transform_combo_box(
         self,
@@ -219,26 +240,37 @@ class ComponentTransformer(IComponentTransformer):
         if container:
             raise ArgumentError(f"A pager is a layout and cannot be placed in another layout, but was placed in '{type(container)}'.")
 
-        custom_data = ";".join((f"{key}={value}" for key, value in component.custom_data.items()))
+        previous_button_custom_data = {
+            "page": str(component.current_page - 1),
+            **component.custom_data
+        }
+
+        next_button_custom_data = {
+            "page": str(component.current_page + 1),
+            **component.custom_data
+        }
+
         return self.__transform_component(
             StackLayout(
                 id=component.id,
                 children=[
                     Button(
-                        id=f"{component.id}~{component.current_page - 1};{component.owner_id};{custom_data}",
+                        id=component.id,
                         owner_id=component.owner_id,
                         text=None if self.__options.value.PaginatorPreviousEmoji else "Previous",
                         style=ComponentStyle.SECONDARY,
                         is_enabled=not component.is_first_page(),
-                        emoji_id=self.__options.value.PaginatorPreviousEmoji
+                        emoji_id=self.__options.value.PaginatorPreviousEmoji,
+                        custom_data=previous_button_custom_data
                     ),
                     Button(
-                        id=f"{component.id}~{component.current_page + 1};{component.owner_id};{custom_data}",
+                        id=component.id,
                         owner_id=component.owner_id,
                         text=None if self.__options.value.PaginatorNextEmoji else "Next",
                         style=ComponentStyle.SECONDARY,
                         is_enabled=not component.is_last_page(),
-                        emoji_id=self.__options.value.PaginatorNextEmoji
+                        emoji_id=self.__options.value.PaginatorNextEmoji,
+                        custom_data=next_button_custom_data
                     )
                 ]
             ),
@@ -246,19 +278,11 @@ class ComponentTransformer(IComponentTransformer):
         )
 
     def __transform_pager_state(self, interaction: hikari.ComponentInteraction) -> PagerState:
-        _, data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
-        data_parts = data.split(";")
-        if len(data_parts) < 2:
-            raise ValueError("Invalid component state. Required 'current_page' and 'owner_id' are missing for the paginator.")
-
-        custom_data = {}
-        for data_part in data_parts:
-            custom_data_parts = data_part.split("=", 1)
-            if len(custom_data_parts) == 2:
-                custom_data[custom_data_parts[0]] = custom_data_parts[1]
+        # Pager states are currently button clicks only.
+        state = self.__transform_button_state(interaction)
 
         return PagerState(
-            owner_id=data_parts[1],
-            current_page=try_parse_int(data_parts[0]) or 0,
-            custom_data=custom_data
+            owner_id=state.owner_id,
+            current_page=try_parse_int(state.custom_data.pop("page", "0")) or 0,
+            custom_data=state.custom_data
         )

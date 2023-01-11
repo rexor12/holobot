@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .enums import ComponentStyle
 from .interactable_component_base import InteractableComponentBase
@@ -10,3 +10,4 @@ class Button(InteractableComponentBase):
     is_enabled: bool = True
     url: str | None = None
     emoji_id: str | None = None
+    custom_data: dict[str, str] = field(default_factory=dict)

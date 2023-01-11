@@ -1,11 +1,13 @@
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
+from holobot.discord.sdk.workflows.interactables.components import Button, StackLayout
+from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.reminders import ReminderManagerInterface
+from holobot.extensions.reminders import IReminderManager
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.exceptions import (
     InvalidReminderConfigError, TooManyRemindersError
@@ -23,7 +25,7 @@ class SetReminderWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
-        reminder_manager: ReminderManagerInterface
+        reminder_manager: IReminderManager
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
@@ -83,9 +85,32 @@ class SetReminderWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get(
                     "extensions.reminders.set_reminder_workflow.reminder_set",
                     {
-                        "time": int(reminder.next_trigger.timestamp())
+                        "time": int(reminder.next_trigger.timestamp()),
+                        "reminder_id": reminder.identifier
                     }
-                )
+                ),
+                components=[
+                    StackLayout(
+                        id="set_reminder_layout",
+                        children=[
+                            Button(
+                                id="reminder_viewall",
+                                owner_id=context.author_id,
+                                text=self.__i18n_provider.get("common.buttons.view_all"),
+                                style=ComponentStyle.PRIMARY
+                            ),
+                            Button(
+                                id="reminder_cancel",
+                                owner_id=context.author_id,
+                                text=self.__i18n_provider.get("common.buttons.cancel"),
+                                style=ComponentStyle.SECONDARY,
+                                custom_data={
+                                    "rid": str(reminder.identifier)
+                                }
+                            )
+                        ]
+                    )
+                ]
             )
         except ArgumentOutOfRangeError as error:
             return self._reply(

@@ -4,12 +4,12 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
 from .exceptions import InvalidTodoItemError, TooManyTodoItemsError
+from .itodo_item_manager import ITodoItemManager
 from .models import TodoItem, TodoOptions
 from .repositories import ITodoItemRepository
-from .todo_item_manager_interface import TodoItemManagerInterface
 
-@injectable(TodoItemManagerInterface)
-class TodoItemManager(TodoItemManagerInterface):
+@injectable(ITodoItemManager)
+class TodoItemManager(ITodoItemManager):
     def __init__(
         self,
         logger_factory: ILoggerFactory,
@@ -34,7 +34,7 @@ class TodoItemManager(TodoItemManagerInterface):
             )
 
         await self.__assert_todo_item_count(todo_item.user_id)
-        await self.__todo_item_repository.add(todo_item)
+        todo_item.identifier = await self.__todo_item_repository.add(todo_item)
         self.__logger.debug("Set new to-do item", user_id=todo_item.user_id)
 
     async def delete_by_user(self, user_id: str, todo_item_id: int) -> None:

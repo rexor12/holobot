@@ -47,7 +47,7 @@
 			"\t)",
 			"\tasync def ${5:execute}(",
 			"\t\tself,",
-			"\t\tcontext: ServerChatInteractionContext",
+			"\t\tcontext: InteractionContext",
 			"\t) -> InteractionResponse:",
 			"\t\traise NotImplementedError",
 			""

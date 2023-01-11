@@ -273,7 +273,8 @@
             "CircuitBreakerFailureThreshold": 1,
             "CircuitBreakerRecoveryTime": 300,
             "Url": "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions",
-            "CountryCode": "US"
+            "CountryCode": "US",
+            "ExecutionDelay": 300
         }
     },
 

@@ -15,7 +15,6 @@ from holobot.sdk.utils import first_or_default, utcnow
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
 from .iscraper import IScraper
 
-SCRAPE_DELAY: timedelta = timedelta(minutes=5)
 OFFER_IMAGE_TYPES: tuple[str, ...] = (
     "OfferImageWide", "DieselStoreFrontWide", "OfferImageTall", "Thumbnail"
 )
@@ -55,7 +54,8 @@ class EpicGamesScraper(IScraper):
         else:
             previous_thursday = today - timedelta(weeks=1) + time_to_nearest_release_day
             next_thursday = today + time_to_nearest_release_day
-        previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
+        execution_delay = timedelta(seconds=self.__options.value.ExecutionDelay)
+        previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE) + execution_delay
         if last_scrape_time < previous_release_time:
             if utcnow() > previous_release_time:
                 return utcnow() - timedelta(minutes=1)
@@ -63,7 +63,7 @@ class EpicGamesScraper(IScraper):
                 return previous_release_time.astimezone(timezone.utc)
 
         next_release_time = datetime.combine(next_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
-        return next_release_time.astimezone(timezone.utc) + SCRAPE_DELAY
+        return next_release_time.astimezone(timezone.utc) + execution_delay
 
     async def scrape(self) -> Sequence[ExternalGiveawayItem]:
         options = self.__options.value

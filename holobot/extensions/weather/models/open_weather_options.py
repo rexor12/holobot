@@ -13,3 +13,4 @@ class OpenWeatherOptions(OptionsDefinition):
     ApiGatewayBaseUrl: str = ""
     ConditionImageBaseUrl: str = ""
     IconUrl: str = ""
+    MapUrl: str = ""

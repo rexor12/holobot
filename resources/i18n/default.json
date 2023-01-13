@@ -457,6 +457,16 @@
 
         "weather": {
             "get_basic_weather_workflow": {
+                "wind_directions": {
+                    "north": "N",
+                    "northeast": "NE",
+                    "east": "E",
+                    "southeast": "SE",
+                    "south": "S",
+                    "southwest": "SW",
+                    "west": "W",
+                    "northwest": "NW"
+                },
                 "no_information_error": "I'm sorry, but OpenWeather couldn't provide any information right now. Please, try again a bit later. (｡•́︿•̀｡)",
                 "invalid_location_error": "I'm sorry, but I cannot find the location you requested. Please, double check for any typos or try a larger town nearby. (｡•́︿•̀｡)",
                 "openweather_error": "I'm sorry, but an OpenWeather internal error has occurred (code: {code}). Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
@@ -464,11 +474,19 @@
                 "embed_description": "Information about the current weather in {location}.",
                 "embed_footer": "Powered by OpenWeather",
                 "embed_field_temperature": "Temperature",
-                "embed_field_temperature_value": "{temperature} °C",
-                "embed_field_pressure": "Pressure",
-                "embed_field_pressure_value": "{pressure} hPa",
+                "embed_field_temperature_value": "{temperature} °C / {temperature_fahrenheit} °F",
+                "embed_field_temperature_feels": "Feels like",
+                "embed_field_temperature_feels_value": "{temperature} °C / {temperature_fahrenheit} °F",
                 "embed_field_humidity": "Humidity",
-                "embed_field_humidity_value": "{humidity}%"
+                "embed_field_humidity_value": "{humidity}%",
+                "embed_field_cloudiness": "Cloudiness",
+                "embed_field_cloudiness_value": "{cloudiness}%",
+                "embed_field_condition": "Condition",
+                "embed_field_condition_value": "{description}",
+                "embed_field_wind": "Wind",
+                "embed_field_wind_value": "{speed} m/s ({direction})",
+                "embed_field_wind_no_degrees_value": "{speed} m/s",
+                "map_button": "Map"
             }
         }
     }

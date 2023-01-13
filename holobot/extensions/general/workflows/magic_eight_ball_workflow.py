@@ -1,3 +1,4 @@
+import time
 from random import Random
 
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -41,7 +42,7 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
         question: str
     ) -> InteractionResponse:
         question = question.strip()
-        seed = hash(question.strip("?.!-+").lower())
+        seed = hash(question.strip("?.!-+").lower()) + int(time.time() / 60)
 
         return self._reply(
             content=self.__i18n_provider.get(

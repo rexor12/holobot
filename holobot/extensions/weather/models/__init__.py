@@ -1,2 +1,4 @@
+from .condition import Condition
 from .open_weather_options import OpenWeatherOptions
-from .weather_data import WeatherData
+from .weather import Weather
+from .wind import Wind

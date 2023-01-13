@@ -1,2 +1,2 @@
+from .iweather_client import IWeatherClient
 from .weather_client import WeatherClient
-from .weather_client_interface import WeatherClientInterface

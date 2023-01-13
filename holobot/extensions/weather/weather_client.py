@@ -1,4 +1,3 @@
-from json import dumps
 from typing import Any
 
 from holobot.sdk.configs import IOptions
@@ -9,12 +8,14 @@ from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from holobot.sdk.serialization.json_serializer import deserialize
+from .dtos.weather_data import WeatherData
 from .exceptions import InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
-from .models import OpenWeatherOptions, WeatherData
-from .weather_client_interface import WeatherClientInterface
+from .iweather_client import IWeatherClient
+from .models import Condition, OpenWeatherOptions, Weather, Wind
 
-@injectable(WeatherClientInterface)
-class WeatherClient(WeatherClientInterface):
+@injectable(IWeatherClient)
+class WeatherClient(IWeatherClient):
     def __init__(
         self,
         http_client_pool: IHttpClientPool,
@@ -29,7 +30,7 @@ class WeatherClient(WeatherClientInterface):
         # TODO Caching with configurable time based expiry.
         #self.__cache: ConcurrentCache[str, int | None] = ConcurrentCache()
 
-    async def get_weather_data(self, location: str) -> WeatherData:
+    async def get_weather_data(self, location: str) -> Weather:
         options = self.__options.value
         if not options.ApiKey:
             raise InvalidOperationError("OpenWeather isn't configured.")
@@ -59,11 +60,7 @@ class WeatherClient(WeatherClientInterface):
             self.__logger.error("An unexpected error has occurred during an OpenWeather request", error)
             raise
 
-        self.__assert_result_code(location, response)
-
-        weather_data = WeatherData.from_json(response)
-        self.__set_condition_image(weather_data)
-        return weather_data
+        return self.__dto_to_model(self.__deserialize_result(location, response))
 
     @staticmethod
     def __create_circuit_breaker(
@@ -86,7 +83,7 @@ class WeatherClient(WeatherClientInterface):
             return error.retry_after
         return circuit_breaker.recovery_timeout
 
-    def __assert_result_code(self, location: str, response: dict[str, Any]) -> None:
+    def __deserialize_result(self, location: str, response: dict[str, Any]) -> WeatherData:
         result_code = response.get("cod")
         if result_code is None:
             # self.__logger.trace(dumps(response))
@@ -104,13 +101,43 @@ class WeatherClient(WeatherClientInterface):
             )
             raise OpenWeatherError(result_code, location)
 
-    def __set_condition_image(self, weather_data: WeatherData) -> None:
+        weather_data = deserialize(WeatherData, response)
+        if not weather_data:
+            raise InvalidLocationError(location)
+
+        return weather_data
+
+    def __dto_to_model(self, dto: WeatherData) -> Weather:
         options = self.__options.value
-        if (options.ConditionImageBaseUrl is None
-            or weather_data.condition.icon is None):
-            return
-        weather_data.condition.condition_image_url = (
-            f"{options.ConditionImageBaseUrl}"
-            f"{weather_data.condition.icon}"
-            "@2x.png"
+
+        return Weather(
+            name=dto.name,
+            longitude=dto.coord.lon,
+            latitude=dto.coord.lat,
+            temperature=dto.main.temp,
+            temperature_feels_like=dto.main.feels_like or dto.main.temp,
+            humidity=dto.main.humidity,
+            cloudiness=dto.clouds.all,
+            condition=(
+                Condition(
+                    identifier=dto.weather[0].id,
+                    icon=dto.weather[0].icon,
+                    condition_image_url=(
+                        f"{options.ConditionImageBaseUrl}"
+                        f"{dto.weather[0].icon}"
+                        "@2x.png"
+                    )
+                    if options.ConditionImageBaseUrl and dto.weather[0].icon
+                    else None,
+                    description=dto.weather[0].description or dto.weather[0].main
+                )
+            ) if dto.weather else None,
+            wind=(
+                Wind(
+                    speed=dto.wind.speed,
+                    degrees=dto.wind.deg
+                )
+                if dto.wind
+                else None
+            )
         )

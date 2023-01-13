@@ -343,7 +343,8 @@
             "CircuitBreakerRecoveryTime": 300,
             "ApiGatewayBaseUrl": "https://api.openweathermap.org/data/2.5/weather",
             "ConditionImageBaseUrl": "https://openweathermap.org/img/wn/",
-            "IconUrl": "https://openweathermap.org/themes/openweathermap/assets/vendor/owm/img/icons/logo_60x60.png"
+            "IconUrl": "https://openweathermap.org/themes/openweathermap/assets/vendor/owm/img/icons/logo_60x60.png",
+            "MapUrl": "https://www.google.com/maps/place/@{latitude},{longitude},15z"
         }
     }
 }

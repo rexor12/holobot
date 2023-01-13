@@ -106,10 +106,21 @@ class MatchUsersWorkflow(WorkflowBase):
                 )
 
             statistics, next_refresh_at = self.__get_statistics(member_data1, member_data2)
+            love_type_description = (
+                self.__i18n_provider.get("extensions.general.match_users_workflow.self_love_type")
+                if member_data1.user_id == member_data2.user_id
+                else self.__i18n_provider.get_list_item(
+                    "extensions.general.match_users_workflow.love_types",
+                    statistics.love_type
+                )
+            )
             if member_data1.user_id == member_data2.user_id:
                 description = self.__i18n_provider.get(
                     "extensions.general.match_users_workflow.self_description",
-                    { "user_id": member_data1.user_id }
+                    {
+                        "user_id": member_data1.user_id,
+                        "love_type": love_type_description
+                    }
                 )
             else:
                 description = "".join((
@@ -122,7 +133,10 @@ class MatchUsersWorkflow(WorkflowBase):
                     ),
                     self.__i18n_provider.get_list_item(
                         "extensions.general.match_users_workflow.descriptions",
-                        statistics.love_type
+                        statistics.love_type,
+                        {
+                            "love_type": love_type_description
+                        }
                     )
                 ))
             return self._reply(
@@ -134,39 +148,23 @@ class MatchUsersWorkflow(WorkflowBase):
                     fields=[
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.chemistry"),
-                            self.__get_quality_value(statistics.chemistry),
-                            False
+                            self.__get_quality_value(statistics.chemistry)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.communication"),
-                            self.__get_quality_value(statistics.communication),
-                            False
+                            self.__get_quality_value(statistics.communication)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.trust"),
-                            self.__get_quality_value(statistics.trust),
-                            False
+                            self.__get_quality_value(statistics.trust)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.commitment"),
-                            self.__get_quality_value(statistics.commitment),
-                            False
+                            self.__get_quality_value(statistics.commitment)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.security"),
-                            self.__get_quality_value(statistics.security),
-                            False
-                        ),
-                        EmbedField(
-                            self.__i18n_provider.get("extensions.general.match_users_workflow.type"),
-                            self.__i18n_provider.get(
-                                "extensions.general.match_users_workflow.self_love_type"
-                            ) if member_data1.user_id == member_data2.user_id
-                            else self.__i18n_provider.get_list_item(
-                                "extensions.general.match_users_workflow.love_types",
-                                statistics.love_type
-                            ),
-                            False
+                            self.__get_quality_value(statistics.security)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.overall_score"),
@@ -179,8 +177,7 @@ class MatchUsersWorkflow(WorkflowBase):
                                         (statistics.love_type + 1) if statistics.is_max_score else statistics.love_type
                                     )
                                 }
-                            ),
-                            False
+                            )
                         )
                     ],
                     footer=EmbedFooter(
@@ -250,6 +247,13 @@ class MatchUsersWorkflow(WorkflowBase):
             else MatchUsersWorkflow.__generate_bar_values(rng, love_type)
         )
 
+        # Adjust the score and love type based on the generated average.
+        # This is because sometimes we might end up unlucky with the
+        # generated bar values due to the extended bounds for variance.
+        if not is_max_score:
+            score = int(sum(bar_values) * 0.1 / len(bar_values))
+            love_type = int(score / 2)
+
         statistics = (
             _Statistics(
                 bar_values[0],
@@ -267,7 +271,7 @@ class MatchUsersWorkflow(WorkflowBase):
         return statistics
 
     def __get_quality_value(self, percentage: int) -> str:
-        bar_count = int(percentage * 9 / 100) + 1
+        bar_count = int(percentage * 6 / 100) + 1
         if percentage <= 30:
             bar_emoji = self.__options.value.ProgressBarRedEmoji
         elif percentage <= 60:
@@ -275,7 +279,7 @@ class MatchUsersWorkflow(WorkflowBase):
         else:
             bar_emoji = self.__options.value.ProgressBarGreenEmoji
 
-        return "".join([bar_emoji * bar_count, f" {percentage}%"])
+        return "".join([bar_emoji * bar_count, f"\n{percentage}%"])
 
     async def __get_member_data(self, server_id: str, name_or_mention: str) -> MemberData:
         user_id = get_user_id(name_or_mention)

@@ -101,14 +101,14 @@
                 "self_love_type": "Philautia",
                 "description_base": "This is what I think about the relationship between <@{user_id1}> and <@{user_id2}>:\n\n",
                 "descriptions": [
-                    "This relationship is based on lust, so it won't work for anything serious.",
-                    "This is just the kind of love between siblings.",
-                    "While it may work, this is one really open relationship. Like some WiFi networks.",
-                    "It feels almost as if I were looking at two best friends.",
-                    "If you keep flirting just a little longer, this relationship may develop into something serious.",
-                    "This relationship has reached a new high. It's the embodiment of love."
+                    "_{love_type}_\nThis relationship is based on lust, so it won't work for anything serious.",
+                    "_{love_type}_\nThis is just the kind of love between siblings.",
+                    "_{love_type}_\nWhile it may work, this is one really open relationship. Like some WiFi networks.",
+                    "_{love_type}_\nIt feels almost as if I were looking at two best friends.",
+                    "_{love_type}_\nIf you keep flirting just a little longer, this relationship may develop into something serious.",
+                    "_{love_type}_\nThis relationship has reached a new high. It's the embodiment of love."
                 ],
-                "self_description": "Always love yourself, <@{user_id}>, you're a great addition to the world.",
+                "self_description": "_{love_type}_\nAlways love yourself, <@{user_id}>, you're a great addition to the world.",
                 "title": "Matchmaker's Insight",
                 "chemistry": "Chemistry",
                 "communication": "Communication",
@@ -116,7 +116,7 @@
                 "commitment": "Commitment",
                 "security": "Security",
                 "type": "Type of love",
-                "overall_score": "Overall score (1-10)",
+                "overall_score": "Overall score",
                 "overall_score_value": "{score}/10 {emoji}",
                 "overall_score_emojis": [
                     "💔", "👩‍❤️‍💋‍👨", "💓", "🤼", "❤️", "💙", "🤍"

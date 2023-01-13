@@ -96,7 +96,7 @@ class I18nProvider(II18nProvider, IStartable):
             if value is None or not isinstance(value, tuple) or len(value) <= item_index:
                 return key
 
-            return value[item_index].format(arguments)
+            return value[item_index].format(**arguments)
         except Exception as error:
             self.__logger.error(
                 "Failed to resolve list item-type I18N key",

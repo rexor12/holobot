@@ -21,7 +21,6 @@ from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.datetime_utils import utcnow
-from holobot.sdk.utils.iterable_utils import is_all
 
 class _Statistics(NamedTuple):
     chemistry: int
@@ -243,7 +242,7 @@ class MatchUsersWorkflow(WorkflowBase):
                 bar_values[4],
                 love_type,
                 score,
-                is_all(bar_values, lambda i: i == 100)
+                all(map(lambda i: i == 100, bar_values))
             ),
             next_refresh_at
         )

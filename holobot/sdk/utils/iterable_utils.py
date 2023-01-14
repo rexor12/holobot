@@ -23,13 +23,3 @@ def first_or_default(
         if predicate is None
         else next(filter(predicate, iterable), default_value)
     )
-
-def is_all(
-    iterable: Iterable[T],
-    predicate: Callable[[T], bool]
-) -> bool:
-    for item in iterable:
-        if not predicate(item):
-            return False
-
-    return True

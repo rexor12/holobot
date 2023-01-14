@@ -22,11 +22,6 @@ from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.datetime_utils import utcnow
 
-class _TypeConstraints(NamedTuple):
-    bar_min: int
-    bar_max: int
-    bar_split_at: int
-
 class _Statistics(NamedTuple):
     chemistry: int
     communication: int
@@ -38,14 +33,7 @@ class _Statistics(NamedTuple):
     is_max_score: bool
 
 _SELF_STATISTICS = _Statistics(100, 100, 100, 100, 100, 5, 10, False)
-_TYPE_CONSTRAINTS = {
-    0: _TypeConstraints(0, 25, 15),
-    1: _TypeConstraints(20, 45, 35),
-    2: _TypeConstraints(35, 60, 45),
-    3: _TypeConstraints(50, 75, 55),
-    4: _TypeConstraints(65, 80, 70),
-    5: _TypeConstraints(80, 100, 90)
-}
+_MAX_SCORE_BARS = (100, 100, 100, 100, 100)
 
 @injectable(IWorkflow)
 class MatchUsersWorkflow(WorkflowBase):
@@ -106,10 +94,21 @@ class MatchUsersWorkflow(WorkflowBase):
                 )
 
             statistics, next_refresh_at = self.__get_statistics(member_data1, member_data2)
+            love_type_description = (
+                self.__i18n_provider.get("extensions.general.match_users_workflow.self_love_type")
+                if member_data1.user_id == member_data2.user_id
+                else self.__i18n_provider.get_list_item(
+                    "extensions.general.match_users_workflow.love_types",
+                    statistics.love_type
+                )
+            )
             if member_data1.user_id == member_data2.user_id:
                 description = self.__i18n_provider.get(
                     "extensions.general.match_users_workflow.self_description",
-                    { "user_id": member_data1.user_id }
+                    {
+                        "user_id": member_data1.user_id,
+                        "love_type": love_type_description
+                    }
                 )
             else:
                 description = "".join((
@@ -122,7 +121,10 @@ class MatchUsersWorkflow(WorkflowBase):
                     ),
                     self.__i18n_provider.get_list_item(
                         "extensions.general.match_users_workflow.descriptions",
-                        statistics.love_type
+                        statistics.love_type,
+                        {
+                            "love_type": love_type_description
+                        }
                     )
                 ))
             return self._reply(
@@ -134,39 +136,23 @@ class MatchUsersWorkflow(WorkflowBase):
                     fields=[
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.chemistry"),
-                            self.__get_quality_value(statistics.chemistry),
-                            False
+                            self.__get_quality_value(statistics.chemistry)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.communication"),
-                            self.__get_quality_value(statistics.communication),
-                            False
+                            self.__get_quality_value(statistics.communication)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.trust"),
-                            self.__get_quality_value(statistics.trust),
-                            False
+                            self.__get_quality_value(statistics.trust)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.commitment"),
-                            self.__get_quality_value(statistics.commitment),
-                            False
+                            self.__get_quality_value(statistics.commitment)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.security"),
-                            self.__get_quality_value(statistics.security),
-                            False
-                        ),
-                        EmbedField(
-                            self.__i18n_provider.get("extensions.general.match_users_workflow.type"),
-                            self.__i18n_provider.get(
-                                "extensions.general.match_users_workflow.self_love_type"
-                            ) if member_data1.user_id == member_data2.user_id
-                            else self.__i18n_provider.get_list_item(
-                                "extensions.general.match_users_workflow.love_types",
-                                statistics.love_type
-                            ),
-                            False
+                            self.__get_quality_value(statistics.security)
                         ),
                         EmbedField(
                             self.__i18n_provider.get("extensions.general.match_users_workflow.overall_score"),
@@ -179,8 +165,7 @@ class MatchUsersWorkflow(WorkflowBase):
                                         (statistics.love_type + 1) if statistics.is_max_score else statistics.love_type
                                     )
                                 }
-                            ),
-                            False
+                            )
                         )
                     ],
                     footer=EmbedFooter(
@@ -205,20 +190,11 @@ class MatchUsersWorkflow(WorkflowBase):
             )
 
     @staticmethod
-    def __generate_bar_values(rng: Random, score: int) -> list[int]:
-        constraints = _TYPE_CONSTRAINTS[score]
-
-        # Not DRY to avoid unnecessary memory allocation (loops, concatenations).
-        values = [
-            rng.randint(constraints.bar_min, constraints.bar_split_at),
-            rng.randint(constraints.bar_min, constraints.bar_split_at),
-            rng.randint(constraints.bar_split_at, constraints.bar_max),
-            rng.randint(constraints.bar_split_at, constraints.bar_max),
-            rng.randint(constraints.bar_split_at, constraints.bar_max)
-        ]
-        rng.shuffle(values)
-
-        return values
+    def __generate_bar_value(rng: Random, score: int) -> int:
+        return rng.randint(
+            max(0, 10 * (score - 1) - 5),
+            min(100, 10 * score + int(score * 0.1) + 8)
+        )
 
     def __get_statistics(
         self,
@@ -243,12 +219,19 @@ class MatchUsersWorkflow(WorkflowBase):
 
         score = rng.randint(1, 10)
         love_type = int(score / 2)
-        is_max_score = rng.random() < 0.001 if score == 10 else False
-        bar_values = (
-            (100, 100, 100, 100, 100)
-            if is_max_score
-            else MatchUsersWorkflow.__generate_bar_values(rng, love_type)
-        )
+        is_max_score = rng.random() < 0.01 if score == 10 else False
+        if is_max_score:
+            bar_values = _MAX_SCORE_BARS
+        else:
+            bar_values = [
+                MatchUsersWorkflow.__generate_bar_value(rng, score)
+                for _ in range(5)
+            ]
+            # Adjust the score and love type based on the generated average.
+            # This is because sometimes we might end up unlucky with the
+            # generated bar values due to the extended bounds for variance.
+            score = round(sum(bar_values) * 0.1 / len(bar_values))
+            love_type = int(score / 2)
 
         statistics = (
             _Statistics(
@@ -259,7 +242,7 @@ class MatchUsersWorkflow(WorkflowBase):
                 bar_values[4],
                 love_type,
                 score,
-                is_max_score
+                all(map(lambda i: i == 100, bar_values))
             ),
             next_refresh_at
         )
@@ -267,7 +250,7 @@ class MatchUsersWorkflow(WorkflowBase):
         return statistics
 
     def __get_quality_value(self, percentage: int) -> str:
-        bar_count = int(percentage * 9 / 100) + 1
+        bar_count = int(percentage * 6 / 100) + 1
         if percentage <= 30:
             bar_emoji = self.__options.value.ProgressBarRedEmoji
         elif percentage <= 60:
@@ -275,7 +258,7 @@ class MatchUsersWorkflow(WorkflowBase):
         else:
             bar_emoji = self.__options.value.ProgressBarGreenEmoji
 
-        return "".join([bar_emoji * bar_count, f" {percentage}%"])
+        return "".join([bar_emoji * bar_count, f"\n{percentage}%"])
 
     async def __get_member_data(self, server_id: str, name_or_mention: str) -> MemberData:
         user_id = get_user_id(name_or_mention)

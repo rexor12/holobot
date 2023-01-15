@@ -86,9 +86,7 @@ class EpicGamesScraper(IScraper):
                 self.__logger.debug("Ignored item, because it has no active offer", title=item.title)
                 continue
 
-            product_slug = first_or_default(item.catalogNs.mappings, lambda i: i.pageType == "productHome")
-            page_slug = product_slug.pageSlug if product_slug else item.productSlug
-            if not page_slug:
+            if not (page_slug := EpicGamesScraper.__get_page_slug(item)):
                 self.__logger.debug("Ignored item, because it has no product slug", title=item.title)
                 continue
 
@@ -163,3 +161,22 @@ class EpicGamesScraper(IScraper):
             if image := first_or_default(offer.keyImages, lambda i, k=image_key: i.type == k, None):
                 return image.url
         return None
+
+    @staticmethod
+    def __get_page_slug(offer: Offer) -> str | None:
+        if offer.productSlug:
+            return offer.productSlug
+
+        custom_attribute = first_or_default(
+            offer.customAttributes,
+            lambda i: i.key == "com.epicgames.app.productSlug"
+        )
+        if custom_attribute and custom_attribute.value:
+            return custom_attribute.value
+
+        product_home = first_or_default(
+            offer.catalogNs.mappings,
+            lambda i: i.pageType == "productHome"
+        )
+
+        return product_home.pageSlug if product_home else None

@@ -7,6 +7,7 @@
     "channel_not_found_error": "I'm sorry, but I couldn't find the requested channel. Please, double check for any typos. (｡•́︿•̀｡)",
     "user_not_found_error": "I'm sorry, but I couldn't find the requested user. Please, double check for any typos. (｡•́︿•̀｡)",
     "missing_dm_permission_error": "I'm sorry, but I don't have the permission to DM users. Please, kindly ask your server administrator to grant me the permission. Thank you! („• ᴗ •„)",
+    "invalid_argument_error": "I'm sorry, but you invoked the command with an invalid argument. Please, double check for any typos and if you believe this is an issue with me, please report it (see `/info`). Thank you! („• ᴗ •„)",
 
     "interactions": {
         "halted_interaction_error": "I'm sorry, but you're not allowed to use this command. (｡•́︿•̀｡)",
@@ -218,10 +219,11 @@
             },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",
-                "embed_title": "{user}'s avatar",
-                "no_global_avatar_error": "I'm sorry, but <@{user_id}> doesn't have a global avatar. (｡•́︿•̀｡)",
-                "no_server_avatar_error": "I'm sorry, but <@{user_id}> doesn't have a server-specific avatar. (｡•́︿•̀｡)",
-                "no_avatar_error": "I'm sorry, but <@{user_id}> doesn't have an avatar. (｡•́︿•̀｡)"
+                "embed_title_global": "{user}'s global avatar",
+                "embed_title_server": "{user}'s server specific avatar",
+                "no_avatar_error": "I'm sorry, but <@{user_id}> doesn't have an avatar. (｡•́︿•̀｡)",
+                "global_button": "Global",
+                "server_button": "Server"
             },
             "view_user_banner_workflow": {
                 "embed_title": "{user}'s banner",

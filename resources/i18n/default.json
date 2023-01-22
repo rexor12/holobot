@@ -206,12 +206,11 @@
             },
             "view_bot_info_workflow": {
                 "embed_title": "Holo's information",
-                "embed_description": "Some information about the bot.",
                 "embed_footer": "Brought to you by rexor12",
-                "general_field": "General",
                 "general_value": "Version: _{version}_\nLatency: _{latency:,.2f} ms_\nServers: _{servers}_\nTime: _{server_time:%I:%M:%S %p, %m/%d/%Y %Z}_",
                 "project_home": "Project home",
-                "bug_reports": "Bug reports"
+                "report_bug": "Report a bug",
+                "request_feature": "Request a feature"
             },
             "view_emoji_workflow": {
                 "emoji_not_found_error": "I'm sorry, but I couldn't find the emoji you requested. Please, double check for any typos. (｡•́︿•̀｡)",

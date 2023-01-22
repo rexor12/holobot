@@ -1,0 +1,59 @@
+name: Bug report
+description: Found a bug? Let me know so I can fix it!
+labels: ["bug/bugfix"]
+
+body:
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: Please, describe what steps you had taken that led to the bug becoming apparent.
+      value: |
+        1.
+        2.
+        3.
+        4.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-result
+    attributes:
+      label: Expected result
+      description: What should have happened if the bug wasn't there? For example, "I expected an embed to be displayed with the user XYZ's server specific avatar."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: Actual result
+      description: What happened exactly? For example, "The error message 'XYZ' was displayed."
+    validations:
+      required: true
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System information
+      description: On which platforms were you able to reproduce the issue?
+      options:
+        - label: Reproduced on desktop (Windows, MacOS, Linux, ...)
+        - label: Reproduced on mobile (Android, iOS, ...)
+
+  - type: textarea
+    id: further-info
+    attributes:
+      label: Further information
+      description: Add any extra information or images here that you believe would help the investigation.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Make sure you read and tick all of the check boxes below.
+      options:
+        - label: I have made sure to remove ANY AND ALL sensitive information (tokens, passwords, credentials, personal details, etc.).
+          required: true
+        - label: I have searched the issue tracker and have made sure it is not a duplicate. If it is a follow up of another issue, I have specified it.
+          required: true

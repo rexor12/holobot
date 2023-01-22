@@ -1,0 +1,31 @@
+name: Feature request
+description: Got a cool idea you would like implemented? Share it with me!
+labels: ["feature request"]
+
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe what this feature would be about and how it would work.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Why is this needed?
+      description: What are the problems that this feature would solve?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Make sure you read and tick all of the check boxes below.
+      options:
+        - label: I have made sure not to add ANY sensitive information (tokens, passwords, credentials, personal details, etc.).
+          required: true
+        - label: I have searched the issue tracker and have made sure it is not a duplicate. If it is a follow up of another issue, I have specified it.
+          required: true

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Coroutine, Generator
 from types import coroutine
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 import hikari
 
@@ -14,6 +14,7 @@ from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.sdk.diagnostics import IExecutionContext, IExecutionContextFactory
+from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.logging import ILoggerFactory
 from .iinteraction_processor import IInteractionProcessor, TInteraction
@@ -91,6 +92,40 @@ class InteractionProcessorBase(
             DeferType.NONE,
             True
         )
+
+    @staticmethod
+    def _resolve_argument(
+        value: hikari.Snowflake | str | int | bool | None,
+        option_type: hikari.OptionType | int
+    ) -> str | int | bool | None:
+        if value is None:
+            return value
+
+        if isinstance(option_type, int):
+            option_type = hikari.OptionType(option_type)
+
+        match option_type, value:
+            case (hikari.OptionType.STRING, str()):
+                return value
+            case (hikari.OptionType.BOOLEAN, bool()):
+                return value
+            case (hikari.OptionType.INTEGER, int()):
+                return value
+            case (hikari.OptionType.FLOAT, float()):
+                return value
+            case (hikari.OptionType.USER, int()):
+                return value
+            case (hikari.OptionType.USER, hikari.Snowflake()):
+                # Casting is needed because Pylance doesn't recognize the type.
+                return int(cast(hikari.Snowflake, value))
+            case (_, _):
+                raise ArgumentError(
+                    "value",
+                    (
+                        f"Cannot resolve value of type '{type(value).__name__}'"
+                        f" of option type '{option_type}'."
+                    )
+                )
 
     async def __process_interaction(
         self,

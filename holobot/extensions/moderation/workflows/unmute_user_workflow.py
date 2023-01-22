@@ -4,9 +4,8 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
 from holobot.discord.sdk.servers.managers import IUserManager
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.enums import MenuType
+from holobot.discord.sdk.workflows.interactables.enums import MenuType, OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerUserInteractionContext
@@ -36,21 +35,16 @@ class UnmuteUserWorkflow(WorkflowBase):
         name="unmute",
         group_name="moderation",
         options=(
-            Option("user", "The mention of the user to mute."),
+            Option("user", "The user to mute.", type=OptionType.USER),
         ),
         required_moderator_permissions=ModeratorPermission.MUTE_USERS
     )
     async def unmute_user_via_command(
         self,
         context: ServerChatInteractionContext,
-        user: str
+        user: int
     ) -> InteractionResponse:
-        user = user.strip()
-        if (user_id := get_user_id(user)) is None:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
-            )
-
+        user_id = str(user)
         try:
             await self.__user_manager.unsilence_user(context.server_id, user_id)
         except UserNotFoundError:

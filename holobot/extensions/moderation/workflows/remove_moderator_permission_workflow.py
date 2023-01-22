@@ -1,6 +1,5 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
@@ -29,7 +28,7 @@ class RemoveModeratorPermissionWorkflow(WorkflowBase):
         group_name="moderation",
         subgroup_name="permissions",
         options=(
-            Option("user", "The mention of the user to modify."),
+            Option("user", "The user to modify.", OptionType.USER),
             Option("permission", "The permission to remove.", OptionType.INTEGER, choices=(
                 Choice("Warn users", ModeratorPermission.WARN_USERS),
                 Choice("Mute users", ModeratorPermission.MUTE_USERS),
@@ -42,15 +41,10 @@ class RemoveModeratorPermissionWorkflow(WorkflowBase):
     async def remove_moderator_permission(
         self,
         context: ServerChatInteractionContext,
-        user: str,
+        user: int,
         permission: int
     ) -> InteractionResponse:
-        user = user.strip()
-        if (user_id := get_user_id(user)) is None:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
-            )
-
+        user_id = str(user)
         typed_permission = ModeratorPermission(permission)
         await self.__permission_manager.remove_permissions(context.server_id, user_id, typed_permission)
 

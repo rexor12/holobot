@@ -4,9 +4,9 @@ from holobot.discord.sdk.exceptions import (
 )
 from holobot.discord.sdk.models import Embed
 from holobot.discord.sdk.servers import IMemberDataProvider
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
@@ -31,7 +31,8 @@ class ViewUserBannerWorkflow(WorkflowBase):
         options=(
             Option(
                 "user",
-                "The name or mention of the user. By default, it's yourself.",
+                "The user to view. By default, it's yourself.",
+                type=OptionType.USER,
                 is_mandatory=False
             ),
         )
@@ -39,7 +40,7 @@ class ViewUserBannerWorkflow(WorkflowBase):
     async def view_user_banner(
         self,
         context: ServerChatInteractionContext,
-        user: str | None = None
+        user: int | None = None
     ) -> InteractionResponse:
         try:
             if user is None:
@@ -47,15 +48,9 @@ class ViewUserBannerWorkflow(WorkflowBase):
                     context.author_id,
                     False
                 )
-            elif (user_id := get_user_id(user.strip())) is not None:
-                user_data = await self.__user_data_provider.get_user_data_by_id(
-                    user_id,
-                    False
-                )
             else:
-                user_data = await self.__user_data_provider.get_user_data_by_name(
-                    context.server_id,
-                    user.strip(),
+                user_data = await self.__user_data_provider.get_user_data_by_id(
+                    str(user),
                     False
                 )
 

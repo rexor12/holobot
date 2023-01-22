@@ -3,7 +3,6 @@ from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, ServerNotFoundError, UserNotFoundError
 )
 from holobot.discord.sdk.servers import IMemberDataProvider
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.utils.mention_utils import get_channel_id_or_default
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -32,7 +31,7 @@ class SummonUserWorkflow(WorkflowBase):
         description="Requests a user's presence via a direct message.",
         name="summon",
         options=(
-            Option("name", "The name or mention of the user.", OptionType.STRING, True),
+            Option("user", "The user to summon.", OptionType.USER, True),
             Option("message", "An optional message the bot forwards to the user.", OptionType.STRING, False),
             Option("channel", "An optional mention of the channel where the user should be summoned.", OptionType.STRING, False)
         ),
@@ -41,24 +40,20 @@ class SummonUserWorkflow(WorkflowBase):
     async def summon_user(
         self,
         context: ServerChatInteractionContext,
-        name: str,
+        user: int,
         message: str | None = None,
         channel: str | None = None
     ) -> InteractionResponse:
-        if not name:
+        if not user:
             return self._reply(
                 content=self.__i18n_provider.get(
-                    "missing_required_argument_error", { "argname": "name" }
+                    "missing_required_argument_error", { "argname": "user" }
                 )
             )
 
         try:
-            name = name.strip()
-            user_id = get_user_id(name)
             member = (
-                await self.__member_data_provider.get_basic_data_by_id(context.server_id, user_id)
-                if user_id
-                else await self.__member_data_provider.get_basic_data_by_name(context.server_id, name)
+                await self.__member_data_provider.get_basic_data_by_id(context.server_id, str(user))
             )
             if not member:
                 return self._reply(

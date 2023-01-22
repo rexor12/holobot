@@ -3,12 +3,12 @@ from typing import Any
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
 )
 from holobot.discord.sdk.workflows.interactables.components.models import PagerState
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
@@ -39,19 +39,16 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         group_name="moderation",
         subgroup_name="warns",
         options=(
-            Option("user", "The mention of the user to inspect."),
+            Option("user", "The user to inspect.", type=OptionType.USER),
         ),
         required_moderator_permissions=ModeratorPermission.WARN_USERS
     )
     async def view_warn_strikes(
         self,
         context: ServerChatInteractionContext,
-        user: str
+        user: int
     ) -> InteractionResponse:
-        user = user.strip()
-        if (user_id := get_user_id(user)) is None:
-            return self._reply(content="You must mention a user correctly.")
-
+        user_id = str(user)
         if not await self.__member_data_provider.is_member(context.server_id, user_id):
             return self._reply(content="The user you mentioned cannot be found.")
 

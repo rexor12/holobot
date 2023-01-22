@@ -3,9 +3,9 @@ from holobot.discord.sdk.exceptions import (
 )
 from holobot.discord.sdk.models import Embed, EmbedFooter
 from holobot.discord.sdk.servers import IMemberDataProvider
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
 )
@@ -43,7 +43,7 @@ class ReactWorkflow(WorkflowBase):
                 Choice(name=category, value=category)
                 for category in sorted(_CATEGORIES)
             )),
-            Option(name="target", description="The name or mention of the target user.", is_mandatory=False)
+            Option(name="target", description="The target user.", type=OptionType.USER, is_mandatory=False)
         ),
         cooldown=Cooldown(duration=10)
     )
@@ -51,7 +51,7 @@ class ReactWorkflow(WorkflowBase):
         self,
         context: ServerChatInteractionContext,
         action: str,
-        target: str | None = None
+        target: int | None = None
     ) -> InteractionResponse:
         action = action.strip().lower()
         if action not in _CATEGORIES:
@@ -71,12 +71,12 @@ class ReactWorkflow(WorkflowBase):
                 "extensions.general.react_workflow.no_image_error"
             ))
 
-        target_user_id = target and get_user_id(target)
-        if target and not target_user_id:
+        target_user_id = None
+        if target:
             try:
-                user_data = await self.__member_data_provider.get_basic_data_by_name(
+                user_data = await self.__member_data_provider.get_basic_data_by_id(
                     context.server_id,
-                    target
+                    str(target)
                 )
                 target_user_id = user_data.user_id
             except UserNotFoundError:

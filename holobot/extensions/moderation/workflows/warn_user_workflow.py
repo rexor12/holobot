@@ -4,9 +4,8 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError
 from holobot.discord.sdk.servers import IMemberDataProvider
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.enums import MenuType
+from holobot.discord.sdk.workflows.interactables.enums import MenuType, OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerUserInteractionContext
@@ -42,7 +41,7 @@ class WarnUserWorkflow(WorkflowBase):
         name="warn",
         group_name="moderation",
         options=(
-            Option("user", "The mention of the user to warn."),
+            Option("user", "The user to warn.", type=OptionType.USER),
             Option("reason", "The reason of the punishment.")
         ),
         required_moderator_permissions=ModeratorPermission.WARN_USERS
@@ -50,16 +49,11 @@ class WarnUserWorkflow(WorkflowBase):
     async def warn_user_via_command(
         self,
         context: ServerChatInteractionContext,
-        user: str,
+        user: int,
         reason: str
     ) -> InteractionResponse:
-        user = user.strip()
+        user_id = str(user)
         reason = reason.strip()
-        if (user_id := get_user_id(user)) is None:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get("user_not_found_error"))
-            )
-
         reason_length_range = self.__config_provider.get_reason_length_range()
         if len(reason) not in reason_length_range:
             return InteractionResponse(

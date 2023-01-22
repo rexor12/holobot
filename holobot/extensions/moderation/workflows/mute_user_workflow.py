@@ -5,9 +5,8 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
 from holobot.discord.sdk.servers.managers import SILENCE_DURATION_MAX, IUserManager
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.enums import MenuType
+from holobot.discord.sdk.workflows.interactables.enums import MenuType, OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import (
     ServerChatInteractionContext, ServerUserInteractionContext
@@ -46,7 +45,7 @@ class MuteUserWorkflow(WorkflowBase):
         name="mute",
         group_name="moderation",
         options=(
-            Option("user", "The mention of the user to mute."),
+            Option("user", "The user to mute.", OptionType.USER),
             Option("reason", "The reason of the punishment."),
             Option("duration", "The duration after which to lift the mute. Eg. 1h or 30m.", is_mandatory=False)
         ),
@@ -55,11 +54,11 @@ class MuteUserWorkflow(WorkflowBase):
     async def mute_user_via_command(
         self,
         context: ServerChatInteractionContext,
-        user: str,
+        user: int,
         reason: str,
         duration: str | None = None
     ) -> InteractionResponse:
-        user = user.strip()
+        user_id = str(user)
         reason = reason.strip()
         try:
             mute_duration = parse_interval(duration.strip()) if duration else None
@@ -75,8 +74,6 @@ class MuteUserWorkflow(WorkflowBase):
                     { "min": textify_timedelta(_MIN_MUTE_DURATION), "max": SILENCE_DURATION_MAX }
                 )
             )
-        if (user_id := get_user_id(user)) is None:
-            return self._reply(content=self.__i18n_provider.get("user_not_found_error"))
 
         try:
             await self.__user_manager.silence_user(context.server_id, user_id, mute_duration)

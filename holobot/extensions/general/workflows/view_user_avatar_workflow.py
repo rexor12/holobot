@@ -30,6 +30,7 @@ class _AvatarKind(IntEnum):
     SERVER_SPECIFIC = 1
 
 _AVATAR_KIND_PRIORITY = [_AvatarKind.SERVER_SPECIFIC, _AvatarKind.GLOBAL]
+_UID_PARAMETER_NAME = "uid"
 
 @dataclass
 class _AvatarInfo:
@@ -109,7 +110,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
 
         content, components = await self.__get_response_view(
             context,
-            state.custom_data.get("uid", context.author_id),
+            state.custom_data.get(_UID_PARAMETER_NAME, context.author_id),
             True,
             _AvatarKind.GLOBAL
         )
@@ -137,7 +138,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
 
         content, components = await self.__get_response_view(
             context,
-            state.custom_data.get("uid", context.author_id),
+            state.custom_data.get(_UID_PARAMETER_NAME, context.author_id),
             True,
             _AvatarKind.SERVER_SPECIFIC
         )
@@ -260,7 +261,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
         layout = None
         if global_button_enabled or server_button_enabled:
             custom_data: dict[str, str] = {
-                "uid": member_data.user_id
+                _UID_PARAMETER_NAME: member_data.user_id
             }
             buttons: list[ComponentBase] = [
                 Button(

@@ -57,7 +57,10 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
                     autocomplete_option = AutocompleteOption(
                         name=option.name,
                         is_focused=option.is_focused,
-                        value=option.value
+                        value=InteractionProcessorBase._resolve_argument(
+                            option.value,
+                            option.type
+                        )
                     )
                     if option.is_focused:
                         target_option = autocomplete_option

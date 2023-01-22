@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from hikari import CommandInteraction, OptionType
+import hikari
 
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.events import CommandProcessedEvent
@@ -19,8 +19,8 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
-@injectable(IInteractionProcessor[CommandInteraction])
-class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
+@injectable(IInteractionProcessor[hikari.CommandInteraction])
+class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Command]):
     def __init__(
         self,
         action_processor: IActionProcessor,
@@ -37,26 +37,31 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
 
     def _get_interactable_descriptor(
         self,
-        interaction: CommandInteraction
+        interaction: hikari.CommandInteraction
     ) -> InteractionDescriptor[Command]:
         group_name = None
         subgroup_name = None
         command_name = interaction.command_name
         arguments = {}
-        options = list(interaction.options) if interaction.options else []
+        options: list[hikari.CommandInteractionOption] = (
+            list(interaction.options) if interaction.options else []
+        )
         while options:
             option = options.pop(0)
             match option.type:
-                case OptionType.SUB_COMMAND_GROUP:
+                case hikari.OptionType.SUB_COMMAND_GROUP:
                     group_name = interaction.command_name
                     subgroup_name = option.name
                     options = list(option.options) if option.options else []
-                case OptionType.SUB_COMMAND:
+                case hikari.OptionType.SUB_COMMAND:
                     group_name = group_name or interaction.command_name
                     command_name = option.name
                     options = list(option.options) if option.options else []
                 case _:
-                    arguments[option.name] = option.value
+                    arguments[option.name] = InteractionProcessorBase._resolve_argument(
+                        option.value,
+                        option.type
+                    )
 
         invocation_target = self.__workflow_registry.get_command(
             group_name,
@@ -74,7 +79,7 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
 
     def _get_interaction_context(
         self,
-        interaction: CommandInteraction
+        interaction: hikari.CommandInteraction
     ) -> InteractionContext:
         # TODO Support non-server specific commands.
         if not interaction.guild_id:
@@ -92,7 +97,7 @@ class CommandProcessor(InteractionProcessorBase[CommandInteraction, Command]):
 
     async def _on_interaction_processed(
         self,
-        interaction: CommandInteraction,
+        interaction: hikari.CommandInteraction,
         interactable: Command,
         response: InteractionResponse
     ) -> None:

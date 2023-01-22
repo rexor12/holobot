@@ -6,13 +6,13 @@ from holobot.discord.sdk.exceptions import ServerNotFoundError, UserNotFoundErro
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.moderation.enums import ModeratorPermission
@@ -46,17 +46,17 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
         subgroup_name="permissions",
         description="Displays a specific user's moderator permissions or a list of moderators.",
         options=(
-            Option("user", "The name or mention of the user to display.", is_mandatory=False),
+            Option("user", "The user to view.", type=OptionType.USER, is_mandatory=False),
         ),
         defer_type=DeferType.DEFER_MESSAGE_CREATION
     )
     async def view_permissions(
         self,
         context: ServerChatInteractionContext,
-        user: str | None = None
+        user: int | None = None
     ) -> InteractionResponse:
         return (
-            await self.__view_user_permissions(context, user)
+            await self.__view_user_permissions(context, str(user))
             if user else await self.__view_moderators(context)
         )
 
@@ -124,9 +124,9 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
     async def __view_user_permissions(
         self,
         context: ServerChatInteractionContext,
-        user_name_or_mention: str
+        user_id: str
     ) -> InteractionResponse:
-        user = await self.__try_get_moderator_user(context.server_id, user_name_or_mention)
+        user = await self.__try_get_moderator_user(context.server_id, user_id)
         return (
             self._reply(
                 embed=self.__create_embed(
@@ -288,17 +288,9 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
     async def __try_get_moderator_user(
         self,
         server_id: str,
-        user_name_or_mention: str
+        user_id: str
     ) -> User | None:
         try:
-            user_id = get_user_id(user_name_or_mention)
-            if not user_id:
-                user_data = await self.__member_data_provider.get_basic_data_by_name(
-                    server_id,
-                    user_name_or_mention
-                )
-                user_id = user_data.user_id
-
             return await self.__user_repository.get_by_server(server_id, user_id)
         except (ServerNotFoundError, UserNotFoundError):
             return None

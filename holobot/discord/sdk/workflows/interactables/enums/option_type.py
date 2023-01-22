@@ -8,3 +8,6 @@ class OptionType(IntEnum):
     BOOLEAN = 1
     INTEGER = 2
     FLOAT = 3
+
+    USER = 4
+    """Resolves a user mention, returning the identifier of the user (an integer)."""

@@ -10,7 +10,6 @@ from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.models.embed_footer import EmbedFooter
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
@@ -52,16 +51,16 @@ class MatchUsersWorkflow(WorkflowBase):
         description="Shows how good a match two users are.",
         name="match",
         options=(
-            Option("user", "The name or mention of the user.", OptionType.STRING, True),
-            Option("user2", "The name or mention of the second user.", OptionType.STRING, False)
+            Option("user", "The user to match.", OptionType.USER, True),
+            Option("user2", "The second user to match. By default, it's yourself.", OptionType.USER, False)
         ),
         cooldown=Cooldown(duration=10)
     )
     async def match_users(
         self,
         context: InteractionContext,
-        user: str,
-        user2: str | None = None
+        user: int,
+        user2: int | None = None
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(
@@ -77,16 +76,16 @@ class MatchUsersWorkflow(WorkflowBase):
 
         try:
             member_data1 = await (
-                self.__get_member_data(context.server_id, user.strip())
+                self.__member_data_provider.get_basic_data_by_id(context.server_id, str(user))
                 if user2
                 else self.__member_data_provider.get_basic_data_by_id(
                     context.server_id,
                     context.author_id
                 )
             )
-            member_data2 = await self.__get_member_data(
+            member_data2 = await self.__member_data_provider.get_basic_data_by_id(
                 context.server_id,
-                user2.strip() if user2 else user.strip()
+                str(user2) if user2 else str(user)
             )
             if not member_data1 or not member_data2:
                 return self._reply(
@@ -259,12 +258,3 @@ class MatchUsersWorkflow(WorkflowBase):
             bar_emoji = self.__options.value.ProgressBarGreenEmoji
 
         return "".join([bar_emoji * bar_count, f"\n{percentage}%"])
-
-    async def __get_member_data(self, server_id: str, name_or_mention: str) -> MemberData:
-        user_id = get_user_id(name_or_mention)
-        member_data = await (
-            self.__member_data_provider.get_basic_data_by_id(server_id, user_id)
-            if user_id
-            else self.__member_data_provider.get_basic_data_by_name(server_id, name_or_mention)
-        )
-        return member_data

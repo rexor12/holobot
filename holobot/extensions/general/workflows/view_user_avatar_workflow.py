@@ -9,7 +9,6 @@ from holobot.discord.sdk.exceptions import (
 from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
-from holobot.discord.sdk.utils import get_user_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComponentBase, StackLayout
@@ -17,6 +16,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import ButtonState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.models import AvatarOptions
@@ -59,7 +59,8 @@ class ViewUserAvatarWorkflow(WorkflowBase):
         options=(
             Option(
                 "user",
-                "The name or mention of the user. By default, it's yourself.",
+                "The user to view. By default, it's yourself.",
+                type=OptionType.USER,
                 is_mandatory=False
             ),
         )
@@ -67,7 +68,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
     async def view_user_avatar(
         self,
         context: InteractionContext,
-        user: str | None = None,
+        user: int | None = None,
         kind: int | None = None
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
@@ -85,7 +86,11 @@ class ViewUserAvatarWorkflow(WorkflowBase):
             else:
                 avatar_kind = _AvatarKind.SERVER_SPECIFIC
 
-        content, components = await self.__get_response_view(context, user, False, avatar_kind)
+        content, components = await self.__get_response_view(
+            context,
+            str(user) if user else None,
+            avatar_kind
+        )
 
         return self._reply(
             content=content if isinstance(content, str) else None,
@@ -111,7 +116,6 @@ class ViewUserAvatarWorkflow(WorkflowBase):
         content, components = await self.__get_response_view(
             context,
             state.custom_data.get(_UID_PARAMETER_NAME, context.author_id),
-            True,
             _AvatarKind.GLOBAL
         )
 
@@ -139,7 +143,6 @@ class ViewUserAvatarWorkflow(WorkflowBase):
         content, components = await self.__get_response_view(
             context,
             state.custom_data.get(_UID_PARAMETER_NAME, context.author_id),
-            True,
             _AvatarKind.SERVER_SPECIFIC
         )
 
@@ -184,42 +187,28 @@ class ViewUserAvatarWorkflow(WorkflowBase):
     async def __get_member(
         self,
         context: ServerChatInteractionContext,
-        user_name_or_mention_or_id: str | None,
-        is_user_id: bool
+        user_id: str | None
     ) -> MemberData:
-        if not user_name_or_mention_or_id:
+        if not user_id:
             return await self.__member_data_provider.get_basic_data_by_id(
                 context.server_id,
                 context.author_id
             )
 
-        if is_user_id:
-            return await self.__member_data_provider.get_basic_data_by_id(
-                context.server_id,
-                user_name_or_mention_or_id
-            )
-
-        if (user_id := get_user_id(user_name_or_mention_or_id)) is not None:
-            return await self.__member_data_provider.get_basic_data_by_id(
-                context.server_id,
-                user_id
-            )
-
-        return await self.__member_data_provider.get_basic_data_by_name(
+        return await self.__member_data_provider.get_basic_data_by_id(
             context.server_id,
-            user_name_or_mention_or_id.strip()
+            user_id
         )
 
     async def __get_response_view(
         self,
         context: ServerChatInteractionContext,
-        user_name_or_mention: str | None,
-        is_user_id: bool,
+        user_id: str | None,
         avatar_kind: _AvatarKind
     ) -> tuple[Embed | str, ComponentBase | None]:
 
         try:
-            member_data = await self.__get_member(context, user_name_or_mention, is_user_id)
+            member_data = await self.__get_member(context, user_id)
         except UserNotFoundError:
             return (self.__i18n_provider.get("user_not_found_error"), None)
         except ServerNotFoundError:

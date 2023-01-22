@@ -32,13 +32,13 @@ body:
     validations:
       required: true
 
-  - type: textarea
+  - type: checkboxes
     id: system-info
     attributes:
       label: System information
       description: On which platforms were you able to reproduce the issue?
       options:
-        - label: Reproduced on desktop (Windows, MacOS, Linux, ...)
+        - label: Reproduced on desktop (Windows, macOS, Linux, ...)
         - label: Reproduced on mobile (Android, iOS, ...)
 
   - type: textarea

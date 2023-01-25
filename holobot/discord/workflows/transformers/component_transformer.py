@@ -171,7 +171,7 @@ class ComponentTransformer(IComponentTransformer):
             raise ValueError("Invalid component state. Required 'owner_id' is missing for the button.")
 
         custom_data = {}
-        for mapping in islice(parts, 2):
+        for mapping in islice(parts, 1, None):
             mapping_parts = mapping.split("=", maxsplit=1)
             if len(mapping_parts) != 2:
                 continue

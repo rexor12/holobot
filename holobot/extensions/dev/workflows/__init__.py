@@ -1,2 +1,3 @@
+from .set_log_level_workflow import SetLogLevelWorkflow
 from .set_operating_mode_workflow import SetOperatingModeWorkflow
 from .show_available_servers_workflow import ShowAvailableServersWorkflow

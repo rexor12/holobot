@@ -5,14 +5,23 @@ import structlog
 
 from holobot.sdk.diagnostics import ExecutionContextData
 from holobot.sdk.logging import ILogger
+from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.utils import format_exception
 
 class DefaultLogger(ILogger):
     """Default implementation of a logger."""
 
-    def __init__(self, name: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        get_min_log_level: Callable[[], LogLevel]
+    ) -> None:
         super().__init__()
         self.__logger = structlog.get_logger(logger_name=name)
+        self.__get_min_log_level = get_min_log_level
+
+    def is_log_level_enabled(self, log_level: LogLevel) -> bool:
+        return self.__get_min_log_level() <= log_level
 
     def trace(
         self,

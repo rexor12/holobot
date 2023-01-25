@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Any, Protocol
 
 from holobot.sdk.diagnostics import ExecutionContextData
+from .enums import LogLevel
 
 class ILogger(Protocol):
     """Interface for a service used for writing logs.
@@ -9,6 +10,16 @@ class ILogger(Protocol):
     Where the logs appear depend on the implementation
     of the interface (such as the console or a file).
     """
+
+    def is_log_level_enabled(self, log_level: LogLevel) -> bool:
+        """Determines if the specified log level is currently enabled.
+
+        :param log_level: The log level to test.
+        :type log_level: LogLevel
+        :return: True, if the specified log level is currently enabled.
+        :rtype: bool
+        """
+        ...
 
     def trace(
         self,

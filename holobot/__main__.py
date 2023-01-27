@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import Any
 
 import structlog
@@ -10,27 +11,19 @@ from kanata.models import InjectableScopeType
 from holobot.framework import Kernel
 from holobot.framework.caching import ObjectCache
 from holobot.framework.configs import Configurator, OptionsProvider
+from holobot.framework.logging import LoggerManager, LoggerWrapper
 from holobot.framework.logging.handlers import ForwardEntryHandler
 from holobot.framework.logging.processors import ignore_loggers_by_name
 from holobot.framework.system import Environment
 from holobot.sdk.caching import ICache, IObjectCache
 from holobot.sdk.configs import IConfigurator, IOptions
 from holobot.sdk.lifecycle import IStartable
+from holobot.sdk.logging import ILoggerManager
 from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.system import IEnvironment
 
 if __name__ != "__main__":
-    exit(0)
-
-LOG_LEVEL_MAP = {
-    LogLevel.NONE: logging.NOTSET,
-    LogLevel.TRACE: logging.DEBUG,
-    LogLevel.DEBUG: logging.DEBUG,
-    LogLevel.INFORMATION: logging.INFO,
-    LogLevel.WARNING: logging.WARN,
-    LogLevel.ERROR: logging.ERROR,
-    LogLevel.CRITICAL: logging.CRITICAL
-}
+    sys.exit(0)
 
 environment = Environment()
 configurator = Configurator(environment)
@@ -50,7 +43,7 @@ structlog.configure(
     ],
     # TODO Replace with an AsyncBoundLogger when it's officially supported.
     # https://github.com/hynek/structlog/issues/354
-    wrapper_class=structlog.make_filtering_bound_logger(LOG_LEVEL_MAP[log_level]),
+    wrapper_class=LoggerWrapper,
     context_class=dict,
     logger_factory=structlog.PrintLoggerFactory(),
     cache_logger_on_first_use=True
@@ -65,6 +58,9 @@ logging.basicConfig(
     ]
 )
 
+logger_manager = LoggerManager()
+logger_manager.set_min_log_level(log_level)
+
 logger.info("Configured logging", log_level=log_level.name or log_level.value)
 
 # The idea here is to register the services for each extension independently,
@@ -72,6 +68,7 @@ logger.info("Configured logging", log_level=log_level.name or log_level.value)
 # Therefore, for now we just register everything from the entire package.
 catalog_builder = InjectableCatalogBuilder()
 catalog_builder.add_module("holobot")
+catalog_builder.register_instance(logger_manager, (ILoggerManager,))
 catalog_builder.register_instance(environment, (IEnvironment,))
 catalog_builder.register_instance(configurator, (IConfigurator,))
 catalog_builder.register_generic(OptionsProvider, (IOptions,), InjectableScopeType.SINGLETON)

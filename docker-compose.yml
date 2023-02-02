@@ -38,4 +38,4 @@ services:
       - ./secrets:/holobot/secrets:ro
     tty: true
     env_file:
-      - ./secrets/.env
+      - ./secrets/.env-local

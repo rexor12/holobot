@@ -1,8 +1,8 @@
 # Specify the required Python version.
-ARG PYTHON_IMAGE=python:3.10-slim
+ARG PYTHON_IMAGE=python:3.11-slim
 FROM ${PYTHON_IMAGE}
 
-ARG PYTHON_EXECUTABLE=python3.10
+ARG PYTHON_EXECUTABLE=python3.11
 ARG WORKING_DIRECTORY=/usr/holobot
 ARG VENV_DIRECTORY=${WORKING_DIRECTORY}/.venv
 

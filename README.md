@@ -33,7 +33,7 @@ This instance of the bot is deployed from the latest stable branch (develop/x.x.
 
 ## Hosting your own instance
 
-**Python 3.10 or higher is required.**
+**Python 3.11 or higher is required.**
 
 ### Docker
 

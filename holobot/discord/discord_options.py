@@ -11,3 +11,4 @@ class DiscordOptions(OptionsDefinition):
     DevelopmentServerId: int = 0
     PaginatorPreviousEmoji: str | None = None
     PaginatorNextEmoji: str | None = None
+    IsNetworkTraceEnabled: bool = False

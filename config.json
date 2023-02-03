@@ -224,7 +224,8 @@
             "BotToken": "__HOLO_BOT_TOKEN__",
             "DevelopmentServerId": "__HOLO_DEVELOPMENT_SERVER_ID__",
             "PaginatorPreviousEmoji": "1041667997951086652",
-            "PaginatorNextEmoji": "1041668000815796316"
+            "PaginatorNextEmoji": "1041668000815796316",
+            "IsNetworkTraceEnabled": "__HOLO_IS_DISCORD_NETWORK_TRACE_ENABLED__"
         },
         "EnvironmentOptions": {
             "IsDebug": "__HOLO_IS_DEBUG__",

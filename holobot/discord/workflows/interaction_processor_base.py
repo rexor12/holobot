@@ -52,12 +52,12 @@ class InteractionProcessorBase(
             except hikari.ClientHTTPResponseError:
                 # An expected exception but log it anyway to be aware of the frequency.
                 execution_data["has_exception"] = True
-                self.__log.exception("A Discord HTTP error occurred while processing an interaction")
+                self.__log.exception("A Discord HTTP error occurred while processing an interaction", **execution_data)
                 await self.__try_send_error_response(interaction)
             except Exception:
                 # Don't propagate to the framework, better log it here.
                 execution_data["has_exception"] = True
-                self.__log.exception("An unhandled exception occurred while processing an interaction")
+                self.__log.exception("An unhandled exception occurred while processing an interaction", **execution_data)
                 await self.__try_send_error_response(interaction)
 
     @abstractmethod

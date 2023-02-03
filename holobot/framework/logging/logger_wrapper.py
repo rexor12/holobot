@@ -48,6 +48,9 @@ class LoggerWrapper(BoundLoggerBase, FilteringBoundLogger):
 
         cls._MIN_LOG_LEVEL = min_log_level
 
+    def trace(self, event: str, **kwargs: Any) -> Any:
+        return self.__try_log(LogLevel.DEBUG, event, **kwargs)
+
     def debug(self, event: str, **kwargs: Any) -> Any:
         return self.__try_log(LogLevel.DEBUG, event, **kwargs)
 

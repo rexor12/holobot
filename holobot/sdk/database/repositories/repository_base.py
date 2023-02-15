@@ -290,6 +290,14 @@ class RepositoryBase(
         self,
         filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]
     ) -> int:
+        """Deletes all entities matching the specified filter.
+
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]
+        :return: The number of entities that have been deleted.
+        :rtype: int
+        """
+
         async with (session := await self._get_session()):
             query = filter_builder(Query
                 .delete()

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from holobot.sdk.database import AggregateRoot
+
 @dataclass
-class ExternalGiveawayItem:
+class ExternalGiveawayItem(AggregateRoot[int]):
     identifier: int
     created_at: datetime
     start_time: datetime | None

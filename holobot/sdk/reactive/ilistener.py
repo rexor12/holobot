@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from typing import Generic, Protocol, TypeVar
 
 from .models import EventBase
@@ -18,5 +19,5 @@ class IListener(Generic[TEvent], Protocol):
 
         return 0
 
-    async def on_event(self, event: TEvent) -> None:
+    def on_event(self, event: TEvent) -> Awaitable[None]:
         ...

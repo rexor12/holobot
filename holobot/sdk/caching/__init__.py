@@ -1,6 +1,6 @@
 from .absolute_expiration_cache_entry_policy import AbsoluteExpirationCacheEntryPolicy
 from .cache_entry_policy import CacheEntryPolicy
-from .concurrent_cache import ConcurrentCache
+from .concurrent_dict import ConcurrentDict
 from .concurrent_memory_cache import ConcurrentMemoryCache
 from .icache import ICache
 from .iobject_cache import IObjectCache

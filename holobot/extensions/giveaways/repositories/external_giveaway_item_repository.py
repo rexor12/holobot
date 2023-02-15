@@ -1,7 +1,7 @@
 from asyncpg.connection import Connection
 
 from holobot.extensions.giveaways.models import ExternalGiveawayItem, ExternalGiveawayItemMetadata
-from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
@@ -22,11 +22,19 @@ class ExternalGiveawayItemRepository(
         return ExternalGiveawayItemRecord
 
     @property
+    def model_type(self) -> type[ExternalGiveawayItem]:
+        return ExternalGiveawayItem
+
+    @property
     def table_name(self) -> str:
         return "external_giveaway_items"
 
-    def __init__(self, database_manager: IDatabaseManager) -> None:
-        super().__init__(database_manager)
+    def __init__(
+        self,
+        database_manager: IDatabaseManager,
+        unit_of_work_provider: IUnitOfWorkProvider
+    ) -> None:
+        super().__init__(database_manager, unit_of_work_provider)
 
     async def get_many(
         self,

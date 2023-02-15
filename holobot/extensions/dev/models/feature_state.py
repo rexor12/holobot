@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
+from holobot.sdk.database import AggregateRoot
+
 @dataclass
-class FeatureState:
+class FeatureState(AggregateRoot[str]):
     """Describes the state of a feature."""
 
     identifier: str

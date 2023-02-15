@@ -1,7 +1,9 @@
 from typing import Protocol, TypeVar
 
+from holobot.sdk.database.aggregate_root import AggregateRoot
+
 TIdentifier = TypeVar("TIdentifier")
-TModel = TypeVar("TModel")
+TModel = TypeVar("TModel", bound=AggregateRoot)
 
 class IRepository(Protocol[TIdentifier, TModel]):
     async def add(self, model: TModel) -> TIdentifier:

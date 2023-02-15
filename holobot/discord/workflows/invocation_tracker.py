@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from holobot.discord.sdk.workflows.interactables.enums import EntityType
-from holobot.sdk.caching import ConcurrentCache
+from holobot.sdk.caching import ConcurrentDict
 from holobot.sdk.ioc.decorators import injectable
 from .iinvocation_tracker import IInvocationTracker
 
@@ -11,7 +11,7 @@ class InvocationTracker(IInvocationTracker):
 
     def __init__(self) -> None:
         super().__init__()
-        self.__cache = ConcurrentCache[EntityType, ConcurrentCache[str, datetime]]()
+        self.__cache = ConcurrentDict[EntityType, ConcurrentDict[str, datetime]]()
 
     async def update_invocation(
         self,
@@ -20,7 +20,7 @@ class InvocationTracker(IInvocationTracker):
         invoked_at: datetime,
         expires_after: timedelta
     ) -> datetime | None:
-        entities = await self.__cache.get_or_add3(entity_type, lambda _: ConcurrentCache())
+        entities = await self.__cache.get_or_add3(entity_type, lambda _: ConcurrentDict())
         old_value, _ = await entities.add_or_update3(
             entity_id,
             lambda key, new_value: new_value[0],

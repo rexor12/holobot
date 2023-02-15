@@ -1,34 +1,54 @@
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Awaitable, Sequence
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Generic, TypeVar, cast
 
 from asyncpg.connection import Connection
+from asyncpg.pool import PoolAcquireContext
 
 from holobot.sdk import Lazy
-from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.concurrency import IAsyncDisposable
+from holobot.sdk.database.aggregate_root import AggregateRoot
 from holobot.sdk.database.exceptions import DatabaseError
+from holobot.sdk.database.idatabase_manager import IDatabaseManager
+from holobot.sdk.database.iunit_of_work_provider import IUnitOfWorkProvider
 from holobot.sdk.database.queries import (
-    CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder
+    CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder,
+    WhereConstraintBuilder
 )
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag, UpdateCommandTag
 from holobot.sdk.queries import PaginationResult
+from holobot.sdk.threading.utils import COMPLETED_TASK
 from holobot.sdk.utils import set_time_zone
 from holobot.sdk.utils.dataclass_utils import (
     ObjectTypeDescriptor, ParameterInfo, get_parameter_infos
 )
 from .constants import MANUALLY_GENERATED_KEY_NAME
-from .entity import Entity
 from .irepository import IRepository
+from .record import Record
 
 TIdentifier = TypeVar("TIdentifier")
-TRecord = TypeVar("TRecord", bound=Entity)
-TModel = TypeVar("TModel")
+TRecord = TypeVar("TRecord", bound=Record)
+TModel = TypeVar("TModel", bound=AggregateRoot)
 
 _ID_FIELD_NAME = "id"
+
+class _Session(IAsyncDisposable):
+    def __init__(
+        self,
+        connection: Connection,
+        context: PoolAcquireContext | None
+    ) -> None:
+        super().__init__()
+        self.connection = connection
+        self.__context = context
+
+    async def _on_dispose(self) -> None:
+        if self.__context:
+            await self.__context.__aexit__()
 
 class RepositoryBase(
     ABC,
@@ -63,6 +83,18 @@ class RepositoryBase(
 
     @property
     @abstractmethod
+    def model_type(self) -> type[TModel]:
+        """Gets the type of the model.
+
+        This is required, because Python currently doesn't support
+        the runtime resolution of generic type arguments.
+
+        :return: The type of the model.
+        :rtype: type[TModel]
+        """
+
+    @property
+    @abstractmethod
     def table_name(self) -> str:
         """Gets the name of the table the repository operates on.
 
@@ -72,10 +104,12 @@ class RepositoryBase(
 
     def __init__(
         self,
-        database_manager: IDatabaseManager
+        database_manager: IDatabaseManager,
+        unit_of_work_provider: IUnitOfWorkProvider
     ) -> None:
         super().__init__()
         self._database_manager = database_manager
+        self.__unit_of_work_provider = unit_of_work_provider
         self.__columns = Lazy[tuple[ParameterInfo, ...]](
             lambda: tuple(get_parameter_infos(self.record_type))
         )
@@ -87,92 +121,91 @@ class RepositoryBase(
         record = self._map_model_to_record(model)
         is_manually_generated_key = getattr(record, MANUALLY_GENERATED_KEY_NAME, False)
         fields = self._get_fields(record, not is_manually_generated_key)
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                identifier = await (Query
-                    .insert()
-                    .in_table(self.table_name)
-                    .fields(*fields)
-                    .returning()
-                    .column(_ID_FIELD_NAME)
-                    .compile()
-                    .fetchval(connection)
-                )
-                if identifier is None:
-                    raise DatabaseError("Failed to insert a new record.")
+        async with (session := await self._get_session()):
+            identifier = await (Query
+                .insert()
+                .in_table(self.table_name)
+                .fields(*fields)
+                .returning()
+                .column(_ID_FIELD_NAME)
+                .compile()
+                .fetchval(session.connection)
+            )
+            if identifier is None:
+                raise DatabaseError("Failed to insert a new record.")
 
-                return identifier
+            await self.__try_set_model(identifier, model)
+
+            return identifier
 
     async def get(self, identifier: TIdentifier) -> TModel | None:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .select()
-                    .columns(*self.column_names)
-                    .from_table(self.table_name)
-                    .where()
-                    .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
-                    .compile()
-                    .fetchrow(connection)
-                )
+        if existing_model := await self.__try_get_model(identifier):
+            return existing_model
 
-                return (
-                    self._map_record_to_model(self._map_query_result_to_record(result))
-                    if result is not None else None
-                )
+        async with (session := await self._get_session()):
+            result = await (Query
+                .select()
+                .columns(*self.column_names)
+                .from_table(self.table_name)
+                .where()
+                .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
+                .compile()
+                .fetchrow(session.connection)
+            )
+
+            return (
+                self._map_record_to_model(self._map_query_result_to_record(result))
+                if result is not None else None
+            )
 
     async def count(self) -> int | None:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .select()
-                    .column("COUNT(*)")
-                    .from_table(self.table_name)
-                    .compile()
-                    .fetchval(connection)
-                )
+        async with (session := await self._get_session()):
+            result = await (Query
+                .select()
+                .column("COUNT(*)")
+                .from_table(self.table_name)
+                .compile()
+                .fetchval(session.connection)
+            )
 
-                return result
+            return result
 
     async def update(self, model: TModel) -> bool:
         record = self._map_model_to_record(model)
         fields = self._get_fields(record, False)
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .update()
-                    .table(self.table_name)
-                    .fields(*fields)
-                    .where()
-                    .field(_ID_FIELD_NAME, Equality.EQUAL, record.id)
-                    .compile()
-                    .execute(connection)
-                )
-                if not isinstance(result, CommandComplete):
-                    raise DatabaseError("Failed to update an existing record.")
+        async with (session := await self._get_session()):
+            result = await (Query
+                .update()
+                .table(self.table_name)
+                .fields(*fields)
+                .where()
+                .field(_ID_FIELD_NAME, Equality.EQUAL, record.id)
+                .compile()
+                .execute(session.connection)
+            )
+            if not isinstance(result, CommandComplete):
+                raise DatabaseError("Failed to update an existing record.")
 
-                return cast(CommandComplete[UpdateCommandTag], result).command_tag.rows != 0
+            await self.__try_set_model(model.identifier, model)
+
+            return cast(CommandComplete[UpdateCommandTag], result).command_tag.rows != 0
 
     async def delete(self, identifier: TIdentifier) -> int:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .delete()
-                    .from_table(self.table_name)
-                    .where()
-                    .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
-                    .compile()
-                    .execute(connection)
-                )
-                if not isinstance(result, CommandComplete):
-                    raise DatabaseError("Failed to delete a record.")
+        async with (session := await self._get_session()):
+            result = await (Query
+                .delete()
+                .from_table(self.table_name)
+                .where()
+                .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
+                .compile()
+                .execute(session.connection)
+            )
+            if not isinstance(result, CommandComplete):
+                raise DatabaseError("Failed to delete a record.")
 
-                return cast(CommandComplete[DeleteCommandTag], result).command_tag.rows
+            await self.__try_remove_model(identifier)
+
+            return cast(CommandComplete[DeleteCommandTag], result).command_tag.rows
 
     @abstractmethod
     def _map_record_to_model(self, record: TRecord) -> TModel:
@@ -206,21 +239,24 @@ class RepositoryBase(
         :rtype: tuple[TModel, ...]
         """
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                query = filter_builder(Query
-                    .select()
-                    .columns(*self.column_names)
-                    .from_table(self.table_name)
-                    .where()
-                )
-                results = await query.compile().fetch(connection)
+        async with (session := await self._get_session()):
+            query = filter_builder(Query
+                .select()
+                .columns(*self.column_names)
+                .from_table(self.table_name)
+                .where()
+            )
+            results = await query.compile().fetch(session.connection)
 
-                return tuple(
-                    self._map_record_to_model(self._map_query_result_to_record(result))
-                    for result in results
-                )
+            models = tuple(
+                self._map_record_to_model(self._map_query_result_to_record(result))
+                for result in results
+            )
+
+            for model in models:
+                await self.__try_set_model(model.identifier, model)
+
+            return models
 
     async def _get_by_filter(
         self,
@@ -234,21 +270,43 @@ class RepositoryBase(
         :rtype: TModel | None
         """
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                query = filter_builder(Query
-                    .select()
-                    .columns(*self.column_names)
-                    .from_table(self.table_name)
-                    .where()
-                )
-                result = await query.compile().fetchrow(connection)
+        async with (session := await self._get_session()):
+            query = filter_builder(Query
+                .select()
+                .columns(*self.column_names)
+                .from_table(self.table_name)
+                .where()
+            )
+            result = await query.compile().fetchrow(session.connection)
+            if result is None:
+                return None
 
-                return (
-                    self._map_record_to_model(self._map_query_result_to_record(result))
-                    if result is not None else None
-                )
+            model = self._map_record_to_model(self._map_query_result_to_record(result))
+            await self.__try_set_model(model.identifier, model)
+
+            return model
+
+    async def _delete_by_filter(
+        self,
+        filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]
+    ) -> int:
+        async with (session := await self._get_session()):
+            query = filter_builder(Query
+                .delete()
+                .from_table(self.table_name)
+                .where()
+            )
+            results = await (query
+                .returning()
+                .column(_ID_FIELD_NAME)
+                .compile()
+                .fetch(session.connection)
+            )
+
+            for result in results:
+                await self.__try_remove_model(cast(TIdentifier, result.get(_ID_FIELD_NAME)))
+
+            return len(results)
 
     async def _paginate(
         self,
@@ -271,26 +329,24 @@ class RepositoryBase(
         :rtype: PaginationResult[TModel]
         """
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                query = filter_builder(Query
-                    .select()
-                    .columns(*self.column_names)
-                    .from_table(self.table_name)
-                    .where()
-                ).paginate(ordering_column, page_index, page_size)
-                result = await query.compile().fetch(connection)
+        async with (session := await self._get_session()):
+            query = filter_builder(Query
+                .select()
+                .columns(*self.column_names)
+                .from_table(self.table_name)
+                .where()
+            ).paginate(ordering_column, page_index, page_size)
+            result = await query.compile().fetch(session.connection)
 
-                return PaginationResult[TModel](
-                    result.page_index,
-                    result.page_size,
-                    result.total_count,
-                    [
-                        self._map_record_to_model(self._map_query_result_to_record(record))
-                        for record in result.records
-                    ]
-                )
+            return PaginationResult[TModel](
+                result.page_index,
+                result.page_size,
+                result.total_count,
+                [
+                    self._map_record_to_model(self._map_query_result_to_record(record))
+                    for record in result.records
+                ]
+            )
 
     def _map_query_result_to_record(self, columns: dict[str, Any]) -> TRecord:
         """Maps the specified result of a query to a record.
@@ -358,6 +414,14 @@ class RepositoryBase(
             if not ignore_identifier or column.name != _ID_FIELD_NAME
         ]
 
+    async def _get_session(self) -> _Session:
+        if unit_of_work := self.__unit_of_work_provider.current:
+            return _Session(unit_of_work.connection, None)
+
+        context = self._database_manager.acquire_connection()
+        connection = await context.__aenter__()
+        return _Session(connection, context)
+
     @staticmethod
     def __convert_field_to_model(
         value: Any,
@@ -383,3 +447,21 @@ class RepositoryBase(
 
     def __get_column_names(self) -> tuple[str, ...]:
         return tuple(column.name for column in self.__columns.value)
+
+    def __try_get_model(self, identifier: TIdentifier) -> Awaitable[TModel | None]:
+        if not (unit_of_work := self.__unit_of_work_provider.current):
+            return COMPLETED_TASK
+
+        return unit_of_work.get(self.model_type, identifier)
+
+    def __try_set_model(self, identifier: TIdentifier, model: TModel) -> Awaitable[None]:
+        if not (unit_of_work := self.__unit_of_work_provider.current):
+            return COMPLETED_TASK
+
+        return unit_of_work.set(identifier, model)
+
+    def __try_remove_model(self, identifier: TIdentifier) -> Awaitable[None]:
+        if unit_of_work := self.__unit_of_work_provider.current:
+            return unit_of_work.remove(self.model_type, identifier)
+
+        return COMPLETED_TASK

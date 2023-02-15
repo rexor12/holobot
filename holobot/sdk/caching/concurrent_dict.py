@@ -10,7 +10,7 @@ TValue = TypeVar("TValue")
 TParam = TypeVar("TParam")
 TParam2 = TypeVar("TParam2")
 
-class ConcurrentCache(Generic[TKey, TValue]):
+class ConcurrentDict(Generic[TKey, TValue]):
     def __init__(self):
         self.__dict: dict[TKey, TValue] = {}
         self.__lock: Lock = Lock()

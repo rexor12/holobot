@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from holobot.extensions.admin.enums import RuleState
-from holobot.sdk.database.repositories import Entity
+from holobot.sdk.database.repositories import Record
 
 @dataclass(kw_only=True)
-class CommandRuleRecord(Entity[int]):
+class CommandRuleRecord(Record[int]):
     id: int
     created_at: datetime
     created_by: str

@@ -3,7 +3,7 @@ from datetime import timedelta
 from asyncpg.connection import Connection
 
 from holobot.extensions.moderation.models import WarnStrike
-from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
@@ -31,11 +31,19 @@ class WarnRepository(
         return WarnStrikeRecord
 
     @property
+    def model_type(self) -> type[WarnStrike]:
+        return WarnStrike
+
+    @property
     def table_name(self) -> str:
         return "moderation_warns"
 
-    def __init__(self, database_manager: IDatabaseManager) -> None:
-        super().__init__(database_manager)
+    def __init__(
+        self,
+        database_manager: IDatabaseManager,
+        unit_of_work_provider: IUnitOfWorkProvider
+    ) -> None:
+        super().__init__(database_manager, unit_of_work_provider)
 
     async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
         assert_not_none(server_id, "server_id")

@@ -79,3 +79,17 @@ def merge(
             pairs.put((t[key], s[key]))
 
     return result
+
+def get_generic(
+    source: dict[TKey, Any],
+    value_type: type[TValue],
+    key: TKey
+) -> TValue | UndefinedType:
+    if key not in source:
+        return UNDEFINED
+
+    value = source[key]
+    if not isinstance(value, value_type):
+        return UNDEFINED
+
+    return value

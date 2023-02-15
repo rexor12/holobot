@@ -4,7 +4,7 @@ from typing import Any
 from asyncpg.connection import Connection
 
 from holobot.extensions.admin.models import CommandRule
-from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
@@ -27,11 +27,19 @@ class CommandRuleRepository(
         return CommandRuleRecord
 
     @property
+    def model_type(self) -> type[CommandRule]:
+        return CommandRule
+
+    @property
     def table_name(self) -> str:
         return "admin_rules"
 
-    def __init__(self, database_manager: IDatabaseManager) -> None:
-        super().__init__(database_manager)
+    def __init__(
+        self,
+        database_manager: IDatabaseManager,
+        unit_of_work_provider: IUnitOfWorkProvider
+    ) -> None:
+        super().__init__(database_manager, unit_of_work_provider)
 
     async def add_or_update(self, rule: CommandRule) -> int:
         async with self._database_manager.acquire_connection() as connection:

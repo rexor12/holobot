@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from holobot.sdk.database.repositories import Entity
+from holobot.sdk.database.repositories import Record
 
 @dataclass(kw_only=True)
-class ReminderRecord(Entity[int]):
+class ReminderRecord(Record[int]):
     id: int
     user_id: str
     server_id: str | None

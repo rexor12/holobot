@@ -2,10 +2,11 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from holobot.extensions.reminders.enums import DayOfWeek, ReminderLocation
+from holobot.sdk.database import AggregateRoot
 from holobot.sdk.utils import utcnow
 
 @dataclass(kw_only=True)
-class Reminder:
+class Reminder(AggregateRoot[int]):
     identifier: int = -1
     user_id: str
     server_id: str | None = None

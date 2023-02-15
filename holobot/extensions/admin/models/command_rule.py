@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from holobot.sdk.database import AggregateRoot
 from holobot.sdk.utils import utcnow
 from ..enums import RuleState
 
@@ -17,7 +18,7 @@ rule_to_emoji_map: dict[RuleState, str] = {
 }
 
 @dataclass(kw_only=True)
-class CommandRule:
+class CommandRule(AggregateRoot[int]):
     identifier: int = -1
     created_at: datetime = field(default_factory=utcnow)
     created_by: str

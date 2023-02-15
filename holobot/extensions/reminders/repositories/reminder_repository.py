@@ -4,7 +4,7 @@ from asyncpg.connection import Connection
 
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
-from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.exceptions import DatabaseError
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
@@ -26,11 +26,19 @@ class ReminderRepository(
         return ReminderRecord
 
     @property
+    def model_type(self) -> type[Reminder]:
+        return Reminder
+
+    @property
     def table_name(self) -> str:
         return "reminders"
 
-    def __init__(self, database_manager: IDatabaseManager) -> None:
-        super().__init__(database_manager)
+    def __init__(
+        self,
+        database_manager: IDatabaseManager,
+        unit_of_work_provider: IUnitOfWorkProvider
+    ) -> None:
+        super().__init__(database_manager, unit_of_work_provider)
 
     async def count_by_user(self, user_id: str) -> int:
         async with self._database_manager.acquire_connection() as connection:

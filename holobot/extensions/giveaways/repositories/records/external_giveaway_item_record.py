@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from holobot.sdk.database.repositories import Entity
+from holobot.sdk.database.repositories import Record
 
 @dataclass
-class ExternalGiveawayItemRecord(Entity[int]):
+class ExternalGiveawayItemRecord(Record[int]):
     id: int
     created_at: datetime
     start_time: datetime | None

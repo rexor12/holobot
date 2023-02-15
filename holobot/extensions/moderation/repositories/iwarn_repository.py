@@ -4,9 +4,8 @@ from typing import Protocol
 from holobot.extensions.moderation.models import WarnStrike
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
-from .records import WarnStrikeRecord
 
-class IWarnRepository(IRepository[int, WarnStrikeRecord], Protocol):
+class IWarnRepository(IRepository[int, WarnStrike], Protocol):
     async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
         ...
 

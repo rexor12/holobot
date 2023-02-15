@@ -7,7 +7,7 @@ from asyncpg import Connection
 from holobot.sdk.concurrency import IAsyncDisposable
 from .aggregate_root import AggregateRoot
 
-TIdentifier = TypeVar("TIdentifier")
+TIdentifier = TypeVar("TIdentifier", int, str)
 
 class IUnitOfWork(IAsyncDisposable):
     """Interface for a unit of work."""

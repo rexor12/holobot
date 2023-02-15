@@ -30,7 +30,7 @@ from .constants import MANUALLY_GENERATED_KEY_NAME
 from .irepository import IRepository
 from .record import Record
 
-TIdentifier = TypeVar("TIdentifier")
+TIdentifier = TypeVar("TIdentifier", int, str)
 TRecord = TypeVar("TRecord", bound=Record)
 TModel = TypeVar("TModel", bound=AggregateRoot)
 
@@ -134,7 +134,7 @@ class RepositoryBase(
             if identifier is None:
                 raise DatabaseError("Failed to insert a new record.")
 
-            await self.__try_set_model(identifier, model)
+            await self.__try_set_model(model)
 
             return identifier
 
@@ -186,7 +186,7 @@ class RepositoryBase(
             if not isinstance(result, CommandComplete):
                 raise DatabaseError("Failed to update an existing record.")
 
-            await self.__try_set_model(model.identifier, model)
+            await self.__try_set_model(model)
 
             return cast(CommandComplete[UpdateCommandTag], result).command_tag.rows != 0
 
@@ -254,7 +254,7 @@ class RepositoryBase(
             )
 
             for model in models:
-                await self.__try_set_model(model.identifier, model)
+                await self.__try_set_model(model)
 
             return models
 
@@ -282,7 +282,7 @@ class RepositoryBase(
                 return None
 
             model = self._map_record_to_model(self._map_query_result_to_record(result))
-            await self.__try_set_model(model.identifier, model)
+            await self.__try_set_model(model)
 
             return model
 
@@ -454,11 +454,11 @@ class RepositoryBase(
 
         return unit_of_work.get(self.model_type, identifier)
 
-    def __try_set_model(self, identifier: TIdentifier, model: TModel) -> Awaitable[None]:
+    def __try_set_model(self, model: TModel) -> Awaitable[None]:
         if not (unit_of_work := self.__unit_of_work_provider.current):
             return COMPLETED_TASK
 
-        return unit_of_work.set(identifier, model)
+        return unit_of_work.set(model)
 
     def __try_remove_model(self, identifier: TIdentifier) -> Awaitable[None]:
         if unit_of_work := self.__unit_of_work_provider.current:

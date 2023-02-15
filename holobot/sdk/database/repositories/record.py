@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-TIdentifier = TypeVar("TIdentifier")
+TIdentifier = TypeVar("TIdentifier", int, str)
 
 @dataclass(kw_only=True)
 class Record(ABC, Generic[TIdentifier]):

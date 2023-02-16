@@ -5,7 +5,8 @@ from asyncpg import Connection
 from asyncpg.pool import PoolAcquireContext
 
 from holobot.sdk.database import IDatabaseManager, IUnitOfWork, IUnitOfWorkProvider
-from holobot.sdk.exceptions import InvalidOperationError
+from holobot.sdk.database.enums import IsolationLevel
+from holobot.sdk.exceptions import ArgumentError, InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from .unit_of_work import UnitOfWork
 
@@ -28,13 +29,17 @@ class UnitOfWorkProvider(IUnitOfWorkProvider):
     def current(self) -> IUnitOfWork | None:
         return self.__unit_of_work.get()
 
-    async def create_new(self) -> IUnitOfWork:
+    async def create_new(
+        self,
+        isolation_level: IsolationLevel = IsolationLevel.READ_COMMITTED
+    ) -> IUnitOfWork:
         if self.__unit_of_work.get():
             raise InvalidOperationError("Nesting of units of work is not supported.")
 
+        pg_isolation_level = UnitOfWorkProvider.__get_pg_isolation_level(isolation_level)
         context = self.__database_manager.acquire_connection()
         connection: Connection = await context.__aenter__()
-        transaction = connection.transaction()
+        transaction = connection.transaction(isolation=pg_isolation_level)
         await transaction.start()
 
         unit_of_work = UnitOfWork(
@@ -52,3 +57,16 @@ class UnitOfWorkProvider(IUnitOfWorkProvider):
     ) -> Awaitable[None]:
         self.__unit_of_work.set(None)
         return context.__aexit__()
+
+    @staticmethod
+    def __get_pg_isolation_level(isolation_level: IsolationLevel) -> str:
+        match isolation_level:
+            case IsolationLevel.SERIALIZABLE:
+                return "serializable"
+            case IsolationLevel.READ_COMMITTED:
+                return "read_committed"
+            case _:
+                raise ArgumentError(
+                    "isolation_level",
+                    "The specified value is not a valid isolation level."
+                )

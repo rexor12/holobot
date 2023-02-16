@@ -1,0 +1,2 @@
+from .imarriage_repository import IMarriageRepository
+from .marriage_repository import MarriageRepository

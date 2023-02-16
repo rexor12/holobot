@@ -1,6 +1,7 @@
 from collections.abc import Awaitable
 from typing import Protocol
 
+from holobot.sdk.database.enums import IsolationLevel
 from .iunit_of_work import IUnitOfWork
 
 class IUnitOfWorkProvider(Protocol):
@@ -15,7 +16,10 @@ class IUnitOfWorkProvider(Protocol):
         """
         ...
 
-    def create_new(self) -> Awaitable[IUnitOfWork]:
+    def create_new(
+        self,
+        isolation_level: IsolationLevel = IsolationLevel.READ_COMMITTED
+    ) -> Awaitable[IUnitOfWork]:
         """Creates a new unit of work.
 
         :return: The new unit of work.

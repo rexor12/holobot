@@ -54,19 +54,20 @@ class InteractionProcessorBase(
                 # An expected exception but log it anyway to be aware of the frequency.
                 execution_data["has_exception"] = True
                 self.__log.exception("A Discord HTTP error occurred while processing an interaction", **execution_data)
-                await self.__try_send_error_response(interaction)
+                await self.__try_send_error_response(interaction, execution_data)
             except SerializationError:
                 execution_data["has_exception"] = True
-                self.__log.trace("A database serialization occurred while processing an interaction", **execution_data)
+                self.__log.trace("A database serialization error occurred while processing an interaction", **execution_data)
                 await self.__try_send_error_response(
                     interaction,
+                    execution_data,
                     "database_serialization_error"
                 )
             except Exception:
                 # Don't propagate to the framework, better log it here.
                 execution_data["has_exception"] = True
                 self.__log.exception("An unhandled exception occurred while processing an interaction", **execution_data)
-                await self.__try_send_error_response(interaction)
+                await self.__try_send_error_response(interaction, execution_data)
 
     @abstractmethod
     def _get_interactable_descriptor(
@@ -188,6 +189,7 @@ class InteractionProcessorBase(
                 interactable.defer_type,
                 interactable.is_ephemeral
             )
+            execution_data["response_processed"] = True
 
         with execution_context.start("Post-processing performed"):
             await self._on_interaction_processed(
@@ -287,8 +289,14 @@ class InteractionProcessorBase(
     async def __try_send_error_response(
         self,
         interaction: TInteraction,
+        execution_data: dict[str, Any],
         localization_key: str = "interactions.unhandled_interaction_error"
     ) -> None:
+        if execution_data.get("response_processed", False):
+            # The interaction has been acknowledged only,
+            # therefore a second response cannot be sent.
+            return
+
         try:
             await self._send_error_response(interaction, localization_key)
         except Exception as error:

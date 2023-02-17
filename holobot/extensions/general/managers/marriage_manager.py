@@ -81,15 +81,15 @@ class MarriageManager(IMarriageManager):
             return False
 
         now = utcnow()
+        options = self.__options.value
         if now - marriage.activity_tier_reset_at >= _ONE_HOUR:
             # It's time to reset the activity tier.
             marriage.activity_tier = 0
             marriage.activity_tier_reset_at = now
-
-        if marriage.activity_tier >= len(self.__options.value.MarriageActivityExpTiers) - 1:
+        elif marriage.activity_tier >= len(options.MarriageActivityExpTiers) - 1:
             if (
                 marriage.last_activity_at
-                and (now - marriage.last_activity_at).total_seconds() > self.__options.value.MarriageActivityLastTierCooldownSeconds
+                and (now - marriage.last_activity_at).total_seconds() < options.MarriageActivityLastTierCooldownSeconds
             ):
                 # The marriage is in the last activity tier and the cooldown hasn't expired yet.
                 return False

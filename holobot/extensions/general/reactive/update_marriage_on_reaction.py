@@ -8,6 +8,7 @@ from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.database.enums import IsolationLevel
 from holobot.sdk.database.exceptions import SerializationError
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network.resilience import AsyncRetryPolicy
 from holobot.sdk.reactive import IListener
 from holobot.sdk.utils.dict_utils import get_generic
@@ -17,10 +18,12 @@ from holobot.sdk.utils.timedelta_utils import ZERO_TIMEDELTA
 class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
     def __init__(
         self,
+        logger_factory: ILoggerFactory,
         marriage_manager: IMarriageManager,
         unit_of_work_provider: IUnitOfWorkProvider
     ) -> None:
         super().__init__()
+        self.__logger = logger_factory.create(UpdateMarriageOnReaction)
         self.__marriage_manager = marriage_manager
         self.__unit_of_work_provider = unit_of_work_provider
 
@@ -54,12 +57,22 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
 
         # TODO If the marriage has leveled up, send a message to the channel.
         # Also, include any newly unlocked perks.
-        await self.__try_add_reaction(
-            event.server_id,
-            event.user_id,
-            str(target_user_id),
-            reaction_type
-        )
+        try:
+            await self.__try_add_reaction(
+                event.server_id,
+                event.user_id,
+                str(target_user_id),
+                reaction_type
+            )
+        except SerializationError as error:
+            # Ignored, because we're in an event handler.
+            self.__logger.debug(
+                "Failed to update marriage due to a serialization error",
+                error,
+                server_id=event.server_id,
+                user_id=event.user_id,
+                target_user_id=target_user_id
+            )
 
     def __try_add_reaction(
         self,

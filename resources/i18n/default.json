@@ -7,7 +7,8 @@
     "channel_not_found_error": "I'm sorry, but I couldn't find the requested channel. Please, double check for any typos. (｡•́︿•̀｡)",
     "user_not_found_error": "I'm sorry, but I couldn't find the requested user. Please, double check for any typos. (｡•́︿•̀｡)",
     "missing_dm_permission_error": "I'm sorry, but I don't have the permission to DM users. Please, kindly ask your server administrator to grant me the permission. Thank you! („• ᴗ •„)",
-    "invalid_argument_error": "I'm sorry, but you invoked the command with an invalid argument. Please, double check for any typos and if you believe this is an issue with me, please report it (see `/info`). Thank you! („• ᴗ •„)",
+    "invalid_argument_error": "I'm sorry, but you invoked the command with an invalid argument. Please, double check for any typos and if you believe this is an issue with me, report it (see `/info`). Thank you! („• ᴗ •„)",
+    "database_serialization_error": "I'm sorry, but an error has occurred while processing your request. Please, try again and if the issue persists, report it (see `/info`). Thank you! („• ᴗ •„)",
 
     "interactions": {
         "halted_interaction_error": "I'm sorry, but you're not allowed to use this command. (｡•́︿•̀｡)",
@@ -24,7 +25,9 @@
         "buttons": {
             "cancel": "Cancel",
             "remove": "Remove",
-            "view_all": "View all"
+            "view_all": "View all",
+            "yes": "Yes",
+            "no": "No"
         }
     },
 
@@ -72,6 +75,12 @@
         },
 
         "general": {
+            "divorce_workflow": {
+                "not_married_error": "I can't divorce you because you aren't married.",
+                "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
+                "got_divorced": "<@{user_id}> and <@{spouse_id}>; as unfortunate as it may be, I bear witness to your divorce. May you encounter happiness once more on your journeys.",
+                "divorce_canceled": "As per your decision, you shall not be divorced. May you stay as happy together as you have been so far."
+            },
             "magic_eight_ball_workflow": {
                 "responses": [
                     "yes.",
@@ -92,6 +101,20 @@
                     "who knows..."
                 ],
                 "response_message": "{user_name} asked:\n> {question}\n\nHere's my wisdom: {answer}"
+            },
+            "marry_workflow": {
+                "already_married": "You are already married to <@{spouse_id}>. You wouldn't want to cheat on them now, would you?",
+                "already_married_other": "I'm sorry, but <@{user_id}> is already married to <@{spouse_id}>. (｡•́︿•̀｡)",
+                "confirm_marry": "<@{spouse_id}>, do you take <@{user_id}> to be your lawfully wedded partner? („• ᴗ •„)",
+                "confirm_remarry": "<@{spouse_id}>, your beloved <@{user_id}> would like to renew your marriage vows. Do you still take <@{user_id}> to be your lawfully wedded partner?",
+                "confirm_yes": "I do",
+                "confirm_no": "Nope",
+                "request_refused": "I'm sorry, <@{user_id}>, but <@{spouse_id}> refused your marriage proposal. (｡•́︿•̀｡)",
+                "got_married": "💐💐💐 <@{user_id}> and <@{spouse_id}> are now married! May the love you share today grow stronger as you grow old together. 💐💐💐",
+                "got_remarried": "💐💐💐 Rejoice, <@{user_id}> for <@{spouse_id}> is your partner still. 💐💐💐",
+                "got_divorced": "<@{user_id}> and <@{spouse_id}>; as unfortunate as it may be, I bear witness to your divorce. May you encounter happiness once more on your journeys.",
+                "not_married_error": "Oops, there seems to have been a misunderstanding and you aren't married. Please, disregard this message. („• ᴗ •„)",
+                "cannot_marry_self": "I'm sorry, but you can't get married with yourself. Keep looking and I'm sure love will find you. („• ᴗ •„)"
             },
             "match_users_workflow": {
                 "love_types": [
@@ -218,6 +241,16 @@
             "view_emoji_workflow": {
                 "emoji_not_found_error": "I'm sorry, but I couldn't find the emoji you requested. Please, double check for any typos. (｡•́︿•̀｡)",
                 "invalid_emoji_error": "I'm sorry, but the emoji you requested isn't an image asset based one, so I can't embed it. (｡•́︿•̀｡)"
+            },
+            "view_marriage_workflow": {
+                "not_married_error": "I'm sorry, but you don't seem to be married, yet. I'm rooting for you, though. („• ᴗ •„)",
+                "embed_title": "Marriage details",
+                "embed_description": "<@{user_id1}> and <@{user_id2}> have been married since <t:{married_at}:D> which was <t:{married_at}:R>.\n\n🤗 Hugs: _{hugs}_\n😘 Kisses: _{kisses}_\n🥰 Pats: _{pats}_\n🥴 Pokes: _{pokes}_",
+                "embed_field_xp": "Experience points",
+                "embed_field_level": "Level",
+                "embed_field_match_bonus": "Match bonus",
+                "xp_max_value": "MAX",
+                "xp_value": "{current_xp}/{required_xp}"
             },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",

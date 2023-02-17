@@ -15,6 +15,7 @@ from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.general.managers import IMarriageManager
 from holobot.extensions.general.models import GeneralOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
@@ -39,11 +40,13 @@ class MatchUsersWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
+        marriage_manager: IMarriageManager,
         member_data_provider: IMemberDataProvider,
         options: IOptions[GeneralOptions]
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
+        self.__marriage_manager = marriage_manager
         self.__member_data_provider = member_data_provider
         self.__options = options
 
@@ -92,7 +95,11 @@ class MatchUsersWorkflow(WorkflowBase):
                     content=self.__i18n_provider.get("user_not_found_error")
                 )
 
-            statistics, next_refresh_at = self.__get_statistics(member_data1, member_data2)
+            statistics, next_refresh_at = await self.__get_statistics(
+                context.server_id,
+                member_data1,
+                member_data2
+            )
             love_type_description = (
                 self.__i18n_provider.get("extensions.general.match_users_workflow.self_love_type")
                 if member_data1.user_id == member_data2.user_id
@@ -126,6 +133,7 @@ class MatchUsersWorkflow(WorkflowBase):
                         }
                     )
                 ))
+
             return self._reply(
                 embed=Embed(
                     title=self.__i18n_provider.get(
@@ -195,8 +203,9 @@ class MatchUsersWorkflow(WorkflowBase):
             min(100, 10 * score + int(score * 0.1) + 8)
         )
 
-    def __get_statistics(
+    async def __get_statistics(
         self,
+        server_id: str,
         member_data1: MemberData,
         member_data2: MemberData
     ) -> tuple[_Statistics, datetime]:
@@ -216,7 +225,12 @@ class MatchUsersWorkflow(WorkflowBase):
             + refresh_cycle
         )
 
-        score = rng.randint(1, 10)
+        score_min = await self.__marriage_manager.get_react_score_bonus(
+            server_id,
+            member_data1.user_id,
+            member_data2.user_id
+        ) or 1
+        score = rng.randint(score_min, 10)
         love_type = int(score / 2)
         is_max_score = rng.random() < 0.01 if score == 10 else False
         if is_max_score:

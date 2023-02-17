@@ -82,14 +82,17 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
     async def _on_interaction_processed(
         self,
         interaction: CommandInteraction,
-        interactable: MenuItem,
+        descriptor: InteractionDescriptor[MenuItem],
         response: InteractionResponse
     ) -> None:
         if not self.__event_listeners:
             return
 
+        # At this point the interactable cannot be None.
+        assert descriptor.interactable
+
         event = MenuItemProcessedEvent(
-            interactable=interactable,
+            interactable=descriptor.interactable,
             server_id=str(interaction.guild_id) if interaction.guild_id else None,
             channel_id=str(interaction.channel_id),
             user_id=str(interaction.user.id),

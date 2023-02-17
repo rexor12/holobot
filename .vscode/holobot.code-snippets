@@ -18,7 +18,6 @@
 		"prefix": "hwf",
 		"description": "A workflow for Holobot.",
 		"body": [
-			"from holobot.discord.sdk.actions import ReplyAction, EditMessageAction",
 			"from holobot.discord.sdk.actions.enums import DeferType",
 			"from holobot.discord.sdk.enums import Permission",
 			"from holobot.discord.sdk.models import InteractionContext",

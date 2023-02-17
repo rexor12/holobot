@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from uuid import uuid4
 
 from hikari import AutocompleteInteraction, OptionType
@@ -18,6 +19,7 @@ from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.threading import COMPLETED_TASK
 
 @injectable(IInteractionProcessor[AutocompleteInteraction])
 class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Autocomplete]):
@@ -109,14 +111,18 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
             channel_id=str(interaction.channel_id)
         )
 
-    async def _on_interaction_processed(
+    def _on_interaction_processed(
         self,
         interaction: AutocompleteInteraction,
-        interactable: Autocomplete,
+        descriptor: InteractionDescriptor[Autocomplete],
         response: InteractionResponse
-    ) -> None:
+    ) -> Awaitable[None]:
         # Autocomplete interactions have no event listeners.
-        return
+        return COMPLETED_TASK
 
-    async def _send_error_response(self, interaction: AutocompleteInteraction) -> None:
+    async def _send_error_response(
+        self,
+        interaction: AutocompleteInteraction,
+        localization_key: str = "interactions.unhandled_interaction_error"
+    ) -> None:
         await interaction.create_response(())

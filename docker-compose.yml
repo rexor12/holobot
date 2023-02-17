@@ -39,3 +39,4 @@ services:
     tty: true
     env_file:
       - ./secrets/.env
+    stop_grace_period: 1m

@@ -13,6 +13,7 @@ from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
+from holobot.sdk.database.exceptions import SerializationError
 from holobot.sdk.diagnostics import IExecutionContext, IExecutionContextFactory
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.i18n import II18nProvider
@@ -53,12 +54,20 @@ class InteractionProcessorBase(
                 # An expected exception but log it anyway to be aware of the frequency.
                 execution_data["has_exception"] = True
                 self.__log.exception("A Discord HTTP error occurred while processing an interaction", **execution_data)
-                await self.__try_send_error_response(interaction)
+                await self.__try_send_error_response(interaction, execution_data)
+            except SerializationError:
+                execution_data["has_exception"] = True
+                self.__log.trace("A database serialization error occurred while processing an interaction", **execution_data)
+                await self.__try_send_error_response(
+                    interaction,
+                    execution_data,
+                    "database_serialization_error"
+                )
             except Exception:
                 # Don't propagate to the framework, better log it here.
                 execution_data["has_exception"] = True
                 self.__log.exception("An unhandled exception occurred while processing an interaction", **execution_data)
-                await self.__try_send_error_response(interaction)
+                await self.__try_send_error_response(interaction, execution_data)
 
     @abstractmethod
     def _get_interactable_descriptor(
@@ -78,16 +87,20 @@ class InteractionProcessorBase(
     def _on_interaction_processed(
         self,
         interaction: TInteraction,
-        interactable: TInteractable,
+        descriptor: InteractionDescriptor[TInteractable],
         response: InteractionResponse
     ) -> Coroutine[Any, Any, None]:
         ...
 
-    async def _send_error_response(self, interaction: TInteraction) -> None:
+    async def _send_error_response(
+        self,
+        interaction: TInteraction,
+        localization_key: str = "interactions.unhandled_interaction_error"
+    ) -> None:
         await self.__action_processor.process(
             interaction,
             ReplyAction(
-                content=self.__i18n_provider.get("interactions.unhandled_interaction_error")
+                content=self.__i18n_provider.get(localization_key)
             ),
             DeferType.NONE,
             True
@@ -176,9 +189,14 @@ class InteractionProcessorBase(
                 interactable.defer_type,
                 interactable.is_ephemeral
             )
+            execution_data["response_processed"] = True
 
         with execution_context.start("Post-processing performed"):
-            await self._on_interaction_processed(interaction, interactable, response)
+            await self._on_interaction_processed(
+                interaction,
+                descriptor,
+                response
+            )
 
     @coroutine
     def __try_create_initial_response(
@@ -270,10 +288,17 @@ class InteractionProcessorBase(
 
     async def __try_send_error_response(
         self,
-        interaction: TInteraction
+        interaction: TInteraction,
+        execution_data: dict[str, Any],
+        localization_key: str = "interactions.unhandled_interaction_error"
     ) -> None:
+        if execution_data.get("response_processed", False):
+            # The interaction has been acknowledged only,
+            # therefore a second response cannot be sent.
+            return
+
         try:
-            await self._send_error_response(interaction)
+            await self._send_error_response(interaction, localization_key)
         except Exception as error:
             self.__log.debug(
                 "Failed to send the default interaction error response",

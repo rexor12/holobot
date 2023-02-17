@@ -1,8 +1,7 @@
-from abc import ABCMeta, abstractmethod
 from collections.abc import Awaitable
-from typing import Any
+from typing import Any, Protocol
 
-class IAsyncDisposable(metaclass=ABCMeta):
+class IAsyncDisposable(Protocol):
     async def __aenter__(self) -> Any:
         return None
 
@@ -12,6 +11,5 @@ class IAsyncDisposable(metaclass=ABCMeta):
     def dispose(self) -> Awaitable[None]:
         return self._on_dispose()
 
-    @abstractmethod
     def _on_dispose(self) -> Awaitable[None]:
-        raise NotImplementedError
+        ...

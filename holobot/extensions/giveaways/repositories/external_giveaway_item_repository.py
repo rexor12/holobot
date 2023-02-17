@@ -1,12 +1,10 @@
-from asyncpg.connection import Connection
+from collections.abc import Awaitable
 
 from holobot.extensions.giveaways.models import ExternalGiveawayItem, ExternalGiveawayItemMetadata
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
-from holobot.sdk.database.statuses import CommandComplete
-from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from .iexternal_giveaway_item_repository import IExternalGiveawayItemRepository
@@ -36,13 +34,13 @@ class ExternalGiveawayItemRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    async def get_many(
+    def get_many(
         self,
         page_index: int,
         page_size: int,
         item_type: str,
         active_only: bool = True
-    ) -> PaginationResult[ExternalGiveawayItem]:
+    ) -> Awaitable[PaginationResult[ExternalGiveawayItem]]:
         def get_filter(where: WhereBuilder) -> WhereConstraintBuilder:
             builder = where.field("item_type", Equality.EQUAL, item_type)
             if active_only:
@@ -51,7 +49,7 @@ class ExternalGiveawayItemRepository(
                     )
             return builder
 
-        return await self._paginate(
+        return self._paginate(
             "id",
             page_index,
             page_size,
@@ -65,64 +63,59 @@ class ExternalGiveawayItemRepository(
         item_type: str,
         active_only: bool = True
     ) -> PaginationResult[ExternalGiveawayItemMetadata]:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                query = (Query
-                    .select()
-                    .columns("id", "title")
-                    .from_table(self.table_name)
-                    .where()
-                    .field("item_type", Equality.EQUAL, item_type)
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("id", "title")
+                .from_table(self.table_name)
+                .where()
+                .field("item_type", Equality.EQUAL, item_type)
+            )
+            if active_only:
+                query = query.and_field(
+                    "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
                 )
-                if active_only:
-                    query = query.and_field(
-                        "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
+
+            result = await (query
+                .paginate("id", page_index, page_size)
+                .compile()
+                .fetch(session.connection)
+            )
+
+            return PaginationResult(
+                result.page_index,
+                result.page_size,
+                result.total_count,
+                [
+                    ExternalGiveawayItemMetadata(
+                        identifier=record["id"],
+                        title=record["title"]
                     )
-                result = await query.paginate("id", page_index, page_size).compile().fetch(connection)
-                return PaginationResult(
-                    result.page_index,
-                    result.page_size,
-                    result.total_count,
-                    [
-                        ExternalGiveawayItemMetadata(
-                            identifier=record["id"],
-                            title=record["title"]
-                        )
-                        for record in result.records
-                    ]
-                )
+                    for record in result.records
+                ]
+            )
 
     async def exists(self, url: str, active_only: bool = True) -> bool:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                query = (Query
-                    .select()
-                    .columns("id")
-                    .from_table(self.table_name)
-                    .where()
-                    .field("url", Equality.EQUAL, url)
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("id")
+                .from_table(self.table_name)
+                .where()
+                .field("url", Equality.EQUAL, url)
+            )
+            if active_only:
+                query = query.and_field(
+                    "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
                 )
-                if active_only:
-                    query = query.and_field(
-                        "end_time", Equality.GREATER, "(NOW() AT TIME ZONE 'utc')", True
-                    )
-                return bool(await query.exists().compile().fetchval(connection))
+            return bool(await query.exists().compile().fetchval(session.connection))
 
-    async def delete_expired(self) -> int:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                status: CommandComplete[DeleteCommandTag] = await (Query
-                    .delete()
-                    .from_table(self.table_name)
-                    .where()
-                    .field("end_time", Equality.LESS, "(NOW() at time zone 'utc') - interval '7 days'", True)
-                    .compile()
-                    .execute(connection)
-                )
-                return status.command_tag.rows
+    def delete_expired(self) -> Awaitable[int]:
+        return self._delete_by_filter(
+            lambda where: where.field(
+                "end_time", Equality.LESS, "(NOW() at time zone 'utc') - interval '7 days'", True
+            )
+        )
 
     def _map_record_to_model(
         self,

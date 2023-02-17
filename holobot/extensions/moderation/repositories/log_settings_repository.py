@@ -1,9 +1,8 @@
-from asyncpg.connection import Connection
+from collections.abc import Awaitable
 
 from holobot.extensions.moderation.models import LogSettings
 from holobot.extensions.moderation.repositories.records import LogSettingsRecord
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
-from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -34,22 +33,19 @@ class LogSettingsRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    async def get_by_server(self, server_id: str) -> LogSettings | None:
+    def get_by_server(self, server_id: str) -> Awaitable[LogSettings | None]:
         assert_not_none(server_id, "server_id")
 
-        return await self._get_by_filter(lambda where: (
+        return self._get_by_filter(lambda where: (
             where.field("server_id", Equality.EQUAL, server_id)
         ))
 
-    async def delete_by_server(self, server_id: str) -> None:
+    def delete_by_server(self, server_id: str) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await Query.delete().from_table(self.table_name).where().field(
-                    "server_id", Equality.EQUAL, server_id
-                ).compile().execute(connection)
+        return self._delete_by_filter(
+            lambda where: where.field("server_id", Equality.EQUAL, server_id)
+        )
 
     def _map_record_to_model(self, record: LogSettingsRecord) -> LogSettings:
         return LogSettings(

@@ -65,7 +65,7 @@ class _CacheEntry(Generic[TValue]):
         self.__value = value
         self.__policy = policy
 
-class _ItemStore(Generic[TKey, TValue], IAsyncDisposable):
+class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
     def __init__(
         self,
         cleanup_interval: timedelta
@@ -181,7 +181,7 @@ class _ItemStore(Generic[TKey, TValue], IAsyncDisposable):
 
 _DEFAULT_NO_EXPIRATION_POLICY = NoExpirationCacheEntryPolicy()
 
-class ConcurrentMemoryCache(ICache, Generic[TKey, TValue], IAsyncDisposable):
+class ConcurrentMemoryCache(ICache, IAsyncDisposable, Generic[TKey, TValue]):
     """Default implementation of an in-memory cache that supports concurrent access."""
 
     def __init__(

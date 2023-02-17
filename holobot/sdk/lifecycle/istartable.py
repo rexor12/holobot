@@ -1,8 +1,9 @@
+from collections.abc import Awaitable
 from typing import Protocol
 
 class IStartable(Protocol):
-    async def start(self):
+    def start(self) -> Awaitable[None]:
         ...
 
-    async def stop(self):
+    def stop(self) -> Awaitable[None]:
         ...

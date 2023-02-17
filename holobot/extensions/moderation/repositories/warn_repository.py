@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from datetime import timedelta
 
 from asyncpg.connection import Connection
@@ -49,18 +50,16 @@ class WarnRepository(
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                count: int | None = await connection.fetchval(
-                    (
-                        f"SELECT COUNT(*) FROM {self.table_name} AS t1"
-                        f" LEFT JOIN {_SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
-                        " WHERE (t2.decay_threshold IS NULL OR (t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold))"
-                        " AND t1.server_id = $1 AND t1.user_id = $2"
-                    ), server_id, user_id
-                )
-                return count if count is not None else 0
+        async with (session := await self._get_session()):
+            count: int | None = await session.connection.fetchval(
+                (
+                    f"SELECT COUNT(*) FROM {self.table_name} AS t1"
+                    f" LEFT JOIN {_SETTINGS_TABLE_NAME} AS t2 ON t1.server_id = t2.server_id"
+                    " WHERE (t2.decay_threshold IS NULL OR (t1.created_at >= (NOW() at time zone 'utc') - t2.decay_threshold))"
+                    " AND t1.server_id = $1 AND t1.user_id = $2"
+                ), server_id, user_id
+            )
+            return count if count is not None else 0
 
     async def get_warns_by_user(
         self,
@@ -72,41 +71,43 @@ class WarnRepository(
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .select()
-                    .columns("t1.id", "t1.created_at", "t1.server_id", "t1.user_id", "t1.reason", "t1.warner_id")
-                    .from_table(self.table_name, "t1")
-                    .join(_SETTINGS_TABLE_NAME, "t1.server_id", "t2.server_id", "t2")
-                    .where()
-                    .expression(
-                        and_expression(
-                            or_expression(
-                                column_expression("t2.decay_threshold", Equality.EQUAL, None),
-                                column_expression("t1.created_at", Equality.GREATER | Equality.EQUAL, "((NOW() at time zone 'utc') - t2.decay_threshold)", True)
-                            ),
-                            column_expression("t1.server_id", Equality.EQUAL, server_id),
-                            column_expression("t1.user_id", Equality.EQUAL, user_id)
-                        )
+        async with (session := await self._get_session()):
+            result = await (Query
+                .select()
+                .columns("t1.id", "t1.created_at", "t1.server_id", "t1.user_id", "t1.reason", "t1.warner_id")
+                .from_table(self.table_name, "t1")
+                .join(_SETTINGS_TABLE_NAME, "t1.server_id", "t2.server_id", "t2")
+                .where()
+                .expression(
+                    and_expression(
+                        or_expression(
+                            column_expression("t2.decay_threshold", Equality.EQUAL, None),
+                            column_expression("t1.created_at", Equality.GREATER | Equality.EQUAL, "((NOW() at time zone 'utc') - t2.decay_threshold)", True)
+                        ),
+                        column_expression("t1.server_id", Equality.EQUAL, server_id),
+                        column_expression("t1.user_id", Equality.EQUAL, user_id)
                     )
-                    .paginate("t1.id", page_index, max_count)
-                    .compile()
-                    .fetch(connection)
                 )
+                .paginate("t1.id", page_index, max_count)
+                .compile()
+                .fetch(session.connection)
+            )
 
-                return PaginationResult(
-                    result.page_index,
-                    result.page_size,
-                    result.total_count,
-                    [
-                        self._map_record_to_model(self._map_query_result_to_record(record))
-                        for record in result.records
-                    ]
-                )
+            return PaginationResult(
+                result.page_index,
+                result.page_size,
+                result.total_count,
+                [
+                    self._map_record_to_model(self._map_query_result_to_record(record))
+                    for record in result.records
+                ]
+            )
 
-    async def add_warn(self, warn_strike: WarnStrike, decay_threshold: timedelta | None = None) -> int:
+    async def add_warn(
+        self,
+        warn_strike: WarnStrike,
+        decay_threshold: timedelta | None = None
+    ) -> int:
         assert_not_none(warn_strike, "warn_strike")
         assert_not_none(warn_strike.server_id, "warn_strike.server_id")
         assert_not_none(warn_strike.user_id, "warn_strike.user_id")
@@ -118,58 +119,48 @@ class WarnRepository(
         if decay_threshold is not None and not isinstance(decay_threshold, timedelta):
             raise ArgumentError("decay_threshold", f"Expected timedelta but got {type(decay_threshold)}.")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await self.__clear_warns_older_than(connection, decay_threshold)
-                id: int | None = await Query.insert().in_table(self.table_name).fields(
-                    ("server_id", warn_strike.server_id),
-                    ("user_id", warn_strike.user_id),
-                    ("reason", warn_strike.reason),
-                    ("warner_id", warn_strike.warner_id)
-                ).returning().column("id").compile().fetchval(connection)
-                if id is None:
-                    raise ValueError("Unexpected error while creating a new warn.")
-                return id
+        async with (session := await self._get_session()):
+            await self.__clear_warns_older_than(session.connection, decay_threshold)
+            id: int | None = await Query.insert().in_table(self.table_name).fields(
+                ("server_id", warn_strike.server_id),
+                ("user_id", warn_strike.user_id),
+                ("reason", warn_strike.reason),
+                ("warner_id", warn_strike.warner_id)
+            ).returning().column("id").compile().fetchval(session.connection)
+            if id is None:
+                raise ValueError("Unexpected error while creating a new warn.")
+            return id
 
-    async def clear_warns_by_server(self, server_id: str) -> int:
+    def clear_warns_by_server(self, server_id: str) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                status: CommandComplete[DeleteCommandTag] = await Query.delete().from_table(self.table_name).where().field(
-                    "server_id", Equality.EQUAL, server_id
-                ).compile().execute(connection)
-                return status.command_tag.rows
+        return self._delete_by_filter(
+            lambda where: where.field("server_id", Equality.EQUAL, server_id)
+        )
 
-    async def clear_warns_by_user(self, server_id: str, user_id: str) -> int:
+    def clear_warns_by_user(self, server_id: str, user_id: str) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                status: CommandComplete[DeleteCommandTag] = await Query.delete().from_table(self.table_name).where().fields(
-                    Connector.AND,
-                    ("server_id", Equality.EQUAL, server_id),
-                    ("user_id", Equality.EQUAL, user_id)
-                ).compile().execute(connection)
-                return status.command_tag.rows
+        return self._delete_by_filter(
+            lambda where: where.fields(
+                Connector.AND,
+                ("server_id", Equality.EQUAL, server_id),
+                ("user_id", Equality.EQUAL, user_id)
+            )
+        )
 
     async def clear_expired_warns(self) -> int:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                status = await connection.execute(
-                    (
-                        f"DELETE FROM {self.table_name} AS t1"
-                        f" USING {_SETTINGS_TABLE_NAME} AS t2"
-                        " WHERE t1.server_id = t2.server_id AND t2.decay_threshold IS NOT NULL AND t1.created_at < (NOW() at time zone 'utc') - t2.decay_threshold"
-                    )
+        async with (session := await self._get_session()):
+            status = await session.connection.execute(
+                (
+                    f"DELETE FROM {self.table_name} AS t1"
+                    f" USING {_SETTINGS_TABLE_NAME} AS t2"
+                    " WHERE t1.server_id = t2.server_id AND t2.decay_threshold IS NOT NULL AND t1.created_at < (NOW() at time zone 'utc') - t2.decay_threshold"
                 )
-                status_tag: CommandComplete[DeleteCommandTag] = CommandComplete.parse(status)
-                return status_tag.command_tag.rows
+            )
+            status_tag: CommandComplete[DeleteCommandTag] = CommandComplete.parse(status)
+            return status_tag.command_tag.rows
 
     async def __clear_warns_older_than(self, connection: Connection, threshold: timedelta | None) -> None:
         if threshold is None:

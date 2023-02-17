@@ -1,16 +1,10 @@
-from typing import cast
-
-from asyncpg.connection import Connection
+from collections.abc import Awaitable
 
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
-from holobot.sdk.database.exceptions import DatabaseError
-from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.repositories import RepositoryBase
-from holobot.sdk.database.statuses import CommandComplete
-from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from .ireminder_repository import IReminderRepository
@@ -40,61 +34,37 @@ class ReminderRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    async def count_by_user(self, user_id: str) -> int:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .select()
-                    .column("COUNT(*)")
-                    .from_table(self.table_name)
-                    .where()
-                    .field("user_id", Equality.EQUAL, user_id)
-                    .compile()
-                    .fetchval(connection)
-                )
+    def count_by_user(self, user_id: str) -> Awaitable[int]:
+        return self._count_by_filter(
+            lambda where: where.field("user_id", Equality.EQUAL, user_id)
+        )
 
-                return result or 0
-
-    async def get_many(
+    def get_many(
         self,
         user_id: str,
         page_index: int,
         page_size: int
-    ) -> PaginationResult[Reminder]:
-        return await self._paginate(
-            "id",
+    ) -> Awaitable[PaginationResult[Reminder]]:
+        return self._paginate(
+            RepositoryBase._ID_FIELD_NAME,
             page_index,
             page_size,
             lambda where: where.field("user_id", Equality.EQUAL, user_id)
         )
 
-    async def get_triggerable(self) -> tuple[Reminder, ...]:
-        return await self._get_many_by_filter(lambda where: (
+    def get_triggerable(self) -> Awaitable[tuple[Reminder, ...]]:
+        return self._get_many_by_filter(lambda where: (
             where.field("next_trigger", Equality.LESS_OR_EQUAL, "(NOW() AT TIME ZONE 'utc')", True)
         ))
 
-    async def delete_by_user(self, user_id: str, reminder_id: int) -> int:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                result = await (Query
-                    .delete()
-                    .from_table(self.table_name)
-                    .where()
-                    .fields(
-                        Connector.AND,
-                        ("user_id", Equality.EQUAL, user_id),
-                        ("id", Equality.EQUAL, reminder_id)
-                    )
-                    .compile()
-                    .execute(connection)
-                )
-
-                if not isinstance(result, CommandComplete):
-                    raise DatabaseError("Failed to delete some records.")
-
-                return cast(CommandComplete[DeleteCommandTag], result).command_tag.rows
+    def delete_by_user(self, user_id: str, reminder_id: int) -> Awaitable[int]:
+        return self._delete_by_filter(
+            lambda where: where.fields(
+                Connector.AND,
+                ("user_id", Equality.EQUAL, user_id),
+                ("id", Equality.EQUAL, reminder_id)
+            )
+        )
 
     def _map_record_to_model(self, record: ReminderRecord) -> Reminder:
         return Reminder(

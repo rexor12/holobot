@@ -1,13 +1,14 @@
+from collections.abc import Awaitable
 from typing import Protocol
 
-from asyncpg.pool import PoolAcquireContext
+from .isession import ISession
 
 class IDatabaseManager(Protocol):
-    async def upgrade_all(self):
+    def upgrade_all(self) -> Awaitable[None]:
         ...
 
-    async def downgrade_many(self, version_by_table: tuple[str, int]):
+    def downgrade_many(self, version_by_table: tuple[str, int]) -> Awaitable[None]:
         ...
 
-    def acquire_connection(self) -> PoolAcquireContext:
+    def acquire_connection(self) -> Awaitable[ISession]:
         ...

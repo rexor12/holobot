@@ -1,6 +1,5 @@
-from abc import abstractmethod
 from collections.abc import Awaitable
-from typing import Any, TypeVar
+from typing import Any, Protocol, TypeVar
 
 from asyncpg import Connection
 
@@ -9,23 +8,21 @@ from .aggregate_root import AggregateRoot
 
 TIdentifier = TypeVar("TIdentifier", int, str)
 
-class IUnitOfWork(IAsyncDisposable):
+class IUnitOfWork(IAsyncDisposable, Protocol):
     """Interface for a unit of work."""
 
     @property
-    @abstractmethod
     def connection(self) -> Connection:
         """Gets the connection the unit of work belongs to.
 
         :return: The owning connection.
         :rtype: Connection
         """
+        ...
 
-    @abstractmethod
     def complete(self) -> None:
         """Completes the unit of work."""
 
-    @abstractmethod
     def get(
         self,
         entity_type: type[AggregateRoot[TIdentifier]],
@@ -40,8 +37,8 @@ class IUnitOfWork(IAsyncDisposable):
         :return: If found, the matching entity; otherwise, None.
         :rtype: Awaitable[Any | None]
         """
+        ...
 
-    @abstractmethod
     def set(
         self,
         value: AggregateRoot[Any]
@@ -58,8 +55,8 @@ class IUnitOfWork(IAsyncDisposable):
         :return: None.
         :rtype: Awaitable[None]
         """
+        ...
 
-    @abstractmethod
     def remove(
         self,
         entity_type: type[AggregateRoot[TIdentifier]],
@@ -74,7 +71,4 @@ class IUnitOfWork(IAsyncDisposable):
         :return: None.
         :rtype: Awaitable[None]
         """
-
-    @abstractmethod
-    async def _on_dispose(self) -> None:
         ...

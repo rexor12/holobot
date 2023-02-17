@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Awaitable, Sequence
 from typing import Protocol
 
 from holobot.extensions.admin.models import CommandRule
@@ -9,28 +9,28 @@ class ICommandRuleRepository(
     IRepository[int, CommandRule],
     Protocol
 ):
-    async def add_or_update(self, rule: CommandRule) -> int:
+    def add_or_update(self, rule: CommandRule) -> Awaitable[int]:
         ...
 
-    async def get_many(
+    def get_many(
         self,
         server_id: str,
         group: str | None,
         subgroup: str | None,
         page_index: int,
         page_size: int
-    ) -> PaginationResult[CommandRule]:
+    ) -> Awaitable[PaginationResult[CommandRule]]:
         ...
 
-    async def get_relevant(
+    def get_relevant(
         self,
         server_id: str,
         channel_id: str,
         group: str | None,
         subgroup: str | None,
         command: str | None
-    ) -> Sequence[CommandRule]:
+    ) -> Awaitable[Sequence[CommandRule]]:
         ...
 
-    async def delete_by_server(self, server_id: str) -> None:
+    def delete_by_server(self, server_id: str) -> Awaitable[int]:
         ...

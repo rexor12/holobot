@@ -1,19 +1,18 @@
 import asyncio
 import ssl
-from collections.abc import Generator
-from types import coroutine
+from collections.abc import Awaitable
 
 import asyncpg
-from asyncpg.connection import Connection
-from asyncpg.pool import Pool, PoolAcquireContext
 
 from holobot.sdk.configs import IOptions
-from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.database import IDatabaseManager, ISession
 from holobot.sdk.database.migration import MigrationInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.threading.utils import COMPLETED_TASK
 from .database_options import DatabaseOptions
+from .session import Session
 
 @injectable(IStartable)
 @injectable(IDatabaseManager)
@@ -27,39 +26,41 @@ class DatabaseManager(IDatabaseManager, IStartable):
         self.__database_options = database_options
         self.__logger = logger_factory.create(DatabaseManager)
         self.__migrations: tuple[MigrationInterface, ...] = migrations
-        self.__connection_pool: Pool = asyncio.get_event_loop().run_until_complete(self.__initialize_database())
+        self.__connection_pool: asyncpg.Pool = asyncio.get_event_loop().run_until_complete(
+            self.__initialize_database()
+        )
 
-    @coroutine
-    def start(self) -> Generator[None, None, None]:
-        yield
+    def start(self) -> Awaitable[None]:
+        return COMPLETED_TASK
 
-    async def stop(self):
+    async def stop(self) -> None:
         await self.__connection_pool.close()
         self.__logger.info("Successfully shut down")
 
-    async def upgrade_all(self):
+    async def upgrade_all(self) -> None:
         self.__logger.info("Upgrading the database...")
         async with self.__connection_pool.acquire() as connection:
-            connection: Connection
+            connection: asyncpg.Connection
             async with connection.transaction():
                 for migration in self.__migrations:
                     await self.__upgrade_table(connection, migration)
         self.__logger.info("Successfully upgraded the database")
 
-    async def downgrade_many(self, version_by_table: tuple[str, int]):
+    async def downgrade_many(self, version_by_table: tuple[str, int]) -> None:
         self.__logger.info("Rolling back the database...")
         async with self.__connection_pool.acquire() as connection:
-            connection: Connection
+            connection: asyncpg.Connection
             async with connection.transaction():
                 for migration in self.__migrations:
                     # TODO Find the migration by the version_by_table.
                     await self.__downgrade_table(connection, migration)
         self.__logger.info("Successfully rolled back the database")
 
-    def acquire_connection(self) -> PoolAcquireContext:
-        return self.__connection_pool.acquire()
+    async def acquire_connection(self) -> ISession:
+        connection: asyncpg.Connection = await self.__connection_pool.acquire()
+        return Session(connection, self.__connection_pool)
 
-    async def __initialize_database(self) -> Pool:
+    async def __initialize_database(self) -> asyncpg.pool.Pool:
         options = self.__database_options.value
         connection_string_base = f"postgres://{options.User}:{options.Password}@{options.Host}:{options.Port}/"
         ssl_object = self.__create_ssl_context()
@@ -100,16 +101,31 @@ class DatabaseManager(IDatabaseManager, IStartable):
             ssl_context.verify_mode = ssl.CERT_NONE
         return ssl_context
 
-    async def __try_create_database(self, connection: Connection, name: str):
+    async def __try_create_database(
+        self,
+        connection: asyncpg.Connection,
+        name: str
+    ) -> None:
         if await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name) != 1:
             self.__logger.debug("Creating a new database", name=name)
             await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0")
             self.__logger.debug("Successfully created the database")
 
-    async def __upgrade_table(self, connection: Connection, migration: MigrationInterface):
-        current_version = await self.__get_current_table_version(connection, migration.table_name)
+    async def __upgrade_table(
+        self,
+        connection: asyncpg.Connection,
+        migration: MigrationInterface
+    ) -> None:
+        current_version = await self.__get_current_table_version(
+            connection,
+            migration.table_name
+        )
         new_version = await migration.upgrade(connection, current_version)
-        await self.__update_current_table_version(connection, migration.table_name, new_version)
+        await self.__update_current_table_version(
+            connection,
+            migration.table_name,
+            new_version
+        )
         if new_version != current_version:
             self.__logger.debug(
                 "Successfully upgraded table",
@@ -118,14 +134,27 @@ class DatabaseManager(IDatabaseManager, IStartable):
                 new_version=new_version
             )
 
-    async def __downgrade_table(self, connection: Connection, migration: MigrationInterface):
+    async def __downgrade_table(
+        self,
+        connection: asyncpg.Connection,
+        migration: MigrationInterface
+    ) -> None:
         # TODO Implement database rollbacks.
         raise NotImplementedError
 
-    async def __get_current_table_version(self, connection: Connection, table_name: str):
+    async def __get_current_table_version(
+        self,
+        connection: asyncpg.Connection,
+        table_name: str
+    ) -> int:
         return await connection.fetchval("SELECT version FROM table_info WHERE name = $1", table_name) or 0
 
-    async def __update_current_table_version(self, connection: Connection, table_name: str, version: int):
+    async def __update_current_table_version(
+        self,
+        connection: asyncpg.Connection,
+        table_name: str,
+        version: int
+    ) -> None:
         await connection.execute((
             "INSERT INTO table_info (name, version)"
             " VALUES ($1, $2)"

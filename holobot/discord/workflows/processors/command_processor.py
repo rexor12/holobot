@@ -98,18 +98,21 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
     async def _on_interaction_processed(
         self,
         interaction: hikari.CommandInteraction,
-        interactable: Command,
+        descriptor: InteractionDescriptor[Command],
         response: InteractionResponse
     ) -> None:
         if not self.__event_listeners:
             return
 
-        interaction.channel_id
+        # At this point the interactable cannot be None.
+        assert descriptor.interactable
+
         event = CommandProcessedEvent(
-            interactable=interactable,
+            interactable=descriptor.interactable,
             server_id=str(interaction.guild_id),
             channel_id=str(interaction.channel_id),
             user_id=str(interaction.user.id),
+            arguments=descriptor.arguments,
             response=response
         )
         for event_listener in self.__event_listeners:

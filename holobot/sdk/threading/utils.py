@@ -1,4 +1,5 @@
 import asyncio
+import types
 from collections.abc import Awaitable, Generator
 from datetime import timedelta
 from typing import Any, Generic, TypeVar
@@ -18,8 +19,9 @@ class CompletedTask(Generic[TResult], Awaitable[TResult]):
         super().__init__()
         self.__result = result
 
-    def __await__(self) -> Generator[Any, Any, None]:
-        yield self.__result
+    def __await__(self) -> Generator[None, None, TResult]:
+        yield
+        return self.__result
 
 COMPLETED_TASK: CompletedTask[None] = CompletedTask(None)
 

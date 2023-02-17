@@ -1,10 +1,7 @@
 import contextvars
 from collections.abc import Awaitable
 
-from asyncpg import Connection
-from asyncpg.pool import PoolAcquireContext
-
-from holobot.sdk.database import IDatabaseManager, IUnitOfWork, IUnitOfWorkProvider
+from holobot.sdk.database import IDatabaseManager, ISession, IUnitOfWork, IUnitOfWorkProvider
 from holobot.sdk.database.enums import IsolationLevel
 from holobot.sdk.exceptions import ArgumentError, InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
@@ -37,26 +34,29 @@ class UnitOfWorkProvider(IUnitOfWorkProvider):
             raise InvalidOperationError("Nesting of units of work is not supported.")
 
         pg_isolation_level = UnitOfWorkProvider.__get_pg_isolation_level(isolation_level)
-        context = self.__database_manager.acquire_connection()
-        connection: Connection = await context.__aenter__()
-        transaction = connection.transaction(isolation=pg_isolation_level)
-        await transaction.start()
+        session = await self.__database_manager.acquire_connection()
+        try:
+            transaction = session.connection.transaction(isolation=pg_isolation_level)
+            await transaction.start()
 
-        unit_of_work = UnitOfWork(
-            connection,
-            transaction,
-            lambda: self.__remove_unit_of_work(context)
-        )
-        self.__unit_of_work.set(unit_of_work)
+            unit_of_work = UnitOfWork(
+                session.connection,
+                transaction,
+                lambda: self.__remove_unit_of_work(session)
+            )
+            self.__unit_of_work.set(unit_of_work)
 
-        return unit_of_work
+            return unit_of_work
+        except:
+            await session.dispose()
+            raise
 
     def __remove_unit_of_work(
         self,
-        context: PoolAcquireContext
+        session: ISession
     ) -> Awaitable[None]:
         self.__unit_of_work.set(None)
-        return context.__aexit__()
+        return session.dispose()
 
     @staticmethod
     def __get_pg_isolation_level(isolation_level: IsolationLevel) -> str:

@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from datetime import timedelta
 from typing import Protocol
 
@@ -6,30 +7,30 @@ from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
 class IWarnRepository(IRepository[int, WarnStrike], Protocol):
-    async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
+    def get_warn_count_by_user(self, server_id: str, user_id: str) -> Awaitable[int]:
         ...
 
-    async def get_warns_by_user(
+    def get_warns_by_user(
         self,
         server_id: str,
         user_id: str,
         page_index: int,
         max_count: int
-    ) -> PaginationResult[WarnStrike]:
+    ) -> Awaitable[PaginationResult[WarnStrike]]:
         ...
 
-    async def add_warn(
+    def add_warn(
         self,
         warn_strike: WarnStrike,
         decay_threshold: timedelta | None = None
-    ) -> int:
+    ) -> Awaitable[int]:
         ...
 
-    async def clear_warns_by_server(self, server_id: str) -> int:
+    def clear_warns_by_server(self, server_id: str) -> Awaitable[int]:
         ...
 
-    async def clear_warns_by_user(self, server_id: str, user_id: str) -> int:
+    def clear_warns_by_user(self, server_id: str, user_id: str) -> Awaitable[int]:
         ...
 
-    async def clear_expired_warns(self) -> int:
+    def clear_expired_warns(self) -> Awaitable[int]:
         ...

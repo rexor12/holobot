@@ -1,7 +1,4 @@
-from collections.abc import Sequence
-from typing import Any
-
-from asyncpg.connection import Connection
+from collections.abc import Awaitable, Sequence
 
 from holobot.extensions.admin.models import CommandRule
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
@@ -42,46 +39,44 @@ class CommandRuleRepository(
         super().__init__(database_manager, unit_of_work_provider)
 
     async def add_or_update(self, rule: CommandRule) -> int:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                id: int | None = await Query.update().table(self.table_name).fields(
-                    ("created_at", set_time_zone(rule.created_at, None)),
-                    ("created_by", rule.created_by),
-                    ("state", rule.state)
-                ).where().fields(
-                    Connector.AND,
-                    ("server_id", Equality.EQUAL, rule.server_id),
-                    ("command_group", Equality.EQUAL, rule.group),
-                    ("command_subgroup", Equality.EQUAL, rule.subgroup),
-                    ("command", Equality.EQUAL, rule.command),
-                    ("channel_id", Equality.EQUAL, rule.channel_id)
-                ).returning().column("id").compile().fetchval(connection)
-                if id is not None:
-                    return id
-
-                id = await Query.insert().in_table(self.table_name).fields(
-                    ("created_at", set_time_zone(rule.created_at, None)),
-                    ("created_by", rule.created_by),
-                    ("server_id", rule.server_id),
-                    ("state", rule.state),
-                    ("command_group", rule.group),
-                    ("command_subgroup", rule.subgroup),
-                    ("command", rule.command),
-                    ("channel_id", rule.channel_id)
-                ).returning().column("id").compile().fetchval(connection)
-                if id is None:
-                    raise ValueError("Unexpected error while creating a new rule.")
+        async with (session := await self._get_session()):
+            id: int | None = await Query.update().table(self.table_name).fields(
+                ("created_at", set_time_zone(rule.created_at, None)),
+                ("created_by", rule.created_by),
+                ("state", rule.state)
+            ).where().fields(
+                Connector.AND,
+                ("server_id", Equality.EQUAL, rule.server_id),
+                ("command_group", Equality.EQUAL, rule.group),
+                ("command_subgroup", Equality.EQUAL, rule.subgroup),
+                ("command", Equality.EQUAL, rule.command),
+                ("channel_id", Equality.EQUAL, rule.channel_id)
+            ).returning().column("id").compile().fetchval(session.connection)
+            if id is not None:
                 return id
 
-    async def get_many(
+            id = await Query.insert().in_table(self.table_name).fields(
+                ("created_at", set_time_zone(rule.created_at, None)),
+                ("created_by", rule.created_by),
+                ("server_id", rule.server_id),
+                ("state", rule.state),
+                ("command_group", rule.group),
+                ("command_subgroup", rule.subgroup),
+                ("command", rule.command),
+                ("channel_id", rule.channel_id)
+            ).returning().column("id").compile().fetchval(session.connection)
+            if id is None:
+                raise ValueError("Unexpected error while creating a new rule.")
+            return id
+
+    def get_many(
         self,
         server_id: str,
         group: str | None,
         subgroup: str | None,
         page_index: int,
         page_size: int
-    ) -> PaginationResult[CommandRule]:
+    ) -> Awaitable[PaginationResult[CommandRule]]:
         def get_filter(where: WhereBuilder) -> WhereConstraintBuilder:
             builder = where.field("server_id", Equality.EQUAL, server_id)
             if group is not None:
@@ -90,7 +85,7 @@ class CommandRuleRepository(
                     builder = builder.and_field("command_subgroup", Equality.EQUAL, subgroup)
             return builder
 
-        return await self._paginate(
+        return self._paginate(
             "id",
             page_index,
             page_size,
@@ -105,64 +100,61 @@ class CommandRuleRepository(
         subgroup: str | None,
         command: str | None
     ) -> Sequence[CommandRule]:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                filters = []
-                if group is not None:
-                    filters.append(
-                        and_expression(
-                            column_expression("command_group", Equality.EQUAL, group),
-                            column_expression("command_subgroup", Equality.EQUAL, None),
-                            column_expression("command", Equality.EQUAL, None)
-                        )
-                    )
-                if subgroup is not None:
-                    filters.append(
-                        and_expression(
-                            column_expression("command_group", Equality.EQUAL, group),
-                            column_expression("command_subgroup", Equality.EQUAL, subgroup),
-                            column_expression("command", Equality.EQUAL, None)
-                        )
-                    )
-                if command is not None:
-                    filters.append(
-                        and_expression(
-                            column_expression("command_group", Equality.EQUAL, group),
-                            column_expression("command_subgroup", Equality.EQUAL, subgroup),
-                            column_expression("command", Equality.EQUAL, command)
-                        )
-                    )
-                filter_expression = and_expression(
-                    column_expression("command_group", Equality.EQUAL, None),
-                    column_expression("command_subgroup", Equality.EQUAL, None),
-                    column_expression("command", Equality.EQUAL, None)
-                )
-                if filters:
-                    filter_expression = or_expression(filter_expression, *filters)
-                records = await Query.select().columns(
-                    *self.column_names
-                ).from_table(self.table_name).where().expression(
+        async with (session := await self._get_session()):
+            filters = []
+            if group is not None:
+                filters.append(
                     and_expression(
-                        column_expression("server_id", Equality.EQUAL, server_id),
-                        or_expression(
-                            column_expression("channel_id", Equality.EQUAL, None),
-                            column_expression("channel_id", Equality.EQUAL, channel_id)
-                        ),
-                        filter_expression
+                        column_expression("command_group", Equality.EQUAL, group),
+                        column_expression("command_subgroup", Equality.EQUAL, None),
+                        column_expression("command", Equality.EQUAL, None)
                     )
-                ).compile().fetch(connection)
-
-                return tuple(
-                    self._map_record_to_model(self._map_query_result_to_record(record))
-                    for record in records
                 )
+            if subgroup is not None:
+                filters.append(
+                    and_expression(
+                        column_expression("command_group", Equality.EQUAL, group),
+                        column_expression("command_subgroup", Equality.EQUAL, subgroup),
+                        column_expression("command", Equality.EQUAL, None)
+                    )
+                )
+            if command is not None:
+                filters.append(
+                    and_expression(
+                        column_expression("command_group", Equality.EQUAL, group),
+                        column_expression("command_subgroup", Equality.EQUAL, subgroup),
+                        column_expression("command", Equality.EQUAL, command)
+                    )
+                )
+            filter_expression = and_expression(
+                column_expression("command_group", Equality.EQUAL, None),
+                column_expression("command_subgroup", Equality.EQUAL, None),
+                column_expression("command", Equality.EQUAL, None)
+            )
+            if filters:
+                filter_expression = or_expression(filter_expression, *filters)
+            records = await Query.select().columns(
+                *self.column_names
+            ).from_table(self.table_name).where().expression(
+                and_expression(
+                    column_expression("server_id", Equality.EQUAL, server_id),
+                    or_expression(
+                        column_expression("channel_id", Equality.EQUAL, None),
+                        column_expression("channel_id", Equality.EQUAL, channel_id)
+                    ),
+                    filter_expression
+                )
+            ).compile().fetch(session.connection)
 
-    async def delete_by_server(self, server_id: str) -> None:
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await Query.delete().from_table(self.table_name).where().field("server_id", Equality.EQUAL, server_id).compile().execute(connection)
+            return tuple(
+                self._map_record_to_model(self._map_query_result_to_record(record))
+                for record in records
+            )
+
+    def delete_by_server(self, server_id: str) -> Awaitable[int]:
+        return self._delete_by_filter(
+            lambda where: where.field("server_id", Equality.EQUAL, server_id)
+        )
 
     def _map_record_to_model(self, record: CommandRuleRecord) -> CommandRule:
         return CommandRule(

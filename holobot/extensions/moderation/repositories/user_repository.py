@@ -1,9 +1,8 @@
-from asyncpg.connection import Connection
+from collections.abc import Awaitable
 
 from holobot.extensions.moderation.enums import ModeratorPermission
 from holobot.extensions.moderation.models import User
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
-from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.enums import Connector, Equality
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -36,15 +35,15 @@ class UserRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    async def get_by_server(
+    def get_by_server(
         self,
         server_id: str,
         user_id: str
-    ) -> User | None:
+    ) -> Awaitable[User | None]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        return await self._get_by_filter(lambda where: (
+        return self._get_by_filter(lambda where: (
             where.fields(
                 Connector.AND,
                 ("server_id", Equality.EQUAL, server_id),
@@ -52,39 +51,31 @@ class UserRepository(
             )
         ))
 
-    async def delete_by_server(
+    def delete_by_server(
         self,
         server_id: str,
         user_id: str
-    ) -> None:
+    ) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        async with self._database_manager.acquire_connection() as connection:
-            connection: Connection
-            async with connection.transaction():
-                await (Query
-                    .delete()
-                    .from_table(self.table_name)
-                    .where()
-                    .fields(
-                        Connector.AND,
-                        ("server_id", Equality.EQUAL, server_id),
-                        ("user_id", Equality.EQUAL, user_id)
-                    )
-                    .compile()
-                    .execute(connection)
-                )
+        return self._delete_by_filter(
+            lambda where: where.fields(
+                Connector.AND,
+                ("server_id", Equality.EQUAL, server_id),
+                ("user_id", Equality.EQUAL, user_id)
+            )
+        )
 
-    async def get_moderators(
+    def get_moderators(
         self,
         server_id: str,
         page_index: int,
         page_size: int
-    ) -> PaginationResult[User]:
+    ) -> Awaitable[PaginationResult[User]]:
         assert_not_none(server_id, "server_id")
 
-        return await self._paginate(
+        return self._paginate(
             "id",
             page_index,
             page_size,

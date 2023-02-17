@@ -4,14 +4,13 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Generic, TypeVar, cast
 
-from asyncpg.connection import Connection
-from asyncpg.pool import PoolAcquireContext
+import asyncpg
 
 from holobot.sdk import Lazy
-from holobot.sdk.concurrency import IAsyncDisposable
 from holobot.sdk.database.aggregate_root import AggregateRoot
 from holobot.sdk.database.exceptions import DatabaseError
 from holobot.sdk.database.idatabase_manager import IDatabaseManager
+from holobot.sdk.database.isession import ISession
 from holobot.sdk.database.iunit_of_work_provider import IUnitOfWorkProvider
 from holobot.sdk.database.queries import (
     CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder,
@@ -34,21 +33,17 @@ TIdentifier = TypeVar("TIdentifier", int, str)
 TRecord = TypeVar("TRecord", bound=Record)
 TModel = TypeVar("TModel", bound=AggregateRoot)
 
-_ID_FIELD_NAME = "id"
-
-class _Session(IAsyncDisposable):
-    def __init__(
-        self,
-        connection: Connection,
-        context: PoolAcquireContext | None
-    ) -> None:
+class _UnitOfWorkSession(ISession):
+    def __init__(self, connection: asyncpg.Connection) -> None:
         super().__init__()
-        self.connection = connection
-        self.__context = context
+        self.__connection = connection
 
-    async def _on_dispose(self) -> None:
-        if self.__context:
-            await self.__context.__aexit__()
+    @property
+    def connection(self) -> asyncpg.Connection:
+        return self.__connection
+
+    def _on_dispose(self) -> Awaitable[None]:
+        return COMPLETED_TASK
 
 class RepositoryBase(
     ABC,
@@ -56,6 +51,8 @@ class RepositoryBase(
     IRepository[TIdentifier, TModel]
 ):
     """Abstract base class for a repository."""
+
+    _ID_FIELD_NAME = "id"
 
     @property
     def column_names(self) -> tuple[str, ...]:
@@ -127,7 +124,7 @@ class RepositoryBase(
                 .in_table(self.table_name)
                 .fields(*fields)
                 .returning()
-                .column(_ID_FIELD_NAME)
+                .column(RepositoryBase._ID_FIELD_NAME)
                 .compile()
                 .fetchval(session.connection)
             )
@@ -148,7 +145,7 @@ class RepositoryBase(
                 .columns(*self.column_names)
                 .from_table(self.table_name)
                 .where()
-                .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
+                .field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, identifier)
                 .compile()
                 .fetchrow(session.connection)
             )
@@ -179,7 +176,7 @@ class RepositoryBase(
                 .table(self.table_name)
                 .fields(*fields)
                 .where()
-                .field(_ID_FIELD_NAME, Equality.EQUAL, record.id)
+                .field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, record.id)
                 .compile()
                 .execute(session.connection)
             )
@@ -196,7 +193,7 @@ class RepositoryBase(
                 .delete()
                 .from_table(self.table_name)
                 .where()
-                .field(_ID_FIELD_NAME, Equality.EQUAL, identifier)
+                .field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, identifier)
                 .compile()
                 .execute(session.connection)
             )
@@ -226,6 +223,29 @@ class RepositoryBase(
         :return: The new instance of the record.
         :rtype: TRecord
         """
+
+    async def _count_by_filter(
+        self,
+        filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
+    ) -> int:
+        """Counts the entities matching the specified filter.
+
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], ICompileableQueryPartBuilder[CompiledQuery]]
+        :return: The number of entities matching the specified filter.
+        :rtype: int
+        """
+
+        async with (session := await self._get_session()):
+            query = filter_builder(Query
+                .select()
+                .column("COUNT(*)")
+                .from_table(self.table_name)
+                .where()
+            )
+            result = await query.compile().fetchval(session.connection)
+
+            return result or 0
 
     async def _get_many_by_filter(
         self,
@@ -306,13 +326,15 @@ class RepositoryBase(
             )
             results = await (query
                 .returning()
-                .column(_ID_FIELD_NAME)
+                .column(RepositoryBase._ID_FIELD_NAME)
                 .compile()
                 .fetch(session.connection)
             )
 
             for result in results:
-                await self.__try_remove_model(cast(TIdentifier, result.get(_ID_FIELD_NAME)))
+                await self.__try_remove_model(
+                    cast(TIdentifier, result.get(RepositoryBase._ID_FIELD_NAME))
+                )
 
             return len(results)
 
@@ -419,16 +441,14 @@ class RepositoryBase(
                 RepositoryBase.__convert_field_to_record(getattr(record, column.name))
             )
             for column in self.__columns.value
-            if not ignore_identifier or column.name != _ID_FIELD_NAME
+            if not ignore_identifier or column.name != RepositoryBase._ID_FIELD_NAME
         ]
 
-    async def _get_session(self) -> _Session:
+    async def _get_session(self) -> ISession:
         if unit_of_work := self.__unit_of_work_provider.current:
-            return _Session(unit_of_work.connection, None)
+            return _UnitOfWorkSession(unit_of_work.connection)
 
-        context = self._database_manager.acquire_connection()
-        connection = await context.__aenter__()
-        return _Session(connection, context)
+        return await self._database_manager.acquire_connection()
 
     @staticmethod
     def __convert_field_to_model(

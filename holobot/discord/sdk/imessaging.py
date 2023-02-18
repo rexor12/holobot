@@ -12,7 +12,9 @@ class IMessaging(Protocol):
         server_id: str,
         channel_id: str,
         content: str | Embed,
-        components: ComponentBase | list[LayoutBase] | None = None
+        components: ComponentBase | list[LayoutBase] | None = None,
+        *,
+        suppress_user_mentions: bool = False
     ) -> str:
         ...
 

@@ -46,5 +46,10 @@ class LogManager(ILogManager):
         if not log_settings or not log_settings.channel_id:
             return False
 
-        await self.__messaging.send_channel_message(server_id, log_settings.channel_id, message)
+        await self.__messaging.send_channel_message(
+            server_id,
+            log_settings.channel_id,
+            message,
+            suppress_user_mentions=True
+        )
         return True

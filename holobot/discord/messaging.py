@@ -49,7 +49,9 @@ class Messaging(IMessaging):
         server_id: str,
         channel_id: str,
         content: str | Embed,
-        components: ComponentBase | list[LayoutBase] | None = None
+        components: ComponentBase | list[LayoutBase] | None = None,
+        *,
+        suppress_user_mentions: bool = False
     ) -> str:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
@@ -73,7 +75,8 @@ class Messaging(IMessaging):
                 components=(
                     self.__component_transformer.transform_to_root_component(components)
                     if components else UNDEFINED
-                )
+                ),
+                user_mentions=not suppress_user_mentions
             )
 
             return str(message.id)

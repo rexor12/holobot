@@ -444,10 +444,10 @@
                 "embed_field_value": "> Message: {message}\n> Next trigger: <t:{time}:f>\n> Repeats: {repeats}"
             },
             "reminder_processor": {
-                "reminder_dm": "It's time for me to remind you:\n> {message}",
-                "reminder_dm_no_message": "It's time for me to remind you... hmm, about what, though?",
-                "reminder_dm_belated": "I'm a bit late, but here's your reminder:\n> {message}\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)",
-                "reminder_dm_belated_no_message": "I'm a bit late, but here's your reminder... hmm, about what, though?\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)"
+                "reminder_dm": "<@{user_id}>, it's time for me to remind you:\n> {message}",
+                "reminder_dm_no_message": "<@{user_id}>, it's time for me to remind you... hmm, about what, though?",
+                "reminder_dm_belated": "<@{user_id}>, I'm a bit late, but here's your reminder:\n> {message}\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)",
+                "reminder_dm_belated_no_message": "<@{user_id}>, I'm a bit late, but here's your reminder... hmm, about what, though?\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)"
             }
         },
 

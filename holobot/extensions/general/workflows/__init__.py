@@ -4,6 +4,7 @@ from .marry_workflow import MarryWorkflow
 from .match_users_workflow import MatchUsersWorkflow
 from .react_workflow import ReactWorkflow
 from .roll_number_workflow import RollNumberWorkflow
+from .say_workflow import SayWorkflow
 from .summon_user_workflow import SummonUserWorkflow
 from .view_bot_info_workflow import ViewBotInfoWorkflow
 from .view_emoji_workflow import ViewEmojiWorkflow

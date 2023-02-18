@@ -1,11 +1,13 @@
 from typing import Protocol
 
-from holobot.discord.sdk.actions import AutocompleteAction, EditMessageAction, ReplyAction
+from holobot.discord.sdk.actions import (
+    AutocompleteAction, DeleteAction, EditMessageAction, ReplyAction
+)
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import AutocompleteChoice, Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr, UndefinedType
+from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr
 from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
 from .interactables import Interactable
 from .iworkflow import IWorkflow
@@ -58,6 +60,20 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False
     ) -> InteractionResponse:
+        """Reply to the interaction with a normal message.
+
+        :param content: The text content of the message, defaults to None
+        :type content: str | None, optional
+        :param embed: The embed content of the message, defaults to None
+        :type embed: Embed | None, optional
+        :param components: Zero or more components to attach to the message, defaults to None
+        :type components: ComponentBase | list[LayoutBase] | None, optional
+        :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False
+        :type suppress_user_mentions: bool, optional
+        :return: The interaction response.
+        :rtype: InteractionResponse
+        """
+
         return InteractionResponse(
             action=ReplyAction(
                 content=content,
@@ -75,6 +91,22 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False
     ) -> InteractionResponse:
+        """Edit an already existing message.
+
+        This is typically useful for component interactions.
+
+        :param content: The text content of the message, defaults to UNDEFINED
+        :type content: UndefinedOrNoneOr[str], optional
+        :param embed: The embed content of the message, defaults to UNDEFINED
+        :type embed: UndefinedOrNoneOr[Embed], optional
+        :param components: Zero or more components to attach to the message, defaults to None
+        :type components: ComponentBase | list[LayoutBase] | None, optional
+        :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False
+        :type suppress_user_mentions: bool, optional
+        :return: The interaction response.
+        :rtype: InteractionResponse
+        """
+
         return InteractionResponse(
             action=EditMessageAction(
                 content=content,
@@ -88,8 +120,33 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         self,
         choices: AutocompleteChoice | list[AutocompleteChoice]
     ) -> InteractionResponse:
+        """Return the auto-complete values.
+
+        :param choices: The only available choice or a list of them.
+        :type choices: AutocompleteChoice | list[AutocompleteChoice]
+        :return: The interaction response.
+        :rtype: InteractionResponse
+        """
+
         return InteractionResponse(
             action=AutocompleteAction(
                 choices=choices if isinstance(choices, list) else [choices]
             )
+        )
+
+    def _delete(self) -> InteractionResponse:
+        """Delete the initial interaction response.
+
+        This is useful when you don't want the reply-like information
+        to appear above the response so as to hide the command usage.
+
+        The response must be deferred in order for this to work;
+        otherwise, an interaction failure is reported to the user.
+
+        :return: The interaction response.
+        :rtype: InteractionResponse
+        """
+
+        return InteractionResponse(
+            action=DeleteAction()
         )

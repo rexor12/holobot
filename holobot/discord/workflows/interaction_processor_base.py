@@ -209,9 +209,15 @@ class InteractionProcessorBase(
 
         match interactable.defer_type:
             case DeferType.DEFER_MESSAGE_CREATION:
-                yield from interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
+                yield from interaction.create_initial_response(
+                    hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+                    flags=hikari.MessageFlag.EPHEMERAL if interactable.is_ephemeral else hikari.UNDEFINED
+                )
             case DeferType.DEFER_MESSAGE_UPDATE:
-                yield from interaction.create_initial_response(hikari.ResponseType.DEFERRED_MESSAGE_UPDATE)
+                yield from interaction.create_initial_response(
+                    hikari.ResponseType.DEFERRED_MESSAGE_UPDATE,
+                    flags=hikari.MessageFlag.EPHEMERAL if interactable.is_ephemeral else hikari.UNDEFINED
+                )
             case _: yield
 
     async def __try_halt_on_invalid_interaction(

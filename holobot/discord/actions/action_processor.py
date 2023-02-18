@@ -5,7 +5,7 @@ from typing import TypeVar
 import hikari
 
 from holobot.discord.sdk.actions import (
-    ActionBase, AutocompleteAction, DoNothingAction, EditMessageAction, ReplyAction
+    ActionBase, AutocompleteAction, DeleteAction, DoNothingAction, EditMessageAction, ReplyAction
 )
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.transformers.embed import to_dto as embed_to_dto
@@ -36,6 +36,20 @@ class ActionProcessor(IActionProcessor):
             case ReplyAction(): await self.__process_reply(context, action, deferral, is_ephemeral)
             case EditMessageAction(): await self.__process_edit_reference_message(context, action, deferral, is_ephemeral)
             case AutocompleteAction(): await self.__process_autocomplete(context, action)
+            case DeleteAction(): await self.__process_delete(context)
+
+    @staticmethod
+    def __convert_to_dto(
+        value: T | None | UndefinedType,
+        converter: Callable[[T], TResult]
+    ) -> TResult | None | hikari.UndefinedType:
+        match value:
+            case UndefinedType():
+                return hikari.UNDEFINED
+            case None:
+                return None
+            case _:
+                return converter(value)
 
     async def __process_reply(
         self,
@@ -124,15 +138,12 @@ class ActionProcessor(IActionProcessor):
                 ]
             )
 
-    @staticmethod
-    def __convert_to_dto(
-        value: T | None | UndefinedType,
-        converter: Callable[[T], TResult]
-    ) -> TResult | None | hikari.UndefinedType:
-        match value:
-            case UndefinedType():
-                return hikari.UNDEFINED
-            case None:
-                return None
-            case _:
-                return converter(value)
+    async def __process_delete(
+        self,
+        interaction: hikari.PartialInteraction
+    ) -> None:
+        if not isinstance(interaction, (hikari.CommandInteraction, hikari.ComponentInteraction)):
+            raise ArgumentError("Replying to a message is valid for command and component interactions only.")
+
+        with contextlib.suppress(hikari.NotFoundError):
+            await interaction.delete_initial_response()

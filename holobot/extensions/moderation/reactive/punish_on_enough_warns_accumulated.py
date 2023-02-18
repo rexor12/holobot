@@ -73,7 +73,8 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
         await self.__messaging.send_channel_message(
             event.server_id,
             server_settings.channel_id,
-            f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes."
+            f":{icon}: <@{event.response.user_id}> has been {operation} automatically for hitting {warn_count} warn strikes.",
+            suppress_user_mentions=True
         )
 
     async def __try_punish(self, server_id: str, user_id: str, warn_count: int, warn_settings: WarnSettings) -> tuple[bool, str, str]:

@@ -109,6 +109,7 @@ class ReminderProcessor(IStartable):
         localized_message = self.__i18n_provider.get(
             self.__get_dm_localization_key(is_belated, bool(reminder.message)),
             {
+                "user_id": reminder.user_id,
                 "message": reminder.message,
                 "trigger_time": int(reminder.next_trigger.timestamp())
             }

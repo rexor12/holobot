@@ -49,7 +49,8 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
                     {
                         "items": "\n".join(items_i18n)
                     }
-                )
+                ),
+                suppress_user_mentions=True
             )
             await self.__messaging.crosspost_message(
                 options.AnnouncementServerId,

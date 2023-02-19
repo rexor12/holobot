@@ -52,9 +52,14 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
     )
     async def view_permissions(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         user: int | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         return (
             await self.__view_user_permissions(context, str(user))
             if user else await self.__view_moderators(context)

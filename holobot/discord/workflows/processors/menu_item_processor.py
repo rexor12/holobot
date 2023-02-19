@@ -4,6 +4,7 @@ from hikari import CommandInteraction, CommandType
 
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.events import MenuItemProcessedEvent
+from holobot.discord.sdk.exceptions import InteractionContextNotSupportedError
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import MenuItem
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
@@ -52,32 +53,34 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         self,
         interaction: CommandInteraction
     ) -> InteractionContext:
-        # TODO Support non-server specific commands.
         if not interaction.guild_id:
-            raise NotImplementedError("Non-server specific commands are not supported.")
+            raise InteractionContextNotSupportedError()
 
         match interaction.command_type:
-            case CommandType.MESSAGE: return ServerMessageInteractionContext(
-                request_id=uuid4(),
-                author_id=str(interaction.user.id),
-                author_name=interaction.user.username,
-                author_nickname=interaction.member.nickname if interaction.member else None,
-                server_id=str(interaction.guild_id),
-                server_name=guild.name if (guild := interaction.get_guild()) else None,
-                channel_id=str(interaction.channel_id),
-                target_message_id=str(interaction.target_id)
-            )
-            case CommandType.USER: return ServerUserInteractionContext(
-                request_id=uuid4(),
-                author_id=str(interaction.user.id),
-                author_name=interaction.user.username,
-                author_nickname=interaction.member.nickname if interaction.member else None,
-                server_id=str(interaction.guild_id),
-                server_name=guild.name if (guild := interaction.get_guild()) else None,
-                channel_id=str(interaction.channel_id),
-                target_user_id=str(interaction.target_id)
-            )
-            case _: raise ValueError(f"The command type '{interaction.command_type}' is not supported.")
+            case CommandType.MESSAGE:
+                return ServerMessageInteractionContext(
+                    request_id=uuid4(),
+                    author_id=str(interaction.user.id),
+                    author_name=interaction.user.username,
+                    author_nickname=interaction.member.nickname if interaction.member else None,
+                    server_id=str(interaction.guild_id),
+                    server_name=guild.name if (guild := interaction.get_guild()) else None,
+                    channel_id=str(interaction.channel_id),
+                    target_message_id=str(interaction.target_id)
+                )
+            case CommandType.USER:
+                return ServerUserInteractionContext(
+                    request_id=uuid4(),
+                    author_id=str(interaction.user.id),
+                    author_name=interaction.user.username,
+                    author_nickname=interaction.member.nickname if interaction.member else None,
+                    server_id=str(interaction.guild_id),
+                    server_name=guild.name if (guild := interaction.get_guild()) else None,
+                    channel_id=str(interaction.channel_id),
+                    target_user_id=str(interaction.target_id)
+                )
+            case _:
+                raise InteractionContextNotSupportedError()
 
     async def _on_interaction_processed(
         self,

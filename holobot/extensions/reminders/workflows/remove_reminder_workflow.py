@@ -8,7 +8,6 @@ from holobot.discord.sdk.workflows.interactables.components.models import Button
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.reminders import IReminderManager
 from holobot.extensions.reminders.exceptions import InvalidReminderError
 from holobot.sdk.i18n import II18nProvider
@@ -39,7 +38,7 @@ class RemoveReminderWorkflow(WorkflowBase):
     )
     async def remove_reminder(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         id: int
     ) -> InteractionResponse:
         try:

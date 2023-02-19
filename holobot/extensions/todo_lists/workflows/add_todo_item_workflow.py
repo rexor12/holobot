@@ -1,9 +1,9 @@
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button, StackLayout
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.todo_lists import ITodoItemManager
 from holobot.extensions.todo_lists.exceptions import TooManyTodoItemsError
 from holobot.extensions.todo_lists.models import TodoItem
@@ -33,7 +33,7 @@ class AddTodoItemWorkflow(WorkflowBase):
     )
     async def add_todo_item(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         description: str
     ) -> InteractionResponse:
         todo_item = TodoItem(

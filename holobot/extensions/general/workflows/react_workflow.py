@@ -1,7 +1,7 @@
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
 )
-from holobot.discord.sdk.models import Embed, EmbedFooter
+from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -49,10 +49,15 @@ class ReactWorkflow(WorkflowBase):
     )
     async def show_reaction(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         action: str,
         target: int | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         action = action.strip().lower()
         if action not in _CATEGORIES:
             return self._reply(content=self.__i18n_provider.get(

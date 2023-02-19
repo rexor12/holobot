@@ -2,6 +2,7 @@ from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, ServerNotFoundError, UserNotFoundError
 )
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils.mention_utils import get_channel_id_or_default
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -39,11 +40,16 @@ class SummonUserWorkflow(WorkflowBase):
     )
     async def summon_user(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         user: int,
         message: str | None = None,
         channel: str | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         if not user:
             return self._reply(
                 content=self.__i18n_provider.get(

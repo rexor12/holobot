@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -35,9 +36,14 @@ class SetWarnDecayWorkflow(WorkflowBase):
     )
     async def set_warn_decay(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         duration: str
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             decay_threshold = parse_interval(duration.strip())
         except (ArgumentOutOfRangeError, InvalidInputError):

@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -36,10 +37,15 @@ class SetAutoMuteWorkflow(WorkflowBase):
     )
     async def set_auto_mute(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         warn_count: int,
         duration: str | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             mute_duration = parse_interval(duration.strip()) if duration is not None else None
         except (ArgumentOutOfRangeError, InvalidInputError):

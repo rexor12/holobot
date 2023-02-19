@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -34,9 +35,14 @@ class SetAutoBanWorkflow(WorkflowBase):
     )
     async def set_auto_ban(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         warn_count: int
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             await self.__warn_manager.enable_auto_ban(context.server_id, warn_count)
         except ArgumentOutOfRangeError as error:

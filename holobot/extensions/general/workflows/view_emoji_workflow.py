@@ -1,9 +1,9 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.data_providers import IEmojiDataProvider
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -27,7 +27,7 @@ class ViewEmojiWorkflow(WorkflowBase):
     )
     async def show_emoji(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         name: str
     ) -> InteractionResponse:
         if (emoji := await self.__emoji_data_provider.find_emoji(name.strip())) is None:

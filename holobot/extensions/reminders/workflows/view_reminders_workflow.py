@@ -9,7 +9,6 @@ from holobot.discord.sdk.workflows.interactables.components import (
 from holobot.discord.sdk.workflows.interactables.components.models import ButtonState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.reminders import IReminderManager
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -39,7 +38,7 @@ class ViewRemindersWorkflow(WorkflowBase):
     )
     async def view_reminders(
         self,
-        context: ServerChatInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
         content, embed, components = await self.__create_page_content(
             context.author_id,

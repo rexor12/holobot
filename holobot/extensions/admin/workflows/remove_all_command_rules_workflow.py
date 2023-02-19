@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -28,7 +29,16 @@ class RemoveAllCommandRulesWorkflow(WorkflowBase):
             Option("confirmation", "Type \"confirm\" if you are sure about this."),
         )
     )
-    async def execute(self, context: ServerChatInteractionContext, confirmation: str) -> InteractionResponse:
+    async def execute(
+        self,
+        context: InteractionContext,
+        confirmation: str
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         if confirmation != "confirm":
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get(

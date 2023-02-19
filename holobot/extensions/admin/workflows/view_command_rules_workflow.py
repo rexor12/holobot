@@ -44,14 +44,21 @@ class ViewCommandRulesWorkflow(WorkflowBase):
     )
     async def view_command_rules(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         group: str | None = None,
         subgroup: str | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         if not group and subgroup:
-            return self._reply(content=self.__i18n_provider.get(
-                "extensions.admin.view_command_rules_workflow.subgroup_requires_group_error"
-            ))
+            return self._reply(
+                content=self.__i18n_provider.get(
+                    "extensions.admin.view_command_rules_workflow.subgroup_requires_group_error"
+                )
+            )
 
         content, embed, components = await self.__create_page_content(
             context.server_id,

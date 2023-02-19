@@ -1,6 +1,7 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import ForbiddenError, InvalidChannelError
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.discord.sdk.utils import get_channel_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -43,9 +44,14 @@ class SetAnnouncementChannelWorkflow(WorkflowBase):
     )
     async def set_announcement_channel(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         channel: str | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         options = self.__options.value
         if not SetAnnouncementChannelWorkflow.__is_feature_enabled(options):
             return InteractionResponse(

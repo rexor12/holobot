@@ -11,7 +11,6 @@ from holobot.discord.sdk.workflows.interactables.components import (
 from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
@@ -57,11 +56,6 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         context: InteractionContext,
         state: Any
     ) -> InteractionResponse:
-        if not isinstance(context, ServerChatInteractionContext):
-            return self._edit_message(
-                content="This interaction is available in a server only."
-            )
-
         if not isinstance(state, PagerState):
             return self._edit_message(content="This interaction isn't valid anymore.")
 
@@ -87,9 +81,6 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         context: InteractionContext,
         state: Any
     ) -> InteractionResponse:
-        if not isinstance(context, ServerChatInteractionContext):
-            return self._edit_message(content="This interaction is available in a server only.")
-
         if not isinstance(state, ComboBoxState):
             return self._edit_message(content="This interaction isn't valid anymore.")
 

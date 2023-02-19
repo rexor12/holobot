@@ -8,6 +8,7 @@ import hikari
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
+from holobot.discord.sdk.exceptions import InteractionContextNotSupportedError
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
@@ -62,6 +63,13 @@ class InteractionProcessorBase(
                     interaction,
                     execution_data,
                     "database_serialization_error"
+                )
+            except InteractionContextNotSupportedError:
+                execution_data["has_exception"] = True
+                await self.__try_send_error_response(
+                    interaction,
+                    execution_data,
+                    "interactions.interaction_context_not_supported_error"
                 )
             except Exception:
                 # Don't propagate to the framework, better log it here.

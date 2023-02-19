@@ -1,5 +1,5 @@
 from holobot.discord.sdk.exceptions import ServerNotFoundError
-from holobot.discord.sdk.models import Embed
+from holobot.discord.sdk.models import Embed, InteractionContext
 from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -28,8 +28,13 @@ class ViewServerIconWorkflow(WorkflowBase):
     )
     async def display_server_icon(
         self,
-        context: ServerChatInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             server = await self.__server_data_provider.get_basic_data_by_id(context.server_id)
         except ServerNotFoundError:

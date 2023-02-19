@@ -245,6 +245,7 @@
             },
             "view_marriage_workflow": {
                 "not_married_error": "I'm sorry, but you don't seem to be married, yet. I'm rooting for you, though. („• ᴗ •„)",
+                "other_not_married_error": "I'm sorry, but <@{user_id}> doesn't seem to be married, yet.",
                 "embed_title": "Marriage details",
                 "embed_description": "<@{user_id1}> and <@{user_id2}> have been married since <t:{married_at}:D> which was <t:{married_at}:R>.\n\n🤗 Hugs: _{hugs}_\n😘 Kisses: _{kisses}_\n🥰 Pats: _{pats}_\n🥴 Pokes: _{pokes}_",
                 "embed_field_xp": "Experience points",

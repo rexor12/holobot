@@ -1,6 +1,6 @@
-
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.utils import get_channel_id
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -42,18 +42,16 @@ class SetCommandRuleWorkflow(WorkflowBase):
     )
     async def set_command_rule(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         state: str,
         group: str | None = None,
         subgroup: str | None = None,
         command: str | None = None,
         channel: str | None = None
     ) -> InteractionResponse:
-        if context.server_id is None:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
-                    "interactions.server_only_interaction_error"
-                ))
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
         channel_id = get_channel_id(channel) if channel is not None else None
@@ -68,6 +66,7 @@ class SetCommandRuleWorkflow(WorkflowBase):
         )
         try:
             await self.__command_rule_manager.set_rule(rule)
+
             return InteractionResponse(
                 action=ReplyAction(content=self.__i18n_provider.get(
                     "extensions.admin.set_command_rule_workflow.rule_set_successfully",

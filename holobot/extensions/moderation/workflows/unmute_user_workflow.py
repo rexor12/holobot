@@ -3,6 +3,7 @@ import contextlib
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers.managers import IUserManager
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType, OptionType
@@ -41,9 +42,14 @@ class UnmuteUserWorkflow(WorkflowBase):
     )
     async def unmute_user_via_command(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         user: int
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         user_id = str(user)
         try:
             await self.__user_manager.unsilence_user(context.server_id, user_id)
@@ -94,8 +100,13 @@ class UnmuteUserWorkflow(WorkflowBase):
     )
     async def unmute_user_via_menu_item(
         self,
-        context: ServerUserInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
+        if not isinstance(context, ServerUserInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             await self.__user_manager.unsilence_user(context.server_id, context.target_user_id)
         except UserNotFoundError:

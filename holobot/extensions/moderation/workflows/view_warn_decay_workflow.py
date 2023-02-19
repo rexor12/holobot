@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -29,8 +30,13 @@ class ViewWarnDecayWorkflow(WorkflowBase):
     )
     async def view_warn_decay(
         self,
-        context: ServerChatInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         decay_threshold = await self.__warn_manager.get_warn_decay(context.server_id)
         response_i18n = (
             "extensions.moderation.view_warn_decay_workflow.decay_enabled"

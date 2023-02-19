@@ -7,7 +7,9 @@ from holobot.discord.sdk.events import CommandProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.discord.sdk.workflows.models import (
+    DirectMessageInteractionContext, ServerChatInteractionContext
+)
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.workflows import (
     IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
@@ -81,17 +83,22 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
         self,
         interaction: hikari.CommandInteraction
     ) -> InteractionContext:
-        # TODO Support non-server specific commands.
-        if not interaction.guild_id:
-            raise NotImplementedError("Non-server specific commands are not supported.")
+        if interaction.guild_id:
+            return ServerChatInteractionContext(
+                request_id=uuid4(),
+                author_id=str(interaction.user.id),
+                author_name=interaction.user.username,
+                author_nickname=interaction.member.nickname if interaction.member else None,
+                server_id=str(interaction.guild_id),
+                server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
+                channel_id=str(interaction.channel_id)
+            )
 
-        return ServerChatInteractionContext(
+        return DirectMessageInteractionContext(
             request_id=uuid4(),
             author_id=str(interaction.user.id),
             author_name=interaction.user.username,
-            author_nickname=interaction.member.nickname if interaction.member else None,
-            server_id=str(interaction.guild_id),
-            server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
+            author_nickname=None,
             channel_id=str(interaction.channel_id)
         )
 

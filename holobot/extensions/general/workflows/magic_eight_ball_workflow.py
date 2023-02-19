@@ -1,10 +1,10 @@
 import time
 from random import Random
 
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
@@ -38,7 +38,7 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
     )
     async def answer_question(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         question: str
     ) -> InteractionResponse:
         question = question.strip()

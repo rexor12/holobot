@@ -1,6 +1,6 @@
-
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.utils import get_channel_id_or_default
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -37,18 +37,17 @@ class TestCommandWorkflow(WorkflowBase):
     )
     async def test_command(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         command: str,
         group: str | None = None,
         subgroup: str | None = None,
         channel: str | None = None
     ) -> InteractionResponse:
-        if context.server_id is None:
-            return InteractionResponse(
-                action=ReplyAction(content=self.__i18n_provider.get(
-                    "interactions.server_only_interaction_error"
-                ))
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
+
 
         if not self.__command_registry.command_exists(command, group, subgroup):
             return InteractionResponse(

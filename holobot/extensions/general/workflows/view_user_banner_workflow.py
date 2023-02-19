@@ -2,7 +2,7 @@ from holobot.discord.sdk.data_providers import IUserDataProvider
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
 )
-from holobot.discord.sdk.models import Embed
+from holobot.discord.sdk.models import Embed, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -39,9 +39,14 @@ class ViewUserBannerWorkflow(WorkflowBase):
     )
     async def view_user_banner(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         user: int | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             if user is None:
                 user_data = await self.__user_data_provider.get_user_data_by_id(

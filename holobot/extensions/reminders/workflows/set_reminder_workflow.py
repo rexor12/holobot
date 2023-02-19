@@ -1,3 +1,4 @@
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button, StackLayout
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
@@ -50,13 +51,18 @@ class SetReminderWorkflow(WorkflowBase):
     )
     async def set_reminder(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         message: str | None = None,
         in_time: str | None = None,
         at_time: str | None = None,
         every_interval: str | None = None,
         location: int = ReminderLocation.DIRECT_MESSAGE.value
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         reminder_config = ReminderConfig(
             server_id=context.server_id,
             channel_id=context.channel_id,

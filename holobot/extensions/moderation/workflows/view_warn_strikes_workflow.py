@@ -11,6 +11,7 @@ from holobot.discord.sdk.workflows.interactables.components.models import PagerS
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
@@ -24,11 +25,13 @@ DEFAULT_PAGE_SIZE = 5
 class ViewWarnStrikesWorkflow(WorkflowBase):
     def __init__(
         self,
+        i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         member_data_provider: IMemberDataProvider,
         warn_manager: IWarnManager
     ) -> None:
         super().__init__()
+        self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(ViewWarnStrikesWorkflow)
         self.__member_data_provider: IMemberDataProvider = member_data_provider
         self.__warn_manager: IWarnManager = warn_manager
@@ -45,9 +48,14 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
     )
     async def view_warn_strikes(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         user: int
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         user_id = str(user)
         if not await self.__member_data_provider.is_member(context.server_id, user_id):
             return self._reply(content="The user you mentioned cannot be found.")
@@ -78,7 +86,10 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
         state: Any
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
-            return self._edit_message(content="An internal error occurred while processing the interaction.")
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
 
         content, embed, components = await self.__create_page_content(
             context.server_id,

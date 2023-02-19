@@ -1,3 +1,4 @@
+from .direct_message_interaction_context import DirectMessageInteractionContext
 from .server_chat_interaction_context import ServerChatInteractionContext
 from .server_message_interaction_context import ServerMessageInteractionContext
 from .server_user_interaction_context import ServerUserInteractionContext

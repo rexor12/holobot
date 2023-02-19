@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
@@ -31,9 +32,14 @@ class RemoveCommandRuleWorkflow(WorkflowBase):
     )
     async def remove_command_rule(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         identifier: int
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         await self.__command_rule_manager.remove_rule(identifier)
         return InteractionResponse(
             action=ReplyAction(content=self.__i18n_provider.get(

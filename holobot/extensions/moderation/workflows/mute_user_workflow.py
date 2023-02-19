@@ -4,6 +4,7 @@ from datetime import timedelta
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers.managers import SILENCE_DURATION_MAX, IUserManager
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.enums import MenuType, OptionType
@@ -53,11 +54,16 @@ class MuteUserWorkflow(WorkflowBase):
     )
     async def mute_user_via_command(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         user: int,
         reason: str,
         duration: str | None = None
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         user_id = str(user)
         reason = reason.strip()
         try:
@@ -141,8 +147,13 @@ class MuteUserWorkflow(WorkflowBase):
     )
     async def mute_user_via_menu_item(
         self,
-        context: ServerUserInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
+        if not isinstance(context, ServerUserInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         try:
             await self.__user_manager.silence_user(
                 context.server_id,

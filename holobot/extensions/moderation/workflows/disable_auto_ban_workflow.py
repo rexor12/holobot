@@ -1,5 +1,6 @@
 from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -29,8 +30,13 @@ class DisableAutoBanWorkflow(WorkflowBase):
     )
     async def disable_auto_ban(
         self,
-        context: ServerChatInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+
         await self.__warn_manager.disable_auto_ban(context.server_id)
         return AutoBanToggledResponse(
             author_id=context.author_id,

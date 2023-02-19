@@ -3,7 +3,7 @@ from datetime import datetime
 import tzlocal
 
 from holobot.discord.sdk.data_providers import IBotDataProvider
-from holobot.discord.sdk.models import Embed, EmbedFooter
+from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComponentBase, StackLayout
@@ -32,7 +32,7 @@ class ViewBotInfoWorkflow(WorkflowBase):
     @command(description="Displays some information about the bot.", name="info")
     async def view_bot_info(
         self,
-        context: ServerChatInteractionContext
+        context: InteractionContext
     ) -> InteractionResponse:
         current_time = datetime.now(tzlocal.get_localzone())
         buttons: list[ComponentBase] = [

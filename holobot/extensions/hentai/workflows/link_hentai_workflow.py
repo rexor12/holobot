@@ -1,10 +1,10 @@
 import re
 
 from holobot.discord.sdk.actions import ReplyAction
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import try_parse_int
@@ -37,7 +37,7 @@ class LinkHentaiWorkflow(WorkflowBase):
     )
     async def show_hentai_link(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         site: str,
         code: str
     ) -> InteractionResponse:

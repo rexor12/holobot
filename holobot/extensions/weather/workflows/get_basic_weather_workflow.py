@@ -1,10 +1,9 @@
-from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter
+from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.weather import IWeatherClient
 from holobot.extensions.weather.exceptions import (
     InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
@@ -40,7 +39,7 @@ class GetBasicWeatherWorkflow(WorkflowBase):
     )
     async def show_basic_weather_info(
         self,
-        context: ServerChatInteractionContext,
+        context: InteractionContext,
         city: str
     ) -> InteractionResponse:
         try:

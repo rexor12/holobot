@@ -1,7 +1,8 @@
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.enums import OptionType
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.managers import IMarriageManager
 from holobot.extensions.general.models import GeneralOptions
@@ -25,26 +26,32 @@ class ViewMarriageWorkflow(WorkflowBase):
     @command(
         name="marriage",
         description="Shows information about your marriage.",
-        cooldown=Cooldown(duration=30)
+        options=(
+            Option("user", "The user whose marriage you want to see.", OptionType.USER, False),
+        ),
+        cooldown=Cooldown(duration=10)
     )
     async def view_marriage(
         self,
-        context: InteractionContext
+        context: InteractionContext,
+        user: int | None = None
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        marriage = await self.__marriage_manager.get_marriage(
-            context.server_id,
-            context.author_id
-        )
+        user_id = str(user) if user else context.author_id
+        marriage = await self.__marriage_manager.get_marriage(context.server_id, user_id)
         if not marriage:
             return self._reply(
                 content=self.__i18n_provider.get(
-                    "extensions.general.view_marriage_workflow.not_married_error"
-                )
+                    "extensions.general.view_marriage_workflow.other_not_married_error"
+                    if user
+                    else "extensions.general.view_marriage_workflow.not_married_error",
+                    { "user_id": user_id }
+                ),
+                suppress_user_mentions=True
             )
 
         if marriage.level - 1 >= len(self.__options.value.MarriageActivityExpTable):

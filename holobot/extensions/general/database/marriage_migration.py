@@ -10,8 +10,15 @@ class MarriageMigration(MigrationBase):
 
     def __init__(self) -> None:
         super().__init__(MarriageMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
+            0: MigrationPlan(0, 1, self.__initialize_table),
+            1: MigrationPlan(1, 2, self.__upgrade_to_v2),
         }, {})
+
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
+        await connection.execute((
+            f"ALTER TABLE {MarriageMigration._TABLE_NAME}"
+            " ADD COLUMN last_level_up_at TIMESTAMP DEFAULT NULL"
+        ))
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((

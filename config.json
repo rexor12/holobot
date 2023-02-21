@@ -371,7 +371,10 @@
                 9547
             ],
             "MatchMarriageBonusScore": "5:1;17:2;29:3;40:4;62:5;87:6;100:7",
-            "MarriageEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1WxjyhkUSFMsupnrO36Lp_jQKgF9PVvIg"
+            "MarriageEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1WxjyhkUSFMsupnrO36Lp_jQKgF9PVvIg",
+            "RankingGoldTrophyEmoji": "🤍",
+            "RankingSilverTrophyEmoji": "💙",
+            "RankingBronzeTrophyEmoji": "❤️"
         },
         "WaifuPicsOptions": {
             "CircuitBreakerFailureThreshold": 1,

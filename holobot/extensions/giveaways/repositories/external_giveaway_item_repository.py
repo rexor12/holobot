@@ -3,7 +3,7 @@ from collections.abc import Awaitable
 from holobot.extensions.giveaways.models import ExternalGiveawayItem, ExternalGiveawayItemMetadata
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
-from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -50,7 +50,7 @@ class ExternalGiveawayItemRepository(
             return builder
 
         return self._paginate(
-            "id",
+            (("id", Order.ASCENDING),),
             page_index,
             page_size,
             get_filter
@@ -77,7 +77,7 @@ class ExternalGiveawayItemRepository(
                 )
 
             result = await (query
-                .paginate("id", page_index, page_size)
+                .paginate((("id", Order.ASCENDING),), page_index, page_size)
                 .compile()
                 .fetch(session.connection)
             )

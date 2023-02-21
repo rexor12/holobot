@@ -6,7 +6,7 @@ from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBui
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
 )
-from holobot.sdk.database.queries.enums import Connector, Equality
+from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -86,7 +86,7 @@ class CommandRuleRepository(
             return builder
 
         return self._paginate(
-            "id",
+            (("id", Order.ASCENDING),),
             page_index,
             page_size,
             get_filter

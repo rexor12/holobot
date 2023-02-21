@@ -72,7 +72,7 @@ class Configurator(IConfigurator):
         effective_config = dict[str, Any]()
         for config_file_path in config_file_paths:
             if os.path.exists(config_file_path) and os.path.isfile(config_file_path):
-                with open(config_file_path) as config_file:
+                with open(config_file_path, encoding="utf8") as config_file:
                     merge(effective_config, load(config_file))
 
         Configurator.__resolve_environment_variables(effective_config)

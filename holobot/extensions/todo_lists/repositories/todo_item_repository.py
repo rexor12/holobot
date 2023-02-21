@@ -2,7 +2,7 @@ from collections.abc import Awaitable
 
 from holobot.extensions.todo_lists.models import TodoItem
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
-from holobot.sdk.database.queries.enums import Connector, Equality
+from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -45,7 +45,7 @@ class TodoItemRepository(
         page_size: int
     ) -> PaginationResult[TodoItem]:
         return await self._paginate(
-            "id",
+            (("id", Order.ASCENDING),),
             page_index,
             page_size,
             lambda where: where.field("user_id", Equality.EQUAL, user_id)

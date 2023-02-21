@@ -1,8 +1,9 @@
 from collections.abc import Awaitable
 from typing import Protocol
 
-from holobot.extensions.general.enums import ReactionType
-from holobot.extensions.general.models import Marriage
+from holobot.extensions.general.enums import RankingType, ReactionType
+from holobot.extensions.general.models import Marriage, RankingInfo
+from holobot.sdk.queries import PaginationResult
 
 class IMarriageManager(Protocol):
     def get_spouse_id(
@@ -46,4 +47,13 @@ class IMarriageManager(Protocol):
         ...
 
     def get_marriage(self, server_id: str, user_id: str) -> Awaitable[Marriage | None]:
+        ...
+
+    def get_ranking_infos(
+        self,
+        server_id: str,
+        ranking_type: RankingType,
+        page_index: int,
+        page_size: int
+    ) -> Awaitable[PaginationResult[RankingInfo]]:
         ...

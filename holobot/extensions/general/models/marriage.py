@@ -25,6 +25,9 @@ class Marriage(AggregateRoot[int]):
     level: int = 1
     """The current level of the relationship."""
 
+    last_level_up_at: datetime | None = None
+    """The date and time at which the user leveled up last."""
+
     exp_points: int = 0
     """The experience points the users have gathered so far at the current level."""
 

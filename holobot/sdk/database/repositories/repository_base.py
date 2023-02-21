@@ -16,7 +16,7 @@ from holobot.sdk.database.queries import (
     CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder,
     WhereConstraintBuilder
 )
-from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag, UpdateCommandTag
 from holobot.sdk.queries import PaginationResult
@@ -340,15 +340,15 @@ class RepositoryBase(
 
     async def _paginate(
         self,
-        ordering_column: str,
+        ordering_columns: tuple[tuple[str, Order], ...],
         page_index: int,
         page_size: int,
         filter_builder: Callable[[WhereBuilder], ISupportsPagination]
     ) -> PaginationResult[TModel]:
         """Gets a sequence of models matching the specified filter in a paging manner.
 
-        :param ordering_column: The name of the column used for ordering the intermediary results.
-        :type ordering_column: str
+        :param ordering_columns: The columns used for ordering the intermediary results.
+        :type ordering_columns: tuple[tuple[str, Order]]
         :param page_index: The index of the page to fetch.
         :type page_index: int
         :param page_size: The size of the pages.
@@ -365,7 +365,7 @@ class RepositoryBase(
                 .columns(*self.column_names)
                 .from_table(self.table_name)
                 .where()
-            ).paginate(ordering_column, page_index, page_size)
+            ).paginate(ordering_columns, page_index, page_size)
             result = await query.compile().fetch(session.connection)
 
             return PaginationResult[TModel](

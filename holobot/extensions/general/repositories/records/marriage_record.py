@@ -11,6 +11,7 @@ class MarriageRecord(Record[int]):
     user_id2: str
     married_at: datetime
     level: int
+    last_level_up_at: datetime | None
     exp_points: int
     last_activity_at: datetime | None
     activity_tier_reset_at: datetime

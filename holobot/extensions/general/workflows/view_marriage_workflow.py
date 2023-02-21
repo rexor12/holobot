@@ -24,8 +24,9 @@ class ViewMarriageWorkflow(WorkflowBase):
         self.__options = options
 
     @command(
-        name="marriage",
-        description="Shows information about your marriage.",
+        group_name="marriage",
+        name="view",
+        description="Shows information about your or another user's marriage.",
         options=(
             Option("user", "The user whose marriage you want to see.", OptionType.USER, False),
         ),

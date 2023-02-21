@@ -1,14 +1,20 @@
 from collections.abc import Awaitable
+from datetime import datetime, timezone
+from typing import cast
 
-from holobot.extensions.general.models import Marriage
+from holobot.extensions.general.enums import RankingType
+from holobot.extensions.general.models import Marriage, RankingInfo
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
 )
-from holobot.sdk.database.queries.enums import Equality
+from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils.datetime_utils import set_time_zone
 from .imarriage_repository import IMarriageRepository
 from .records import MarriageRecord
 
@@ -110,6 +116,44 @@ class MarriageRepository(
 
         return result > 0
 
+    async def paginate_rankings(
+        self,
+        server_id: str,
+        ranking_type: RankingType,
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[RankingInfo]:
+        columns = set[str](("user_id1", "user_id2", "level", "married_at"))
+        ordering_columns = MarriageRepository.__get_ranking_ordering_columns(ranking_type)
+        for ordering_column, _ in ordering_columns:
+            columns.add(ordering_column)
+
+        async with (session := await self._get_session()):
+            result = await (Query
+                .select()
+                .columns(*columns)
+                .from_table(self.table_name)
+                .where()
+                .field("server_id", Equality.EQUAL, server_id)
+                .paginate(ordering_columns, page_index, page_size)
+                .compile().fetch(session.connection)
+            )
+
+            return PaginationResult[RankingInfo](
+                result.page_index,
+                result.page_size,
+                result.total_count,
+                [
+                    RankingInfo(
+                        user_id1=record["user_id1"],
+                        user_id2=record["user_id2"],
+                        level=record["level"],
+                        married_at=set_time_zone(cast(datetime, record["married_at"]), timezone.utc)
+                    )
+                    for record in result.records
+                ]
+            )
+
     def _map_record_to_model(self, record: MarriageRecord) -> Marriage:
         return Marriage(
             identifier=record.id,
@@ -118,6 +162,7 @@ class MarriageRepository(
             user_id2=record.user_id2,
             married_at=record.married_at,
             level=record.level,
+            last_level_up_at=record.last_level_up_at,
             exp_points=record.exp_points,
             last_activity_at=record.last_activity_at,
             activity_tier_reset_at=record.activity_tier_reset_at,
@@ -137,6 +182,7 @@ class MarriageRepository(
             user_id2=model.user_id2,
             married_at=model.married_at,
             level=model.level,
+            last_level_up_at=model.last_level_up_at,
             exp_points=model.exp_points,
             last_activity_at=model.last_activity_at,
             activity_tier_reset_at=model.activity_tier_reset_at,
@@ -147,3 +193,13 @@ class MarriageRepository(
             poke_count=model.poke_count,
             match_bonus=model.match_bonus
         )
+
+    @staticmethod
+    def __get_ranking_ordering_columns(
+        ranking_type: RankingType
+    ) -> tuple[tuple[str, Order], ...]:
+        match ranking_type:
+            case RankingType.LEVEL:
+                return (("level", Order.DESCENDING), ("last_level_up_at", Order.ASCENDING))
+            case _:
+                return (("married_at", Order.ASCENDING),)

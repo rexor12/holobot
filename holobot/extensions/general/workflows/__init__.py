@@ -8,6 +8,7 @@ from .say_workflow import SayWorkflow
 from .summon_user_workflow import SummonUserWorkflow
 from .view_bot_info_workflow import ViewBotInfoWorkflow
 from .view_emoji_workflow import ViewEmojiWorkflow
+from .view_marriage_ranking_workflow import ViewMarriageRankingWorkflow
 from .view_marriage_workflow import ViewMarriageWorkflow
 from .view_user_avatar_workflow import ViewUserAvatarWorkflow
 from .view_user_banner_workflow import ViewUserBannerWorkflow

@@ -4,7 +4,7 @@ from .compiled_query import CompiledQuery
 from .constraints import (
     ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
 )
-from .enums import Connector, Equality
+from .enums import Connector, Equality, Order
 from .exists_builder import ExistsBuilder
 from .iquery_part_builder import IQueryPartBuilder
 from .isupports_pagination import ISupportsPagination
@@ -71,11 +71,11 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
 
     def paginate(
         self,
-        ordering_column: str,
+        ordering_columns: tuple[tuple[str, Order], ...],
         page_index: int,
         page_size: int
     ) -> PaginateBuilder:
-        return PaginateBuilder(self, ordering_column, page_index, page_size)
+        return PaginateBuilder(self, ordering_columns, page_index, page_size)
 
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())

@@ -3,7 +3,7 @@ from collections.abc import Awaitable
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
-from holobot.sdk.database.queries.enums import Connector, Equality
+from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -46,7 +46,7 @@ class ReminderRepository(
         page_size: int
     ) -> Awaitable[PaginationResult[Reminder]]:
         return self._paginate(
-            RepositoryBase._ID_FIELD_NAME,
+            ((RepositoryBase._ID_FIELD_NAME, Order.ASCENDING),),
             page_index,
             page_size,
             lambda where: where.field("user_id", Equality.EQUAL, user_id)

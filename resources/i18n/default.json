@@ -254,6 +254,19 @@
                 "xp_max_value": "MAX",
                 "xp_value": "{current_xp}/{required_xp}"
             },
+            "view_marriage_ranking_workflow": {
+                "ranking_types": [
+                    "level",
+                    "age"
+                ],
+                "no_married_users_error": "I'm sorry, but there are no married users on this server or this pagination has expired.",
+                "embed_title": "Marriage Rankings",
+                "embed_description": "Here are the rankings by {ranking_type}.",
+                "embed_users_name": "User",
+                "embed_level_name": "Level",
+                "embed_age_name": "Married",
+                "embed_age_format": "<t:{married_at}:R>"
+            },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",
                 "embed_title_global": "{user}'s global avatar",

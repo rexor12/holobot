@@ -1,12 +1,14 @@
 from collections.abc import Awaitable
 from datetime import timedelta
 
-from holobot.extensions.general.enums import ReactionType
+from holobot.extensions.general.enums import RankingType, ReactionType
 from holobot.extensions.general.exceptions import AlreadyMarriedError, NotMarriedError
-from holobot.extensions.general.models import GeneralOptions, Marriage
+from holobot.extensions.general.models import GeneralOptions, Marriage, RankingInfo
 from holobot.extensions.general.repositories import IMarriageRepository
 from holobot.sdk.configs import IOptions
+from holobot.sdk.database.queries.enums.order import Order
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import utcnow
 from holobot.sdk.utils.string_utils import try_parse_int
 from .imarriage_manager import IMarriageManager
@@ -128,6 +130,20 @@ class MarriageManager(IMarriageManager):
     def get_marriage(self, server_id: str, user_id: str) -> Awaitable[Marriage | None]:
         return self.__marriage_repository.get_by_user(server_id, user_id)
 
+    def get_ranking_infos(
+        self,
+        server_id: str,
+        ranking_type: RankingType,
+        page_index: int,
+        page_size: int
+    ) -> Awaitable[PaginationResult[RankingInfo]]:
+        return self.__marriage_repository.paginate_rankings(
+            server_id,
+            ranking_type,
+            page_index,
+            page_size
+        )
+
     @staticmethod
     def __parse_match_bonuses(config: str) -> dict[int, int]:
         bonuses = {}
@@ -163,6 +179,7 @@ class MarriageManager(IMarriageManager):
             if marriage.exp_points < required_exp_points:
                 return
 
+            marriage.last_level_up_at = utcnow()
             marriage.level += 1
             marriage.exp_points = marriage.exp_points - required_exp_points
             if marriage.level in self.__match_bonuses:

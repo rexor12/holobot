@@ -30,7 +30,6 @@ class PaginateBuilder(ICompileableQueryPartBuilder[CompiledPaginationQuery]):
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
         parent_sql, parent_args = self.__parent_builder.build()
-        ordering_columns = tuple(map(lambda i: i[0], self.__ordering_columns))
         arguments = (
             *parent_args,
             self.__page_index * self.__page_size,
@@ -42,10 +41,10 @@ class PaginateBuilder(ICompileableQueryPartBuilder[CompiledPaginationQuery]):
             "Count_CTE AS (SELECT COUNT(*) AS _totalrows FROM Data_CTE) ",
             "SELECT * FROM Data_CTE CROSS JOIN Count_CTE ORDER BY "
         ]
-        for index in range(len(ordering_columns)):
+        for index in range(len(self.__ordering_columns)):
             order = "ASC" if self.__ordering_columns[index][1] == Order.ASCENDING else "DESC"
             sql.append(f"{self.__ordering_columns[index][0]} {order}")
-            if index < len(ordering_columns) - 1:
+            if index < len(self.__ordering_columns) - 1:
                 sql.append(", ")
 
         sql.append(f" OFFSET ${base_index} ROWS FETCH NEXT ${base_index + 1} ROWS ONLY")

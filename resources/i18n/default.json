@@ -264,7 +264,7 @@
                 "embed_description": "Here are the rankings by {ranking_type}.",
                 "embed_users_name": "User",
                 "embed_level_name": "Level",
-                "embed_age_name": "Age",
+                "embed_age_name": "Married",
                 "embed_age_format": "<t:{married_at}:R>"
             },
             "view_user_avatar_workflow": {

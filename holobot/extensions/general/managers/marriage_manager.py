@@ -139,7 +139,7 @@ class MarriageManager(IMarriageManager):
     ) -> Awaitable[PaginationResult[RankingInfo]]:
         return self.__marriage_repository.paginate_rankings(
             server_id,
-            MarriageManager.__get_ranking_ordering_columns(ranking_type),
+            ranking_type,
             page_index,
             page_size
         )
@@ -163,16 +163,6 @@ class MarriageManager(IMarriageManager):
             bonuses[level] = bonus
 
         return bonuses
-
-    @staticmethod
-    def __get_ranking_ordering_columns(
-        ranking_type: RankingType
-    ) -> tuple[tuple[str, Order], ...]:
-        match ranking_type:
-            case RankingType.LEVEL:
-                return (("level", Order.DESCENDING), ("last_level_up_at", Order.ASCENDING))
-            case _:
-                return (("married_at", Order.ASCENDING),)
 
     def __try_add_experience_points(
         self,

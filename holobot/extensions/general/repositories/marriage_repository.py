@@ -2,6 +2,7 @@ from collections.abc import Awaitable
 from datetime import datetime, timezone
 from typing import cast
 
+from holobot.extensions.general.enums import RankingType
 from holobot.extensions.general.models import Marriage, RankingInfo
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.queries import Query
@@ -118,11 +119,12 @@ class MarriageRepository(
     async def paginate_rankings(
         self,
         server_id: str,
-        ordering_columns: tuple[tuple[str, Order], ...],
+        ranking_type: RankingType,
         page_index: int,
         page_size: int
     ) -> PaginationResult[RankingInfo]:
         columns = set[str](("user_id1", "user_id2", "level", "married_at"))
+        ordering_columns = MarriageRepository.__get_ranking_ordering_columns(ranking_type)
         for ordering_column, _ in ordering_columns:
             columns.add(ordering_column)
 
@@ -191,3 +193,13 @@ class MarriageRepository(
             poke_count=model.poke_count,
             match_bonus=model.match_bonus
         )
+
+    @staticmethod
+    def __get_ranking_ordering_columns(
+        ranking_type: RankingType
+    ) -> tuple[tuple[str, Order], ...]:
+        match ranking_type:
+            case RankingType.LEVEL:
+                return (("level", Order.DESCENDING), ("last_level_up_at", Order.ASCENDING))
+            case _:
+                return (("married_at", Order.ASCENDING),)

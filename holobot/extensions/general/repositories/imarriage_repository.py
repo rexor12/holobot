@@ -1,6 +1,7 @@
 from collections.abc import Awaitable
 from typing import Protocol
 
+from holobot.extensions.general.enums import RankingType
 from holobot.extensions.general.models import Marriage, RankingInfo
 from holobot.sdk.database.queries.enums import Order
 from holobot.sdk.database.repositories import IRepository
@@ -33,7 +34,7 @@ class IMarriageRepository(IRepository[int, Marriage], Protocol):
     def paginate_rankings(
         self,
         server_id: str,
-        ordering_columns: tuple[tuple[str, Order], ...],
+        ranking_type: RankingType,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[RankingInfo]]:

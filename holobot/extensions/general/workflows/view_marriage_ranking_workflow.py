@@ -1,7 +1,5 @@
 from typing import Any
 
-from holobot.discord.sdk.data_providers import IUserDataProvider
-from holobot.discord.sdk.exceptions import UserNotFoundError
 from holobot.discord.sdk.models import Embed, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -17,8 +15,6 @@ from holobot.discord.sdk.workflows.interactables.models import (
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.enums import RankingType
 from holobot.extensions.general.managers import IMarriageManager
-from holobot.extensions.general.models import GeneralOptions
-from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.iterable_utils import select_many
@@ -33,16 +29,12 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         marriage_manager: IMarriageManager,
-        member_data_provider: IMemberDataProvider,
-        options: IOptions[GeneralOptions],
-        user_data_provider: IUserDataProvider
+        member_data_provider: IMemberDataProvider
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
         self.__marriage_manager = marriage_manager
         self.__member_data_provider = member_data_provider
-        self.__options = options
-        self.__user_data_provider = user_data_provider
 
     @command(
         group_name="marriage",
@@ -164,12 +156,12 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
         )
         for index, item in enumerate(result.items):
             rank = index + result.page_index * result.page_size + 1
-            match len(users):
-                case 0 if result.page_index == 0:
+            match rank:
+                case 1:
                     i18n_key = f"{i18n_key_prefix}top1_descriptor"
-                case 1 if result.page_index == 0:
+                case 2:
                     i18n_key = f"{i18n_key_prefix}top2_descriptor"
-                case 2 if result.page_index == 0:
+                case 3:
                     i18n_key = f"{i18n_key_prefix}top3_descriptor"
                 case _:
                     i18n_key = f"{i18n_key_prefix}other_descriptor"

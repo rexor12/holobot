@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import AsyncIterable, Iterable, Mapping
 
 import hikari
 
@@ -23,6 +23,22 @@ class MemberDataProvider(IMemberDataProvider):
 
         user = await get_bot().get_guild_member(int(server_id), int(user_id))
         return MemberDataProvider.__member_to_basic_data(user)
+
+    async def get_basic_data_by_ids(
+        self,
+        server_id: str,
+        user_ids: Iterable[str]
+    ) -> AsyncIterable[MemberData]:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(user_ids, "user_ids")
+
+        members = await get_bot().get_guild_members(
+            int(server_id),
+            map(lambda i: int(i), user_ids)
+        )
+
+        for member in members:
+            yield MemberDataProvider.__member_to_basic_data(member)
 
     async def get_basic_data_by_name(
         self,

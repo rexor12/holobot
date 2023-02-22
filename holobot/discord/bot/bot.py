@@ -1,9 +1,6 @@
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping, Sequence
 
 import hikari
-from hikari import (
-    GatewayBot, Guild, GuildChannel, Intents, Member, Role, Snowflake, Snowflakeish, User
-)
 
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, RoleNotFoundError, ServerNotFoundError, UserNotFoundError
@@ -12,11 +9,15 @@ from holobot.sdk.utils.iterable_utils import first_or_default
 from holobot.sdk.utils.string_utils import rank_match
 from .ibot import IBot
 
-class Bot(GatewayBot, IBot):
-    def __init__(self, token: str, intents: Intents):
+class Bot(hikari.GatewayBot, IBot):
+    def __init__(self, token: str, intents: hikari.Intents):
         super().__init__(token, intents=intents)
 
-    async def get_user_by_id(self, user_id: Snowflakeish, use_cache: bool = True) -> User:
+    async def get_user_by_id(
+        self,
+        user_id: hikari.Snowflakeish,
+        use_cache: bool = True
+    ) -> hikari.User:
         if use_cache and (user := self.cache.get_user(user_id)):
             return user
 
@@ -27,27 +28,23 @@ class Bot(GatewayBot, IBot):
         except hikari.ForbiddenError as error:
             raise ForbiddenError(f"Failed to fetch user with identifier '{user_id}'.") from error
 
-    async def get_guild_by_id(self, guild_id: Snowflakeish) -> Guild:
+    async def get_guild_by_id(
+        self,
+        guild_id: hikari.Snowflakeish
+    ) -> hikari.Guild:
         if guild := self.cache.get_available_guild(guild_id):
             return guild
 
-        try:
-            return await self.rest.fetch_guild(guild_id)
-        except hikari.NotFoundError as error:
-            raise ServerNotFoundError(str(guild_id)) from error
-        except hikari.ForbiddenError as error:
-            raise ForbiddenError(
-                f"Failed to fetch server with identifier '{guild_id}'."
-            ) from error
+        return await self.__fetch_guild(guild_id)
 
     async def get_guild_channel(
         self,
-        guild_or_id: Snowflakeish | Guild,
-        channel_id: Snowflakeish
-    ) -> GuildChannel:
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        channel_id: hikari.Snowflakeish
+    ) -> hikari.GuildChannel:
         guild = (
             guild_or_id
-            if isinstance(guild_or_id, Guild)
+            if isinstance(guild_or_id, hikari.Guild)
             else await self.get_guild_by_id(guild_or_id)
         )
         if channel := guild.get_channel(channel_id):
@@ -69,13 +66,13 @@ class Bot(GatewayBot, IBot):
 
     async def get_guild_member(
         self,
-        guild_or_id: Snowflakeish | Guild,
-        user_id: Snowflakeish,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        user_id: hikari.Snowflakeish,
         use_cache: bool = True
-    ) -> Member:
+    ) -> hikari.Member:
         guild = (
             guild_or_id
-            if isinstance(guild_or_id, Guild)
+            if isinstance(guild_or_id, hikari.Guild)
             else await self.get_guild_by_id(guild_or_id)
         )
         if use_cache and (member := guild.get_member(int(user_id))):
@@ -91,18 +88,45 @@ class Bot(GatewayBot, IBot):
                 f" for server with identifier '{guild.id}'."
             ) from error
 
+    async def get_guild_members(
+        self,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        user_ids: Iterable[hikari.Snowflakeish],
+        use_cache: bool = True
+    ) -> Sequence[hikari.Member]:
+        guild = None
+        if isinstance(guild_or_id, hikari.Guild):
+            if use_cache:
+                guild = guild_or_id
+
+            if not guild:
+                guild = await self.__fetch_guild(guild_or_id.id)
+        else:
+            if use_cache:
+                guild = self.cache.get_available_guild(guild_or_id)
+
+            if not guild:
+                guild = await self.__fetch_guild(guild_or_id)
+
+        members = list[hikari.Member]()
+        for user_id in user_ids:
+            if member := guild.get_member(user_id):
+                members.append(member)
+
+        return members
+
     async def get_guild_member_by_name(
         self,
-        guild_or_id: Snowflakeish | Guild,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
         user_name: str,
         use_cache: bool = True
-    ) -> Member:
+    ) -> hikari.Member:
         guild = (
             guild_or_id
-            if isinstance(guild_or_id, Guild)
+            if isinstance(guild_or_id, hikari.Guild)
             else await self.get_guild_by_id(guild_or_id)
         )
-        relevant_members = list[tuple[Member, int]]()
+        relevant_members = list[tuple[hikari.Member, int]]()
         for member in guild.get_members().values():
             relevance = Bot.__match_user_with_relevance(user_name, member)
             if relevance > 0:
@@ -119,12 +143,12 @@ class Bot(GatewayBot, IBot):
 
     async def get_guild_role(
         self,
-        guild_or_id: Snowflakeish | Guild,
-        role_id: Snowflakeish
-    ) -> Role:
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        role_id: hikari.Snowflakeish
+    ) -> hikari.Role:
         guild = (
             guild_or_id
-            if isinstance(guild_or_id, Guild)
+            if isinstance(guild_or_id, hikari.Guild)
             else await self.get_guild_by_id(guild_or_id)
         )
         if role := guild.get_role(role_id):
@@ -144,19 +168,38 @@ class Bot(GatewayBot, IBot):
                 f" for server with identifier '{guild_or_id}'."
             ) from error
 
-    async def get_guild_roles(self, guild_or_id: Snowflakeish | Guild) -> Mapping[Snowflake, Role]:
+    async def get_guild_roles(
+        self,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild
+    ) -> Mapping[hikari.Snowflake, hikari.Role]:
         guild = (
             guild_or_id
-            if isinstance(guild_or_id, Guild)
+            if isinstance(guild_or_id, hikari.Guild)
             else await self.get_guild_by_id(guild_or_id)
         )
         return guild.get_roles()
 
     @staticmethod
-    def __match_user_with_relevance(pattern: str, user: Member) -> int:
+    def __match_user_with_relevance(
+        pattern: str,
+        user: hikari.Member
+    ) -> int:
         # Display names are more relevant than real names.
         relevance = rank_match(pattern, user.display_name)
         if relevance > 0:
             return relevance + 1
 
         return rank_match(pattern, user.username)
+
+    async def __fetch_guild(
+        self,
+        guild_id: hikari.Snowflakeish
+    ) -> hikari.RESTGuild:
+        try:
+            return await self.rest.fetch_guild(guild_id)
+        except hikari.NotFoundError as error:
+            raise ServerNotFoundError(str(guild_id)) from error
+        except hikari.ForbiddenError as error:
+            raise ForbiddenError(
+                f"Failed to fetch server with identifier '{guild_id}'."
+            ) from error

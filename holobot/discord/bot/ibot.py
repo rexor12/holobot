@@ -1,51 +1,62 @@
-from abc import ABCMeta, abstractmethod
-from collections.abc import Mapping
+from collections.abc import Awaitable, Iterable, Mapping, Sequence
+from typing import Protocol
 
-from hikari import Guild, GuildChannel, Member, Role, Snowflake, Snowflakeish, User
+import hikari
 
-class IBot(metaclass=ABCMeta):
-    @abstractmethod
-    async def get_user_by_id(self, user_id: Snowflakeish, use_cache: bool = True) -> User:
+class IBot(Protocol):
+    async def get_user_by_id(
+        self,
+        user_id: hikari.Snowflakeish,
+        use_cache: bool = True
+    ) -> hikari.User:
         ...
 
-    @abstractmethod
-    async def get_guild_by_id(self, guild_id: Snowflakeish) -> Guild:
+    async def get_guild_by_id(
+        self,
+        guild_id: hikari.Snowflakeish
+    ) -> hikari.Guild:
         ...
 
-    @abstractmethod
     async def get_guild_channel(
         self,
-        guild_or_id: Snowflakeish | Guild,
-        channel_id: Snowflakeish
-    ) -> GuildChannel:
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        channel_id: hikari.Snowflakeish
+    ) -> hikari.GuildChannel:
         ...
 
-    @abstractmethod
     async def get_guild_member(
         self,
-        guild_or_id: Snowflakeish | Guild,
-        user_id: Snowflakeish,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        user_id: hikari.Snowflakeish,
         use_cache: bool = True
-    ) -> Member:
+    ) -> hikari.Member:
         ...
 
-    @abstractmethod
+    def get_guild_members(
+        self,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        user_ids: Iterable[hikari.Snowflakeish],
+        use_cache: bool = True
+    ) -> Awaitable[Sequence[hikari.Member]]:
+        ...
+
     async def get_guild_member_by_name(
         self,
-        guild_or_id: Snowflakeish | Guild,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
         user_name: str,
         use_cache: bool = True
-    ) -> Member:
+    ) -> hikari.Member:
         ...
 
-    @abstractmethod
     async def get_guild_role(
         self,
-        guild_or_id: Snowflakeish | Guild,
-        role_id: Snowflakeish
-    ) -> Role:
+        guild_or_id: hikari.Snowflakeish | hikari.Guild,
+        role_id: hikari.Snowflakeish
+    ) -> hikari.Role:
         ...
 
-    @abstractmethod
-    async def get_guild_roles(self, guild_or_id: Snowflakeish | Guild) -> Mapping[Snowflake, Role]:
+    async def get_guild_roles(
+        self,
+        guild_or_id: hikari.Snowflakeish | hikari.Guild
+    ) -> Mapping[hikari.Snowflake, hikari.Role]:
         ...

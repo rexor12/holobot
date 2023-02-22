@@ -261,11 +261,15 @@
                 ],
                 "no_married_users_error": "I'm sorry, but there are no married users on this server or this pagination has expired.",
                 "embed_title": "Marriage Rankings",
-                "embed_description": "Here are the rankings by {ranking_type}.",
-                "embed_users_name": "User",
-                "embed_level_name": "Level",
-                "embed_age_name": "Married",
-                "embed_age_format": "<t:{married_at}:R>"
+                "embed_description": "Below are the rankings by _{ranking_type}_.\n\n{rankings}",
+                "level_top1_descriptor": "🤍 **{user_name1}** x **{user_name2}** • Level _{level}_",
+                "level_top2_descriptor": "💙 **{user_name1}** x **{user_name2}** • Level _{level}_",
+                "level_top3_descriptor": "❤️ **{user_name1}** x **{user_name2}** • Level _{level}_",
+                "level_other_descriptor": "{rank}. **{user_name1}** x **{user_name2}** • Level _{level}_",
+                "age_top1_descriptor": "🤍 **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>",
+                "age_top2_descriptor": "💙 **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>",
+                "age_top3_descriptor": "❤️ **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>",
+                "age_other_descriptor": "{rank}. **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>"
             },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",

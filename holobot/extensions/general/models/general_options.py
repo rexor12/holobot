@@ -34,12 +34,3 @@ class GeneralOptions(OptionsDefinition):
 
     MarriageEmbedThumbnailUrl: str | None = None
     """The URL of the thumbnail image to display in the marriage embed."""
-
-    RankingGoldTrophyEmoji: str | None = None
-    """The emoji used to mark the top 1 couple in the marriage rankings."""
-
-    RankingSilverTrophyEmoji: str | None = None
-    """The emoji used to mark the top 2 couple in the marriage rankings."""
-
-    RankingBronzeTrophyEmoji: str | None = None
-    """The emoji used to mark the top 3 couple in the marriage rankings."""

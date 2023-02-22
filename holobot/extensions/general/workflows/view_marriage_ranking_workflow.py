@@ -1,7 +1,7 @@
-from datetime import datetime
 from typing import Any
 
-from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
+from holobot.discord.sdk.models import Embed, InteractionContext
+from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
@@ -15,10 +15,9 @@ from holobot.discord.sdk.workflows.interactables.models import (
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.enums import RankingType
 from holobot.extensions.general.managers import IMarriageManager
-from holobot.extensions.general.models import GeneralOptions
-from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
+from holobot.sdk.utils.iterable_utils import select_many
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 @injectable(IWorkflow)
@@ -30,12 +29,12 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         marriage_manager: IMarriageManager,
-        options: IOptions[GeneralOptions]
+        member_data_provider: IMemberDataProvider
     ) -> None:
         super().__init__()
         self.__i18n_provider = i18n_provider
         self.__marriage_manager = marriage_manager
-        self.__options = options
+        self.__member_data_provider = member_data_provider
 
     @command(
         group_name="marriage",
@@ -138,23 +137,46 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
             )
 
 
-        users = list[str]()
-        levels = list[str]()
-        married_ats = list[datetime]()
+        users = list[Any]()
+        user_datas = self.__member_data_provider.get_basic_data_by_ids(
+            server_id,
+            select_many(
+                result.items,
+                lambda i: (i.user_id1, i.user_id2)
+            )
+        )
+        user_names = {
+            user.user_id: user.display_name
+            async for user in user_datas
+        }
+        i18n_key_prefix = (
+            "extensions.general.view_marriage_ranking_workflow.age_"
+            if ranking_type == RankingType.AGE
+            else "extensions.general.view_marriage_ranking_workflow.level_"
+        )
         for index, item in enumerate(result.items):
             rank = index + result.page_index * result.page_size + 1
-            match len(users):
-                case 0 if result.page_index == 0:
-                    users.append(f"{rank}. {self.__options.value.RankingGoldTrophyEmoji} <@{item.user_id1}> x <@{item.user_id2}>")
-                case 1 if result.page_index == 0:
-                    users.append(f"{rank}. {self.__options.value.RankingSilverTrophyEmoji} <@{item.user_id1}> x <@{item.user_id2}>")
-                case 2 if result.page_index == 0:
-                    users.append(f"{rank}. {self.__options.value.RankingBronzeTrophyEmoji} <@{item.user_id1}> x <@{item.user_id2}>")
+            match rank:
+                case 1:
+                    i18n_key = f"{i18n_key_prefix}top1_descriptor"
+                case 2:
+                    i18n_key = f"{i18n_key_prefix}top2_descriptor"
+                case 3:
+                    i18n_key = f"{i18n_key_prefix}top3_descriptor"
                 case _:
-                    users.append(f"{rank}. <@{item.user_id1}> x <@{item.user_id2}>")
-
-            levels.append(str(item.level))
-            married_ats.append(item.married_at)
+                    i18n_key = f"{i18n_key_prefix}other_descriptor"
+            users.append(
+                self.__i18n_provider.get(
+                    i18n_key,
+                    {
+                        "user_name1": user_names.get(item.user_id1, item.user_id1),
+                        "user_name2": user_names.get(item.user_id2, item.user_id2),
+                        "rank": rank,
+                        "level": item.level,
+                        "married_at": int(item.married_at.timestamp())
+                    }
+                )
+            )
 
         embed = Embed(
             title=self.__i18n_provider.get(
@@ -166,37 +188,10 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
                     "ranking_type": self.__i18n_provider.get_list_item(
                         "extensions.general.view_marriage_ranking_workflow.ranking_types",
                         ranking_type.value
-                    )
+                    ),
+                    "rankings": "\n".join(users)
                 }
-            ),
-            fields=[
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.general.view_marriage_ranking_workflow.embed_users_name"
-                    ),
-                    value="\n".join(users)
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.general.view_marriage_ranking_workflow.embed_level_name"
-                    ),
-                    value="\n".join(levels)
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.general.view_marriage_ranking_workflow.embed_age_name"
-                    ),
-                    value="\n".join(
-                        map(
-                            lambda married_at: self.__i18n_provider.get(
-                                "extensions.general.view_marriage_ranking_workflow.embed_age_format",
-                                { "married_at" : int(married_at.timestamp()) }
-                            ),
-                            married_ats
-                        )
-                    )
-                )
-            ]
+            )
         )
 
         component = Paginator(

@@ -12,7 +12,17 @@ class MarriageMigration(MigrationBase):
         super().__init__(MarriageMigration._TABLE_NAME, {
             0: MigrationPlan(0, 1, self.__initialize_table),
             1: MigrationPlan(1, 2, self.__upgrade_to_v2),
+            2: MigrationPlan(2, 3, self.__upgrade_to_v3)
         }, {})
+
+    async def __upgrade_to_v3(self, connection: Connection) -> None:
+        await connection.execute((
+            f"ALTER TABLE {MarriageMigration._TABLE_NAME}"
+            " ADD COLUMN lick_count INTEGER NOT NULL DEFAULT 0,"
+            " ADD COLUMN bite_count INTEGER NOT NULL DEFAULT 0,"
+            " ADD COLUMN handhold_count INTEGER NOT NULL DEFAULT 0,"
+            " ADD COLUMN cuddle_count INTEGER NOT NULL DEFAULT 0"
+        ))
 
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute((

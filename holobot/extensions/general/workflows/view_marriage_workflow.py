@@ -82,7 +82,11 @@ class ViewMarriageWorkflow(WorkflowBase):
                         "hugs": marriage.hug_count,
                         "kisses": marriage.kiss_count,
                         "pats": marriage.pat_count,
-                        "pokes": marriage.poke_count
+                        "pokes": marriage.poke_count,
+                        "licks": marriage.lick_count,
+                        "bites": marriage.bite_count,
+                        "handholds": marriage.handhold_count,
+                        "cuddles": marriage.cuddle_count
                     }
                 ),
                 color=0xFF007F,

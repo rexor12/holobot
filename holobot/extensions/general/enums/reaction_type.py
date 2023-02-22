@@ -7,3 +7,7 @@ class ReactionType(IntEnum):
     KISS = 2
     PAT = 3
     POKE = 4
+    LICK = 5
+    BITE = 6
+    HANDHOLD = 7
+    CUDDLE = 8

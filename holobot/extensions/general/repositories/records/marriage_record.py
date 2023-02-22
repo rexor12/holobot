@@ -20,4 +20,8 @@ class MarriageRecord(Record[int]):
     kiss_count: int
     pat_count: int
     poke_count: int
+    lick_count: int
+    bite_count: int
+    handhold_count: int
+    cuddle_count: int
     match_bonus: int

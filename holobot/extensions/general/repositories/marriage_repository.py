@@ -171,6 +171,10 @@ class MarriageRepository(
             kiss_count=record.kiss_count,
             pat_count=record.pat_count,
             poke_count=record.poke_count,
+            lick_count=record.lick_count,
+            bite_count=record.bite_count,
+            handhold_count=record.handhold_count,
+            cuddle_count=record.cuddle_count,
             match_bonus=record.match_bonus
         )
 
@@ -191,6 +195,10 @@ class MarriageRepository(
             kiss_count=model.kiss_count,
             pat_count=model.pat_count,
             poke_count=model.poke_count,
+            lick_count=model.lick_count,
+            bite_count=model.bite_count,
+            handhold_count=model.handhold_count,
+            cuddle_count=model.cuddle_count,
             match_bonus=model.match_bonus
         )
 

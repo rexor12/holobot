@@ -52,6 +52,18 @@ class Marriage(AggregateRoot[int]):
     poke_count: int = 0
     """The number of times the users poked each other."""
 
+    lick_count: int = 0
+    """The number of times the users licked each other."""
+
+    bite_count: int = 0
+    """The number of times the users bit each other."""
+
+    handhold_count: int = 0
+    """The number of times the users held each other's hands."""
+
+    cuddle_count: int = 0
+    """The number of times the users cuddled with each other."""
+
     match_bonus: int = 0
     """The bonus score this marriage gets for the match command."""
 

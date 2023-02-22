@@ -111,6 +111,14 @@ class MarriageManager(IMarriageManager):
                 marriage.pat_count += 1
             case ReactionType.POKE:
                 marriage.poke_count += 1
+            case ReactionType.LICK:
+                marriage.lick_count += 1
+            case ReactionType.BITE:
+                marriage.bite_count += 1
+            case ReactionType.HANDHOLD:
+                marriage.handhold_count += 1
+            case ReactionType.CUDDLE:
+                marriage.cuddle_count += 1
             case _:
                 return False
 

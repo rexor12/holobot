@@ -52,6 +52,14 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
                 reaction_type = ReactionType.PAT
             case "poke":
                 reaction_type = ReactionType.POKE
+            case "lick":
+                reaction_type = ReactionType.LICK
+            case "bite":
+                reaction_type = ReactionType.BITE
+            case "handhold":
+                reaction_type = ReactionType.HANDHOLD
+            case "cuddle":
+                reaction_type = ReactionType.CUDDLE
             case _:
                 return
 

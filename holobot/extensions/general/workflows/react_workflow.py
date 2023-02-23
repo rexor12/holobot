@@ -89,7 +89,7 @@ class ReactWorkflow(WorkflowBase):
     async def __show_reaction(
         self,
         context: InteractionContext,
-        action: int,
+        reaction_type: ReactionType,
         target: int | None = None
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
@@ -97,7 +97,6 @@ class ReactWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        reaction_type = ReactionType(action)
         if reaction_type not in _CATEGORY_NAMES_BY_TYPE:
             return self._reply(content=self.__i18n_provider.get(
                 "extensions.general.react_workflow.invalid_action_error"

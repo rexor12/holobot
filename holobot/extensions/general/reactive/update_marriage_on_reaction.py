@@ -14,16 +14,16 @@ from holobot.sdk.reactive import IListener
 from holobot.sdk.utils.dict_utils import get_generic
 from holobot.sdk.utils.timedelta_utils import ZERO_TIMEDELTA
 
-_RELEVANT_REACTION_TYPES = (
-    ReactionType.HUG,
-    ReactionType.KISS,
-    ReactionType.PAT,
-    ReactionType.POKE,
-    ReactionType.LICK,
-    ReactionType.BITE,
-    ReactionType.HANDHOLD,
-    ReactionType.CUDDLE
-)
+_REACTION_TYPE_BY_COMMAND: dict[str, ReactionType] = {
+    "hug": ReactionType.HUG,
+    "kiss": ReactionType.KISS,
+    "pat": ReactionType.PAT,
+    "poke": ReactionType.POKE,
+    "lick": ReactionType.LICK,
+    "bite": ReactionType.BITE,
+    "handhold": ReactionType.HANDHOLD,
+    "cuddle": ReactionType.CUDDLE
+}
 
 @injectable(IListener[CommandProcessedEvent])
 class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
@@ -42,24 +42,14 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
         if (
             not isinstance(event.interactable, Command)
             or not event.server_id
-            or event.interactable.group_name
+            or event.interactable.group_name != "react"
             or event.interactable.subgroup_name
-            or not event.interactable.name == "react"
+            or event.interactable.name not in _REACTION_TYPE_BY_COMMAND
         ):
             return
 
-        reaction_argument = get_generic(event.arguments, int, "action")
         target_user_id = get_generic(event.arguments, int, "target")
-        if not reaction_argument or not target_user_id:
-            return
-
-        try:
-            reaction_type = ReactionType(reaction_argument)
-        except ValueError:
-            # Ignored; unknown/invalid reaction.
-            return
-
-        if reaction_type not in _RELEVANT_REACTION_TYPES:
+        if not target_user_id:
             return
 
         # TODO If the marriage has leveled up, send a message to the channel.
@@ -69,7 +59,7 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
                 event.server_id,
                 event.user_id,
                 str(target_user_id),
-                reaction_type
+                _REACTION_TYPE_BY_COMMAND[event.interactable.name]
             )
         except SerializationError as error:
             # Ignored, because we're in an event handler.

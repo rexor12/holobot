@@ -1,5 +1,4 @@
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
@@ -43,7 +42,7 @@ def menu_item(
     :type cooldown: Cooldown | None, optional
     """
 
-    def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
+    def wrapper(target: Callable[..., Awaitable[InteractionResponse]]):
         setattr(target, DECORATOR_METADATA_NAME, MenuItem(
             callback=target,
             title=title,

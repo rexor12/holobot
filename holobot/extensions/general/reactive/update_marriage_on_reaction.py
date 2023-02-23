@@ -14,6 +14,17 @@ from holobot.sdk.reactive import IListener
 from holobot.sdk.utils.dict_utils import get_generic
 from holobot.sdk.utils.timedelta_utils import ZERO_TIMEDELTA
 
+_REACTION_TYPE_BY_COMMAND: dict[str, ReactionType] = {
+    "hug": ReactionType.HUG,
+    "kiss": ReactionType.KISS,
+    "pat": ReactionType.PAT,
+    "poke": ReactionType.POKE,
+    "lick": ReactionType.LICK,
+    "bite": ReactionType.BITE,
+    "handhold": ReactionType.HANDHOLD,
+    "cuddle": ReactionType.CUDDLE
+}
+
 @injectable(IListener[CommandProcessedEvent])
 class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
     def __init__(
@@ -31,37 +42,15 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
         if (
             not isinstance(event.interactable, Command)
             or not event.server_id
-            or event.interactable.group_name
+            or event.interactable.group_name != "react"
             or event.interactable.subgroup_name
-            or not event.interactable.name == "react"
+            or event.interactable.name not in _REACTION_TYPE_BY_COMMAND
         ):
             return
 
-        reaction_argument = get_generic(event.arguments, str, "action")
         target_user_id = get_generic(event.arguments, int, "target")
-        if not reaction_argument or not target_user_id:
+        if not target_user_id:
             return
-
-        reaction_argument = reaction_argument.lower()
-        match reaction_argument:
-            case "hug":
-                reaction_type = ReactionType.HUG
-            case "kiss":
-                reaction_type = ReactionType.KISS
-            case "pat":
-                reaction_type = ReactionType.PAT
-            case "poke":
-                reaction_type = ReactionType.POKE
-            case "lick":
-                reaction_type = ReactionType.LICK
-            case "bite":
-                reaction_type = ReactionType.BITE
-            case "handhold":
-                reaction_type = ReactionType.HANDHOLD
-            case "cuddle":
-                reaction_type = ReactionType.CUDDLE
-            case _:
-                return
 
         # TODO If the marriage has leveled up, send a message to the channel.
         # Also, include any newly unlocked perks.
@@ -70,7 +59,7 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
                 event.server_id,
                 event.user_id,
                 str(target_user_id),
-                reaction_type
+                _REACTION_TYPE_BY_COMMAND[event.interactable.name]
             )
         except SerializationError as error:
             # Ignored, because we're in an event handler.

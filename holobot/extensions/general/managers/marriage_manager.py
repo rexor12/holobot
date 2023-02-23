@@ -6,7 +6,6 @@ from holobot.extensions.general.exceptions import AlreadyMarriedError, NotMarrie
 from holobot.extensions.general.models import GeneralOptions, Marriage, RankingInfo
 from holobot.extensions.general.repositories import IMarriageRepository
 from holobot.sdk.configs import IOptions
-from holobot.sdk.database.queries.enums.order import Order
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
 from holobot.sdk.utils import utcnow
@@ -88,6 +87,8 @@ class MarriageManager(IMarriageManager):
             # It's time to reset the activity tier.
             marriage.activity_tier = 0
             marriage.activity_tier_reset_at = now
+            self.__try_add_experience_points(marriage)
+            marriage.activity_tier = 1
         elif marriage.activity_tier >= len(options.MarriageActivityExpTiers) - 1:
             if (
                 marriage.last_activity_at
@@ -191,4 +192,4 @@ class MarriageManager(IMarriageManager):
             marriage.level += 1
             marriage.exp_points = marriage.exp_points - required_exp_points
             if marriage.level in self.__match_bonuses:
-                marriage.match_bonus += self.__match_bonuses[marriage.level]
+                marriage.match_bonus = self.__match_bonuses[marriage.level]

@@ -9,7 +9,7 @@ from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
 )
-from holobot.sdk.database.queries.enums import Connector, Equality
+from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.database.statuses import CommandComplete
 from holobot.sdk.database.statuses.command_tags import DeleteCommandTag
@@ -88,7 +88,7 @@ class WarnRepository(
                         column_expression("t1.user_id", Equality.EQUAL, user_id)
                     )
                 )
-                .paginate("t1.id", page_index, max_count)
+                .paginate((("t1.id", Order.ASCENDING),), page_index, max_count)
                 .compile()
                 .fetch(session.connection)
             )

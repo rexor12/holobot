@@ -1,7 +1,5 @@
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
-from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Autocomplete
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
@@ -26,7 +24,7 @@ def autocomplete(
     :type subgroup_name: str | None, optional
     """
 
-    def wrapper(target: Callable[..., Coroutine[Any, Any, InteractionResponse]]):
+    def wrapper(target: Callable[..., Awaitable[InteractionResponse]]):
         setattr(target, DECORATOR_METADATA_NAME, Autocomplete(
             callback=target,
             name=command_name,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -12,7 +12,7 @@ from holobot.discord.sdk.workflows.interactables.models import Cooldown, Interac
 class Interactable:
     """Defines a user interaction type."""
 
-    callback: Callable[..., Coroutine[Any, Any, InteractionResponse]]
+    callback: Callable[..., Awaitable[InteractionResponse]]
     """Determines the method that is called when
     the interaction needs to be processed.
 

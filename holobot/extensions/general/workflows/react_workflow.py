@@ -1,26 +1,51 @@
+from collections.abc import Awaitable
+
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ServerNotFoundError, UserNotFoundError
 )
 from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.decorators import command
+from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.general.enums import ReactionType
 from holobot.extensions.general.providers import IReactionProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.network.exceptions import HttpStatusError, TooManyRequestsError
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError, RateLimitedError
 
-_CATEGORIES = set((
-    "awoo", "bite", "blush", "bonk", "bully", "cry", "cuddle", "dance",
-    "handhold", "happy", "highfive", "hug", "kill", "kiss", "lick", "neko",
-    "nom", "pat", "poke", "slap", "smile", "smug", "waifu", "wave", "wink"
-))
+_CATEGORY_NAMES_BY_TYPE: dict[ReactionType, str] = {
+    ReactionType.AWOO: "awoo",
+    ReactionType.BITE: "bite",
+    ReactionType.BLUSH: "blush",
+    ReactionType.BONK: "bonk",
+    ReactionType.BULLY: "bully",
+    ReactionType.CRY: "cry",
+    ReactionType.CUDDLE: "cuddle",
+    ReactionType.DANCE: "dance",
+    ReactionType.HANDHOLD: "handhold",
+    ReactionType.HAPPY: "happy",
+    ReactionType.HIGHFIVE: "highfive",
+    ReactionType.HUG: "hug",
+    ReactionType.KILL: "kill",
+    ReactionType.KISS: "kiss",
+    ReactionType.LICK: "lick",
+    ReactionType.NEKO: "neko",
+    ReactionType.NOM: "nom",
+    ReactionType.PAT: "pat",
+    ReactionType.POKE: "poke",
+    ReactionType.SLAP: "slap",
+    ReactionType.SMILE: "smile",
+    ReactionType.SMUG: "smug",
+    ReactionType.WAIFU: "waifu",
+    ReactionType.WAVE: "wave",
+    ReactionType.WINK: "wink"
+}
 
 @injectable(IWorkflow)
 class ReactWorkflow(WorkflowBase):
@@ -34,23 +59,37 @@ class ReactWorkflow(WorkflowBase):
         self.__i18n_provider = i18n_provider
         self.__member_data_provider = member_data_provider
         self.__reaction_provider = reaction_provider
+        self.__register_reactions()
 
-    @command(
-        name="react",
-        description="Shows a reaction with an animated picture.",
-        options=(
-            Option(name="action", description="The type of the reaction.", choices=tuple(
-                Choice(name=category, value=category)
-                for category in sorted(_CATEGORIES)
-            )),
-            Option(name="target", description="The target user.", type=OptionType.USER, is_mandatory=False)
-        ),
-        cooldown=Cooldown(duration=10)
-    )
-    async def show_reaction(
+    def __register_reactions(self) -> None:
+        for reaction_type, reaction_name in _CATEGORY_NAMES_BY_TYPE.items():
+            def callback_factory(rt: ReactionType):
+                def show_reaction(
+                    workflow: WorkflowBase,
+                    context: InteractionContext,
+                    target: int | None = None
+                ) -> Awaitable[InteractionResponse]:
+                    return self.__show_reaction(context, rt, target)
+
+                return show_reaction
+
+            self.add_registration(
+                Command(
+                    group_name="react",
+                    name=reaction_name,
+                    description="Shows a reaction with an animated picture.",
+                    cooldown=Cooldown(duration=10), # TODO Shared cooldown for command group.
+                    options=(
+                        Option("target", "The target user.", OptionType.USER, False),
+                    ),
+                    callback=callback_factory(reaction_type)
+                )
+            )
+
+    async def __show_reaction(
         self,
         context: InteractionContext,
-        action: str,
+        action: int,
         target: int | None = None
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
@@ -58,14 +97,15 @@ class ReactWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        action = action.strip().lower()
-        if action not in _CATEGORIES:
+        reaction_type = ReactionType(action)
+        if reaction_type not in _CATEGORY_NAMES_BY_TYPE:
             return self._reply(content=self.__i18n_provider.get(
                 "extensions.general.react_workflow.invalid_action_error"
             ))
 
+        reaction_name = _CATEGORY_NAMES_BY_TYPE[reaction_type]
         try:
-            url = await self.__reaction_provider.get(action)
+            url = await self.__reaction_provider.get(reaction_name)
         except (CircuitBrokenError, HttpStatusError, TooManyRequestsError, RateLimitedError):
             return self._reply(content=self.__i18n_provider.get(
                 "extensions.general.react_workflow.remote_api_error"
@@ -101,9 +141,9 @@ class ReactWorkflow(WorkflowBase):
                     { "user": context.author_display_name }
                 ),
                 description=self.__i18n_provider.get(
-                    f"extensions.general.react_workflow.actions.{action}_target"
+                    f"extensions.general.react_workflow.actions.{reaction_name}_target"
                     if target_user_id
-                    else f"extensions.general.react_workflow.actions.{action}",
+                    else f"extensions.general.react_workflow.actions.{reaction_name}",
                     { "user_id": context.author_id, "target_user_id": target_user_id }
                 ),
                 image_url=url,

@@ -14,6 +14,17 @@ from holobot.sdk.reactive import IListener
 from holobot.sdk.utils.dict_utils import get_generic
 from holobot.sdk.utils.timedelta_utils import ZERO_TIMEDELTA
 
+_RELEVANT_REACTION_TYPES = (
+    ReactionType.HUG,
+    ReactionType.KISS,
+    ReactionType.PAT,
+    ReactionType.POKE,
+    ReactionType.LICK,
+    ReactionType.BITE,
+    ReactionType.HANDHOLD,
+    ReactionType.CUDDLE
+)
+
 @injectable(IListener[CommandProcessedEvent])
 class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
     def __init__(
@@ -37,31 +48,19 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
         ):
             return
 
-        reaction_argument = get_generic(event.arguments, str, "action")
+        reaction_argument = get_generic(event.arguments, int, "action")
         target_user_id = get_generic(event.arguments, int, "target")
         if not reaction_argument or not target_user_id:
             return
 
-        reaction_argument = reaction_argument.lower()
-        match reaction_argument:
-            case "hug":
-                reaction_type = ReactionType.HUG
-            case "kiss":
-                reaction_type = ReactionType.KISS
-            case "pat":
-                reaction_type = ReactionType.PAT
-            case "poke":
-                reaction_type = ReactionType.POKE
-            case "lick":
-                reaction_type = ReactionType.LICK
-            case "bite":
-                reaction_type = ReactionType.BITE
-            case "handhold":
-                reaction_type = ReactionType.HANDHOLD
-            case "cuddle":
-                reaction_type = ReactionType.CUDDLE
-            case _:
-                return
+        try:
+            reaction_type = ReactionType(reaction_argument)
+        except ValueError:
+            # Ignored; unknown/invalid reaction.
+            return
+
+        if reaction_type not in _RELEVANT_REACTION_TYPES:
+            return
 
         # TODO If the marriage has leveled up, send a message to the channel.
         # Also, include any newly unlocked perks.

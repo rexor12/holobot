@@ -6,43 +6,21 @@
                     "Name": "",
                     "CanDisable": true,
                     "Commands": [
-                        {
-                            "Name": "8ball"
-                        },
-                        {
-                            "Name": "avatar"
-                        },
-                        {
-                            "Name": "banner"
-                        },
-                        {
-                            "Name": "divorce"
-                        },
-                        {
-                            "Name": "emoji"
-                        },
-                        {
-                            "Name": "google"
-                        },
+                        { "Name": "8ball" },
+                        { "Name": "avatar" },
+                        { "Name": "banner" },
+                        { "Name": "divorce" },
+                        { "Name": "emoji" },
+                        { "Name": "google" },
                         {
                             "Name": "info",
                             "CanDisable": false
                         },
-                        {
-                            "Name": "marry"
-                        },
-                        {
-                            "Name": "match"
-                        },
-                        {
-                            "Name": "react"
-                        },
-                        {
-                            "Name": "roll"
-                        },
-                        {
-                            "Name": "summon"
-                        }
+                        { "Name": "marry" },
+                        { "Name": "match" },
+                        { "Name": "roll" },
+                        { "Name": "say" },
+                        { "Name": "summon" }
                     ]
                 },
                 {
@@ -52,24 +30,12 @@
                         {
                             "Name": "commands",
                             "Commands": [
-                                {
-                                    "Name": "help"
-                                },
-                                {
-                                    "Name": "removerule"
-                                },
-                                {
-                                    "Name": "setrule"
-                                },
-                                {
-                                    "Name": "test"
-                                },
-                                {
-                                    "Name": "view"
-                                },
-                                {
-                                    "Name": "viewrules"
-                                }
+                                { "Name": "help" },
+                                { "Name": "removerule" },
+                                { "Name": "setrule" },
+                                { "Name": "test" },
+                                { "Name": "view" },
+                                { "Name": "viewrules" }
                             ]
                         }
                     ]
@@ -77,17 +43,20 @@
                 {
                     "Name": "giveaway",
                     "Commands": [
-                        {
-                            "Name": "view"
-                        }
+                        { "Name": "view" }
                     ]
                 },
                 {
                     "Name": "hentai",
                     "Commands": [
-                        {
-                            "Name": "link"
-                        }
+                        { "Name": "link" }
+                    ]
+                },
+                {
+                    "Name": "marriage",
+                    "Commands": [
+                        { "Name": "view" },
+                        { "Name": "ranking" }
                     ]
                 },
                 {
@@ -96,132 +65,110 @@
                         {
                             "Name": "auto",
                             "Commands": [
-                                {
-                                    "Name": "disableban"
-                                },
-                                {
-                                    "Name": "disablekick"
-                                },
-                                {
-                                    "Name": "disablemute"
-                                },
-                                {
-                                    "Name": "setban"
-                                },
-                                {
-                                    "Name": "setkick"
-                                },
-                                {
-                                    "Name": "setmute"
-                                }
+                                { "Name": "disableban" },
+                                { "Name": "disablekick" },
+                                { "Name": "disablemute" },
+                                { "Name": "setban" },
+                                { "Name": "setkick" },
+                                { "Name": "setmute" }
                             ]
                         },
                         {
                             "Name": "permissions",
                             "Commands": [
-                                {
-                                    "Name": "add"
-                                },
-                                {
-                                    "Name": "remove"
-                                },
-                                {
-                                    "Name": "view"
-                                }
+                                { "Name": "add" },
+                                { "Name": "remove" },
+                                { "Name": "view" }
                             ]
                         },
                         {
                             "Name": "logs",
                             "Commands": [
-                                {
-                                    "Name": "clearchannel"
-                                },
-                                {
-                                    "Name": "setchannel"
-                                }
+                                { "Name": "clearchannel" },
+                                { "Name": "setchannel" }
                             ]
                         },
                         {
                             "Name": "warns",
                             "Commands": [
-                                {
-                                    "Name": "disabledecay"
-                                },
-                                {
-                                    "Name": "setdecay"
-                                },
-                                {
-                                    "Name": "view"
-                                }
+                                { "Name": "disabledecay" },
+                                { "Name": "setdecay" },
+                                { "Name": "view" }
                             ]
                         }
                     ],
                     "Commands": [
-                        {
-                            "Name": "ban"
-                        },
-                        {
-                            "Name": "kick"
-                        },
-                        {
-                            "Name": "mute"
-                        },
-                        {
-                            "Name": "unmute"
-                        },
-                        {
-                            "Name": "warn"
-                        }
+                        { "Name": "ban" },
+                        { "Name": "kick" },
+                        { "Name": "mute" },
+                        { "Name": "unmute" },
+                        { "Name": "warn" }
+                    ]
+                },
+                {
+                    "Name": "react",
+                    "Commands": [
+                        { "Name": "awoo" },
+                        { "Name": "bite" },
+                        { "Name": "blush" },
+                        { "Name": "bonk" },
+                        { "Name": "bully" },
+                        { "Name": "cry" },
+                        { "Name": "cuddle" },
+                        { "Name": "dance" },
+                        { "Name": "handhold" },
+                        { "Name": "happy" },
+                        { "Name": "highfive" },
+                        { "Name": "hug" },
+                        { "Name": "kill" },
+                        { "Name": "kiss" },
+                        { "Name": "lick" },
+                        { "Name": "neko" },
+                        { "Name": "nom" },
+                        { "Name": "pat" },
+                        { "Name": "poke" },
+                        { "Name": "slap" },
+                        { "Name": "smile" },
+                        { "Name": "smug" },
+                        { "Name": "waifu" },
+                        { "Name": "wave" },
+                        { "Name": "wink" }
                     ]
                 },
                 {
                     "Name": "reminder",
                     "Commands": [
-                        {
-                            "Name": "remove"
-                        },
-                        {
-                            "Name": "set"
-                        },
-                        {
-                            "Name": "view"
-                        }
+                        { "Name": "remove" },
+                        { "Name": "set" },
+                        { "Name": "view" }
                     ]
                 },
                 {
                     "Name": "server",
                     "Commands": [
-                        {
-                            "Name": "icon"
-                        },
-                        {
-                            "Name": "banner"
-                        }
+                        { "Name": "icon" },
+                        { "Name": "banner" }
+                    ]
+                },
+                {
+                    "Name": "steam",
+                    "Commands": [
+                        { "Name": "search" }
                     ]
                 },
                 {
                     "Name": "todo",
                     "Commands": [
-                        {
-                            "Name": "add"
-                        },
-                        {
-                            "Name": "removeall"
-                        },
-                        {
-                            "Name": "remove"
-                        },
-                        {
-                            "Name": "view"
-                        }
+                        { "Name": "add" },
+                        { "Name": "removeall" },
+                        { "Name": "remove" },
+                        { "Name": "view" }
                     ]
                 },
                 {
                     "Name": "weather",
                     "Commands": [
-                        {
-                            "Name": "basic"
-                        }
+                        { "Name": "basic" }
                     ]
                 }
             ]

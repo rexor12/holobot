@@ -1,2 +1,4 @@
+from .fortune_cookie_repository import FortuneCookieRepository
+from .ifortune_cookie_repository import IFortuneCookieRepository
 from .imarriage_repository import IMarriageRepository
 from .marriage_repository import MarriageRepository

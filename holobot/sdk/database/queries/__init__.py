@@ -3,6 +3,7 @@ from .compiled_query import CompiledQuery
 from .delete_builder import DeleteBuilder
 from .do_nothing_builder import DoNothingBuilder
 from .exists_builder import ExistsBuilder
+from .function_builder import FunctionBuilder
 from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .icompiled_query import ICompiledQuery
 from .insert_builder import InsertBuilder

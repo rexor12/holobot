@@ -82,6 +82,11 @@
                 "got_divorced": "<@{user_id}> and <@{spouse_id}>; as unfortunate as it may be, I bear witness to your divorce. May you encounter happiness once more on your journeys.",
                 "divorce_canceled": "As per your decision, you shall not be divorced. May you stay as happy together as you have been so far."
             },
+            "fortune_cookie_workflow": {
+                "no_cookies_error": "I'm sorry, but I don't have any fortune cookies right now. (｡•́︿•̀｡)",
+                "embed_title": "Fortune Cookie",
+                "embed_footer": "Cookie #{id}"
+            },
             "magic_eight_ball_workflow": {
                 "responses": [
                     "yes.",

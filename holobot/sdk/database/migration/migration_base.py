@@ -24,3 +24,7 @@ class MigrationBase(MigrationInterface):
             await plan.execute(connection)
             current_version = plan.new_version
         return current_version
+
+    async def _execute_script(self, connection: Connection, path: str) -> None:
+        with open(path, "r", encoding="utf8") as f:
+            await connection.execute(f.read())

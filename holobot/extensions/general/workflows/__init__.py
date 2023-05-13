@@ -1,4 +1,5 @@
 from .divorce_workflow import DivorceWorkflow
+from .fortune_cookie_workflow import FortuneCookieWorkflow
 from .magic_eight_ball_workflow import MagicEightBallWorkflow
 from .marry_workflow import MarryWorkflow
 from .match_users_workflow import MatchUsersWorkflow

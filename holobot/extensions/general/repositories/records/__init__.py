@@ -1,1 +1,2 @@
+from .fortune_cookie_record import FortuneCookieRecord
 from .marriage_record import MarriageRecord

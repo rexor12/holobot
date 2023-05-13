@@ -306,6 +306,29 @@ class RepositoryBase(
 
             return model
 
+    async def _get_many_by_function(
+        self,
+        function_name: str,
+        arguments: tuple[str, ...] = ()
+    ) -> tuple[TModel, ...]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns(*self.column_names)
+                .from_function(function_name, arguments)
+            )
+            results = await query.compile().fetch(session.connection)
+            models = tuple(
+                self._map_record_to_model(self._map_query_result_to_record(result))
+                for result in results
+            )
+
+            for model in models:
+                await self.__try_set_model(model)
+
+            return models
+
+
     async def _delete_by_filter(
         self,
         filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]

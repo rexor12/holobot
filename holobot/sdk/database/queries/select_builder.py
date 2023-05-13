@@ -4,6 +4,7 @@ from typing import Any
 
 from .compiled_query import CompiledQuery
 from .exists_builder import ExistsBuilder
+from .function_builder import FunctionBuilder
 from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .join_builder import JOIN_TYPE, JoinBuilder
 from .where_builder import WhereBuilder
@@ -15,6 +16,7 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         self.__table_name: str | None = None
         self.__table_alias: str | None = None
         self.__is_count_select: bool = False
+        self.__has_from_part: bool = False
 
     def column(self, column_name: str) -> SelectBuilder:
         if column_name in self.__columns:
@@ -35,7 +37,12 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
     def from_table(self, table_name: str, alias: str | None = None) -> SelectBuilder:
         self.__table_name = table_name
         self.__table_alias = alias
+        self.__has_from_part = True
         return self
+
+    def from_function(self, function_name: str, arguments: tuple[str, ...]) -> FunctionBuilder:
+        self.__has_from_part = True
+        return FunctionBuilder(self, function_name, arguments)
 
     def join(
         self,
@@ -62,8 +69,11 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
         sql = ["SELECT", "COUNT(*)" if self.__is_count_select else ", ".join(self.__columns)]
 
+        if self.__has_from_part:
+            sql.append("FROM")
+
         if self.__table_name:
-            sql.extend(("FROM", self.__table_name))
+            sql.append(self.__table_name)
             if self.__table_alias:
                 sql.extend(("AS", self.__table_alias))
 

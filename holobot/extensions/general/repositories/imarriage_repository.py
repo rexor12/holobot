@@ -3,7 +3,6 @@ from typing import Protocol
 
 from holobot.extensions.general.enums import RankingType
 from holobot.extensions.general.models import Marriage, RankingInfo
-from holobot.sdk.database.queries.enums import Order
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 

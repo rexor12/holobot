@@ -5,7 +5,7 @@ from holobot.sdk.database import AggregateRoot
 
 @dataclass(kw_only=True)
 class Marriage(AggregateRoot[int]):
-    """Represents a relationship between two users.."""
+    """Represents a relationship between two users."""
 
     identifier: int = -1
     """The identifier of the relationship."""

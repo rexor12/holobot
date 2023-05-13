@@ -34,3 +34,6 @@ class GeneralOptions(OptionsDefinition):
 
     MarriageEmbedThumbnailUrl: str | None = None
     """The URL of the thumbnail image to display in the marriage embed."""
+
+    FortuneCookieEmbedThumbnailUrl: str | None = None
+    """The URL of the thumbnail image to display in the fortune cookie embed."""

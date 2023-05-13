@@ -1,6 +1,7 @@
 from collections.abc import Iterable, Mapping, Sequence
 
 import hikari
+from hikari.impl import config as hikari_impl
 
 from holobot.discord.sdk.exceptions import (
     ChannelNotFoundError, ForbiddenError, RoleNotFoundError, ServerNotFoundError, UserNotFoundError
@@ -11,7 +12,11 @@ from .ibot import IBot
 
 class Bot(hikari.GatewayBot, IBot):
     def __init__(self, token: str, intents: hikari.Intents):
-        super().__init__(token, intents=intents)
+        super().__init__(
+            token,
+            intents=intents,
+            http_settings=hikari_impl.HTTPSettings(enable_cleanup_closed=False)
+        )
 
     async def get_user_by_id(
         self,

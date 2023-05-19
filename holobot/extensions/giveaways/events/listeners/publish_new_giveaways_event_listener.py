@@ -1,5 +1,6 @@
 from holobot.discord.sdk import IMessaging
 from holobot.discord.sdk.exceptions import ForbiddenError
+from holobot.discord.sdk.models import Embed, EmbedFooter
 from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.extensions.giveaways.events.models import NewGiveawaysEvent
 from holobot.extensions.giveaways.models import GiveawayOptions
@@ -33,7 +34,8 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
             [
                 {
                     "title": giveaway.title,
-                    "source": giveaway.source_name
+                    "source": giveaway.source_name,
+                    "url": giveaway.url
                 }
                 for giveaway in event.giveaways
             ]
@@ -44,11 +46,22 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
             message_id = await self.__messaging.send_channel_message(
                 options.AnnouncementServerId,
                 options.AnnouncementChannelId,
-                self.__i18n_provider.get(
-                    "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost",
-                    {
-                        "items": "\n".join(items_i18n)
-                    }
+                Embed(
+                    title=self.__i18n_provider.get(
+                        "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost_header"
+                    ),
+                    description=self.__i18n_provider.get(
+                        "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost",
+                        {
+                            "items": "\n".join(items_i18n)
+                        }
+                    ),
+                    thumbnail_url=self.__options.value.GiveawayEmbedThumbnailUrl,
+                    footer=EmbedFooter(
+                        text=self.__i18n_provider.get(
+                            "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost_footer"
+                        )
+                    )
                 ),
                 suppress_user_mentions=True
             )

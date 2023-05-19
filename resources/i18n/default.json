@@ -295,8 +295,10 @@
                 "game": "Game"
             },
             "publish_new_giveaways_event_listener": {
-                "new_giveaways_crosspost": "I've just sniffed out some new giveaways:\n{items}\n\nCheck them out with the `/giveaway view` command. („• ᴗ •„) ",
-                "new_giveaways_crosspost_list_item": "   ⦁ [{source}] {title}",
+                "new_giveaways_crosspost": "Behold! I've just stumbled upon a bountiful harvest of delightful apples.\n\n{items}",
+                "new_giveaways_crosspost_list_item": "   ⦁ [{source}] [{title}]({url})",
+                "new_giveaways_crosspost_header": "New Giveaways",
+                "new_giveaways_crosspost_footer": "Click the title to open the associated store page.",
                 "cannot_announce_error": "I'm sorry, but I cannot announce new giveaways in <#{channel_id}> in {server_name}. Please, make sure I have the permissions to send messages there. (｡•́︿•̀｡)"
             },
             "reset_scraper_workflow": {

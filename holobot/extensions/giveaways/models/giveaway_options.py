@@ -12,3 +12,4 @@ class GiveawayOptions(OptionsDefinition):
     RunnerDelay: int = 40
     AnnouncementServerId: str = ""
     AnnouncementChannelId: str = ""
+    GiveawayEmbedThumbnailUrl: str = ""

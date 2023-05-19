@@ -337,7 +337,8 @@
             "RunnerResolution": 60,
             "RunnerDelay": 40,
             "AnnouncementServerId": "__HOLO_GIVEAWAY_ANNOUNCE_SERVER_ID__",
-            "AnnouncementChannelId": "__HOLO_GIVEAWAY_ANNOUNCE_CHANNEL_ID__"
+            "AnnouncementChannelId": "__HOLO_GIVEAWAY_ANNOUNCE_CHANNEL_ID__",
+            "GiveawayEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1Nd982GxSVjDXumvRLeqEn35LEOdjAsXC"
         },
         "EpicScraperOptions": {
             "CircuitBreakerFailureThreshold": 1,

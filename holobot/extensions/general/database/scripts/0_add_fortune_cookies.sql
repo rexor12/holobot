@@ -68,7 +68,7 @@ VALUES
  ('Your generosity will attract abundance and blessings into your life.'),
  ('Seek joy in the present moment; it is where true happiness resides.'),
  ('Your resilience will help you overcome any obstacle on your path.'),
- ('Learn from the past, but don''t let it define your future.'),
+ ('Special touches have been planned with you in mind.'),
  ('Stay true to yourself, and others will respect and admire your authenticity.'),
  ('Your positive energy will create a ripple effect of positivity in the world.'),
  ('Believe in your dreams and take bold steps towards their realization.'),

@@ -43,7 +43,10 @@ class MarryWorkflow(WorkflowBase):
         options=(
             Option("user", "The user to get married to.", OptionType.USER),
         ),
-        cooldown=Cooldown(duration=60)
+        cooldown=Cooldown(
+            duration=60,
+            message="extensions.general.marry_workflow.cooldown_error"
+        )
     )
     async def request_marriage(
         self,

@@ -53,10 +53,11 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
             return (False, None)
 
         time_left = (last_invocation + duration - utcnow()).total_seconds()
+
         return (
             True,
             self.__i18n_provider.get(
-                "interactions.cooldown_error",
+                interactable.cooldown.message or "interactions.cooldown_error",
                 { "seconds_left": time_left }
             )
         ) if time_left > 0 else (False, None)

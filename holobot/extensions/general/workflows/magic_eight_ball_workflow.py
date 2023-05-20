@@ -34,7 +34,10 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
         options=(
             Option("question", "The yes/no question to be answered."),
         ),
-        cooldown=Cooldown(duration=10)
+        cooldown=Cooldown(
+            duration=10,
+            message="extensions.general.magic_eight_ball_workflow.cooldown_error"
+        )
     )
     async def answer_question(
         self,

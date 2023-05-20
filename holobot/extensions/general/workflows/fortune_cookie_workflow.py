@@ -22,9 +22,12 @@ class FortuneCookieWorkflow(WorkflowBase):
         self.__options = options
 
     @command(
-        description="Crack open a cookie for good fortune.",
+        description="Crack open your fortune cookie.",
         name="cookie",
-        cooldown=Cooldown(duration=30)
+        cooldown=Cooldown(
+            duration=30,
+            message="extensions.general.fortune_cookie_workflow.cooldown_error"
+        )
     )
     async def open_fortune_cookie(
         self,

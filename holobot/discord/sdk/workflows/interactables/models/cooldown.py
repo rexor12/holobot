@@ -11,3 +11,8 @@ class Cooldown:
 
     entity_type: EntityType = EntityType.USER
     """The type of the entity the cooldown is associated to."""
+
+    message: str | None = None
+    """The localization key of the message to display
+    when the cooldown is still active.
+    """

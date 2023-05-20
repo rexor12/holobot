@@ -78,7 +78,10 @@ class ReactWorkflow(WorkflowBase):
                     group_name="react",
                     name=reaction_name,
                     description="Shows a reaction with an animated picture.",
-                    cooldown=Cooldown(duration=10), # TODO Shared cooldown for command group.
+                    cooldown=Cooldown(
+                        duration=10,
+                        message="extensions.general.react_workflow.cooldown_error"
+                    ),
                     options=(
                         Option("target", "The target user.", OptionType.USER, False),
                     ),

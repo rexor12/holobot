@@ -11,15 +11,15 @@
     "database_serialization_error": "I'm sorry, but an error has occurred while processing your request. Please, try again and if the issue persists, report it (see `/info`). Thank you! („• ᴗ •„)",
 
     "interactions": {
-        "halted_interaction_error": "I'm sorry, but you're not allowed to use this command. (｡•́︿•̀｡)",
-        "invalid_interaction_data_error": "I'm sorry, but this interaction isn't valid anymore. If you tried to interact with an old message, it may have expired already. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)",
-        "invalid_interaction_error": "I'm sorry, but I couldn't execute your command, because it's invalid. (｡•́︿•̀｡)",
-        "server_only_interaction_error": "I'm sorry, but this interaction is available for servers only. (｡•́︿•̀｡)",
-        "unbound_interaction_user_error": "I'm sorry, but you're not allowed to interact with that message. (｡•́︿•̀｡)",
-        "unhandled_interaction_error": "I'm sorry, but an internal error has occurred while trying to process your request. If this problem persists on new interactions, please report the issue (see `/info`). Thank you! („• ᴗ •„)",
+        "halted_interaction_error": "You are forbidden from using this command, akin to a restless wolf barred from its hunting grounds.",
+        "invalid_interaction_data_error": "Unfortunately, your interaction has been misguided. It may have expired.",
+        "invalid_interaction_error": "Unfortunately, your interaction has been misguided. The associated command may have become unavailable.",
+        "server_only_interaction_error": "Alas, I cannot perform your request in the current location. Try it in a server.",
+        "unbound_interaction_user_error": "Pray, refrain from laying claim to what is not rightfully yours, as the owner guards it with a watchful eye.",
+        "unhandled_interaction_error": "Pray forgive me, something unexpected has interrupted my hunt. I have notified my master about this mishap.",
         "not_available_for_server_error": "I'm sorry, but this command isn't available for your server. (｡•́︿•̀｡)",
-        "cooldown_error": "I'm sorry, but this command is on cooldown. Please, try again in {seconds_left:,.2f} seconds. (｡•́︿•̀｡)",
-        "interaction_context_not_supported_error": "I'm sorry, but this command is not available in the current context. Please, make sure you're not trying to use a server-only command in Direct Message or similar. (｡•́︿•̀｡)"
+        "cooldown_error": "Your enthusiasm is duly noted, but pray, grant me a moment's respite. {seconds_left:,.0f}",
+        "interaction_context_not_supported_error": "Alas, I cannot perform your request in the current location."
     },
 
     "common": {
@@ -80,12 +80,14 @@
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
                 "got_divorced": "<@{user_id}> and <@{spouse_id}>; as unfortunate as it may be, I bear witness to your divorce. May you encounter happiness once more on your journeys.",
-                "divorce_canceled": "As per your decision, you shall not be divorced. May you stay as happy together as you have been so far."
+                "divorce_canceled": "As per your decision, you shall not be divorced. May you stay as happy together as you have been so far.",
+                "cooldown_error": "You have just bid farewell to your dear one, much like a wolf abandoning its mate. You might want to take a moment to reflect upon this decision before you venture forth once more, as if the whims of your heart were but a mere game. ({seconds_left:,.0f} seconds)"
             },
             "fortune_cookie_workflow": {
                 "no_cookies_error": "I'm sorry, but I don't have any fortune cookies right now. (｡•́︿•̀｡)",
                 "embed_title": "Fortune Cookie",
-                "embed_footer": "Cookie #{id}"
+                "embed_footer": "Cookie #{id}",
+                "cooldown_error": "Alas, it appears I have eaten all the cookies. I would kindly ask that you attempt to take one a bit later. ({seconds_left:,.0f} seconds)"
             },
             "magic_eight_ball_workflow": {
                 "responses": [
@@ -106,7 +108,8 @@
                     "that's not your cup of tea.",
                     "who knows..."
                 ],
-                "response_message": "{user_name} asked:\n> {question}\n\nHere's my wisdom: {answer}"
+                "response_message": "{user_name} asked:\n> {question}\n\nHere's my wisdom: {answer}",
+                "cooldown_error": "The ball, akin to a treasured relic, is currently in the midst of its well-deserved respite. ({seconds_left:,.0f} seconds)"
             },
             "marry_workflow": {
                 "already_married": "You are already married to <@{spouse_id}>. You wouldn't want to cheat on them now, would you?",
@@ -120,7 +123,8 @@
                 "got_remarried": "💐💐💐 Rejoice, <@{user_id}> for <@{spouse_id}> is your partner still. 💐💐💐",
                 "got_divorced": "<@{user_id}> and <@{spouse_id}>; as unfortunate as it may be, I bear witness to your divorce. May you encounter happiness once more on your journeys.",
                 "not_married_error": "Oops, there seems to have been a misunderstanding and you aren't married. Please, disregard this message. („• ᴗ •„)",
-                "cannot_marry_self": "I'm sorry, but you can't get married with yourself. Keep looking and I'm sure love will find you. („• ᴗ •„)"
+                "cannot_marry_self": "I'm sorry, but you can't get married with yourself. Keep looking and I'm sure love will find you. („• ᴗ •„)",
+                "cooldown_error": "You have just sprung forth with a proposal, like an impulsive wolf driven by desire. Hold your horses, for a moment's pause is in order. ({seconds_left:,.0f} seconds)"
             },
             "match_users_workflow": {
                 "love_types": [
@@ -154,7 +158,8 @@
                 "overall_score_emojis": [
                     "💔", "👩‍❤️‍💋‍👨", "💓", "🤼", "❤️", "💙", "🤍"
                 ],
-                "footer": "Data will refresh in {refresh_in} minute(s)."
+                "footer": "Data will refresh in {refresh_in} minute(s).",
+                "cooldown_error": "Your interests span far and wide, like a curious wolf exploring the vast forest. But heed this advice: exercise patience and restrain your fervor. ({seconds_left:,.0f} seconds)"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
@@ -162,6 +167,7 @@
                 "remote_api_error": "I'm sorry, but something went wrong while fetching an image for you. Please, try again a bit later; or, if the problem persists, report the issue (see `/info`). Thank you! („• ᴗ •„)",
                 "embed_title": "Reaction",
                 "embed_footer": "Powered by waifu.pics",
+                "cooldown_error": "I perceive your yearning to showcase your feelings to the world. Rest, like a wolf in repose, before resuming your spirited endeavor. ({seconds_left:,.0f} seconds)",
                 "actions": {
                     "awoo": "<@{user_id}> thinks they're a dog. Awoo~",
                     "awoo_target": "<@{user_id}> impresses <@{target_user_id}> as a dog. Awoo~",
@@ -457,7 +463,7 @@
                 "reminder_set": "I shall remind you at <t:{time}:f>.",
                 "message_out_of_range_error": "For the message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message and try again.",
                 "invalid_params_error": "The combination of {param1} and {param2} as parameters is not permissible. Please, try again.",
-                "too_many_reminders_error": "It appears you have gathered a veritable menagerie of reminders, reaching the limit. Like an agile squirrel selecting the juiciest apple to savor, choose one to remove and try anew.",
+                "too_many_reminders_error": "It appears you have gathered a veritable menagerie of reminders, reaching the limit. Like an agile wolf selecting the juiciest apple to savor, choose one to remove and try anew.",
                 "invalid_time_input_error": "Kindly inform me of the precise moment you wish for my gentle reminder.",
                 "time_input_parsing_error": "It would be truly splendid if you could kindly tell me the time in a manner that I, too, can comprehend."
             },

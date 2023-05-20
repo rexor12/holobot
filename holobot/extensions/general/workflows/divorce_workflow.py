@@ -27,7 +27,10 @@ class DivorceWorkflow(WorkflowBase):
     @command(
         name="divorce",
         description="Get divorced from your beloved.",
-        cooldown=Cooldown(duration=60)
+        cooldown=Cooldown(
+            duration=60,
+            message="extensions.general.divorce_workflow.cooldown_error"
+        )
     )
     async def divorce(self, context: InteractionContext) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):

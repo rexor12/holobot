@@ -57,7 +57,10 @@ class MatchUsersWorkflow(WorkflowBase):
             Option("user", "The user to match.", OptionType.USER, True),
             Option("user2", "The second user to match. By default, it's yourself.", OptionType.USER, False)
         ),
-        cooldown=Cooldown(duration=10)
+        cooldown=Cooldown(
+            duration=10,
+            message="extensions.general.match_users_workflow.cooldown_error"
+        )
     )
     async def match_users(
         self,

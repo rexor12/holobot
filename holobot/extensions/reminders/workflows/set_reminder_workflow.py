@@ -71,7 +71,7 @@ class SetReminderWorkflow(WorkflowBase):
         if not when:
             return self._reply(
                 content=self.__i18n_provider.get(
-                    "extensions.reminders.set_reminder_workflow.invalid_time_input_error2"
+                    "extensions.reminders.set_reminder_workflow.invalid_time_input_error"
                 )
             )
 
@@ -124,7 +124,7 @@ class SetReminderWorkflow(WorkflowBase):
         if not interval:
             return self._reply(
                 content=self.__i18n_provider.get(
-                    "extensions.reminders.set_reminder_workflow.invalid_time_input_error2"
+                    "extensions.reminders.set_reminder_workflow.invalid_time_input_error"
                 )
             )
 

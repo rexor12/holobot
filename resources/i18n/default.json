@@ -451,11 +451,11 @@
         "reminders": {
             "remove_reminder_workflow": {
                 "reminder_deleted": "I have removed your reminder. However, tread cautiously like a vigilant hawk, lest it eludes your memory.",
-                "reminder_not_found_error": "There exists no such reminder your repertoire. It is akin to seeking an apple in a barren desert."
+                "reminder_not_found_error": "There exists no such reminder in your repertoire. It is akin to seeking an apple in a barren desert."
             },
             "set_reminder_workflow": {
                 "reminder_set": "I shall remind you at <t:{time}:f>.",
-                "message_out_of_range_error": "Apologies are in order, for the message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message and try again.",
+                "message_out_of_range_error": "For the message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message and try again.",
                 "invalid_params_error": "The combination of {param1} and {param2} as parameters is not permissible. Please, try again.",
                 "too_many_reminders_error": "It appears you have gathered a veritable menagerie of reminders, reaching the limit. Like an agile squirrel selecting the juiciest apple to savor, choose one to remove and try anew.",
                 "invalid_time_input_error": "Kindly inform me of the precise moment you wish for my gentle reminder.",

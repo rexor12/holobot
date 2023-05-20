@@ -450,30 +450,30 @@
 
         "reminders": {
             "remove_reminder_workflow": {
-                "reminder_deleted": "I've removed your reminder. Make sure you don't forget about it if it's important, though. („• ᴗ •„)",
-                "reminder_not_found_error": "I'm sorry, but I couldn't find this one among your reminders. It may have already been delivered to you. (｡•́︿•̀｡)"
+                "reminder_deleted": "I have removed your reminder. However, tread cautiously like a vigilant hawk, lest it eludes your memory.",
+                "reminder_not_found_error": "There exists no such reminder your repertoire. It is akin to seeking an apple in a barren desert."
             },
             "set_reminder_workflow": {
-                "reminder_set": "I'll remind you at <t:{time}:f>. If you'd like, you may remove this reminder later using the identifier {reminder_id} or by cancelling it now.",
-                "message_out_of_range_error": "I'm sorry, but the message's length must be between {min} and {max} characters. Please, correct it and try again. (｡•́︿•̀｡)",
-                "missing_time_error": "I'm sorry, but I need to know either the frequency of the reminder or the date and time at which I should remind you. Please, double check and try again. (｡•́︿•̀｡)",
-                "invalid_params_error": "I'm sorry, but the parameters {param1} and {param2} cannot be used together. Please, double check and try again. (｡•́︿•̀｡)",
-                "too_many_reminders_error": "I'm sorry, but you've reached the maximum number of reminders you can have. Please, remove at least one and try again. (｡•́︿•̀｡)",
-                "invalid_time_input_error": "I'm sorry, but the amount of time you've specified is invalid. Please, use one of the following formats: `1h 15m`, `1h15m`, `1000s`, `2d` or `1:15`. Valid quantifiers are `d` (days), `h` (hours), `m` (minutes) and `s` (seconds)."
+                "reminder_set": "I shall remind you at <t:{time}:f>.",
+                "message_out_of_range_error": "Apologies are in order, for the message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message and try again.",
+                "invalid_params_error": "The combination of {param1} and {param2} as parameters is not permissible. Please, try again.",
+                "too_many_reminders_error": "It appears you have gathered a veritable menagerie of reminders, reaching the limit. Like an agile squirrel selecting the juiciest apple to savor, choose one to remove and try anew.",
+                "invalid_time_input_error": "Kindly inform me of the precise moment you wish for my gentle reminder.",
+                "time_input_parsing_error": "It would be truly splendid if you could kindly tell me the time in a manner that I, too, can comprehend."
             },
             "view_reminders_workflow": {
-                "no_reminders": "You don't have any reminders.",
+                "no_reminders": "You do not have any reminders.",
                 "embed_title": "Reminders",
-                "embed_description": "Embeds of <@{user_id}>.",
+                "embed_description": "Reminders of <@{user_id}>.",
                 "embed_footer": "Use the reminder's number for removal.",
                 "embed_field_name": "#{reminder_id}",
                 "embed_field_value": "> Message: {message}\n> Next trigger: <t:{time}:f>\n> Repeats: {repeats}"
             },
             "reminder_processor": {
-                "reminder_dm": "<@{user_id}>, it's time for me to remind you:\n> {message}",
-                "reminder_dm_no_message": "<@{user_id}>, it's time for me to remind you... hmm, about what, though?",
-                "reminder_dm_belated": "<@{user_id}>, I'm a bit late, but here's your reminder:\n> {message}\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)",
-                "reminder_dm_belated_no_message": "<@{user_id}>, I'm a bit late, but here's your reminder... hmm, about what, though?\n\nI couldn't remind you at <t:{trigger_time}:f>, because of a service disruption. I'm sorry about the inconveniences. (｡•́︿•̀｡)"
+                "reminder_dm": "Behold, <@{user_id}>! Your reminder is beckoning your attention at its destined hour.\n> {message}",
+                "reminder_dm_no_message": "Behold, <@{user_id}>! Your reminder is beckoning your attention at its destined hour... can you recall the subject, though?",
+                "reminder_dm_belated": "<@{user_id}>, albeit late, your reminder is beckoning your attention:\n> {message}\n\nA service disruption hindered my ability to remind you at <t:{trigger_time}:f>. I kindly ask for your forgiveness.",
+                "reminder_dm_belated_no_message": "<@{user_id}>, albeit late, your reminder is beckoning your attention... can you recall the subject, though?\n\nA service disruption hindered my ability to remind you at <t:{trigger_time}:f>. I kindly ask for your forgiveness."
             }
         },
 

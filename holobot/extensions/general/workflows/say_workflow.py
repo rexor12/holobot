@@ -41,7 +41,8 @@ class SayWorkflow(WorkflowBase):
         await self.__messaging.send_channel_message(
             context.server_id,
             context.channel_id,
-            message
+            message,
+            suppress_user_mentions=True
         )
 
         return self._delete()

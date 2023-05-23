@@ -3,7 +3,7 @@ from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -26,7 +26,8 @@ class SayWorkflow(WorkflowBase):
             Option("message", "The message to be repeated."),
         ),
         is_ephemeral=True,
-        defer_type=DeferType.DEFER_MESSAGE_CREATION
+        defer_type=DeferType.DEFER_MESSAGE_CREATION,
+        cooldown=Cooldown(duration=30)
     )
     async def say(
         self,

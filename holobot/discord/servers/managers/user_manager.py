@@ -57,7 +57,7 @@ class UserManager(IUserManager):
 
         member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
-            await member.ban(reason=reason, delete_message_days=delete_message_days)
+            await member.ban(reason=reason, delete_message_seconds=delete_message_days * 86400)
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot ban server member.") from error
 

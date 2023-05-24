@@ -18,7 +18,7 @@
         "unbound_interaction_user_error": "Pray, refrain from laying claim to what is not rightfully yours, as the owner guards it with a watchful eye.",
         "unhandled_interaction_error": "Pray forgive me, something unexpected has interrupted my hunt. I have notified my master about this mishap.",
         "not_available_for_server_error": "I'm sorry, but this command isn't available for your server. (｡•́︿•̀｡)",
-        "cooldown_error": "Your enthusiasm is duly noted, but pray, grant me a moment's respite. {seconds_left:,.0f}",
+        "cooldown_error": "Your enthusiasm is duly noted, but pray, grant me a moment's respite. ({seconds_left:,.0f} seconds)",
         "interaction_context_not_supported_error": "Alas, I cannot perform your request in the current location."
     },
 

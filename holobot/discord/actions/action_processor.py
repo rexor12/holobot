@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import TypeVar
 
 import hikari
+import hikari.impl.special_endpoints as hikari_speps
 
 from holobot.discord.sdk.actions import (
     ActionBase, AutocompleteAction, DeleteAction, DoNothingAction, EditMessageAction, ReplyAction
@@ -130,11 +131,10 @@ class ActionProcessor(IActionProcessor):
         with contextlib.suppress(hikari.NotFoundError):
             await interaction.create_response(
                 choices=[
-                    hikari.CommandChoice(
-                        name=choice.name,
-                        value=choice.value
-                    )
-                    for choice in action.choices
+                    hikari_speps.AutocompleteChoiceBuilder(
+                        choice.name,
+                        choice.value
+                    ) for choice in action.choices
                 ]
             )
 

@@ -22,12 +22,11 @@ from .icomponent_transformer import IComponentTransformer
 
 PRIMARY_COMPONENT_STYLE_ID: int = 1
 
-COMPONENT_STYLE_MAP: dict[ComponentStyle, hikari.ButtonStyle] = {
+COMPONENT_STYLE_MAP: dict[ComponentStyle, hikari.InteractiveButtonTypesT] = {
     ComponentStyle.PRIMARY: hikari.ButtonStyle.PRIMARY,
     ComponentStyle.SECONDARY: hikari.ButtonStyle.SECONDARY,
     ComponentStyle.SUCCESS: hikari.ButtonStyle.SUCCESS,
-    ComponentStyle.DANGER: hikari.ButtonStyle.DANGER,
-    ComponentStyle.LINK: hikari.ButtonStyle.LINK
+    ComponentStyle.DANGER: hikari.ButtonStyle.DANGER
 }
 
 _TComponentBuilder = Callable[
@@ -148,21 +147,23 @@ class ComponentTransformer(IComponentTransformer):
             if not component.url:
                 raise ArgumentError(f"The URL of the link-style button '{component.id}' must be specified.")
 
-            button = container.add_button(hikari.ButtonStyle.LINK, component.url)
+            button = container.add_link_button(
+                component.url,
+                emoji=int(component.emoji_id) if component.emoji_id else hikari.UNDEFINED,
+                label=component.text or hikari.UNDEFINED,
+                is_disabled=not component.is_enabled
+            )
         else:
             custom_data = ";".join((f"{key}={value}" for key, value in component.custom_data.items()))
-            button = container.add_button(
+            button = container.add_interactive_button(
                 COMPONENT_STYLE_MAP.get(component.style, hikari.ButtonStyle.PRIMARY),
-                f"{component.id}~{component.owner_id};{custom_data}"
+                f"{component.id}~{component.owner_id};{custom_data}",
+                emoji=int(component.emoji_id) if component.emoji_id else hikari.UNDEFINED,
+                label=component.text or hikari.UNDEFINED,
+                is_disabled=not component.is_enabled
             )
 
-        if component.text:
-            button.set_label(component.text)
-
-        if component.emoji_id:
-            button.set_emoji(int(component.emoji_id))
-
-        return button.set_is_disabled(not component.is_enabled).add_to_container()
+        return button
 
     def __transform_button_state(self, interaction: hikari.ComponentInteraction) -> ButtonState:
         component_data = ComponentTransformer.__get_component_data_from_custom_id(interaction.custom_id)
@@ -197,18 +198,18 @@ class ComponentTransformer(IComponentTransformer):
         if component.selection_count_max < component.selection_count_min:
             raise ArgumentError("component.selection_count_max", "The maximum number of selected items must be greater than or equal to the minimum.")
 
-        builder = container.add_select_menu(component.id)
+        builder = container.add_text_menu(component.id)
         if component.placeholder:
             builder.set_placeholder(component.placeholder)
         builder.set_min_values(component.selection_count_min)
         builder.set_max_values(component.selection_count_max)
         builder.set_is_disabled(not component.is_enabled)
         for item in component.items:
-            option_builder = builder.add_option(item.text, f"{component.owner_id};{item.value}")
-            if item.description:
-                option_builder.set_description(item.description)
-            option_builder.add_to_menu()
-        builder.add_to_container()
+            builder.add_option(
+                item.text,
+                f"{component.owner_id};{item.value}",
+                description=item.description or hikari.UNDEFINED
+            )
 
         return builder
 

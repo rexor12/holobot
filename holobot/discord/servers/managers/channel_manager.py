@@ -75,6 +75,8 @@ class ChannelManager(IChannelManager):
             for webhook in webhooks:
                 if (
                     isinstance(webhook, ChannelFollowerWebhook)
+                    and webhook.source_guild
+                    and webhook.source_channel
                     and str(webhook.source_guild.id) == source_server_id
                     and str(webhook.source_channel.id) == source_channel_id
                 ):

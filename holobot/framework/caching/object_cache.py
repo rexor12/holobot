@@ -1,10 +1,13 @@
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import Any, TypeVar
 
-from holobot.sdk.caching import CacheEntryPolicy, ConcurrentMemoryCache, IObjectCache
+from holobot.sdk.caching import CacheEntryPolicy, CacheView, ConcurrentMemoryCache, IObjectCache
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.utils.type_utils import UndefinedType
+
+TKey = TypeVar("TKey")
+TValue = TypeVar("TValue")
 
 class ObjectCache(IObjectCache, IStartable):
     """In-memory cache meant to be used as a global singleton in the application."""
@@ -47,3 +50,13 @@ class ObjectCache(IObjectCache, IStartable):
             raise InvalidOperationError("The cache hasn't been initialized.")
 
         return await self.__cache.add_or_replace(key, value, policy)
+
+    def get_view(
+        self,
+        key_type: type[TKey],
+        value_type: type[TValue]
+    ) -> CacheView[TKey, TValue]:
+        return CacheView[key_type, value_type](
+            value_type,
+            self
+        )

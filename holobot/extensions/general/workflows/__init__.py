@@ -3,6 +3,7 @@ from .fortune_cookie_workflow import FortuneCookieWorkflow
 from .magic_eight_ball_workflow import MagicEightBallWorkflow
 from .marry_workflow import MarryWorkflow
 from .match_users_workflow import MatchUsersWorkflow
+from .poll_workflow import PollWorkflow
 from .react_workflow import ReactWorkflow
 from .roll_number_workflow import RollNumberWorkflow
 from .say_workflow import SayWorkflow

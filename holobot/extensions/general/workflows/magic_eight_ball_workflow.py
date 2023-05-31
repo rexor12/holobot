@@ -51,7 +51,7 @@ class MagicEightBallWorkflow(WorkflowBase, IStartable):
             content=self.__i18n_provider.get(
                 "extensions.general.magic_eight_ball_workflow.response_message",
                 {
-                    "user_name": context.author_display_name,
+                    "user_id": context.author_id,
                     "question": question,
                     "answer": Random(seed).choice(self.__answers)
                 }

@@ -10,6 +10,7 @@ class GeneralOptions(OptionsDefinition):
     ProgressBarRedEmoji: str
     ProgressBarOrangeEmoji: str
     ProgressBarGreenEmoji: str
+    ProgressBarEmptyEmoji: str
     RefreshRelationshipsAfterMinutes: int = 30
 
     MarriageActivityLastTierCooldownSeconds: int = 60

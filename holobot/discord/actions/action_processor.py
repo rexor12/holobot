@@ -6,7 +6,8 @@ import hikari
 import hikari.impl.special_endpoints as hikari_speps
 
 from holobot.discord.sdk.actions import (
-    ActionBase, AutocompleteAction, DeleteAction, DoNothingAction, EditMessageAction, ReplyAction
+    ActionBase, AutocompleteAction, DeleteAction, DoNothingAction, EditMessageAction, ReplyAction,
+    ShowModalAction
 )
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.transformers.embed import to_dto as embed_to_dto
@@ -38,6 +39,7 @@ class ActionProcessor(IActionProcessor):
             case EditMessageAction(): await self.__process_edit_reference_message(context, action, deferral, is_ephemeral)
             case AutocompleteAction(): await self.__process_autocomplete(context, action)
             case DeleteAction(): await self.__process_delete(context)
+            case ShowModalAction(): await self.__process_show_modal(context, action)
 
     @staticmethod
     def __convert_to_dto(
@@ -59,18 +61,27 @@ class ActionProcessor(IActionProcessor):
         deferral: DeferType,
         is_ephemeral: bool
     ) -> None:
-        if not isinstance(interaction, (hikari.CommandInteraction, hikari.ComponentInteraction)):
-            raise ArgumentError("Replying to a message is valid for command and component interactions only.")
+        if not isinstance(interaction, (hikari.CommandInteraction, hikari.ComponentInteraction, hikari.ModalInteraction)):
+            raise ArgumentError("interaction", "Replying is valid for command, component and modal interactions only.")
 
-        components = self.__component_transformer.transform_to_root_component(action.components)
+        components = self.__component_transformer.transform_control(action.components)
         with contextlib.suppress(hikari.NotFoundError):
             if deferral is DeferType.NONE:
+                should_be_ephemeral = (
+                    action.is_ephemeral
+                    if isinstance(action.is_ephemeral, bool)
+                    else is_ephemeral
+                )
                 await interaction.create_initial_response(
                     hikari.ResponseType.MESSAGE_CREATE,
                     content=ActionProcessor.__convert_to_dto(action.content, lambda i: str(i)),
                     embed=ActionProcessor.__convert_to_dto(action.embed, embed_to_dto),
                     components=components,
-                    flags=hikari.MessageFlag.EPHEMERAL if is_ephemeral else hikari.MessageFlag.NONE,
+                    flags=(
+                        hikari.MessageFlag.EPHEMERAL
+                        if should_be_ephemeral
+                        else hikari.MessageFlag.NONE
+                    ),
                     user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED
                 )
                 return
@@ -84,7 +95,7 @@ class ActionProcessor(IActionProcessor):
                 )
                 return
 
-            raise ArgumentError(f"Cannot reply to an interaction deferred as '{deferral}'.")
+            raise ArgumentError("deferral", f"Cannot reply to an interaction deferred as '{deferral}'.")
 
     async def __process_edit_reference_message(
         self,
@@ -94,9 +105,9 @@ class ActionProcessor(IActionProcessor):
         is_ephemeral: bool
     ) -> None:
         if not isinstance(interaction, hikari.ComponentInteraction):
-            raise ArgumentError("Editing a reference message is valid for component interactions only.")
+            raise ArgumentError("interaction", "Editing a reference message is valid for component interactions only.")
 
-        components = self.__component_transformer.transform_to_root_component(action.components)
+        components = self.__component_transformer.transform_control(action.components)
         with contextlib.suppress(hikari.NotFoundError):
             if deferral is DeferType.NONE:
                 await interaction.create_initial_response(
@@ -118,7 +129,7 @@ class ActionProcessor(IActionProcessor):
                 )
                 return
 
-            raise ArgumentError(f"Cannot edit an interaction deferred as '{deferral}'.")
+            raise ArgumentError("deferral", f"Cannot edit an interaction deferred as '{deferral}'.")
 
     async def __process_autocomplete(
         self,
@@ -126,7 +137,7 @@ class ActionProcessor(IActionProcessor):
         action: AutocompleteAction,
     ) -> None:
         if not isinstance(interaction, (hikari.AutocompleteInteraction)):
-            raise ArgumentError("Responding to an autocompletion is valid for autocomplete interactions only.")
+            raise ArgumentError("interaction", "Responding to an autocompletion is valid for autocomplete interactions only.")
 
         with contextlib.suppress(hikari.NotFoundError):
             await interaction.create_response(
@@ -143,7 +154,23 @@ class ActionProcessor(IActionProcessor):
         interaction: hikari.PartialInteraction
     ) -> None:
         if not isinstance(interaction, (hikari.CommandInteraction, hikari.ComponentInteraction)):
-            raise ArgumentError("Replying to a message is valid for command and component interactions only.")
+            raise ArgumentError("interaction", "Replying to a message is valid for command and component interactions only.")
 
         with contextlib.suppress(hikari.NotFoundError):
             await interaction.delete_initial_response()
+
+    async def __process_show_modal(
+        self,
+        interaction: hikari.PartialInteraction,
+        action: ShowModalAction
+    ) -> None:
+        if not isinstance(interaction, (hikari.CommandInteraction, hikari.ComponentInteraction)):
+            raise ArgumentError("interaction", "Showing a modal is valid for command and component interactions only.")
+
+        with contextlib.suppress(hikari.NotFoundError):
+            await interaction.create_modal_response(
+                action.modal.title,
+                action.modal.identifier,
+                components=self.__component_transformer.transform_modal(action.modal)
+            )
+            return

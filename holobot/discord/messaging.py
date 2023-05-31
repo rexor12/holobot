@@ -73,7 +73,7 @@ class Messaging(IMessaging):
                 content=text_content,
                 embed=embed_content,
                 components=(
-                    self.__component_transformer.transform_to_root_component(components)
+                    self.__component_transformer.transform_control(components)
                     if components else UNDEFINED
                 ),
                 user_mentions=not suppress_user_mentions

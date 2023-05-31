@@ -1,13 +1,14 @@
 from typing import Protocol
 
 from holobot.discord.sdk.actions import (
-    AutocompleteAction, DeleteAction, EditMessageAction, ReplyAction
+    AutocompleteAction, DeleteAction, EditMessageAction, ReplyAction, ShowModalAction
 )
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import AutocompleteChoice, Embed
 from holobot.discord.sdk.workflows.interactables.components import ComponentBase, LayoutBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr
+from holobot.discord.sdk.workflows.interactables.views import Modal
+from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr, UndefinedType
 from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
 from .interactables import Interactable
 from .iworkflow import IWorkflow
@@ -58,7 +59,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         content: str | None = None,
         embed: Embed | None = None,
         components: ComponentBase | list[LayoutBase] | None = None,
-        suppress_user_mentions: bool = False
+        suppress_user_mentions: bool = False,
+        is_ephemeral: bool | UndefinedType = UNDEFINED
     ) -> InteractionResponse:
         """Reply to the interaction with a normal message.
 
@@ -70,6 +72,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         :type components: ComponentBase | list[LayoutBase] | None, optional
         :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False
         :type suppress_user_mentions: bool, optional
+        :param is_ephemeral: Whether the response is ephemeral. This parameter overrides the associated interactable's preference if and only if the response is not deferred.
+        :type is_ephemeral: bool | UndefinedType, optional
         :return: The interaction response.
         :rtype: InteractionResponse
         """
@@ -79,7 +83,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
                 content=content,
                 embed=embed,
                 components=components or [],
-                suppress_user_mentions=suppress_user_mentions
+                suppress_user_mentions=suppress_user_mentions,
+                is_ephemeral=is_ephemeral
             )
         )
 
@@ -149,4 +154,22 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
 
         return InteractionResponse(
             action=DeleteAction()
+        )
+
+    def _show_modal(
+        self,
+        modal: Modal
+    ) -> InteractionResponse:
+        """Displays a modal to the invoking user.
+
+        :param modal: The modal to be displayed.
+        :type modal: Modal
+        :return: The interaction response.
+        :rtype: InteractionResponse
+        """
+
+        return InteractionResponse(
+            action=ShowModalAction(
+                modal=modal
+            )
         )

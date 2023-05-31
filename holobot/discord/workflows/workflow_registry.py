@@ -5,7 +5,9 @@ from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommand
 
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.workflows import IWorkflow
-from holobot.discord.sdk.workflows.interactables import Autocomplete, Command, Component, MenuItem
+from holobot.discord.sdk.workflows.interactables import (
+    Autocomplete, Command, Component, MenuItem, Modal
+)
 from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.workflows.builders import (
     CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
@@ -80,6 +82,12 @@ class WorkflowRegistry(IWorkflowRegistry):
             return options[option_name]
 
         return options[""] if "" in options else None
+
+    def get_modal(
+        self,
+        identifier: str
+    ) -> tuple[IWorkflow, Modal] | None:
+        return self.__modals.get(identifier)
 
     def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
         self.__log.info("Registering commands...")
@@ -221,6 +229,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         components: dict[str, tuple[IWorkflow, Component]] = {}
         menu_items: dict[str, tuple[IWorkflow, MenuItem]] = {}
         autocompletes: TAutocompleteGroupMap = {}
+        modals: dict[str, tuple[IWorkflow, Modal]] = {}
         for workflow in workflows:
             for interactable in workflow.interactables:
                 match interactable:
@@ -228,11 +237,13 @@ class WorkflowRegistry(IWorkflowRegistry):
                     case Component(): components[interactable.identifier] = (workflow, interactable)
                     case MenuItem(): menu_items[interactable.title] = (workflow, interactable)
                     case Autocomplete(): WorkflowRegistry.__add_autocomplete(autocompletes, workflow, interactable, debugger)
+                    case Modal(): modals[interactable.identifier] = (workflow, interactable)
                     case _: self.__log.warning("Ignored unknown interactable type", type=type(interactable).__name__)
         self.__commands = commands
         self.__components = components
         self.__menu_items = menu_items
         self.__autocompletes = autocompletes
+        self.__modals = modals
 
     def __get_user_menu_item_builder(
         self,

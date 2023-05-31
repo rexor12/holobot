@@ -23,7 +23,7 @@ class IPermissionManager(Protocol):
         self,
         server_id: str,
         user_id: str
-    ) -> None:
+    ) -> bool:
         ...
 
     async def has_permissions(

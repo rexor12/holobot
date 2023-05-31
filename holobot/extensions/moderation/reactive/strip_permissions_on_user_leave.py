@@ -24,8 +24,13 @@ class StripPermissionsOnUserLeave(IListener[ServerMemberLeftEvent]):
         return 1
 
     async def on_event(self, event: ServerMemberLeftEvent) -> None:
+        had_permissions = False
         try:
-            await self.__permission_manager.remove_all_permissions(event.server_id, event.user_id)
+            had_permissions = await self.__permission_manager.remove_all_permissions(
+                event.server_id,
+                event.user_id
+            )
+
             self.__logger.trace(
                 "Removed moderation permissions of a user",
                 server_id=event.server_id,
@@ -48,10 +53,11 @@ class StripPermissionsOnUserLeave(IListener[ServerMemberLeftEvent]):
             )
             return
 
-        await self.__try_log(
-            event.server_id,
-            f":hammer: <@{event.user_id}> has had their moderation permissions removed."
-        )
+        if had_permissions:
+            await self.__try_log(
+                event.server_id,
+                f":hammer: <@{event.user_id}> has had their moderation permissions removed."
+            )
 
     async def __try_log(self, server_id: str, message: str) -> None:
         try:

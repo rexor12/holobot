@@ -91,24 +91,24 @@
             },
             "magic_eight_ball_workflow": {
                 "responses": [
-                    "yes.",
-                    "but of course!",
-                    "certainly.",
-                    "without a doubt.",
-                    "yes, definitely.",
-                    "most likely.",
-                    "it seems to be the case.",
-                    "no.",
-                    "of course, not!",
-                    "quite unlikely.",
-                    "don't count on it.",
+                    "Yes.",
+                    "But of course!",
+                    "Certainly.",
+                    "Without a doubt.",
+                    "Yes, definitely.",
+                    "Most likely.",
+                    "It seems to be the case.",
+                    "No.",
+                    "Of course, not!",
+                    "Quite unlikely.",
+                    "Don't count on it.",
                     "I don't think so.",
-                    "maybe.",
-                    "you don't have to know that.",
-                    "that's not your cup of tea.",
-                    "who knows..."
+                    "Maybe.",
+                    "You don't have to know that.",
+                    "That's not your cup of tea.",
+                    "Who knows..."
                 ],
-                "response_message": "{user_name} asked:\n> {question}\n\nHere's my wisdom: {answer}",
+                "response_message": "> {question}\n\n{answer}",
                 "cooldown_error": "The ball, akin to a treasured relic, is currently in the midst of its well-deserved respite. ({seconds_left:,.0f} seconds)"
             },
             "marry_workflow": {
@@ -160,6 +160,15 @@
                 ],
                 "footer": "Data will refresh in {refresh_in} minute(s).",
                 "cooldown_error": "Your interests span far and wide, like a curious wolf exploring the vast forest. But heed this advice: exercise patience and restrain your fervor. ({seconds_left:,.0f} seconds)"
+            },
+            "poll_workflow": {
+                "modal_title": "New poll",
+                "modal_option_label": "Option #{index}",
+                "embed_title": "Poll results",
+                "embed_vote_button": "Option {index}",
+                "poll_expired_error": "This poll has reached its conclusion, therefore you cannot cast your vote anymore.",
+                "already_voted_error": "Your vote has been recorded already, and thus, you are unable to cast it anew in this realm of decision.",
+                "description_option": "**Option #{index}**\n{option}"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",

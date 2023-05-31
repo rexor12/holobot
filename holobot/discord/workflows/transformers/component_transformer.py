@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from itertools import islice
 from typing import Any, NamedTuple, cast
 
@@ -7,13 +7,12 @@ import hikari.api.special_endpoints as endpointsintf
 import hikari.impl.special_endpoints as endpoints
 
 from holobot.discord import DiscordOptions
+from holobot.discord.sdk.utils.string_utils import escape_user_input
 from holobot.discord.sdk.workflows.interactables.components import (
-    Button, ComboBox, ComponentBase, LayoutBase, Paginator, StackLayout
+    Button, ButtonState, ComboBox, ComboBoxState, ComponentBase, ComponentStateBase, ComponentStyle,
+    EmptyState, LayoutBase, PagerState, Paginator, StackLayout, TextBox, TextBoxState, TextBoxStyle
 )
-from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
-from holobot.discord.sdk.workflows.interactables.components.models import (
-    ButtonState, ComboBoxState, ComponentStateBase, EmptyState, PagerState
-)
+from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
@@ -48,21 +47,19 @@ class ComponentTransformer(IComponentTransformer):
         self.__options = options
         self.__component_transformers: dict[type[ComponentBase], _TComponentBuilder] = {
             StackLayout: self.__transform_stack_layout,
+            Paginator: self.__transform_pager,
             Button: self.__transform_button,
             ComboBox: self.__transform_combo_box,
-            Paginator: self.__transform_pager
+            TextBox: self.__transform_text_box
         }
         self.__state_transformers: dict[type[ComponentBase], Callable[[hikari.ComponentInteraction], ComponentStateBase]] = {
-            StackLayout: lambda i: EmptyState(owner_id=str(i.user.id)),
+            StackLayout: lambda i: EmptyState(identifier=i.custom_id, owner_id=str(i.user.id)),
+            Paginator: self.__transform_pager_state,
             Button: self.__transform_button_state,
-            ComboBox: self.__transform_combo_box_state,
-            Paginator: self.__transform_pager_state
+            ComboBox: self.__transform_combo_box_state
         }
 
-    def transform_component(self, component: ComponentBase) -> endpointsintf.ComponentBuilder:
-        return self.__transform_component(component, None)
-
-    def transform_to_root_component(self, components: ComponentBase | list[LayoutBase]) -> list[endpointsintf.ComponentBuilder]:
+    def transform_control(self, components: ComponentBase | list[LayoutBase]) -> list[endpointsintf.ComponentBuilder]:
         match components:
             case LayoutBase():
                 components = [components]
@@ -70,9 +67,9 @@ class ComponentTransformer(IComponentTransformer):
                 components = [StackLayout(id="auto_wrapper_stack_layout", children=[components])]
             case list() if len(components) > 5:
                 raise ArgumentError("components", "A message cannot hold more than 5 layouts.")
-        return list(map(self.transform_component, components))
+        return list(map(lambda c: self.__transform_component(c, None), components))
 
-    def transform_state(
+    def transform_control_state(
         self,
         component_type: type[ComponentBase],
         interaction: hikari.ComponentInteraction
@@ -83,6 +80,36 @@ class ComponentTransformer(IComponentTransformer):
         if not (transformer := self.__state_transformers.get(component_type)):
             raise ArgumentError("component_type", "Invalid component type.")
         return transformer(interaction)
+
+    def transform_modal(
+        self,
+        view: Modal
+    ) -> list[endpointsintf.ModalActionRowBuilder]:
+        assert_range(len(view.title), 1, 45, "view.title")
+        assert_range(len(view.components), 1, 5, "view.children")
+
+        builders = []
+        for child in view.components:
+            if not isinstance(child, TextBox):
+                raise ArgumentError("view.components", f"A modal cannot have a '{type(child)}' as its child.")
+
+            builder = endpoints.ModalActionRowBuilder()
+            self.__transform_component(child, builder)
+            builders.append(builder)
+
+        return builders
+
+    def transform_modal_state(
+        self,
+        interaction: hikari.ModalInteraction
+    ) -> ModalState:
+        return ModalState(
+            owner_id=str(interaction.user.id),
+            components={
+                state.identifier: state
+                for state in self.__transform_modal_component_state(interaction, interaction.components)
+            }
+        )
 
     @staticmethod
     def __get_component_data_from_custom_id(custom_id: str) -> _ComponentData:
@@ -104,6 +131,29 @@ class ComponentTransformer(IComponentTransformer):
             raise ArgumentError("component", "Invalid component type.")
 
         return transformer(component, container)
+
+    def __transform_modal_component_state(
+        self,
+        interaction: hikari.ModalInteraction,
+        component: hikari.ModalActionRowComponent
+                   | hikari.ModalComponentTypesT
+                   | Iterable[hikari.ModalActionRowComponent]
+                   | Iterable[hikari.ModalComponentTypesT]
+    ) -> tuple[ComponentStateBase, ...]:
+        if isinstance(component, (list, tuple)):
+            return tuple(
+                state
+                for child in component
+                for state in self.__transform_modal_component_state(interaction, child)
+            )
+
+        if isinstance(component, hikari.ActionRowComponent):
+            return self.__transform_modal_component_state(interaction, component.components)
+
+        if isinstance(component, hikari.TextInputComponent):
+            return (self.__transform_text_box_state(component.custom_id, component.value),)
+
+        raise ArgumentError("component", f"Unknown modal component type '{type(component)}'.")
 
     def __transform_stack_layout(
         self,
@@ -180,6 +230,7 @@ class ComponentTransformer(IComponentTransformer):
             custom_data[mapping_parts[0]] = mapping_parts[1]
 
         return ButtonState(
+            identifier=component_data.identifier,
             owner_id=parts[0],
             custom_data=custom_data
         )
@@ -228,6 +279,7 @@ class ComponentTransformer(IComponentTransformer):
             raise ValueError("Invalid component state. Required 'owner_id' is missing for the combo box.")
 
         return ComboBoxState(
+            identifier=interaction.custom_id,
             owner_id=owner_id,
             selected_values=selected_values
         )
@@ -283,7 +335,53 @@ class ComponentTransformer(IComponentTransformer):
         state = self.__transform_button_state(interaction)
 
         return PagerState(
+            identifier=state.identifier,
             owner_id=state.owner_id,
             current_page=try_parse_int(state.custom_data.pop("page", "0")) or 0,
             custom_data=state.custom_data
+        )
+
+    def __transform_text_box(
+        self,
+        component: TextBox,
+        container: endpointsintf.ComponentBuilder | None
+    ) -> endpointsintf.ComponentBuilder:
+        assert_not_none(container, "container")
+        assert_range(len(component.label), 1, 45, "component.label")
+        assert_range(component.min_length, 0, 4000, "component.min_length")
+        assert_range(component.max_length, 1, 4000, "component.max_length")
+        if component.placeholder is not None:
+            assert_range(len(component.placeholder), 0, 100, "component.placeholder")
+        if component.default_value is not None:
+            assert_range(len(component.default_value), 0, 4000, "component.default_value")
+
+        if not isinstance(container, endpoints.ModalActionRowBuilder):
+            raise ArgumentError(f"A button can only be placed in a modal, but got '{type(container)}'.")
+
+        builder = container.add_text_input(
+            f"{component.id}~{component.owner_id}",
+            component.label,
+            style=hikari.TextInputStyle.PARAGRAPH if component.style is TextBoxStyle.MULTI_LINE else hikari.TextInputStyle.SHORT,
+            placeholder=component.placeholder or hikari.UNDEFINED,
+            value=component.default_value or hikari.UNDEFINED,
+            required=component.is_required,
+            min_length=component.min_length,
+            max_length=component.max_length
+        )
+
+        return builder
+
+    def __transform_text_box_state(self, custom_id: str, value: str) -> TextBoxState:
+        component_data = ComponentTransformer.__get_component_data_from_custom_id(custom_id)
+        parts = component_data.data.split(";", maxsplit=1)
+        if len(parts) < 1:
+            raise ValueError("Invalid component state. Required 'owner_id' is missing for the text box state.")
+
+        if not parts[0]:
+            raise ValueError("Invalid component state. Required 'owner_id' is missing for the text box state.")
+
+        return TextBoxState(
+            identifier=component_data.identifier,
+            owner_id=parts[0],
+            value=escape_user_input(value)
         )

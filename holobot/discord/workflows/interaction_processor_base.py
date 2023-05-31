@@ -10,6 +10,7 @@ from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.exceptions import InteractionContextNotSupportedError
 from holobot.discord.sdk.models import InteractionContext
+from holobot.discord.sdk.utils.string_utils import escape_user_input
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
@@ -127,7 +128,7 @@ class InteractionProcessorBase(
 
         match option_type, value:
             case (hikari.OptionType.STRING, str()):
-                return value
+                return escape_user_input(value)
             case (hikari.OptionType.BOOLEAN, bool()):
                 return value
             case (hikari.OptionType.INTEGER, int()):

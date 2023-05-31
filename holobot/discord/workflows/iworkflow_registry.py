@@ -1,21 +1,21 @@
-from abc import ABCMeta, abstractmethod
 from collections.abc import Sequence
-from typing import TypeVar
+from typing import Protocol, TypeVar
 
-from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
+from hikari.api.special_endpoints import (
+    CommandBuilder, ContextMenuCommandBuilder, SlashCommandBuilder
+)
 
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import (
-    Autocomplete, Command, Component, Interactable, MenuItem
+    Autocomplete, Command, Component, Interactable, MenuItem, Modal
 )
 
 TInteractable = TypeVar("TInteractable", bound=Interactable)
 
-class IWorkflowRegistry(metaclass=ABCMeta):
+class IWorkflowRegistry(Protocol):
     """Interface for a service that keeps track of the available workflows."""
 
-    @abstractmethod
     def get_command(
         self,
         group_name: str | None,
@@ -24,21 +24,18 @@ class IWorkflowRegistry(metaclass=ABCMeta):
     ) -> tuple[IWorkflow, Command] | None:
         ...
 
-    @abstractmethod
     def get_component(
         self,
         identifier: str
     ) -> tuple[IWorkflow, Component] | None:
         ...
 
-    @abstractmethod
     def get_menu_item(
         self,
         name: str
     ) ->tuple[IWorkflow, MenuItem] | None:
         ...
 
-    @abstractmethod
     def get_autocomplete(
         self,
         group_name: str | None,
@@ -62,8 +59,21 @@ class IWorkflowRegistry(metaclass=ABCMeta):
         :return: If exists, a suitable autocomplete interactable.
         :rtype: tuple[IWorkflow, Autocomplete] | None
         """
+        ...
 
-    @abstractmethod
+    def get_modal(
+        self,
+        identifier: str
+    ) -> tuple[IWorkflow, Modal] | None:
+        """Gets the modal interactable with the specified identifier.
+
+        :param identifier: The identifier of the modal.
+        :type identifier: str
+        :return: If exists, the modal interactable.
+        :rtype: tuple[IWorkflow, Modal] | None
+        """
+        ...
+
     def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
         """Gets the command builders for each server's commands.
 
@@ -75,8 +85,8 @@ class IWorkflowRegistry(metaclass=ABCMeta):
         :return: A list of command builders for each server.
         :rtype: dict[str, Sequence[SlashCommandBuilder]]
         """
+        ...
 
-    @abstractmethod
     def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
         """Gets the menu item builders for each server's menu items.
 
@@ -88,3 +98,4 @@ class IWorkflowRegistry(metaclass=ABCMeta):
         :return: A list of menu item builders for each server.
         :rtype: dict[str, Sequence[ContextMenuCommandBuilder]]
         """
+        ...

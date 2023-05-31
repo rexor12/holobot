@@ -1,11 +1,11 @@
 from uuid import uuid4
 
-from hikari import ComponentInteraction
+from hikari import ModalInteraction
 
 from holobot.discord.actions import IActionProcessor
-from holobot.discord.sdk.events import ComponentProcessedEvent
+from holobot.discord.sdk.events import ModalProcessedEvent
 from holobot.discord.sdk.models import InteractionContext
-from holobot.discord.sdk.workflows.interactables import Component
+from holobot.discord.sdk.workflows.interactables import Modal
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.models import (
     DirectMessageInteractionContext, ServerChatInteractionContext
@@ -22,13 +22,13 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
-@injectable(IInteractionProcessor[ComponentInteraction])
-class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Component]):
+@injectable(IInteractionProcessor[ModalInteraction])
+class ModalProcessor(InteractionProcessorBase[ModalInteraction, Modal]):
     def __init__(
         self,
         action_processor: IActionProcessor,
         component_transformer: IComponentTransformer,
-        event_listeners: tuple[IListener[ComponentProcessedEvent], ...],
+        event_listeners: tuple[IListener[ModalProcessedEvent], ...],
         i18n_provider: II18nProvider,
         log: ILoggerFactory,
         measurement_context_factory: IExecutionContextFactory,
@@ -42,12 +42,11 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
     def _get_interactable_descriptor(
         self,
-        interaction: ComponentInteraction
-    ) -> InteractionDescriptor[Component]:
-        component_id = interaction.custom_id.split("~", 1)[0]
-        invocation_target = self.__workflow_registry.get_component(component_id)
-        state = self.__component_transformer.transform_control_state(
-            invocation_target[1].component_type,
+        interaction: ModalInteraction
+    ) -> InteractionDescriptor[Modal]:
+        modal_id = interaction.custom_id.split("~", 1)[0]
+        invocation_target = self.__workflow_registry.get_modal(modal_id)
+        state = self.__component_transformer.transform_modal_state(
             interaction
         ) if invocation_target else None
 
@@ -63,7 +62,7 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
     def _get_interaction_context(
         self,
-        interaction: ComponentInteraction
+        interaction: ModalInteraction
     ) -> InteractionContext:
         if interaction.guild_id:
             return ServerChatInteractionContext(
@@ -86,8 +85,8 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
     async def _on_interaction_processed(
         self,
-        interaction: ComponentInteraction,
-        descriptor: InteractionDescriptor[Component],
+        interaction: ModalInteraction,
+        descriptor: InteractionDescriptor[Modal],
         response: InteractionResponse
     ) -> None:
         if not self.__event_listeners:
@@ -96,7 +95,7 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
         # At this point the interactable cannot be None.
         assert descriptor.interactable
 
-        event = ComponentProcessedEvent(
+        event = ModalProcessedEvent(
             interactable=descriptor.interactable,
             server_id=str(interaction.guild_id),
             channel_id=str(interaction.channel_id),

@@ -1,5 +1,7 @@
 import hikari
-from hikari import AutocompleteInteraction, CommandInteraction, ComponentInteraction
+from hikari import (
+    AutocompleteInteraction, CommandInteraction, ComponentInteraction, ModalInteraction
+)
 
 from holobot.discord.bot import Bot
 from holobot.discord.workflows import IInteractionProcessor
@@ -17,13 +19,15 @@ class InteractionCreatedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         autocomplete_processor: IInteractionProcessor[AutocompleteInteraction],
         command_processor: IInteractionProcessor[CommandInteraction],
         component_processor: IInteractionProcessor[ComponentInteraction],
-        menu_item_processor: IMenuItemProcessor
+        menu_item_processor: IMenuItemProcessor,
+        modal_processor: IInteractionProcessor[ModalInteraction]
     ) -> None:
         super().__init__()
         self.__autocomplete_processor = autocomplete_processor
         self.__command_processor = command_processor
         self.__component_processor = component_processor
         self.__menu_item_processor = menu_item_processor
+        self.__modal_processor = modal_processor
 
     @property
     def event_type(self) -> type:
@@ -39,3 +43,5 @@ class InteractionCreatedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
                 await self.__component_processor.process(event.interaction)
             case hikari.AutocompleteInteraction():
                 await self.__autocomplete_processor.process(event.interaction)
+            case hikari.ModalInteraction():
+                await self.__modal_processor.process(event.interaction)

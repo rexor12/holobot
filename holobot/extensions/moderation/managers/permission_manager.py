@@ -49,16 +49,19 @@ class PermissionManager(IPermissionManager):
         self,
         server_id: str,
         user_id: str
-    ) -> None:
+    ) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
         user = await self.__repository.get_by_server(server_id, user_id)
         if not user:
-            return
+            return False
 
+        had_permissions = user.permissions is not ModeratorPermission.NONE
         user.permissions = ModeratorPermission.NONE
         await self.__repository.update(user)
+
+        return had_permissions
 
     async def has_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> bool:
         assert_not_none(server_id, "server_id")

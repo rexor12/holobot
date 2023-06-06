@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button
@@ -56,19 +54,13 @@ class RemoveTodoItemWorkflow(WorkflowBase):
 
     @component(
         identifier="todo_cancel",
-        component_type=Button,
         is_bound=True
     )
     async def remove_todo_item_by_button(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
-        if not isinstance(state, ButtonState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            )
-
         todo_item_id = try_parse_int(state.custom_data.get("tid", "-1")) or 0
         if not todo_item_id:
             return self._edit_message(

@@ -6,7 +6,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import (
@@ -74,18 +74,14 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
 
     @component(
         identifier="marrirank_paginator",
-        component_type=Paginator,
         is_bound=True
     )
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PaginatorState
     ) -> InteractionResponse:
-        if (
-            not isinstance(context, ServerChatInteractionContext)
-            or not isinstance(state, PagerState)
-        ):
+        if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )

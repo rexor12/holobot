@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
@@ -8,7 +6,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ComboBoxState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.sdk.ioc.decorators import injectable
@@ -47,18 +47,12 @@ class ShowAvailableServersWorkflow(WorkflowBase):
             components=layout
         )
 
-    @component(
-        identifier="dev_avsrvp",
-        component_type=Paginator
-    )
+    @component(identifier="dev_avsrvp")
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PaginatorState
     ) -> InteractionResponse:
-        if not isinstance(state, PagerState):
-            return self._edit_message(content="This interaction isn't valid anymore.")
-
         content, embed, components = await self.__create_page_content(
             max(state.current_page, 0),
             PAGE_SIZE,
@@ -72,18 +66,12 @@ class ShowAvailableServersWorkflow(WorkflowBase):
             components=components
         )
 
-    @component(
-        identifier="dev_avsrvcb",
-        component_type=ComboBox
-    )
+    @component(identifier="dev_avsrvcb")
     async def change_server(
         self,
         context: InteractionContext,
-        state: Any
+        state: ComboBoxState
     ) -> InteractionResponse:
-        if not isinstance(state, ComboBoxState):
-            return self._edit_message(content="This interaction isn't valid anymore.")
-
         page_index, server_index = state.selected_values[0].split(";")
         content, embed, components = await self.__create_page_content(
             max(int(page_index), 0),

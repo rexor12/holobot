@@ -76,30 +76,8 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
             interactable=invocation_target[1] if invocation_target else None,
             arguments=arguments,
             initiator_id=str(interaction.user.id),
-            bound_user_id=str(interaction.user.id)
-        )
-
-    def _get_interaction_context(
-        self,
-        interaction: hikari.CommandInteraction
-    ) -> InteractionContext:
-        if interaction.guild_id:
-            return ServerChatInteractionContext(
-                request_id=uuid4(),
-                author_id=str(interaction.user.id),
-                author_name=interaction.user.username,
-                author_nickname=interaction.member.nickname if interaction.member else None,
-                server_id=str(interaction.guild_id),
-                server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=str(interaction.channel_id)
-            )
-
-        return DirectMessageInteractionContext(
-            request_id=uuid4(),
-            author_id=str(interaction.user.id),
-            author_name=interaction.user.username,
-            author_nickname=None,
-            channel_id=str(interaction.channel_id)
+            bound_user_id=str(interaction.user.id),
+            context=self.__get_interaction_context(interaction)
         )
 
     async def _on_interaction_processed(
@@ -124,3 +102,28 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
         )
         for event_listener in self.__event_listeners:
             await event_listener.on_event(event)
+
+    def __get_interaction_context(
+        self,
+        interaction: hikari.CommandInteraction
+    ) -> InteractionContext:
+        if interaction.guild_id:
+            return ServerChatInteractionContext(
+                request_id=uuid4(),
+                author_id=str(interaction.user.id),
+                author_name=interaction.user.username,
+                author_nickname=interaction.member.nickname if interaction.member else None,
+                message=None,
+                server_id=str(interaction.guild_id),
+                server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
+                channel_id=str(interaction.channel_id)
+            )
+
+        return DirectMessageInteractionContext(
+            request_id=uuid4(),
+            author_id=str(interaction.user.id),
+            author_name=interaction.user.username,
+            author_nickname=None,
+            message=None,
+            channel_id=str(interaction.channel_id)
+        )

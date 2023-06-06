@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
@@ -7,7 +5,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -75,7 +73,6 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
 
     @moderation_component(
         identifier="warn_paginator",
-        component_type=Paginator,
         is_bound=True,
         required_moderator_permissions=ModeratorPermission.WARN_USERS,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
@@ -83,7 +80,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PaginatorState
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
@@ -104,7 +101,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 embed=embed,
                 components=components
             )
-            if isinstance(state, PagerState)
+            if isinstance(state, PaginatorState)
             else self._edit_message(content="An internal error occurred while processing the interaction.")
         )
 

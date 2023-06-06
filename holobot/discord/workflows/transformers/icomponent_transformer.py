@@ -1,35 +1,44 @@
-from typing import Protocol
+from collections.abc import Sequence
+from typing import NamedTuple, Protocol
 
-from hikari import ComponentInteraction, ModalInteraction
-from hikari.api.special_endpoints import ComponentBuilder, ModalActionRowBuilder
+import hikari
+import hikari.api.special_endpoints as special_endpoints
+import hikari.impl.special_endpoints as endpoints
 
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, ComponentStateBase, LayoutBase
 )
 from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 
+class ComponentId(NamedTuple):
+    identifier: str
+    index: int
+
 class IComponentTransformer(Protocol):
-    def transform_control(
+    def create_controls(
         self,
-        components: ComponentBase | list[LayoutBase]
-    ) -> list[ComponentBuilder]:
+        controls: ComponentBase | Sequence[LayoutBase]
+    ) -> list[special_endpoints.ComponentBuilder]:
         ...
 
-    def transform_control_state(
-        self,
-        component_type: type[ComponentBase],
-        interaction: ComponentInteraction
-    ) -> ComponentStateBase:
-        ...
-
-    def transform_modal(
+    def create_modal(
         self,
         view: Modal
-    ) -> list[ModalActionRowBuilder]:
+    ) -> list[special_endpoints.ModalActionRowBuilder]:
         ...
 
-    def transform_modal_state(
+    def create_modal_state(
         self,
-        interaction: ModalInteraction
+        interaction: hikari.ModalInteraction
     ) -> ModalState:
+        ...
+
+    def create_control_states(
+        self,
+        interaction: hikari.ComponentInteraction,
+        expected_target_types: dict[str, type[ComponentStateBase]]
+    ) -> Sequence[ComponentStateBase]:
+        ...
+
+    def get_component_id(self, custom_id: str) -> ComponentId:
         ...

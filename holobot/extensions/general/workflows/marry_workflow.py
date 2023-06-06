@@ -1,5 +1,4 @@
 from collections.abc import Awaitable
-from typing import Any
 
 from holobot.discord.sdk.exceptions import ServerNotFoundError
 from holobot.discord.sdk.models import InteractionContext
@@ -120,17 +119,15 @@ class MarryWorkflow(WorkflowBase):
 
     @component(
         identifier="marry_yes",
-        component_type=Button,
         is_bound=True
     )
     async def accept_marry_request(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
-            not isinstance(state, ButtonState)
-            or not isinstance(context, ServerChatInteractionContext)
+            not isinstance(context, ServerChatInteractionContext)
             or not (user_id := state.custom_data.get("uid", None))
         ):
             return self._edit_message(
@@ -156,17 +153,15 @@ class MarryWorkflow(WorkflowBase):
 
     @component(
         identifier="marry_no",
-        component_type=Button,
         is_bound=True
     )
     async def refuse_marry_request(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
-            not isinstance(state, ButtonState)
-            or not isinstance(context, ServerChatInteractionContext)
+            not isinstance(context, ServerChatInteractionContext)
             or not (user_id := state.custom_data.get("uid", None))
         ):
             return self._edit_message(
@@ -186,17 +181,15 @@ class MarryWorkflow(WorkflowBase):
 
     @component(
         identifier="remarry_yes",
-        component_type=Button,
         is_bound=True
     )
     async def accept_remarry_request(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
-            not isinstance(state, ButtonState)
-            or not isinstance(context, ServerChatInteractionContext)
+            not isinstance(context, ServerChatInteractionContext)
             or not (user_id := state.custom_data.get("uid", None))
         ):
             return self._edit_message(
@@ -221,17 +214,15 @@ class MarryWorkflow(WorkflowBase):
 
     @component(
         identifier="remarry_no",
-        component_type=Button,
         is_bound=True
     )
     async def refuse_remarry_request(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
-            not isinstance(state, ButtonState)
-            or not isinstance(context, ServerChatInteractionContext)
+            not isinstance(context, ServerChatInteractionContext)
             or not (user_id := state.custom_data.get("uid", None))
         ):
             return self._edit_message(

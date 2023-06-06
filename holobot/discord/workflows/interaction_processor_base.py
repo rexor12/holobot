@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Coroutine, Generator
 from types import coroutine
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar
 
 import hikari
 
@@ -10,7 +10,6 @@ from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.exceptions import InteractionContextNotSupportedError
 from holobot.discord.sdk.models import InteractionContext
-from holobot.discord.sdk.utils.string_utils import escape_user_input
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
@@ -86,13 +85,6 @@ class InteractionProcessorBase(
         ...
 
     @abstractmethod
-    def _get_interaction_context(
-        self,
-        interaction: TInteraction
-    ) -> InteractionContext:
-        ...
-
-    @abstractmethod
     def _on_interaction_processed(
         self,
         interaction: TInteraction,
@@ -128,7 +120,7 @@ class InteractionProcessorBase(
 
         match option_type, value:
             case (hikari.OptionType.STRING, str()):
-                return escape_user_input(value)
+                return value
             case (hikari.OptionType.BOOLEAN, bool()):
                 return value
             case (hikari.OptionType.INTEGER, int()):
@@ -138,8 +130,11 @@ class InteractionProcessorBase(
             case (hikari.OptionType.USER, int()):
                 return value
             case (hikari.OptionType.USER, hikari.Snowflake()):
-                # Casting is needed because Pylance doesn't recognize the type.
-                return int(cast(hikari.Snowflake, value))
+                return int(value)
+            case (hikari.OptionType.ROLE, int()):
+                return value
+            case (hikari.OptionType.ROLE, hikari.Snowflake()):
+                return int(value)
             case (_, _):
                 raise ArgumentError(
                     "value",
@@ -156,6 +151,7 @@ class InteractionProcessorBase(
         execution_data: dict[str, Any]
     ) -> None:
         descriptor = self._get_interactable_descriptor(interaction)
+        context = descriptor.context
         execution_data["initiator_id"] = descriptor.initiator_id
         execution_data["bound_user_id"] = descriptor.bound_user_id
         with execution_context.start("Invalid interaction checked"):
@@ -169,7 +165,6 @@ class InteractionProcessorBase(
         interactable: TInteractable = descriptor.interactable  # type: ignore
 
         execution_data["interactable"] = str(interactable)
-        context = self._get_interaction_context(interaction)
         with execution_context.start("User mismatch checked"):
             if await self.__try_halt_on_user_mismatch(interaction, interactable, descriptor.initiator_id, descriptor.bound_user_id):
                 execution_data["halt_reason"] = "user mismatch"

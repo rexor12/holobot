@@ -1,12 +1,12 @@
-from typing import Any
-
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    Button, ComponentBase, LayoutBase, Paginator
+    ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ButtonState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ButtonState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.extensions.reminders import IReminderManager
@@ -53,19 +53,13 @@ class ViewRemindersWorkflow(WorkflowBase):
 
     @component(
         identifier="reminder_viewall",
-        component_type=Button,
         is_bound=True
     )
     async def view_reminders_by_button(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
-        if not isinstance(state, ButtonState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            )
-
         content, embed, components = await self.__create_page_content(
             context.author_id,
             0,
@@ -79,14 +73,13 @@ class ViewRemindersWorkflow(WorkflowBase):
 
     @component(
         identifier="reminder_paginator",
-        component_type=Paginator,
         is_bound=True,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
     )
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PaginatorState
     ) -> InteractionResponse:
         content, embed, components = await self.__create_page_content(
             state.owner_id,
@@ -99,7 +92,7 @@ class ViewRemindersWorkflow(WorkflowBase):
                 embed=embed,
                 components=components
             )
-            if isinstance(state, PagerState)
+            if isinstance(state, PaginatorState)
             else self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )

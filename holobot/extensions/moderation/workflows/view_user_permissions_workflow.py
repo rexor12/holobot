@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.exceptions import ServerNotFoundError, UserNotFoundError
@@ -10,7 +8,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ComboBoxState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -65,20 +65,15 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
             if user else await self.__view_moderators(context)
         )
 
-    @component(identifier="modpermspagi", component_type=Paginator)
+    @component(identifier="modpermspagi")
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PaginatorState
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
-            )
-
-        if not isinstance(state, PagerState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
 
         content, embed, components = await self.__create_page_content(
@@ -95,20 +90,15 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
             components=components
         )
 
-    @component(identifier="modpermscb", component_type=ComboBox)
+    @component(identifier="modpermscb")
     async def change_user(
         self,
         context: InteractionContext,
-        state: Any
+        state: ComboBoxState
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
-            )
-
-        if not isinstance(state, ComboBoxState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
 
         page_index, user_index = state.selected_values[0].split(";")

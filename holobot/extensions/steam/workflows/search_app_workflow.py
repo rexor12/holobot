@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, cast
+from typing import cast
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.exceptions import FeatureDisabledError
@@ -8,7 +8,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
@@ -84,20 +84,12 @@ class SearchAppWorkflow(WorkflowBase):
             )
             return self._reply(content=self.__i18n_provider.get("extensions.steam.steam_api_error"))
 
-    @component(
-        identifier="stesearchpagi",
-        component_type=Paginator
-    )
+    @component(identifier="stesearchpagi")
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PaginatorState
     ) -> InteractionResponse:
-        if not isinstance(state, PagerState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            )
-
         content, embed, components = await self.__create_page(
             state.owner_id,
             state.custom_data.get("r", ""),

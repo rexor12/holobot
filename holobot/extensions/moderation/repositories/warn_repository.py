@@ -88,7 +88,7 @@ class WarnRepository(
                         column_expression("t1.user_id", Equality.EQUAL, user_id)
                     )
                 )
-                .paginate((("t1.id", Order.ASCENDING),), page_index, max_count)
+                .paginate((("id", Order.ASCENDING),), page_index, max_count)
                 .compile()
                 .fetch(session.connection)
             )

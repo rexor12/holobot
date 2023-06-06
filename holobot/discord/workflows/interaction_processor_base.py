@@ -84,6 +84,13 @@ class InteractionProcessorBase(
     ) -> InteractionDescriptor[TInteractable]:
         ...
 
+    # @abstractmethod
+    # def _get_interaction_context(
+    #     self,
+    #     interaction: TInteraction
+    # ) -> InteractionContext:
+    #     ...
+
     @abstractmethod
     def _on_interaction_processed(
         self,

@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from typing import Protocol
 
 from .models.embed import Embed
@@ -24,4 +25,7 @@ class IMessaging(Protocol):
         channel_id: str,
         message_id: str
     ) -> None:
+        ...
+
+    def delete_message(self, channel_id: str, message_id: str) -> Awaitable[None]:
         ...

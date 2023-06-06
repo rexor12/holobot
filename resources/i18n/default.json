@@ -34,6 +34,27 @@
 
     "extensions": {
         "admin": {
+            "auto_role_menu_workflow": {
+                "embed_footer": "Grab or remove a role by selecting an emoji.",
+                "emoji_not_found_error": "Pray, provide an emoji I can find in my lair here.",
+                "builder_expired_error": "You took way too long and your menu builder has spoiled. Pray, give it a try anew.",
+                "too_many_roles_error": "Ah, it seems this basket is full of apples now. Get a new one so we can continue our work.",
+                "role_selector_message": "Select the role you'd like to add or go back to the main menu.",
+                "role_modal_title": "Select an emoji to be used.",
+                "role_modal_field": "Emoji name",
+                "builder_in_progress_error": "This board is not yet available for your eyes. Pray, return to it later.",
+                "user_role_added": "I have assigned you the <@&{role_id}> role as per your request.",
+                "user_role_removed": "I have removed your <@&{role_id}> role as per your request.",
+                "role_added_already_error": "You appear to be a bit forgetful. You have already put that apple in the basket.",
+                "cannot_remove_only_role_error": "Pray, do not take my last apple from the basket.",
+                "role_not_added_error": "This basket does not seem to have the apple you seek.",
+                "changes_saved_message": "I have recorded the modifications you have implemented.",
+                "details_too_long_error": "Pray, shorten the title and description of your menu to be no longer than 120 characters each.",
+                "detail_modal_title": "Edit details",
+                "detail_modal_title_field": "Menu title",
+                "detail_modal_description_field": "Short description",
+                "detail_modal_roles_field": "Show roles (yes/no)"
+            },
             "help_workflow": {
                 "explanation": "Rules are logically separated by the following types:\n- **Global rules**: These rules apply to every command, regardless of group, sub-group or name.\n- **Group rules**: These rules apply to entire command groups, such as \"admin\".\n- **Sub-group rules**: These rules apply to a specific sub-group of a specific group, such as \"commands\".\n- **Command rules**: These rules apply to specific commands, such as \"help\".\nEach one of these groups may apply to all channels or a specific channel only.\n\nThe rule precedence is as follows: _global rules > group rules > sub-group rules > command rules_. Rules that apply to all channels are applied before those that apply to specific channels only.\n\nFor example, to allow the execution of commands in a single channel only, you would need two rules:\n1. :no_entry: Forbid the execution of all commands in every channel.\n2. :white_check_mark: Allow the execution of all commands in a specific channel."
             },

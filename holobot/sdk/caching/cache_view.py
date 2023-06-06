@@ -107,3 +107,6 @@ class CacheView(Generic[TKey, TValue]):
             )
 
         return resulting_value
+
+    def remove(self, key: TKey) -> Awaitable[TValue | UndefinedType]:
+        return self.__parent.remove(key)

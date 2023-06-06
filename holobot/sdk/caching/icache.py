@@ -57,3 +57,6 @@ class ICache(Protocol[TKey, TValue]):
         :rtype: TValue | UndefinedType
         """
         ...
+
+    def remove(self, key: TKey) -> Awaitable[TValue | UndefinedType]:
+        ...

@@ -137,9 +137,9 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
     async def remove(
         self,
         key: _CacheEntryKey[TKey]
-    ) -> None:
+    ) -> TValue | UndefinedType:
         async with self.__lock:
-            self.__remove_entry(key)
+            return self.__remove_entry(key)
 
     async def _on_dispose(self) -> None:
         if self.__token_source: self.__token_source.cancel()
@@ -161,9 +161,17 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
 
         return entry.value
 
-    def __remove_entry(self, key: _CacheEntryKey[TKey]) -> None:
-        self.__entries.pop(key, None)
-        self.__expires.pop(key, None)
+    def __remove_entry(self, key: _CacheEntryKey[TKey]) -> TValue | UndefinedType:
+        value = self.__entries.pop(key, None)
+        value2 = self.__expires.pop(key, None)
+
+        if value is not None:
+            return value.value
+
+        if value2 is not None:
+            return value2.value
+
+        return UNDEFINED
 
     async def __remove_expired_entries(self, interval: timedelta, token: CancellationToken):
         while not token.is_cancellation_requested:
@@ -234,6 +242,12 @@ class ConcurrentMemoryCache(ICache, IAsyncDisposable, Generic[TKey, TValue]):
             return UNDEFINED
 
         return await store.add_or_replace(cache_key, value, policy)
+
+    def remove(self, key: TKey) -> Awaitable[TValue | UndefinedType]:
+        cache_key = _CacheEntryKey(key)
+        store = self.__get_store(cache_key)
+
+        return store.remove(cache_key)
 
     def __get_store(self, key: _CacheEntryKey[TKey]) -> _ItemStore[TKey, TValue]:
         index = key.hash_value % len(self.__stores)

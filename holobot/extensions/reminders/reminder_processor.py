@@ -2,7 +2,10 @@ import asyncio
 from collections.abc import Awaitable
 
 from holobot.discord.sdk import IMessaging
-from holobot.discord.sdk.exceptions import ForbiddenError, UserNotFoundError
+from holobot.discord.sdk.exceptions import (
+    ChannelNotFoundError, ForbiddenError, ServerNotFoundError, UserNotFoundError
+)
+from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
 from holobot.sdk.configs import IOptions
@@ -22,6 +25,7 @@ class ReminderProcessor(IStartable):
         self,
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
+        member_data_provider: IMemberDataProvider,
         messaging: IMessaging,
         options: IOptions[ReminderProcessingOptions],
         reminder_repository: IReminderRepository
@@ -29,6 +33,7 @@ class ReminderProcessor(IStartable):
         super().__init__()
         self.__i18n_provider = i18n_provider
         self.__logger = logger_factory.create(ReminderProcessor)
+        self.__member_data_provider = member_data_provider
         self.__messaging: IMessaging = messaging
         self.__options = options
         self.__reminder_repository: IReminderRepository = reminder_repository
@@ -80,7 +85,7 @@ class ReminderProcessor(IStartable):
     async def __try_process_reminder(self, reminder: Reminder) -> None:
         try:
             await self.__process_reminder(reminder)
-        except (ForbiddenError, UserNotFoundError) as error:
+        except (ForbiddenError, UserNotFoundError, ServerNotFoundError, ChannelNotFoundError) as error:
             self.__logger.debug(
                 "Failed to send reminder notification, will not retry.",
                 exception=error,
@@ -126,6 +131,11 @@ class ReminderProcessor(IStartable):
                     raise
 
         if not reminder.server_id or not reminder.channel_id:
+            return
+
+        # Remove the reminder if the user is not a server member anymore.
+        if not await self.__member_data_provider.is_member(reminder.server_id, reminder.user_id):
+            reminder.is_repeating = False
             return
 
         await self.__messaging.send_channel_message(

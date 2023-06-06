@@ -6,7 +6,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ComboBoxState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.sdk.ioc.decorators import injectable
@@ -49,7 +51,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: PagerState
+        state: PaginatorState
     ) -> InteractionResponse:
         content, embed, components = await self.__create_page_content(
             max(state.current_page, 0),

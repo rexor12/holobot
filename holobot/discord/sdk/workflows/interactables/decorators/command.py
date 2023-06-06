@@ -6,8 +6,6 @@ from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 
-# TODO Remove is_bound parameter.
-# It makes no sense for commands as they're always initiators.
 def command(
     *,
     description: str,
@@ -15,7 +13,6 @@ def command(
     group_name: str | None = None,
     subgroup_name: str | None = None,
     options: tuple[Option, ...] = (),
-    is_bound: bool = False,
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
     defer_type: DeferType = DeferType.NONE,
@@ -35,8 +32,6 @@ def command(
     :type subgroup_name: str | None, optional
     :param options: The list of command arguments, defaults to ()
     :type options: tuple[Option, ...], optional
-    :param is_bound: Whether only the invoking user can interact with the result, defaults to False
-    :type is_bound: bool, optional
     :param is_ephemeral: Whether only the invoking user can see the result, defaults to False
     :type is_ephemeral: bool, optional
     :param required_permissions: Any required permissions in addition to the workflow's requirements, defaults to Permission.NONE
@@ -57,7 +52,6 @@ def command(
             group_name=group_name,
             subgroup_name=subgroup_name,
             options=options,
-            is_bound=is_bound,
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,
             defer_type=defer_type,

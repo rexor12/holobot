@@ -8,7 +8,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, Cooldown, InteractionResponse, Option
@@ -88,7 +88,7 @@ class SearchAppWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: PagerState
+        state: PaginatorState
     ) -> InteractionResponse:
         content, embed, components = await self.__create_page(
             state.owner_id,

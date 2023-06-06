@@ -4,7 +4,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ComboBoxState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import EntityType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
@@ -89,7 +91,7 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: PagerState
+        state: PaginatorState
     ) -> InteractionResponse:
         content, embed, components = await self.__create_page_content(
             state.current_page,

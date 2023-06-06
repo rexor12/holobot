@@ -8,7 +8,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComboBox, ComboBoxItem, ComponentBase, LayoutBase, Paginator, StackLayout
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ComboBoxState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ComboBoxState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -67,7 +69,7 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: PagerState
+        state: PaginatorState
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(

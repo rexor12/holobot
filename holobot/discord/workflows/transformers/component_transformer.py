@@ -8,7 +8,7 @@ import hikari.impl.special_endpoints as endpoints
 from holobot.discord import DiscordOptions
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComboBox, ComboBoxState, ComponentBase, ComponentStateBase, ComponentStyle,
-    EmptyState, LayoutBase, PagerState, Paginator, RoleSelector, RoleSelectorState, StackLayout,
+    EmptyState, LayoutBase, Paginator, PaginatorState, RoleSelector, RoleSelectorState, StackLayout,
     TextBox, TextBoxState, TextBoxStyle
 )
 from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
@@ -365,7 +365,7 @@ class ComponentTransformer(IComponentTransformer):
         self,
         control: hikari.ButtonComponent,
         expected_target_types: dict[str, type[ComponentStateBase]]
-    ) -> ButtonState | PagerState:
+    ) -> ButtonState | PaginatorState:
         # Link buttons don't have identifiers as they don't trigger interactions.
         if not control.custom_id:
             return ButtonState(
@@ -377,8 +377,8 @@ class ComponentTransformer(IComponentTransformer):
 
         data = ComponentTransformer.__unpack_custom_data(control.custom_id)
         expected_target_type = expected_target_types.get(data.identifier)
-        if expected_target_type is PagerState:
-            return PagerState(
+        if expected_target_type is PaginatorState:
+            return PaginatorState(
                 identifier=data.identifier,
                 owner_id=data.owner_id,
                 current_page=try_parse_int(data.custom_data.pop("page", "0")) or 0,

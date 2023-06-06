@@ -7,7 +7,7 @@ from .interactable_component_base import InteractableComponentBase
 from .interactable_layout_base import InteractableLayoutBase
 from .layout_base import LayoutBase
 from .models import (
-    ButtonState, ComboBoxState, ComponentStateBase, EmptyState, PagerState, RoleSelectorState,
+    ButtonState, ComboBoxState, ComponentStateBase, EmptyState, PaginatorState, RoleSelectorState,
     TextBoxState
 )
 from .paginator import Paginator

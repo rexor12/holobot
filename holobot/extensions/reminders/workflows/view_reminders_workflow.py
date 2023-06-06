@@ -4,7 +4,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator
 )
-from holobot.discord.sdk.workflows.interactables.components.models import ButtonState, PagerState
+from holobot.discord.sdk.workflows.interactables.components.models import (
+    ButtonState, PaginatorState
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.extensions.reminders import IReminderManager
@@ -77,7 +79,7 @@ class ViewRemindersWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: PagerState
+        state: PaginatorState
     ) -> InteractionResponse:
         content, embed, components = await self.__create_page_content(
             state.owner_id,
@@ -90,7 +92,7 @@ class ViewRemindersWorkflow(WorkflowBase):
                 embed=embed,
                 components=components
             )
-            if isinstance(state, PagerState)
+            if isinstance(state, PaginatorState)
             else self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )

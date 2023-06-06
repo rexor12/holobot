@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from hikari import ForbiddenError as HikariForbiddenError
+import hikari
 
 from holobot.discord.bot import get_bot
 from holobot.discord.sdk.exceptions import ForbiddenError
@@ -10,6 +10,7 @@ from holobot.discord.sdk.servers.managers import (
 from holobot.sdk.exceptions import ArgumentOutOfRangeError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none, assert_range, textify_timedelta, utcnow
+from holobot.sdk.utils.iterable_utils import has_any
 
 _DEFAULT_SILENCE_DURATION = timedelta(minutes=1)
 
@@ -35,7 +36,7 @@ class UserManager(IUserManager):
         member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.edit(communication_disabled_until=utcnow() + duration)
-        except HikariForbiddenError as error:
+        except hikari.ForbiddenError as error:
             raise ForbiddenError("Cannot time-out server member.") from error
 
     async def kick_user(self, server_id: str, user_id: str, reason: str) -> None:
@@ -46,7 +47,7 @@ class UserManager(IUserManager):
         member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.kick(reason=reason)
-        except HikariForbiddenError as error:
+        except hikari.ForbiddenError as error:
             raise ForbiddenError("Cannot kick server member.") from error
 
     async def ban_user(self, server_id: str, user_id: str, reason: str, delete_message_days: int = 0) -> None:
@@ -58,8 +59,31 @@ class UserManager(IUserManager):
         member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.ban(reason=reason, delete_message_seconds=delete_message_days * 86400)
-        except HikariForbiddenError as error:
+        except hikari.ForbiddenError as error:
             raise ForbiddenError("Cannot ban server member.") from error
+
+    async def has_role(self, server_id: str, user_id: str, role_id: str) -> bool:
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        role = await get_bot().get_guild_role(int(server_id), int(role_id))
+        try:
+            user_roles = member.get_roles()
+            if not user_roles:
+                user_roles = await member.fetch_roles()
+
+            return has_any(user_roles, lambda i: i.id == role.id)
+        except hikari.ForbiddenError as error:
+            raise ForbiddenError("Cannot fetch roles of server member.") from error
+
+    async def get_role_ids(self, server_id: str, user_id: str) -> set[str]:
+        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        try:
+            user_roles = member.get_roles()
+            if not user_roles:
+                user_roles = await member.fetch_roles()
+
+            return set(map(lambda i: str(i.id), user_roles))
+        except hikari.ForbiddenError as error:
+            raise ForbiddenError("Cannot fetch roles of server member.") from error
 
     async def assign_role(self, server_id: str, user_id: str, role_id: str) -> None:
         assert_not_none(server_id, "server_id")
@@ -70,7 +94,7 @@ class UserManager(IUserManager):
         role = await get_bot().get_guild_role(int(server_id), int(role_id))
         try:
             await member.add_role(role)
-        except HikariForbiddenError as error:
+        except hikari.ForbiddenError as error:
             raise ForbiddenError("Cannot assign role to server member.") from error
 
     async def remove_role(self, server_id: str, user_id: str, role_id: str) -> None:
@@ -82,7 +106,7 @@ class UserManager(IUserManager):
         role = await get_bot().get_guild_role(int(server_id), int(role_id))
         try:
             await member.remove_role(role)
-        except HikariForbiddenError as error:
+        except hikari.ForbiddenError as error:
             raise ForbiddenError("Cannot remove role from server member.") from error
 
     async def unsilence_user(
@@ -96,5 +120,5 @@ class UserManager(IUserManager):
         member = await get_bot().get_guild_member(int(server_id), int(user_id))
         try:
             await member.edit(communication_disabled_until=None)
-        except HikariForbiddenError as error:
+        except hikari.ForbiddenError as error:
             raise ForbiddenError("Cannot remove time-out of server member.") from error

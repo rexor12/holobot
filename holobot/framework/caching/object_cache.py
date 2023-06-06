@@ -51,6 +51,12 @@ class ObjectCache(IObjectCache, IStartable):
 
         return await self.__cache.add_or_replace(key, value, policy)
 
+    def remove(self, key: Any) -> Awaitable[Any | None]:
+        if not self.__cache:
+            raise InvalidOperationError("The cache hasn't been initialized.")
+
+        return self.__cache.remove(key)
+
     def get_view(
         self,
         key_type: type[TKey],

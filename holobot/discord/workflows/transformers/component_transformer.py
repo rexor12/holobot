@@ -8,8 +8,8 @@ import hikari.impl.special_endpoints as endpoints
 from holobot.discord import DiscordOptions
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComboBox, ComboBoxState, ComponentBase, ComponentStateBase, ComponentStyle,
-    EmptyState, LayoutBase, Paginator, PaginatorState, RoleSelector, RoleSelectorState, StackLayout,
-    TextBox, TextBoxState, TextBoxStyle
+    LayoutBase, Paginator, PaginatorState, RoleSelector, RoleSelectorState, StackLayout, TextBox,
+    TextBoxState, TextBoxStyle
 )
 from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 from holobot.discord.transformers.emoji import to_model as emoji_to_model
@@ -65,7 +65,12 @@ class ComponentTransformer(IComponentTransformer):
             case list() if len(controls) > 5:
                 raise ArgumentError("controls", "A message cannot hold more than 5 layouts.")
 
-        return list(map(lambda c: self.__create_control(c, None, {}), controls))
+        counters = dict[str, int]()
+
+        return list(map(
+            lambda c: self.__create_control(c, None, counters),
+            controls
+        ))
 
     def create_modal(
         self,

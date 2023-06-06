@@ -1,3 +1,5 @@
+from collections.abc import Awaitable
+
 from hikari import (
     UNDEFINED, ForbiddenError as HikariForbiddenError, GuildNewsChannel,
     NotFoundError as HikariNotFoundError, TextableGuildChannel
@@ -102,3 +104,6 @@ class Messaging(IMessaging):
             )
 
         await get_bot().rest.crosspost_message(channel, int(message_id))
+
+    def delete_message(self, channel_id: str, message_id: str) -> Awaitable[None]:
+        return get_bot().rest.delete_message(int(channel_id), int(message_id))

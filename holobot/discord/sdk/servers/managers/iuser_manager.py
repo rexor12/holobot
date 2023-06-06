@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from datetime import timedelta
 from typing import Protocol
 
@@ -58,6 +59,12 @@ class IUserManager(Protocol):
         :param delete_message_days: An optional number of days through which to delete the user's messages, defaults to 0
         :type delete_message_days: int, optional
         """
+        ...
+
+    def has_role(self, server_id: str, user_id: str, role_id: str) -> Awaitable[bool]:
+        ...
+
+    def get_role_ids(self, server_id: str, user_id: str) -> Awaitable[set[str]]:
         ...
 
     async def assign_role(self, server_id: str, user_id: str, role_id: str) -> None:

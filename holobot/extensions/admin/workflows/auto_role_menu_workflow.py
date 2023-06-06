@@ -44,7 +44,6 @@ class _AutoRoleMenuBuilder:
     show_roles: bool
     title: str
     description: str | None
-    # role_id, emoji_id, emoji mention
     roles: list[_RoleOptions] = field(default_factory=list)
     current_role_id: str | None = None
     is_new: bool = True
@@ -637,6 +636,17 @@ class AutoRoleMenuWorkflow(WorkflowBase):
                         is_required=True,
                         min_length=1,
                         max_length=3
+                    ),
+                    TextBox(
+                        id="tbexclusive",
+                        owner_id=state.owner_id,
+                        label=self.__i18n.get(
+                            "extensions.admin.auto_role_menu_workflow.detail_modal_exclusive_field"
+                        ),
+                        default_value="yes" if builder.is_exclusive else "no",
+                        is_required=True,
+                        min_length=1,
+                        max_length=3
                     )
                 ]
             )
@@ -657,6 +667,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
             or not (tb_title := state.get_component_state(TextBoxState, "tbtitle"))
             or not (tb_description := state.get_component_state(TextBoxState, "tbdescription"))
             or not (tb_roles := state.get_component_state(TextBoxState, "tbroles"))
+            or not (tb_exclusive := state.get_component_state(TextBoxState, "tbexclusive"))
             or not tb_title.value
             or not (state_id := tb_title.custom_data.get("i"))
         ):
@@ -684,6 +695,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
         builder.title = tb_title.value
         builder.description = tb_description.value
         builder.show_roles = tb_roles.value is not None and tb_roles.value.lower() == "yes"
+        builder.is_exclusive = tb_exclusive.value is not None and tb_exclusive.value.lower() == "yes"
 
         embed, components = self.__create_view(builder, False)
 

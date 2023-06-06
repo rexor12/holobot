@@ -46,41 +46,9 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
             workflow=invocation_target[0] if invocation_target else None,
             interactable=invocation_target[1] if invocation_target else None,
             initiator_id=str(interaction.user.id),
-            bound_user_id=str(interaction.user.id)
+            bound_user_id=str(interaction.user.id),
+            context=self.__get_interaction_context(interaction)
         )
-
-    def _get_interaction_context(
-        self,
-        interaction: CommandInteraction
-    ) -> InteractionContext:
-        if not interaction.guild_id:
-            raise InteractionContextNotSupportedError()
-
-        match interaction.command_type:
-            case CommandType.MESSAGE:
-                return ServerMessageInteractionContext(
-                    request_id=uuid4(),
-                    author_id=str(interaction.user.id),
-                    author_name=interaction.user.username,
-                    author_nickname=interaction.member.nickname if interaction.member else None,
-                    server_id=str(interaction.guild_id),
-                    server_name=guild.name if (guild := interaction.get_guild()) else None,
-                    channel_id=str(interaction.channel_id),
-                    target_message_id=str(interaction.target_id)
-                )
-            case CommandType.USER:
-                return ServerUserInteractionContext(
-                    request_id=uuid4(),
-                    author_id=str(interaction.user.id),
-                    author_name=interaction.user.username,
-                    author_nickname=interaction.member.nickname if interaction.member else None,
-                    server_id=str(interaction.guild_id),
-                    server_name=guild.name if (guild := interaction.get_guild()) else None,
-                    channel_id=str(interaction.channel_id),
-                    target_user_id=str(interaction.target_id)
-                )
-            case _:
-                raise InteractionContextNotSupportedError()
 
     async def _on_interaction_processed(
         self,
@@ -103,3 +71,38 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         )
         for event_listener in self.__event_listeners:
             await event_listener.on_event(event)
+
+    def __get_interaction_context(
+        self,
+        interaction: CommandInteraction
+    ) -> InteractionContext:
+        if not interaction.guild_id:
+            raise InteractionContextNotSupportedError()
+
+        match interaction.command_type:
+            case CommandType.MESSAGE:
+                return ServerMessageInteractionContext(
+                    request_id=uuid4(),
+                    author_id=str(interaction.user.id),
+                    author_name=interaction.user.username,
+                    author_nickname=interaction.member.nickname if interaction.member else None,
+                    message=None,
+                    server_id=str(interaction.guild_id),
+                    server_name=guild.name if (guild := interaction.get_guild()) else None,
+                    channel_id=str(interaction.channel_id),
+                    target_message_id=str(interaction.target_id)
+                )
+            case CommandType.USER:
+                return ServerUserInteractionContext(
+                    request_id=uuid4(),
+                    author_id=str(interaction.user.id),
+                    author_name=interaction.user.username,
+                    author_nickname=interaction.member.nickname if interaction.member else None,
+                    message=None,
+                    server_id=str(interaction.guild_id),
+                    server_name=guild.name if (guild := interaction.get_guild()) else None,
+                    channel_id=str(interaction.channel_id),
+                    target_user_id=str(interaction.target_id)
+                )
+            case _:
+                raise InteractionContextNotSupportedError()

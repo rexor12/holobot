@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 
@@ -17,3 +18,6 @@ class InteractionDescriptor(Generic[TInteractable]):
 
     bound_user_id: str
     """The identifier of the user who initiated the workflow."""
+
+    context: InteractionContext
+    """Contextual information about the interaction."""

@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
@@ -75,7 +73,6 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
 
     @moderation_component(
         identifier="warn_paginator",
-        component_type=Paginator,
         is_bound=True,
         required_moderator_permissions=ModeratorPermission.WARN_USERS,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
@@ -83,7 +80,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PagerState
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(

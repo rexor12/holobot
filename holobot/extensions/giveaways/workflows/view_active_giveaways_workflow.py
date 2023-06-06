@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -57,19 +55,13 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
 
     @component(
         identifier="giveaway_selector",
-        component_type=ComboBox,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
     )
     async def display_giveaway(
         self,
         context: InteractionContext,
-        state: Any
+        state: ComboBoxState
     ) -> InteractionResponse:
-        if not isinstance(state, ComboBoxState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            )
-
         identifier, page_index, item_index, item_type = state.selected_values[0].split(";")
         if (not identifier
             or not item_type
@@ -93,20 +85,12 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
             components=components
         )
 
-    @component(
-        identifier="gabpagi",
-        component_type=Paginator
-    )
+    @component(identifier="gabpagi")
     async def change_page(
         self,
         context: InteractionContext,
-        state: Any
+        state: PagerState
     ) -> InteractionResponse:
-        if not isinstance(state, PagerState):
-            return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
-            )
-
         content, embed, components = await self.__create_page_content(
             state.current_page,
             _ITEMS_PER_PAGE,

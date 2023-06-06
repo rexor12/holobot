@@ -1,7 +1,6 @@
 from asyncio import Lock
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any
 
 from holobot.discord.sdk.models import Embed, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -125,18 +124,14 @@ class PollWorkflow(WorkflowBase):
             components=components
         )
 
-    @component(
-        identifier="pvote",
-        component_type=Button
-    )
+    @component(identifier="pvote")
     async def add_vote(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
             not isinstance(context, ServerChatInteractionContext)
-            or not isinstance(state, ButtonState)
             or not (poll_id := state.custom_data.get("p"))
             or not (index_string := state.custom_data.get("i"))
             or (index := try_parse_int(index_string)) is None

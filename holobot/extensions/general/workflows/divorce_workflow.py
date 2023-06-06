@@ -1,5 +1,3 @@
-from typing import Any
-
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button, StackLayout
@@ -73,17 +71,15 @@ class DivorceWorkflow(WorkflowBase):
 
     @component(
         identifier="divorce_yes",
-        component_type=Button,
         is_bound=True
     )
     async def confirm_divorce(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
-            not isinstance(state, ButtonState)
-            or not isinstance(context, ServerChatInteractionContext)
+            not isinstance(context, ServerChatInteractionContext)
             or not (spouse_id := state.custom_data.get("uid", None))
         ):
             return self._edit_message(
@@ -111,17 +107,15 @@ class DivorceWorkflow(WorkflowBase):
 
     @component(
         identifier="divorce_no",
-        component_type=Button,
         is_bound=True
     )
     async def cancel_divorce(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
         if (
-            not isinstance(state, ButtonState)
-            or not isinstance(context, ServerChatInteractionContext)
+            not isinstance(context, ServerChatInteractionContext)
             or not state.custom_data.get("uid", None)
         ):
             return self._edit_message(

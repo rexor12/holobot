@@ -11,3 +11,6 @@ class OptionType(IntEnum):
 
     USER = 4
     """Resolves a user mention, returning the identifier of the user (an integer)."""
+
+    ROLE = 5
+    """Resolves a role mention, returning the identifier of the role (an integer)."""

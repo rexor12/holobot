@@ -12,3 +12,4 @@ class TextBox(InteractableComponentBase):
     is_required: bool = False
     min_length: int = 0
     max_length: int = 4000
+    custom_data: dict[str, str] = field(default_factory=dict)

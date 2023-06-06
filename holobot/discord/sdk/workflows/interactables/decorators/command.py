@@ -6,6 +6,8 @@ from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 
+# TODO Remove is_bound parameter.
+# It makes no sense for commands as they're always initiators.
 def command(
     *,
     description: str,

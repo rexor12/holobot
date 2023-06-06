@@ -9,6 +9,7 @@ def transform_option_type(option_type: OptionType) -> hikari.OptionType:
         case OptionType.INTEGER: return hikari.OptionType.INTEGER
         case OptionType.FLOAT: return hikari.OptionType.FLOAT
         case OptionType.USER: return hikari.OptionType.USER
+        case OptionType.ROLE: return hikari.OptionType.ROLE
         case _: return hikari.OptionType.STRING
 
 def transform_option(option: Option) -> hikari.CommandOption:

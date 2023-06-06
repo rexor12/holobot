@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import IntEnum, unique
-from typing import Any
 
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.exceptions import (
@@ -99,16 +98,13 @@ class ViewUserAvatarWorkflow(WorkflowBase):
             suppress_user_mentions=True
         )
 
-    @component(
-        identifier="avatar_global",
-        component_type=Button
-    )
+    @component(identifier="avatar_global")
     async def view_global_user_avatar(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
-        if not isinstance(state, ButtonState) or not isinstance(context, ServerChatInteractionContext):
+        if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
@@ -126,16 +122,13 @@ class ViewUserAvatarWorkflow(WorkflowBase):
             suppress_user_mentions=True
         )
 
-    @component(
-        identifier="avatar_server",
-        component_type=Button
-    )
+    @component(identifier="avatar_server")
     async def view_server_user_avatar(
         self,
         context: InteractionContext,
-        state: Any
+        state: ButtonState
     ) -> InteractionResponse:
-        if not isinstance(state, ButtonState) or not isinstance(context, ServerChatInteractionContext):
+        if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )

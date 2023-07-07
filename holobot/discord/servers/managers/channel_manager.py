@@ -38,7 +38,7 @@ class ChannelManager(IChannelManager):
             raise ChannelNotFoundError(channel_id)
 
         source_guild = await get_bot().get_guild_by_id(int(source_server_id))
-        if not (source_channel := await get_bot().get_guild_channel(guild, int(source_channel_id))):
+        if not (source_channel := await get_bot().get_guild_channel(source_guild, int(source_channel_id))):
             raise ChannelNotFoundError(source_channel_id)
 
         if not isinstance(source_channel, GuildNewsChannel):

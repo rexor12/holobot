@@ -68,7 +68,7 @@ class MarriageManager(IMarriageManager):
         if await self.__marriage_repository.delete_by_user(server_id, user_id, spouse_id):
             return
 
-        raise NotMarriedError(user_id)
+        raise NotMarriedError(server_id, user_id)
 
     async def try_add_reaction(
         self,

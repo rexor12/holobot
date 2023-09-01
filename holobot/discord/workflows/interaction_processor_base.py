@@ -51,12 +51,12 @@ class InteractionProcessorBase(
         with self.__execution_context_factory.create("Processed interactable", "Parent", execution_data) as context:
             try:
                 await self.__process_interaction(interaction, context, execution_data)
-            except hikari.ClientHTTPResponseError:
+            except hikari.ClientHTTPResponseError as error:
                 # An expected exception but log it anyway to be aware of the frequency.
                 execution_data["has_exception"] = True
-                self.__log.exception("A Discord HTTP error occurred while processing an interaction", **execution_data)
+                self.__log.error("A Discord HTTP error occurred while processing an interaction", error, **execution_data)
                 await self.__try_send_error_response(interaction, execution_data)
-            except SerializationError:
+            except SerializationError as error:
                 execution_data["has_exception"] = True
                 self.__log.trace("A database serialization error occurred while processing an interaction", **execution_data)
                 await self.__try_send_error_response(
@@ -71,10 +71,10 @@ class InteractionProcessorBase(
                     execution_data,
                     "interactions.interaction_context_not_supported_error"
                 )
-            except Exception:
+            except Exception as error:
                 # Don't propagate to the framework, better log it here.
                 execution_data["has_exception"] = True
-                self.__log.exception("An unhandled exception occurred while processing an interaction", **execution_data)
+                self.__log.error("An unhandled exception occurred while processing an interaction", error, **execution_data)
                 await self.__try_send_error_response(interaction, execution_data)
 
     @abstractmethod

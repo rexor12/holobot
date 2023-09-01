@@ -36,7 +36,9 @@ class RoleManager(IRoleManager):
             )
             return to_model(role)
         except HikariForbiddenError as error:
-            raise ForbiddenError("Cannot create role.") from error
+            raise ForbiddenError(
+                f"Cannot create role '{role_name}' in server '{server_id}'."
+            ) from error
 
     @staticmethod
     def __get_guild(server_id: str) -> Guild:

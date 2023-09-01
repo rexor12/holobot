@@ -1,3 +1,4 @@
+from holobot.discord.sdk.exceptions.channel_not_found_error import ChannelNotFoundError
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow

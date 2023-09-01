@@ -11,3 +11,6 @@ class ChannelNotFoundError(Exception):
     @property
     def channel_id(self) -> str:
         return self.__channel_id
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}\nServer ID: {self.server_id}, channel ID: {self.channel_id}"

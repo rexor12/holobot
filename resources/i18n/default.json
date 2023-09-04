@@ -492,7 +492,7 @@
             },
             "set_reminder_workflow": {
                 "reminder_set": "I shall remind you at <t:{time}:f>.",
-                "message_out_of_range_error": "For the message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message and try again.",
+                "message_out_of_range_error": "The message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message ({actual_length} characters long currently) and try again.",
                 "invalid_params_error": "The combination of {param1} and {param2} as parameters is not permissible. Please, try again.",
                 "too_many_reminders_error": "It appears you have gathered a veritable menagerie of reminders, reaching the limit. Like an agile wolf selecting the juiciest apple to savor, choose one to remove and try anew.",
                 "invalid_time_input_error": "Kindly inform me of the precise moment you wish for my gentle reminder.",

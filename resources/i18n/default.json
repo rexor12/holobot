@@ -190,7 +190,9 @@
                 "embed_vote_button": "Option {index}",
                 "poll_expired_error": "This poll has reached its conclusion, therefore you cannot cast your vote anymore.",
                 "already_voted_error": "Your vote has been recorded already, and thus, you are unable to cast it anew in this realm of decision.",
-                "description_option": "**Option #{index}**\n{option}"
+                "description_option": "**Option #{index}**\n{option}",
+                "yes_option": "Yes",
+                "no_option": "No"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",

@@ -1,4 +1,5 @@
 from asyncio import Lock
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import timedelta
 
@@ -8,7 +9,9 @@ from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComponentBase, ComponentStyle, StackLayout, TextBox, TextBoxState
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component, modal
-from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.enums.option_type import OptionType
+from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models.choice import Choice
 from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.models import GeneralOptions
@@ -21,12 +24,13 @@ from holobot.sdk.utils.uuid_utils import random_uuid
 
 _MAX_OPTION_COUNT = 5
 _OPTION_TEXT_BOX_ID_FORMAT = "option{index}"
-_POLL_EXPIRATION_TIME = 5 * 60
+_POLL_EXPIRATION_TIME = 30
 _BAR_COUNT = 10
 
 @dataclass
 class _PollState:
     id: str
+    title: str
     options: list[str] = field(default_factory=list)
     votes: list[int] = field(default_factory=list)
     total_votes: int = 0
@@ -47,13 +51,70 @@ class PollWorkflow(WorkflowBase):
         self.__options = options
 
     @command(
-        name="poll",
-        description="Creates a new poll.",
-        cooldown=Cooldown(duration=120)
+        name="yesno",
+        group_name="poll",
+        description="Creates a yes/no type poll.",
+        cooldown=Cooldown(duration=120),
+        options=(
+            Option("topic", "The topic of the poll."),
+            Option("duration", "The minimum duration of this poll. Default is 30 minutes.", OptionType.INTEGER, False, False, (
+                Choice("5 mins", 5),
+                Choice("15 mins", 15),
+                Choice("30 mins", 30),
+                Choice("1 hour", 60),
+                Choice("3 hours", 180),
+                Choice("6 hours", 360)
+            ))
+        )
     )
-    async def show_poll_creation_modal(
+    async def create_yes_no_poll(
         self,
-        context: InteractionContext
+        context: InteractionContext,
+        topic: str,
+        duration: int = _POLL_EXPIRATION_TIME
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=self.__i18n.get("interactions.server_only_interaction_error")
+            )
+
+        poll_state = await self.create_poll_state(
+            context.server_id,
+            context.author_id,
+            topic,
+            [
+                self.__i18n.get("extensions.general.poll_workflow.yes_option"),
+                self.__i18n.get("extensions.general.poll_workflow.no_option")
+            ],
+            duration
+        )
+        embed, components = self.__create_response_items(context.author_id, poll_state)
+
+        return self._reply(
+            embed=embed,
+            components=components
+        )
+
+    @command(
+        name="custom",
+        group_name="poll",
+        description="Creates a new poll with custom choices.",
+        cooldown=Cooldown(duration=120),
+        options=(
+            Option("duration", "The minimum duration of this poll. Default is 30 minutes.", OptionType.INTEGER, False, False, (
+                Choice("5 mins", 5),
+                Choice("15 mins", 15),
+                Choice("30 mins", 30),
+                Choice("1 hour", 60),
+                Choice("3 hours", 180),
+                Choice("6 hours", 360)
+            )),
+        )
+    )
+    async def show_custom_poll_creation_modal(
+        self,
+        context: InteractionContext,
+        duration: int = _POLL_EXPIRATION_TIME
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(
@@ -79,7 +140,8 @@ class PollWorkflow(WorkflowBase):
                         ),
                         is_required=index < 2,
                         min_length=1,
-                        max_length=120
+                        max_length=120,
+                        custom_data={"d": str(duration)}
                     ) for index in range(_MAX_OPTION_COUNT)
                 ]
             )
@@ -98,25 +160,29 @@ class PollWorkflow(WorkflowBase):
                 content=self.__i18n.get("interactions.server_only_interaction_error")
             )
 
-        poll_state = _PollState(random_uuid(8))
-        await self.__cache.add_or_replace(
-            PollWorkflow.__get_cache_key(context.server_id, context.author_id, poll_state.id),
-            poll_state,
-            SlidingExpirationCacheEntryPolicy(timedelta(seconds=_POLL_EXPIRATION_TIME))
-        )
-
+        poll_title = self.__i18n.get("extensions.general.poll_workflow.embed_title")
+        poll_options = list[str]()
+        durationInMinutes: int | None = None
         for index in range(_MAX_OPTION_COUNT):
             text_box_id = _OPTION_TEXT_BOX_ID_FORMAT.format(index=index)
             text_box_state = state.try_get_component_state(TextBoxState, text_box_id)
             if not text_box_state or not text_box_state.value:
                 continue
 
-            poll_state.options.append(text_box_state.value)
-            poll_state.votes.append(0)
+            poll_options.append(text_box_state.value)
+            if durationInMinutes is None:
+                if durationString := text_box_state.custom_data.get("d"):
+                    durationInMinutes = try_parse_int(durationString)
 
         embed, components = self.__create_response_items(
             context.author_id,
-            poll_state
+            await self.create_poll_state(
+                context.server_id,
+                context.author_id,
+                poll_title,
+                poll_options,
+                durationInMinutes or _POLL_EXPIRATION_TIME
+            )
         )
 
         return self._reply(
@@ -174,6 +240,27 @@ class PollWorkflow(WorkflowBase):
     def __get_cache_key(server_id: str, user_id: str, poll_id: str) -> str:
         return f"poll/{server_id}/{user_id}/{poll_id}"
 
+    async def create_poll_state(
+        self,
+        server_id: str,
+        author_id: str,
+        title: str,
+        options: Sequence[str],
+        durationInMinutes: int
+    ) -> _PollState:
+        poll_state = _PollState(random_uuid(8), title)
+        await self.__cache.add_or_replace(
+            PollWorkflow.__get_cache_key(server_id, author_id, poll_state.id),
+            poll_state,
+            SlidingExpirationCacheEntryPolicy(timedelta(minutes=durationInMinutes))
+        )
+
+        for option in options:
+            poll_state.options.append(option)
+            poll_state.votes.append(0)
+
+        return poll_state
+
     def __create_response_items(
         self,
         owner_id: str,
@@ -223,9 +310,7 @@ class PollWorkflow(WorkflowBase):
 
         return (
             Embed(
-                title=self.__i18n.get(
-                    "extensions.general.poll_workflow.embed_title"
-                ),
+                title=state.title,
                 description="\n".join(description_parts)
             ),
             StackLayout(

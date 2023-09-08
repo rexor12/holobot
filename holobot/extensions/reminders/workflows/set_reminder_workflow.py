@@ -13,7 +13,7 @@ from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.reminders import IReminderManager
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.exceptions import (
-    InvalidReminderConfigError, TooManyRemindersError
+    InvalidMessageLengthError, InvalidReminderConfigError, TooManyRemindersError
 )
 from holobot.extensions.reminders.models import ReminderConfig
 from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
@@ -197,11 +197,15 @@ class SetReminderWorkflow(WorkflowBase):
                     )
                 ]
             )
-        except ArgumentOutOfRangeError as error:
+        except InvalidMessageLengthError as error:
             return self._reply(
                 content=self.__i18n_provider.get(
                     "extensions.reminders.set_reminder_workflow.message_out_of_range_error",
-                    { "min": error.lower_bound, "max": error.upper_bound }
+                    {
+                        "min": error.lower_bound,
+                        "max": error.upper_bound,
+                        "actual_length": error.length
+                    }
                 )
             )
         except ArgumentError as error:

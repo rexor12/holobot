@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import cast
 
-from holobot.extensions.reminders.enums import ReminderLocation
+from holobot.extensions.reminders.exceptions import InvalidMessageLengthError
 from holobot.sdk.configs import IOptions
-from holobot.sdk.exceptions import ArgumentError, ArgumentOutOfRangeError
+from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
@@ -73,15 +73,12 @@ class ReminderManager(IReminderManager):
         options: ReminderOptions,
         message: str | None
     ) -> None:
-        if options.MessageLengthMin == 0:
-            return
-
         message_length = len(message) if message else 0
         if not (options.MessageLengthMin <= message_length <= options.MessageLengthMax):
-            raise ArgumentOutOfRangeError(
-                "message",
-                str(options.MessageLengthMin),
-                str(options.MessageLengthMax)
+            raise InvalidMessageLengthError(
+                message_length,
+                options.MessageLengthMin,
+                options.MessageLengthMax
             )
 
     async def __assert_reminder_count(self, user_id: str) -> None:

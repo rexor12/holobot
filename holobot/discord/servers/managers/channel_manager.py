@@ -51,7 +51,9 @@ class ChannelManager(IChannelManager):
         try:
             await get_bot().rest.follow_channel(source_channel, channel)
         except HikariForbiddenError as error:
-            raise ForbiddenError("Cannot follow news channel.") from error
+            raise ForbiddenError(
+                f"Cannot follow news channel '{source_channel.id}' of server '{source_channel.guild_id}' in channel '{channel.id}' of guild '{channel.guild_id}'."
+            ) from error
         except HikariBadRequestError as error:
             raise InvalidChannelError(
                 server_id,
@@ -82,4 +84,6 @@ class ChannelManager(IChannelManager):
                 ):
                     await get_bot().rest.delete_webhook(webhook)
         except HikariForbiddenError as error:
-            raise ForbiddenError("Cannot unfollow news channel.") from error
+            raise ForbiddenError(
+                f"Cannot unfollow news channel '{source_channel_id}' of guild '{source_server_id}' in server '{server_id}'."
+            ) from error

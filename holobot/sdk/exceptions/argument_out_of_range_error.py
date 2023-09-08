@@ -4,7 +4,7 @@ class ArgumentOutOfRangeError(Exception):
         self.argument_name = argument_name
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-    
+
     @property
     def argument_name(self) -> str:
         return self.__argument_name
@@ -12,7 +12,7 @@ class ArgumentOutOfRangeError(Exception):
     @argument_name.setter
     def argument_name(self, value: str) -> None:
         self.__argument_name = value
-    
+
     @property
     def lower_bound(self) -> str:
         return self.__lower_bound
@@ -20,7 +20,7 @@ class ArgumentOutOfRangeError(Exception):
     @lower_bound.setter
     def lower_bound(self, value: str) -> None:
         self.__lower_bound = value
-    
+
     @property
     def upper_bound(self) -> str:
         return self.__upper_bound
@@ -28,3 +28,6 @@ class ArgumentOutOfRangeError(Exception):
     @upper_bound.setter
     def upper_bound(self, value: str) -> None:
         self.__upper_bound = value
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}\nArgument name: {self.argument_name}, lower bound: {self.lower_bound}, upper bound: {self.upper_bound}"

@@ -125,5 +125,6 @@ class DefaultLogger(ILogger):
         method(
             message,
             exception=format_exception(exception) if exception else None,
+            exception_message=str(exception),
             **arguments
         )

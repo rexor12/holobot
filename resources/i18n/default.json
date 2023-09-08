@@ -190,7 +190,9 @@
                 "embed_vote_button": "Option {index}",
                 "poll_expired_error": "This poll has reached its conclusion, therefore you cannot cast your vote anymore.",
                 "already_voted_error": "Your vote has been recorded already, and thus, you are unable to cast it anew in this realm of decision.",
-                "description_option": "**Option #{index}**\n{option}"
+                "description_option": "**Option #{index}**\n{option}",
+                "yes_option": "Yes",
+                "no_option": "No"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
@@ -492,7 +494,7 @@
             },
             "set_reminder_workflow": {
                 "reminder_set": "I shall remind you at <t:{time}:f>.",
-                "message_out_of_range_error": "For the message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message and try again.",
+                "message_out_of_range_error": "The message's length ought to fall within the confines of {min} and {max} characters. Please, shorten your message ({actual_length} characters long currently) and try again.",
                 "invalid_params_error": "The combination of {param1} and {param2} as parameters is not permissible. Please, try again.",
                 "too_many_reminders_error": "It appears you have gathered a veritable menagerie of reminders, reaching the limit. Like an agile wolf selecting the juiciest apple to savor, choose one to remove and try anew.",
                 "invalid_time_input_error": "Kindly inform me of the precise moment you wish for my gentle reminder.",

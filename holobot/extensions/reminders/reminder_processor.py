@@ -76,8 +76,7 @@ class ReminderProcessor(IStartable):
                     await self.__try_process_reminder(reminder)
                     processed_reminders += 1
             except Exception as error:
-                self.__logger.error("Unexpected failure, processing will stop", error)
-                raise
+                self.__logger.error("Unexpected failure while processing reminders", error)
             finally:
                 self.__logger.trace("Processed reminders", count=processed_reminders)
             await wait(self.__options.value.Resolution, token)

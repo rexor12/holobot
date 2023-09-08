@@ -11,3 +11,6 @@ class MessageNotFoundError(Exception):
     @property
     def message_id(self) -> str:
         return self.__message_id
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}\nChannel ID: {self.channel_id}, message ID: {self.message_id}"

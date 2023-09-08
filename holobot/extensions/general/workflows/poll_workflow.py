@@ -101,7 +101,6 @@ class PollWorkflow(WorkflowBase):
         description="Creates a new poll with custom choices.",
         cooldown=Cooldown(duration=120),
         options=(
-            Option("topic", "The topic of the poll."),
             Option("duration", "The minimum duration of this poll. Default is 30 minutes.", OptionType.INTEGER, False, False, (
                 Choice("5 mins", 5),
                 Choice("15 mins", 15),
@@ -109,7 +108,7 @@ class PollWorkflow(WorkflowBase):
                 Choice("1 hour", 60),
                 Choice("3 hours", 180),
                 Choice("6 hours", 360)
-            ))
+            )),
         )
     )
     async def show_custom_poll_creation_modal(

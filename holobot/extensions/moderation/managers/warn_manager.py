@@ -186,3 +186,6 @@ class WarnManager(IWarnManager):
             server_id=server_id,
             decay_threshold=decay_time
         ))
+
+    async def remove_warn(self, warn_strike_id: int) -> None:
+        await self.__warn_repository.delete(warn_strike_id)

@@ -3,8 +3,9 @@ from holobot.discord.sdk.models import Embed, EmbedField, InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComponentBase, LayoutBase, Paginator
+    Button, ButtonState, ComponentBase, LayoutBase, Paginator, StackLayout
 )
+from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -62,7 +63,8 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             context.server_id,
             user_id,
             0,
-            DEFAULT_PAGE_SIZE
+            DEFAULT_PAGE_SIZE,
+            context.author_id
         )
 
         return self._reply(
@@ -86,13 +88,17 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
-
+        if (user_id := state.custom_data.get("i", None)) is None:
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            )
 
         content, embed, components = await self.__create_page_content(
             context.server_id,
-            state.owner_id,
+            user_id,
             max(state.current_page, 0),
-            DEFAULT_PAGE_SIZE
+            DEFAULT_PAGE_SIZE,
+            context.author_id
         )
 
         return (
@@ -105,12 +111,41 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             else self._edit_message(content="An internal error occurred while processing the interaction.")
         )
 
+    @moderation_component(
+        identifier="remove_warn",
+        is_bound=True,
+        required_moderator_permissions=ModeratorPermission.WARN_USERS,
+        defer_type=DeferType.DEFER_MESSAGE_UPDATE
+    )
+    async def remove_warn_strike(
+        self,
+        context: InteractionContext,
+        state: ButtonState
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.server_only_interaction_error")
+            )
+        if (warn_strike_id := state.custom_data.get("i", None)) is None:
+            return self._edit_message(
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+            )
+
+        await self.__warn_manager.remove_warn(int(warn_strike_id))
+
+        return self._edit_message(
+            content=self.__i18n_provider.get(f"Warn strike #{warn_strike_id} has been removed."),
+            embed=None,
+            components=None
+        )
+
     async def __create_page_content(
         self,
         server_id: str,
         user_id: str,
         page_index: int,
-        page_size: int
+        page_size: int,
+        owner_id: str
     ) -> tuple[
             UndefinedOrNoneOr[str],
             UndefinedOrNoneOr[Embed],
@@ -131,6 +166,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             description=f"The list of warn strikes of <@{user_id}>."
         )
 
+        remove_buttons = StackLayout(id="vwrmbtns")
         for warn_strike in result.items:
             embed.fields.append(EmbedField(
                 name=f"Strike #{warn_strike.identifier}",
@@ -140,13 +176,26 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 ),
                 is_inline=False
             ))
+            remove_buttons.children.append(Button(
+                id="remove_warn",
+                owner_id=owner_id,
+                text=f"🚮 #{warn_strike.identifier}",
+                style=ComponentStyle.DANGER,
+                custom_data={
+                    "i": str(warn_strike.identifier),
+                    "u": user_id
+                }
+            ))
 
-        component = Paginator(
+        layouts = list[LayoutBase]()
+        layouts.append(remove_buttons)
+        layouts.append(Paginator(
             id="warn_paginator",
-            owner_id=user_id,
+            owner_id=owner_id,
             current_page=page_index,
             page_size=page_size,
-            total_count=result.total_count
-        )
+            total_count=result.total_count,
+            custom_data={"i": user_id}
+        ))
 
-        return (None, embed, component)
+        return (None, embed, layouts)

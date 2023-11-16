@@ -61,3 +61,6 @@ class IWarnManager(Protocol):
         decay_time: timedelta | None
     ) -> None:
         ...
+
+    async def remove_warn(self, warn_strike_id: int) -> None:
+        ...

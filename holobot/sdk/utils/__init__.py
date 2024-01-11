@@ -6,5 +6,5 @@ from .list_utils import pad_left
 from .pagination_utils import paginate_with_fallback
 from .string_utils import join, rank_match, try_parse_float, try_parse_int
 from .task_utils import when_all
-from .timedelta_utils import textify_timedelta
+from .timedelta_utils import format_timedelta, textify_timedelta
 from .type_utils import UNDEFINED, Singleton, UndefinedType, get_fully_qualified_name

@@ -1,2 +1,3 @@
+from .channel_timer_migration import ChannelTimerMigration
 from .fortune_cookie_migration import FortuneCookieMigration
 from .marriage_migration import MarriageMigration

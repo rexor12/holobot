@@ -366,7 +366,7 @@ class RepositoryBase(
         ordering_columns: tuple[tuple[str, Order], ...],
         page_index: int,
         page_size: int,
-        filter_builder: Callable[[WhereBuilder], ISupportsPagination]
+        filter_builder: Callable[[WhereBuilder], ISupportsPagination] | None
     ) -> PaginationResult[TModel]:
         """Gets a sequence of models matching the specified filter in a paging manner.
 
@@ -383,13 +383,11 @@ class RepositoryBase(
         """
 
         async with (session := await self._get_session()):
-            query = filter_builder(Query
-                .select()
-                .columns(*self.column_names)
-                .from_table(self.table_name)
-                .where()
-            ).paginate(ordering_columns, page_index, page_size)
-            result = await query.compile().fetch(session.connection)
+            query = Query.select().columns(*self.column_names).from_table(self.table_name)
+            if filter_builder is not None:
+                query = filter_builder(query.where())
+
+            result = await query.paginate(ordering_columns, page_index, page_size).compile().fetch(session.connection)
 
             return PaginationResult[TModel](
                 result.page_index,

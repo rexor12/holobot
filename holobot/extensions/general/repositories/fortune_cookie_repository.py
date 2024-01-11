@@ -9,7 +9,7 @@ from .records import FortuneCookieRecord
 
 @injectable(IFortuneCookieRepository)
 class FortuneCookieRepository(
-    RepositoryBase[str, FortuneCookieRecord, FortuneCookie],
+    RepositoryBase[int, FortuneCookieRecord, FortuneCookie],
     IFortuneCookieRepository
 ):
     @property

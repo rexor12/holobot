@@ -135,6 +135,10 @@ class InteractionProcessorBase(
                 return value
             case (hikari.OptionType.ROLE, hikari.Snowflake()):
                 return int(value)
+            case (hikari.OptionType.CHANNEL, hikari.Snowflake()):
+                return int(value)
+            case (hikari.OptionType.CHANNEL, int()):
+                return value
             case (_, _):
                 raise ArgumentError(
                     "value",

@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Awaitable, Iterable
 from typing import Protocol
 
 from holobot.discord.sdk.servers.models import ServerChannel
@@ -8,6 +8,9 @@ class IChannelManager(Protocol):
         self,
         server_id: str
     ) -> Iterable[ServerChannel]:
+        ...
+
+    def get_channel_by_id(self, server_id: str, channel_id: str) -> Awaitable[ServerChannel]:
         ...
 
     async def follow_news_channel(
@@ -25,4 +28,7 @@ class IChannelManager(Protocol):
         source_server_id: str,
         source_channel_id: str
     ) -> None:
+        ...
+
+    def change_channel_name(self, server_id: str, channel_id: str, name: str) -> Awaitable[None]:
         ...

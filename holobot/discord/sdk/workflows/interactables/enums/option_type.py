@@ -14,3 +14,6 @@ class OptionType(IntEnum):
 
     ROLE = 5
     """Resolves a role mention, returning the identifier of the role (an integer)."""
+
+    CHANNEL = 6
+    """Resolves a channel mention, returning the identifier of the channel (an integer)."""

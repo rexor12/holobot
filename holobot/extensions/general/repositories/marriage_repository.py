@@ -20,7 +20,7 @@ from .records import MarriageRecord
 
 @injectable(IMarriageRepository)
 class MarriageRepository(
-    RepositoryBase[str, MarriageRecord, Marriage],
+    RepositoryBase[int, MarriageRecord, Marriage],
     IMarriageRepository
 ):
     @property

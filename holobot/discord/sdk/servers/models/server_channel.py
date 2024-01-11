@@ -5,3 +5,4 @@ from holobot.discord.sdk.models import Channel
 @dataclass
 class ServerChannel(Channel):
     name: str
+    is_voice: bool

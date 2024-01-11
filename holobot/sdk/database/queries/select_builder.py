@@ -3,13 +3,16 @@ from __future__ import annotations
 from typing import Any
 
 from .compiled_query import CompiledQuery
+from .enums import Order
 from .exists_builder import ExistsBuilder
 from .function_builder import FunctionBuilder
 from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .join_builder import JOIN_TYPE, JoinBuilder
+from .paginate_builder import PaginateBuilder
+from .isupports_pagination import ISupportsPagination
 from .where_builder import WhereBuilder
 
-class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
+class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagination):
     def __init__(self) -> None:
         super().__init__()
         self.__columns: list[str] = []
@@ -59,6 +62,14 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
 
     def exists(self) -> ExistsBuilder:
         return ExistsBuilder(self)
+
+    def paginate(
+        self,
+        ordering_columns: tuple[tuple[str, Order], ...],
+        page_index: int,
+        page_size: int
+    ) -> PaginateBuilder:
+        return PaginateBuilder(self, ordering_columns, page_index, page_size)
 
     def compile(self) -> CompiledQuery:
         return CompiledQuery(*self.build())

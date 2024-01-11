@@ -7,7 +7,7 @@ class FortuneCookie(AggregateRoot[int]):
     """Represents a fortune cookie."""
 
     identifier: int = -1
-    """The identifier of the relationship."""
+    """The identifier of the entity."""
 
     message: str
     """The wisdom hidden inside the fortune cookie."""

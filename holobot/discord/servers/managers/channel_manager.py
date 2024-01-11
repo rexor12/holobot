@@ -11,7 +11,7 @@ from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.discord.sdk.servers.models import ServerChannel
 from holobot.discord.transformers.server_channel import to_model
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils import assert_not_none, assert_range
 
 @injectable(IChannelManager)
 class ChannelManager(IChannelManager):
@@ -20,6 +20,14 @@ class ChannelManager(IChannelManager):
 
         guild = await get_bot().get_guild_by_id(int(server_id))
         return list(map(to_model, guild.get_channels().values()))
+
+    async def get_channel_by_id(self, server_id: str, channel_id: str) -> ServerChannel:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+
+        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+
+        return to_model(channel)
 
     async def follow_news_channel(
         self,
@@ -86,4 +94,18 @@ class ChannelManager(IChannelManager):
         except HikariForbiddenError as error:
             raise ForbiddenError(
                 f"Cannot unfollow news channel '{source_channel_id}' of guild '{source_server_id}' in server '{server_id}'."
+            ) from error
+
+    async def change_channel_name(self, server_id: str, channel_id: str, name: str) -> None:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+        assert_range(len(name), 1, 20, "name")
+
+        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+
+        try:
+            await channel.edit(name=name)
+        except HikariForbiddenError as error:
+            raise ForbiddenError(
+                f"Cannot change channel name of channel '{channel_id}' of server '{server_id}'."
             ) from error

@@ -4,7 +4,7 @@
     "rate_limit_error": "I'm sorry, but an error occurred when I tried to communicate with the server this feature relies on. Please, try again in a few minutes. (｡•́︿•̀｡)",
     "missing_required_argument_error": "I'm sorry, but I cannot handle your request due to a missing argument: {argname}. Please, try again by specifying the argument. (｡•́︿•̀｡)",
     "server_not_found_error": "I'm sorry, but I couldn't find the requested server. Please, double check for any typos. (｡•́︿•̀｡)",
-    "channel_not_found_error": "I'm sorry, but I couldn't find the requested channel. Please, double check for any typos. (｡•́︿•̀｡)",
+    "channel_not_found_error": "Alas, I cannot find the channel you requested. Pray, verify I have all the necessary permissions to access it.",
     "user_not_found_error": "I'm sorry, but I couldn't find the requested user. Please, double check for any typos. (｡•́︿•̀｡)",
     "missing_dm_permission_error": "I'm sorry, but I don't have the permission to DM users. Please, kindly ask your server administrator to grant me the permission. Thank you! („• ᴗ •„)",
     "invalid_argument_error": "I'm sorry, but you invoked the command with an invalid argument. Please, double check for any typos and if you believe this is an issue with me, report it (see `/info`). Thank you! („• ᴗ •„)",
@@ -98,6 +98,16 @@
         },
 
         "general": {
+            "create_channel_timer_workflow": {
+                "time_input_parsing_error": "It would be truly splendid if you could kindly tell me the time in a manner that I, too, can comprehend. (Use the format `HH:MM` for time input.)",
+                "base_time_out_of_range_error": "It would be truly splendid if you could kindly tell me the base time between 00:00 and 23:59.",
+                "interval_out_of_range_error": "It would be truly splendid if you could kindly tell me the interval between {minutes_min} and {minutes_max} minutes.",
+                "invalid_channel_error": "Pray, ensure you select a voice channel. (Needed because of the name template.)",
+                "invalid_name_template_error": "Pray, ensure the name template is not longer than {max_length} symbols and contains the special `%t` placeholder for the remaining time.",
+                "invalid_expiry_name_template_error": "Pray, ensure the expiry name template is not longer than {max_length} symbols. The special `%t` placeholder is ignored here.",
+                "too_many_timers_error": "Alas, it appears your server has an abundance of timers. A server may not have more than {max_timers} timer(s). (This is due to a Discord limitation regarding bot rate limits.)",
+                "timer_created_successfully": "I have just set up the timer you have requested. I shall start counting your apples within the next 5 minutes."
+            },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
@@ -253,6 +263,10 @@
                     "wink": "<@{user_id}> winks. At what, though?",
                     "wink_target": "<@{user_id}> winks at <@{target_user_id}>."
                 }
+            },
+            "remove_channel_timer_workflow": {
+                "removed_successfully": "Rejoice, for I have hunted down each and every one of your channel timers.",
+                "no_timers_error": "Alas, you seem to have no channel timers."
             },
             "roll_number_workflow": {
                 "unusual_roll_result": "I rolled an unusually shaped die for you and got {value}. („• ᴗ •„)",

@@ -106,7 +106,7 @@
                 "invalid_name_template_error": "Pray, ensure the name template is not longer than {max_length} symbols and contains the special `%t` placeholder for the remaining time.",
                 "invalid_expiry_name_template_error": "Pray, ensure the expiry name template is not longer than {max_length} symbols. The special `%t` placeholder is ignored here.",
                 "too_many_timers_error": "Alas, it appears your server has an abundance of timers. A server may not have more than {max_timers} timer(s). (This is due to a Discord limitation regarding bot rate limits.)",
-                "timer_created_successfully": "I have just set up the timer you have requested. I shall start counting your apples within the next 5 minutes."
+                "timer_created_successfully": "I have just set up the timer you have requested. I shall start counting your apples within the next 5 minutes. Make sure I have all necessary permissions or I'm afraid I'll forget about this timer."
             },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",

@@ -9,6 +9,7 @@ from holobot.extensions.general.repositories import IChannelTimerRepository
 from holobot.sdk.ioc import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
+from holobot.sdk.logging.enums.log_level import LogLevel
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
 from holobot.sdk.utils.datetime_utils import utcnow
@@ -48,7 +49,7 @@ class ChannelTimerProcessor(IStartable):
         self.__logger.debug("Stopped channel timer processor")
 
     async def __process_items(self, token: CancellationToken):
-        await wait(3, token)
+        await wait(30, token)
         while not token.is_cancellation_requested:
             self.__logger.trace("Processing channel timers...")
             processed_items: int = 0
@@ -87,8 +88,13 @@ class ChannelTimerProcessor(IStartable):
         now = utcnow()
         total_elapsed_time = now - item.base_time
         cycle_count = int(total_elapsed_time.total_seconds() / item.countdown_interval.total_seconds())
-        remaining_time = item.base_time + cycle_count * item.countdown_interval - now
-        name_template = item.name_template if remaining_time > _REFRESH_INTERVAL else item.expiry_name_template
+        remaining_time = item.base_time + (cycle_count + 1) * item.countdown_interval - now
+        name_template = (
+            item.name_template
+            if remaining_time > _REFRESH_INTERVAL or not item.expiry_name_template
+            else item.expiry_name_template
+        )
+
         if not name_template:
             name_template = "%t"
 
@@ -97,6 +103,15 @@ class ChannelTimerProcessor(IStartable):
             if remaining_time.total_seconds() >= 3600
             else "{minutes:,.0f}m"
         )
+
+        if (self.__logger.is_log_level_enabled(LogLevel.TRACE)):
+            self.__logger.trace(
+                "Updating channel timer",
+                server_id=item.server_id,
+                channel_id=item.channel_id,
+                name_template=time_template,
+                remaining_seconds=remaining_time.total_seconds()
+            )
 
         await self.__channel_manager.change_channel_name(
             item.server_id,

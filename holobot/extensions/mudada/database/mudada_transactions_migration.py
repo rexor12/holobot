@@ -22,8 +22,8 @@ class MudadaTransactionsMigration(MigrationBase):
             " target_id VARCHAR(20) NOT NULL,\n"
             " amount INTEGER NOT NULL,\n"
             " message VARCHAR(120) DEFAULT NULL,\n"
-            " is_finalized BOOLEAN DEFAULT 0,\n"
-            " is_completed BOOLEAN DEFAULT 0,\n"
+            " is_finalized BOOLEAN DEFAULT false,\n"
+            " is_completed BOOLEAN DEFAULT false,\n"
             " UNIQUE(owner_id, target_id)\n"
             ")"
         ))

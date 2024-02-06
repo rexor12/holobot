@@ -1,7 +1,7 @@
 import hikari
 
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
-from holobot.discord.sdk.workflows.interactables.models import Option
+from holobot.discord.sdk.workflows.interactables.models import Option, StringOption
 
 def transform_option_type(option_type: OptionType) -> hikari.OptionType:
     match option_type:
@@ -27,5 +27,7 @@ def transform_option(option: Option) -> hikari.CommandOption:
             )
             for choice in option.choices
         ] if not option.is_autocomplete
-        else ()
+        else (),
+        min_length=option.min_length if isinstance(option, StringOption) else None,
+        max_length=option.max_length if isinstance(option, StringOption) else None
     )

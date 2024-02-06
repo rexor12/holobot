@@ -48,3 +48,10 @@ class Interactable:
 
     cooldown: Cooldown | None = None
     """Determines how often can the interactable be invoked."""
+
+    extension_data: dict[str, Any] = field(default_factory=dict)
+    """Contains extension specific data used by interactables.
+
+    It is recommended to prefix the keys with a value that uniquely identifies
+    the extension, such as `myext_some_key` instead of just `some_key`.
+    """

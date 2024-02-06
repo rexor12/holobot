@@ -501,6 +501,81 @@
             }
         },
 
+        "mudada": {
+            "inactive_event_error": "Alas, the event associated to this command is currently unavailable.",
+            "admin_give_gifts_workflow": {
+                "too_many_gifts_error": "You can't give more than **{amount:,}** <:bonbon:1196752635773079572> to a user at a time.",
+                "successfully_added_gifts": "I've delivered the gifts successfully. <@{user_id}> now has **{amount:,}** <:bonbon:1196752635773079572>."
+            },
+            "admin_show_gifts_workflow": {
+                "no_reservations_error": "Alas, there doesn't seem to be any gifts, yet."
+            },
+            "admin_take_gifts_workflow": {
+                "too_few_gifts_error": "You can't take fewer than 1 gifts from someone.",
+                "user_has_no_gifts_error": "<@{user_id}> has no gifts at all, there is nothing left to take.",
+                "successfully_removed_gifts": "I've snatched the gifts successfully. <@{user_id}> now has **{amount:,}** <:bonbon:1196752635773079572>.",
+                "successfully_removed_gifts_from_all": "I've snatched the gifts from everyone successfully."
+            },
+            "admin_toggle_event_workflow": {
+                "state_changed_successfully": "I've updated the event state to **{state}**.",
+                "state_on": "enabled",
+                "state_off": "disabled"
+            },
+            "claim_gifts_workflow": {
+                "no_gifts_error": "Alas, you seem not to have any gifts at this present moment.",
+                "embed_title": "Gifts",
+                "embed_description": "Here are the gifts others have sent you. Don't forget to claim them!\n\n{items}",
+                "embed_description_gift": "**#{index}**\n{amount:,} <:bonbon:1196752635773079572>",
+                "embed_description_gift_with_message": "**#{index}**\n{message}\n{amount:,} <:bonbon:1196752635773079572>",
+                "claim_all_button": "Claim all",
+                "successful_claim": "I've just brought {claim_amount:,} <:bonbon:1196752635773079572> to you. You now have {wallet_amount:,} <:bonbon:1196752635773079572>."
+            },
+            "clear_gift_message_workflow": {
+                "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
+                "missing_transaction_error":"Alas, you haven't given <@{user_id}> any gifts, yet.",
+                "message_updated_successfully": "I've removed your previously recorded message."
+            },
+            "give_gifts_workflow": {
+                "invalid_gift_count_error": "Alas, you can only transfer between **{min:,}** <:bonbon:1196752635773079572> and **{max:,}** <:bonbon:1196752635773079572> at a time. This cart can only hold so much...",
+                "message_too_long_error": "Pray, forgive me, but I'd like to ask you to reformat your message so that it isn't longer than {max_length:,} characters.",
+                "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
+                "not_enough_gifts_error": "Pray, forgive me but you don't have enough gifts for this transaction. You now have **{amount:,}** <:bonbon:1196752635773079572> left.",
+                "gift_finalized_already_error": "Alas, your gift has been delivered to <@{user_id}> already, therefore you aren't able to change them anymore.",
+                "too_many_gifts_given_error": "Alas, these gifts cannot be delivered to <@{user_id}> for you've already given them **{amount:,}** <:bonbon:1196752635773079572>. The maximum is **{max_amount:,}** <:bonbon:1196752635773079572> per person.",
+                "too_many_gifts_error": "Alas, these gifts cannot be delivered to <@{user_id}>. You must give each person a number of gifts between **{min_amount:,}** <:bonbon:1196752635773079572> and **{max_amount:,}** <:bonbon:1196752635773079572>.",
+                "successful_transaction": "I've delivered **{amount:,}** <:bonbon:1196752635773079572>  to <@{user_id}> successfully (**{target_amount:,}** <:bonbon:1196752635773079572> in total). You now have **{amount_left:,}** <:bonbon:1196752635773079572> left."
+            },
+            "reset_reservations_workflow": {
+                "nothing_to_return_error": "You haven't given anyone any gifts, yet.",
+                "successful_reset": "I've retrieved all **{returned_amount:,}** <:bonbon:1196752635773079572>. You now have **{total_amount:,}** <:bonbon:1196752635773079572> left."
+            },
+            "set_gift_message_workflow": {
+                "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
+                "message_too_long_error": "Pray, forgive me, but I'd like to ask you to reformat your message so that it isn't longer than {max_length:,} characters.",
+                "missing_transaction_error":"Alas, you haven't given <@{user_id}> any gifts, yet.",
+                "message_updated_successfully": "I've taken note of your message."
+            },
+            "show_reservations_workflow": {
+                "no_reservations_error": "Alas, you seem not to have given any gifts, yet.",
+                "embed_title": "Gifts",
+                "embed_description": "These are the gifts you have prepared. The listed users will receive their rewards at the end of the event, unless you make some changes to the gifts.",
+                "embed_item": "{amount:,} <:bonbon:1196752635773079572>",
+                "embed_item_with_message": "{amount:,} <:bonbon:1196752635773079572>\n> {message}"
+            },
+            "show_wallet_workflow": {
+                "empty_wallet_error": "Alas, it seems a mischievous wolf has eaten all your gifts <:bonbon:1196752635773079572>.",
+                "wallet_message": "You are currently in possession of **{amount:,}** <:bonbon:1196752635773079572>."
+            },
+            "take_gifts_workflow": {
+                "invalid_gift_count_error": "Alas, you can't take fewer than 1 <:bonbon:1196752635773079572>.",
+                "self_transfer_error": "I appreciate your desire to give me some of your tasty gifts, but this time I'd prefer if you kept them.",
+                "missing_transaction_error": "Alas, you haven't given <@{user_id}> any gifts, yet.",
+                "gift_finalized_already_error": "Alas, your gift has been delivered to <@{user_id}> already, therefore you aren't able to change them anymore.",
+                "taken_less_successfully": "I've retrieved the remaining **{taken_amount:,}** <:bonbon:1196752635773079572> from <@{user_id}>. You now have **{total_amount:,}** <:bonbon:1196752635773079572>.",
+                "taken_exact_successfully": "I've retrieved **{taken_amount:,}** <:bonbon:1196752635773079572> from <@{user_id}>. You now have **{total_amount:,}** <:bonbon:1196752635773079572>."
+            }
+        },
+
         "reminders": {
             "remove_reminder_workflow": {
                 "reminder_deleted": "I have removed your reminder. However, tread cautiously like a vigilant hawk, lest it eludes your memory.",

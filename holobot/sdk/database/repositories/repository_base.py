@@ -328,7 +328,6 @@ class RepositoryBase(
 
             return models
 
-
     async def _delete_by_filter(
         self,
         filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]
@@ -347,6 +346,41 @@ class RepositoryBase(
                 .from_table(self.table_name)
                 .where()
             )
+            results = await (query
+                .returning()
+                .column(RepositoryBase._ID_FIELD_NAME)
+                .compile()
+                .fetch(session.connection)
+            )
+
+            for result in results:
+                await self.__try_remove_model(
+                    cast(TIdentifier, result.get(RepositoryBase._ID_FIELD_NAME))
+                )
+
+            return len(results)
+
+    async def _update_by_filter(
+        self,
+        fields: tuple[tuple[str, Any | None, bool], ...],
+        filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]
+    ) -> int:
+        """Updates all entities matching the specified filter.
+
+        :param fields: The fields to be updated (name, value, is_raw_value).
+        :type fields: tuple[tuple[str, Any | None, bool], ...]
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], WhereConstraintBuilder]
+        :return: The number of entities that have been updated.
+        :rtype: int
+        """
+
+        async with (session := await self._get_session()):
+            query = Query.update().table(self.table_name)
+            for column_name, value, is_raw_value in fields:
+                query = query.field(column_name, value, is_raw_value)
+
+            query = filter_builder(query.where())
             results = await (query
                 .returning()
                 .column(RepositoryBase._ID_FIELD_NAME)

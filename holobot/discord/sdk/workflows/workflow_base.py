@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Any, Protocol
 
 from holobot.discord.sdk.actions import (
     AutocompleteAction, DeleteAction, EditMessageAction, ReplyAction, ShowModalAction

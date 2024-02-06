@@ -1,8 +1,10 @@
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, TypeVar
 
 from .compiled_query import CompiledQuery
 from .constraints import (
-    ColumnConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder, LogicalConstraintBuilder
+    ColumnConstraintBuilder, ColumnInConstraintBuilder, EmptyConstraintBuilder, IConstraintBuilder,
+    LogicalConstraintBuilder
 )
 from .enums import Connector, Equality, Order
 from .exists_builder import ExistsBuilder
@@ -14,6 +16,8 @@ from .order_by_builder import OrderByBuilder
 from .paginate_builder import PaginateBuilder
 from .returning_builder import ReturningBuilder
 from .where_constraint_builder import WhereConstraintBuilder
+
+T = TypeVar("T")
 
 class WhereBuilder(IWhereBuilder, ISupportsPagination):
     @property
@@ -51,6 +55,14 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
             ColumnConstraintBuilder(field2[0], field2[1], field2[2]),
             *[ColumnConstraintBuilder(field[0], field[1], field[2]) for field in fields]
         )
+        return WhereConstraintBuilder(self)
+
+    def field_in(
+        self,
+        column_name: str,
+        values: Sequence[T] # type: ignore
+    ) -> WhereConstraintBuilder:
+        self.constraint = ColumnInConstraintBuilder(column_name, values)
         return WhereConstraintBuilder(self)
 
     def expression(self, constraint: IConstraintBuilder) -> WhereConstraintBuilder:

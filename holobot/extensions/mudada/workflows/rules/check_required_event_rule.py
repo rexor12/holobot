@@ -2,8 +2,10 @@ from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import Interactable
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
+from holobot.extensions.mudada.models import FeatureState
 from holobot.extensions.mudada.repositories import IFeatureStateRepository
 from holobot.extensions.mudada.workflows.decorators.requires_event import REQUIRED_EVENT_NAME_KEY
+from holobot.sdk.database.repositories import IEntityCache
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -11,10 +13,12 @@ from holobot.sdk.ioc.decorators import injectable
 class CheckRequiredEventRule(IWorkflowExecutionRule):
     def __init__(
         self,
+        entity_cache: IEntityCache,
         feature_state_repository: IFeatureStateRepository,
         i18n_provider: II18nProvider
     ) -> None:
         super().__init__()
+        self.__entity_cache = entity_cache
         self.__feature_state_repository = feature_state_repository
         self.__i18n = i18n_provider
 
@@ -28,7 +32,11 @@ class CheckRequiredEventRule(IWorkflowExecutionRule):
         if not required_event_name:
             return (False, None)
 
-        feature_state = await self.__feature_state_repository.get(required_event_name)
+        if not (feature_state := await self.__entity_cache.get(FeatureState, required_event_name)):
+            feature_state = await self.__feature_state_repository.get(required_event_name)
+            if feature_state:
+                await self.__entity_cache.set(feature_state)
+
         if not feature_state or not feature_state.is_enabled:
             return (
                 True,

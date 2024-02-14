@@ -14,6 +14,7 @@ from holobot.extensions.mudada.constants import (
 from holobot.extensions.mudada.models.feature_state import FeatureState
 from holobot.extensions.mudada.repositories import IFeatureStateRepository
 from holobot.sdk.database import IUnitOfWorkProvider
+from holobot.sdk.database.repositories import IEntityCache
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -29,11 +30,13 @@ EVENT_TYPE_TO_FEATURE_STATE_NAME_MAP: dict[EventType, str] = {
 class AdminToggleEventWorkflow(WorkflowBase):
     def __init__(
         self,
+        entity_cache: IEntityCache,
         feature_state_repository: IFeatureStateRepository,
         i18n_provider: II18nProvider,
         unit_of_work_provider: IUnitOfWorkProvider
     ) -> None:
         super().__init__()
+        self.__entity_cache = entity_cache
         self.__feature_state_repository = feature_state_repository
         self.__i18n = i18n_provider
         self.__unit_of_work_provider = unit_of_work_provider
@@ -77,6 +80,8 @@ class AdminToggleEventWorkflow(WorkflowBase):
                 await self.__feature_state_repository.add(feature_state)
 
             unit_of_work.complete()
+
+        await self.__entity_cache.invalidate(FeatureState, feature_state_name)
 
         return self._reply(
             content=self.__i18n.get(

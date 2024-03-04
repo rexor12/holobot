@@ -9,5 +9,8 @@ class Button(InteractableComponentBase):
     style: ComponentStyle = ComponentStyle.PRIMARY
     is_enabled: bool = True
     url: str | None = None
-    emoji_id: str | None = None
+
+    emoji: int | str | None = None
+    """The identifier of a custom emoji or a Unicode emoji itself."""
+
     custom_data: dict[str, str] = field(default_factory=dict)

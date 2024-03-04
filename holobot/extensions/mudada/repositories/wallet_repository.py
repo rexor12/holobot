@@ -1,6 +1,7 @@
 
 from holobot.extensions.mudada.models import Wallet
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from .iwallet_repository import IWalletRepository
@@ -18,6 +19,10 @@ class WalletRepository(
     @property
     def model_type(self) -> type[Wallet]:
         return Wallet
+
+    @property
+    def identifier_type(self) -> type[str]:
+        return str
 
     @property
     def table_name(self) -> str:
@@ -39,12 +44,12 @@ class WalletRepository(
 
     def _map_record_to_model(self, record: WalletRecord) -> Wallet:
         return Wallet(
-            identifier=record.id,
+            identifier=record.id.value,
             amount=record.amount
         )
 
     def _map_model_to_record(self, model: Wallet) -> WalletRecord:
         return WalletRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             amount=model.amount
         )

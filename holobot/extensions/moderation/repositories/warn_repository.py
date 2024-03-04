@@ -5,6 +5,7 @@ from asyncpg.connection import Connection
 
 from holobot.extensions.moderation.models import WarnStrike
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
@@ -34,6 +35,10 @@ class WarnRepository(
     @property
     def model_type(self) -> type[WarnStrike]:
         return WarnStrike
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -172,7 +177,7 @@ class WarnRepository(
 
     def _map_record_to_model(self, record: WarnStrikeRecord) -> WarnStrike:
         return WarnStrike(
-            identifier=record.id,
+            identifier=record.id.value,
             created_at=record.created_at,
             server_id=record.server_id,
             user_id=record.user_id,
@@ -182,7 +187,7 @@ class WarnRepository(
 
     def _map_model_to_record(self, model: WarnStrike) -> WarnStrikeRecord:
         return WarnStrikeRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             created_at=model.created_at,
             server_id=model.server_id,
             user_id=model.user_id,

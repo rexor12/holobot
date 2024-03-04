@@ -4,6 +4,7 @@ from hikari import CommandType
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
 
 from holobot.discord.bot import Bot
+from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import (
     Autocomplete, Command, Component, MenuItem, Modal
@@ -147,11 +148,12 @@ class WorkflowRegistry(IWorkflowRegistry):
     def __create_command(
         bot: Bot,
         command: Command,
-        command_name: str
+        command_name: str,
     ) -> CommandBuilder:
         builder = CommandBuilder(command_name, command.description or command.name, bot.rest.slash_command_builder)
         for option in command.options:
             builder.with_option(option)
+        builder.with_default_permissions(command.default_permissions)
         return builder
 
     @staticmethod

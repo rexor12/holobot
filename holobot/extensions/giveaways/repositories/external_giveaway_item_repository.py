@@ -2,6 +2,7 @@ from collections.abc import Awaitable
 
 from holobot.extensions.giveaways.models import ExternalGiveawayItem, ExternalGiveawayItemMetadata
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
@@ -22,6 +23,10 @@ class ExternalGiveawayItemRepository(
     @property
     def model_type(self) -> type[ExternalGiveawayItem]:
         return ExternalGiveawayItem
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -122,7 +127,7 @@ class ExternalGiveawayItemRepository(
         record: ExternalGiveawayItemRecord
     ) -> ExternalGiveawayItem:
         return ExternalGiveawayItem(
-            identifier=record.id,
+            identifier=record.id.value,
             created_at=record.created_at,
             start_time=record.start_time,
             end_time=record.end_time,
@@ -138,7 +143,7 @@ class ExternalGiveawayItemRepository(
         model: ExternalGiveawayItem
     ) -> ExternalGiveawayItemRecord:
         return ExternalGiveawayItemRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             created_at=model.created_at,
             start_time=model.start_time,
             end_time=model.end_time,

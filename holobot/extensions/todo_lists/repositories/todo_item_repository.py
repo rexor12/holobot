@@ -2,6 +2,7 @@ from collections.abc import Awaitable
 
 from holobot.extensions.todo_lists.models import TodoItem
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -21,6 +22,10 @@ class TodoItemRepository(
     @property
     def model_type(self) -> type[TodoItem]:
         return TodoItem
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -67,7 +72,7 @@ class TodoItemRepository(
 
     def _map_record_to_model(self, record: TodoItemRecord) -> TodoItem:
         return TodoItem(
-            identifier=record.id,
+            identifier=record.id.value,
             user_id=record.user_id,
             created_at=record.created_at,
             message=record.message
@@ -75,7 +80,7 @@ class TodoItemRepository(
 
     def _map_model_to_record(self, model: TodoItem) -> TodoItemRecord:
         return TodoItemRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             user_id=model.user_id,
             created_at=model.created_at,
             message=model.message

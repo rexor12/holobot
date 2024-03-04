@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 from holobot.sdk.utils.datetime_utils import utcnow
 
 @dataclass(kw_only=True)
@@ -23,7 +23,7 @@ class ChannelTimer(AggregateRoot[int]):
     base_time: datetime = field(default_factory=utcnow)
     """The date and time to use as the relative starting point."""
 
-    countdown_interval: timedelta = field(default_factory=timedelta)
+    countdown_interval: timedelta
     """The interval of the timer."""
 
     name_template: str | None

@@ -5,7 +5,7 @@ from asyncpg import Connection
 from asyncpg.transaction import Transaction
 
 from holobot.sdk.caching import ConcurrentDict
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 from holobot.sdk.database.iunit_of_work import IUnitOfWork, TIdentifier
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.threading.utils import as_task
@@ -26,7 +26,7 @@ class UnitOfWork(IUnitOfWork):
         self.__on_disposed = on_disposed
         self.__is_completed = False
         self.__is_disposed = False
-        self.__entities = ConcurrentDict[type, ConcurrentDict[Any, Any]]()
+        self.__entities = ConcurrentDict[type, ConcurrentDict[str, Any]]()
 
     @property
     def connection(self) -> Connection:
@@ -44,7 +44,7 @@ class UnitOfWork(IUnitOfWork):
         self.__throw_if_disposed()
         if (
             isinstance(entities := await self.__entities.get(entity_type), UndefinedType)
-            or isinstance(entity := await entities.get(identifier), UndefinedType)
+            or isinstance(entity := await entities.get(str(identifier)), UndefinedType)
         ):
             return None
 
@@ -60,7 +60,7 @@ class UnitOfWork(IUnitOfWork):
             lambda _: as_task(ConcurrentDict())
         )
         await entities.add_or_update(
-            value.identifier,
+            str(value.identifier),
             lambda _k: as_task(value),
             lambda _k, _v: as_task(value)
         )
@@ -74,7 +74,7 @@ class UnitOfWork(IUnitOfWork):
         if isinstance(entities := await self.__entities.get(entity_type), UndefinedType):
             return
 
-        await entities.remove(identifier)
+        await entities.remove(str(identifier))
 
     async def _on_dispose(self) -> None:
         if self.__is_disposed:

@@ -3,6 +3,7 @@ from collections.abc import Awaitable
 from holobot.extensions.moderation.enums import ModeratorPermission
 from holobot.extensions.moderation.models import User
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -23,6 +24,10 @@ class UserRepository(
     @property
     def model_type(self) -> type[User]:
         return User
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -88,7 +93,7 @@ class UserRepository(
 
     def _map_record_to_model(self, record: UserRecord) -> User:
         return User(
-            identifier=record.id,
+            identifier=record.id.value,
             created_at=record.created_at,
             permissions=record.permissions,
             server_id=record.server_id,
@@ -97,7 +102,7 @@ class UserRepository(
 
     def _map_model_to_record(self, model: User) -> UserRecord:
         return UserRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             created_at=model.created_at,
             permissions=model.permissions,
             server_id=model.server_id,

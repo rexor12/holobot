@@ -1,7 +1,7 @@
 import builtins
 import types
 import typing
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import _MISSING_TYPE, dataclass, fields, is_dataclass
 
 from holobot.sdk.exceptions import ArgumentError
@@ -28,7 +28,10 @@ class ParameterInfo(typing.NamedTuple):
     default_value: typing.Any
     default_factory: typing.Callable[[], typing.Any] | None
 
-def get_parameter_infos(dataclass_type: type) -> Sequence[ParameterInfo]:
+def get_parameter_infos(
+    dataclass_type: type,
+    custom_origin_resolvers: dict[type, Callable[[type], TypeDescriptor]] | None = None
+) -> Sequence[ParameterInfo]:
     if not is_dataclass(dataclass_type):
         raise ArgumentError("dataclass_type", "The type must be a dataclass.")
 
@@ -45,7 +48,8 @@ def get_parameter_infos(dataclass_type: type) -> Sequence[ParameterInfo]:
             field_info.name,
             resolved_type_hints[field_info.name],
             None if isinstance(field_info.default, _MISSING_TYPE) else field_info.default,
-            None if isinstance(field_info.default_factory, _MISSING_TYPE) else field_info.default_factory
+            None if isinstance(field_info.default_factory, _MISSING_TYPE) else field_info.default_factory,
+            custom_origin_resolvers
         ) for field_info in fields(dataclass_type)
     ]
 
@@ -53,7 +57,8 @@ def __get_parameter_info(
     parameter_name: str,
     parameter_type: type,
     default_value: typing.Any,
-    default_factory: typing.Any
+    default_factory: typing.Any,
+    custom_origin_resolvers: dict[type, Callable[[type], TypeDescriptor]] | None
 ) -> ParameterInfo:
     is_argument_nullable = False
     match origin := typing.get_origin(parameter_type):
@@ -108,4 +113,28 @@ def __get_parameter_info(
                 default_factory
             )
         case _:
-            raise ValueError(f"Expected None, tuple or list type, but got '{parameter_type}'.")
+            type_descriptor = __try_resolve_type_descriptor(origin, parameter_type, custom_origin_resolvers)
+            if type_descriptor is None:
+                raise ValueError(f"Expected None, tuple or list type, but got '{parameter_type}'.")
+
+            return ParameterInfo(
+                parameter_name,
+                type_descriptor,
+                None,
+                is_argument_nullable,
+                default_value,
+                default_factory
+            )
+
+def __try_resolve_type_descriptor(
+    origin: type,
+    parameter_type: type,
+    custom_origin_resolvers: dict[type, Callable[[type], TypeDescriptor]] | None
+) -> TypeDescriptor | None:
+    if custom_origin_resolvers is None:
+        return None
+
+    if (resolver := custom_origin_resolvers.get(origin)) is None:
+        return None
+
+    return resolver(parameter_type)

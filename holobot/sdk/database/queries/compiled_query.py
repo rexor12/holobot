@@ -11,6 +11,7 @@ class CompiledQuery(ICompiledQuery):
     def __init__(self, query: str, arguments: tuple[Any, ...]) -> None:
         self.__query: str = query
         self.__arguments: tuple[Any, ...] = arguments
+        # print(f"Query: {query}\nArgs: {", ".join(map(lambda i: str(i), arguments))}")
 
     async def execute(self, connection: asyncpg.Connection) -> CommandComplete[Any]:
         try:

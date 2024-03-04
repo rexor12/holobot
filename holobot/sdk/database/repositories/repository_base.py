@@ -1,20 +1,21 @@
+import typing
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Sequence
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Generic, TypeVar, cast
 
 import asyncpg
 
-from holobot.sdk import Lazy
-from holobot.sdk.database.aggregate_root import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot, Identifier, PrimaryKey, Record
 from holobot.sdk.database.exceptions import DatabaseError
 from holobot.sdk.database.idatabase_manager import IDatabaseManager
 from holobot.sdk.database.isession import ISession
 from holobot.sdk.database.iunit_of_work_provider import IUnitOfWorkProvider
 from holobot.sdk.database.queries import (
-    CompiledQuery, ICompileableQueryPartBuilder, ISupportsPagination, Query, WhereBuilder,
-    WhereConstraintBuilder
+    CompiledQuery, ICompileableQueryPartBuilder, ISupportsExists, ISupportsPagination, Query,
+    WhereBuilder, WhereConstraintBuilder
 )
 from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.statuses import CommandComplete
@@ -23,15 +24,26 @@ from holobot.sdk.queries import PaginationResult
 from holobot.sdk.threading.utils import COMPLETED_TASK
 from holobot.sdk.utils import set_time_zone
 from holobot.sdk.utils.dataclass_utils import (
-    ObjectTypeDescriptor, ParameterInfo, get_parameter_infos
+    ObjectTypeDescriptor, ParameterInfo, TypeDescriptor, get_parameter_infos
 )
 from .constants import MANUALLY_GENERATED_KEY_NAME
 from .irepository import IRepository
-from .record import Record
 
-TIdentifier = TypeVar("TIdentifier", int, str)
+TIdentifier = TypeVar("TIdentifier", bound=int | str | Identifier)
 TRecord = TypeVar("TRecord", bound=Record)
 TModel = TypeVar("TModel", bound=AggregateRoot)
+
+@dataclass(kw_only=True, frozen=True)
+class PrimaryKeyTypeDescriptor(TypeDescriptor):
+    value_type: type
+
+def __resolve_primary_key_type_descriptor(parameter_type: type) -> TypeDescriptor:
+    args = typing.get_args(parameter_type)
+    return PrimaryKeyTypeDescriptor(value_type=args[0])
+
+_CUSTOM_RESOLVERS: dict[type, Callable[[type], TypeDescriptor]] = {
+    PrimaryKey: __resolve_primary_key_type_descriptor
+}
 
 class _UnitOfWorkSession(ISession):
     def __init__(self, connection: asyncpg.Connection) -> None:
@@ -64,7 +76,8 @@ class RepositoryBase(
         :rtype: tuple[str, ...]
         """
 
-        return self.__column_names.value
+        # TODO "This is a cached value."
+        return tuple(self.__columns.keys())
 
     @property
     @abstractmethod
@@ -92,12 +105,31 @@ class RepositoryBase(
 
     @property
     @abstractmethod
+    def identifier_type(self) -> type[TIdentifier]:
+        """Gets the type of the identifier.
+
+        This identifier is shared between the record and the model
+        and may only consist of primitive fields.
+
+        This is required, because Python currently doesn't support
+        the runtime resolution of generic type arguments.
+
+        :return: The type of the identifier.
+        :rtype: type[TIdentifier]
+        """
+
+    @property
+    @abstractmethod
     def table_name(self) -> str:
         """Gets the name of the table the repository operates on.
 
         :return: The name of the repository's table.
         :rtype: str
         """
+
+    @property
+    def _is_primitive_identifier(self) -> bool:
+        return self.identifier_type is str or self.identifier_type is int
 
     def __init__(
         self,
@@ -107,29 +139,35 @@ class RepositoryBase(
         super().__init__()
         self._database_manager = database_manager
         self.__unit_of_work_provider = unit_of_work_provider
-        self.__columns = Lazy[tuple[ParameterInfo, ...]](
-            lambda: tuple(get_parameter_infos(self.record_type))
-        )
-        self.__column_names = Lazy[tuple[str, ...]](
-            lambda: self.__get_column_names()
-        )
+        self.__columns = {
+            parameter_info.name: parameter_info
+            for parameter_info in get_parameter_infos(self.record_type, _CUSTOM_RESOLVERS)
+        }
+        self.__id_columns = {
+            name: parameter_info
+            for name, parameter_info in self.__columns.items()
+            if isinstance(parameter_info.object_type, PrimaryKeyTypeDescriptor)
+        }
 
     async def add(self, model: TModel) -> TIdentifier:
         record = self._map_model_to_record(model)
         is_manually_generated_key = getattr(record, MANUALLY_GENERATED_KEY_NAME, False)
         fields = self._get_fields(record, not is_manually_generated_key)
         async with (session := await self._get_session()):
-            identifier = await (Query
+            identifier_row = await (Query
                 .insert()
                 .in_table(self.table_name)
                 .fields(*fields)
                 .returning()
-                .column(RepositoryBase._ID_FIELD_NAME)
+                .columns(*self.__id_columns.keys())
                 .compile()
-                .fetchval(session.connection)
+                .fetchrow(session.connection)
             )
-            if identifier is None:
+            if identifier_row is None:
                 raise DatabaseError("Failed to insert a new record.")
+
+            identifier = self._map_query_result_to_identifier(identifier_row)
+            model.identifier = identifier
 
             await self.__try_set_model(model)
 
@@ -140,12 +178,9 @@ class RepositoryBase(
             return existing_model
 
         async with (session := await self._get_session()):
-            result = await (Query
-                .select()
-                .columns(*self.column_names)
-                .from_table(self.table_name)
-                .where()
-                .field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, identifier)
+            builder = Query.select().columns(*self.column_names).from_table(self.table_name).where()
+            result = await (self
+                ._add_id_filter(builder, identifier)
                 .compile()
                 .fetchrow(session.connection)
             )
@@ -171,12 +206,9 @@ class RepositoryBase(
         record = self._map_model_to_record(model)
         fields = self._get_fields(record, False)
         async with (session := await self._get_session()):
-            result = await (Query
-                .update()
-                .table(self.table_name)
-                .fields(*fields)
-                .where()
-                .field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, record.id)
+            builder = Query.update().table(self.table_name).fields(*fields).where()
+            result = await (self
+                ._add_id_filter(builder, model.identifier)
                 .compile()
                 .execute(session.connection)
             )
@@ -189,11 +221,9 @@ class RepositoryBase(
 
     async def delete(self, identifier: TIdentifier) -> int:
         async with (session := await self._get_session()):
-            result = await (Query
-                .delete()
-                .from_table(self.table_name)
-                .where()
-                .field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, identifier)
+            builder = Query.delete().from_table(self.table_name).where()
+            result = await (self
+                ._add_id_filter(builder, identifier)
                 .compile()
                 .execute(session.connection)
             )
@@ -306,6 +336,29 @@ class RepositoryBase(
 
             return model
 
+    async def _exists_by_filter(
+        self,
+        filter_builder: Callable[[WhereBuilder], ISupportsExists]
+    ) -> bool:
+        """Determines if an entity matching the specified filter exists.
+
+        :param filter_builder: A callback that attaches the filter to the query.
+        :type filter_builder: Callable[[WhereBuilder], ISupportsExists]
+        :return: True, if exists.
+        :rtype: bool
+        """
+
+        async with (session := await self._get_session()):
+            query = filter_builder(Query
+                .select()
+                .column("id")
+                .from_table(self.table_name)
+                .where()
+            )
+            result = await query.exists().compile().fetchval(session.connection)
+
+            return bool(result)
+
     async def _get_many_by_function(
         self,
         function_name: str,
@@ -346,19 +399,18 @@ class RepositoryBase(
                 .from_table(self.table_name)
                 .where()
             )
-            results = await (query
+            identifier_rows = await (query
                 .returning()
-                .column(RepositoryBase._ID_FIELD_NAME)
+                .columns(*self.__id_columns.keys())
                 .compile()
                 .fetch(session.connection)
             )
 
-            for result in results:
-                await self.__try_remove_model(
-                    cast(TIdentifier, result.get(RepositoryBase._ID_FIELD_NAME))
-                )
+            for identifier_row in identifier_rows:
+                identifier = self._map_query_result_to_identifier(identifier_row)
+                await self.__try_remove_model(identifier)
 
-            return len(results)
+            return len(identifier_rows)
 
     async def _update_by_filter(
         self,
@@ -381,19 +433,18 @@ class RepositoryBase(
                 query = query.field(column_name, value, is_raw_value)
 
             query = filter_builder(query.where())
-            results = await (query
+            identifier_rows = await (query
                 .returning()
-                .column(RepositoryBase._ID_FIELD_NAME)
+                .columns(*self.__id_columns.keys())
                 .compile()
                 .fetch(session.connection)
             )
 
-            for result in results:
-                await self.__try_remove_model(
-                    cast(TIdentifier, result.get(RepositoryBase._ID_FIELD_NAME))
-                )
+            for identifier_row in identifier_rows:
+                identifier = self._map_query_result_to_identifier(identifier_row)
+                await self.__try_remove_model(identifier)
 
-            return len(results)
+            return len(identifier_rows)
 
     async def _paginate(
         self,
@@ -433,6 +484,38 @@ class RepositoryBase(
                 ]
             )
 
+    def _add_id_filter(self, where_builder: WhereBuilder, identifier: TIdentifier) -> WhereConstraintBuilder:
+        """Adds the identifier filter to the query builder.
+
+        This method correctly handles simple primary keys and composite keys.
+
+        :param where_builder: The query builder to modify.
+        :type where_builder: WhereBuilder
+        :param identifier: The identifier to filter for.
+        :type identifier: TIdentifier
+        :return: The same query builder with the filter added.
+        :rtype: WhereConstraintBuilder
+        """
+
+        if isinstance(identifier, Identifier):
+            constraint_builder: WhereConstraintBuilder | None = None
+            for column_name in self.__id_columns.keys():
+                field_value = getattr(identifier, column_name)
+                if constraint_builder:
+                    constraint_builder = constraint_builder.and_field(
+                        column_name, Equality.EQUAL, field_value
+                    )
+                else:
+                    constraint_builder = where_builder.field(
+                        column_name, Equality.EQUAL, field_value
+                    )
+            if not constraint_builder:
+                raise ValueError("The specified composite key does not specify any columns.")
+
+            return constraint_builder
+        # TODO Make this dynamic instead of the magical _ID_FIELD_NAME.
+        return where_builder.field(RepositoryBase._ID_FIELD_NAME, Equality.EQUAL, identifier)
+
     def _map_query_result_to_record(self, columns: dict[str, Any]) -> TRecord:
         """Maps the specified result of a query to a record.
 
@@ -443,37 +526,62 @@ class RepositoryBase(
         :rtype: TRecord
         """
 
-        arguments = dict[str, Any]()
-        for column in self.__columns.value:
-            if not isinstance(column.object_type, ObjectTypeDescriptor):
-                raise TypeError(
-                    f"Expected the type descriptor of column {column.name} to be an"
-                    f"ObjectTypeDescriptor, but got {type(column.object_type).__name__}."
-                )
-
-            raw_value = columns.get(column.name)
-            record_value = RepositoryBase.__convert_field_to_model(
-                raw_value,
-                column.object_type.value
-            )
-            if record_value is None and not column.allows_none:
-                if column.default_value:
-                    record_value = column.default_value
-                elif column.default_factory:
-                    record_value = column.default_factory()
-
-            if (
-                record_value is None and not column.allows_none
-                or record_value is not None and not isinstance(record_value, column.object_type.value)
-            ):
-                raise TypeError((
-                    f"Expected '{column.object_type.value.__name__}',"
-                    f" but got '{type(record_value).__name__}'."
-                ))
-
-            arguments[column.name] = record_value
+        arguments = {
+            column.name: self._map_query_result_column(column.name, columns, self.__columns)
+            for column in self.__columns.values()
+        }
 
         return self.record_type(**arguments)
+
+    def _map_query_result_to_identifier(self, columns: dict[str, Any]) -> TIdentifier:
+        arguments = {
+            column_name: self._map_query_result_column(column_name, columns, self.__id_columns).value
+            for column_name in self.__id_columns.keys()
+        }
+
+        return (
+            next(iter(arguments.values()))
+            if self._is_primitive_identifier
+            else self.identifier_type(**arguments)
+        )
+
+    def _map_query_result_column(
+        self,
+        column_name: str,
+        record_columns: dict[str, Any],
+        model_columns: dict[str, ParameterInfo]
+    ) -> Any:
+        if not (column := model_columns.get(column_name, None)):
+            raise TypeError(f"Cannot find the type descriptor of column '{column_name}'.")
+
+        if isinstance(column.object_type, ObjectTypeDescriptor):
+            object_type = column.object_type.value
+        elif isinstance(column.object_type, PrimaryKeyTypeDescriptor):
+            object_type = PrimaryKey
+        else:
+            raise TypeError(
+                f"Expected the type descriptor of column {column.name} to be an"
+                f" ObjectTypeDescriptor, but got {type(column.object_type).__name__}."
+            )
+
+        value = record_columns.get(column_name)
+        record_value = RepositoryBase.__convert_field_to_model(value, object_type)
+        if record_value is None and not column.allows_none:
+            if column.default_value:
+                record_value = column.default_value
+            elif column.default_factory:
+                record_value = column.default_factory()
+
+        if (
+            record_value is None and not column.allows_none
+            or record_value is not None and not isinstance(record_value, object_type)
+        ):
+            raise TypeError((
+                f"Expected '{object_type.__name__}',"
+                f" but got '{type(record_value).__name__}'."
+            ))
+
+        return record_value
 
     def _get_fields(
         self,
@@ -495,8 +603,8 @@ class RepositoryBase(
                 column.name,
                 RepositoryBase.__convert_field_to_record(getattr(record, column.name))
             )
-            for column in self.__columns.value
-            if not ignore_identifier or column.name != RepositoryBase._ID_FIELD_NAME
+            for column in self.__columns.values()
+            if not ignore_identifier or not isinstance(column.object_type, PrimaryKeyTypeDescriptor)
         ]
 
     async def _get_session(self) -> ISession:
@@ -516,6 +624,8 @@ class RepositoryBase(
             datetime_value = cast(datetime, value)
             if not datetime_value.tzinfo:
                 return set_time_zone(value, timezone.utc)
+        if expected_type is PrimaryKey:
+            return PrimaryKey(value)
         return value
 
     @staticmethod
@@ -526,10 +636,9 @@ class RepositoryBase(
             datetime_value = cast(datetime, value)
             if datetime_value is not None:
                 return set_time_zone(datetime_value, None)
+        if isinstance(value, PrimaryKey):
+            return value.value
         return value
-
-    def __get_column_names(self) -> tuple[str, ...]:
-        return tuple(column.name for column in self.__columns.value)
 
     def __try_get_model(self, identifier: TIdentifier) -> Awaitable[TModel | None]:
         if not (unit_of_work := self.__unit_of_work_provider.current):

@@ -1,7 +1,7 @@
 from collections.abc import Awaitable
 from typing import Protocol, TypeVar
 
-from holobot.sdk.database.aggregate_root import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 
 _TIdentifier = TypeVar("_TIdentifier", int, str)
 _TEntity = TypeVar("_TEntity", bound=AggregateRoot)

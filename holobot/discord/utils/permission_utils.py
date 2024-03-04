@@ -43,3 +43,10 @@ PERMISSION_TO_MODELS: dict[Permissions, Permission] = {
     dto: model
     for model, dto in PERMISSION_TO_DTOS.items()
 }
+
+def map_permissions_to_dtos(permissions: Permission) -> Permissions:
+    flag = Permissions.NONE
+    for permission in permissions:
+        flag |= PERMISSION_TO_DTOS[permission]
+
+    return flag

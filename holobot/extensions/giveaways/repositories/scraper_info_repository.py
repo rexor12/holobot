@@ -1,5 +1,6 @@
 from holobot.extensions.giveaways.models import ScraperInfo
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -20,6 +21,10 @@ class ScraperInfoRepository(
         return ScraperInfo
 
     @property
+    def identifier_type(self) -> type[int]:
+        return int
+
+    @property
     def table_name(self) -> str:
         return "scraper_infos"
 
@@ -37,14 +42,14 @@ class ScraperInfoRepository(
 
     def _map_record_to_model(self, record: ScraperInfoRecord) -> ScraperInfo:
         return ScraperInfo(
-            identifier=record.id,
+            identifier=record.id.value,
             scraper_name=record.scraper_name,
             last_scrape_time=record.last_scrape_time
         )
 
     def _map_model_to_record(self, model: ScraperInfo) -> ScraperInfoRecord:
         return ScraperInfoRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             scraper_name=model.scraper_name,
             last_scrape_time=model.last_scrape_time
         )

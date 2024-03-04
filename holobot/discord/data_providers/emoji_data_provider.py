@@ -62,11 +62,13 @@ class EmojiDataProvider(IEmojiDataProvider):
         identifier = emoji_match["id"]
         return Emoji(
             identifier=None,
+            name=emoji_match["name"],
             url=routes.CDN_CUSTOM_EMOJI.compile(
                 urls.CDN_URL,
                 emoji_id=identifier,
                 file_format=extension
             ),
             mention=mention,
-            is_known=False
+            is_known=False,
+            is_animated=is_animated
         )

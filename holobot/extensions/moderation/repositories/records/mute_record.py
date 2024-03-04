@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from holobot.sdk.database.repositories import Record
+from holobot.sdk.database.entities import PrimaryKey, Record
 
 @dataclass(kw_only=True)
-class MuteRecord(Record[int]):
-    id: int
+class MuteRecord(Record):
+    id: PrimaryKey[int]
     server_id: str
     user_id: str

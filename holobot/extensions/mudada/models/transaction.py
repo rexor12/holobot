@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 from holobot.sdk.utils.datetime_utils import utcnow
 
 @dataclass(kw_only=True)

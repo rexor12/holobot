@@ -37,7 +37,7 @@
 			"\t\tlogger_factory: ILoggerFactory",
 			"\t) -> None:",
 			"\t\tsuper().__init__()",
-			"\t\tself.__i18n_provider = i18n_provider",
+			"\t\tself.__i18n = i18n_provider",
 			"",
 			"\t@command(",
 			"\t\tname=\"${2:name}\",",

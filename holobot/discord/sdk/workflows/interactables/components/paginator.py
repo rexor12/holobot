@@ -12,6 +12,7 @@ class Paginator(InteractableLayoutBase):
     has_previous_page: bool | None = None
     has_next_page: bool | None = None
     custom_data: dict[str, Any] = field(default_factory=dict)
+    auto_hide_buttons: bool = True
 
     def is_first_page(self) -> bool:
         return not self.current_page

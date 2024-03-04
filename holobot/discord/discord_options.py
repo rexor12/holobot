@@ -9,6 +9,6 @@ class DiscordOptions(OptionsDefinition):
 
     BotToken: str = ""
     DevelopmentServerId: int = 0
-    PaginatorPreviousEmoji: str | None = None
-    PaginatorNextEmoji: str | None = None
+    PaginatorPreviousEmoji: int | None = None
+    PaginatorNextEmoji: int | None = None
     IsNetworkTraceEnabled: bool = False

@@ -1,6 +1,6 @@
 import glob
 import os
-from collections.abc import Sequence
+from collections.abc import Iterable
 from json import load
 from typing import Any
 
@@ -109,7 +109,7 @@ class I18nProvider(II18nProvider, IStartable):
     def get_list_items(
         self,
         key: str,
-        item_arguments: Sequence[dict[str, Any]],
+        item_arguments: Iterable[dict[str, Any]],
         language: str | None = None
     ) -> tuple[str, ...]:
         try:

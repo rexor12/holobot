@@ -2,6 +2,7 @@ from collections.abc import Awaitable
 
 from holobot.extensions.general.models import FortuneCookie
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from .ifortune_cookie_repository import IFortuneCookieRepository
@@ -21,6 +22,10 @@ class FortuneCookieRepository(
         return FortuneCookie
 
     @property
+    def identifier_type(self) -> type[int]:
+        return int
+
+    @property
     def table_name(self) -> str:
         return "fortune_cookies"
 
@@ -38,12 +43,12 @@ class FortuneCookieRepository(
 
     def _map_record_to_model(self, record: FortuneCookieRecord) -> FortuneCookie:
         return FortuneCookie(
-            identifier=record.id,
+            identifier=record.id.value,
             message=record.message
         )
 
     def _map_model_to_record(self, model: FortuneCookie) -> FortuneCookieRecord:
         return FortuneCookieRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             message=model.message
         )

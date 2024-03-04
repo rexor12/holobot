@@ -1,3 +1,5 @@
 from .channel_timer_migration import ChannelTimerMigration
+from .currencies_migration import CurrenciesMigration
 from .fortune_cookie_migration import FortuneCookieMigration
 from .marriage_migration import MarriageMigration
+from .wallet_migration import WalletsMigration

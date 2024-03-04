@@ -17,6 +17,7 @@ class CompiledPaginationQuery:
         self.__arguments: tuple[Any, ...] = arguments
         self.__page_index: int = page_index
         self.__page_size: int = page_size
+        # print(f"Query: {query}\nArgs: {", ".join(map(lambda i: str(i), arguments))}")
 
     async def fetch(self, connection: Connection) -> PaginationResult:
         records: list[Any] = await connection.fetch(self.__query, *self.__arguments)

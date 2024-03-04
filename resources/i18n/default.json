@@ -108,6 +108,12 @@
                 "too_many_timers_error": "Alas, it appears your server has an abundance of timers. A server may not have more than {max_timers} timer(s). (This is due to a Discord limitation regarding bot rate limits.)",
                 "timer_created_successfully": "I have just set up the timer you have requested. I shall start counting your apples within the next 5 minutes. Make sure I have all necessary permissions or I'm afraid I'll forget about this timer."
             },
+            "create_currency_workflow": {
+                "invalid_emoji_error": "Alas, I cannot seem to find the emoji you described or it is an animated emoji. Pray, choose a static emoji from the current server.",
+                "too_many_currencies_error": "Alas, it appears your server has already reached the maximum number of currencies I can manage. Pray, remove some if you would like to add new ones.",
+                "currency_created_successfully": "I have just introduced the new currency **{name}** <:{emoji_name}:{emoji_id}>.",
+                "view_currencies_button": "View all"
+            },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
@@ -120,6 +126,19 @@
                 "embed_title": "Fortune Cookie",
                 "embed_footer": "Cookie #{id}",
                 "cooldown_error": "Alas, it appears I have eaten all the cookies. I would kindly ask that you attempt to take one a bit later. ({seconds_left:,.0f} seconds)"
+            },
+            "gift_money_workflow": {
+                "cannot_gift_to_self_error": "Silly, why would you want me to give you your own gifts?",
+                "too_much_money_error": "You can't gift more than **{amount:,}** of any currency to a user at a time.",
+                "not_enough_money_error": "Pray, forgive me, but I must decline your transaction as you lack the required funds. Currently, you have **{amount:,}** <:{emoji_name}:{emoji_id}>.",
+                "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for.",
+                "currency_untradable_error": "Pray, forgive me, but this currency is so valuable that it cannot be traded between users.",
+                "successfully_gifted_money": "<@{target_user_id}>, <@{user_id}> has just gifted you **{amount:,}** <:{emoji_name}:{emoji_id}>."
+            },
+            "give_money_workflow": {
+                "too_much_money_error": "You can't give more than **{max_amount:,}** of any currency to a user at a time.",
+                "successfully_gave_money": "I've delivered the money successfully. <@{user_id}> now has **{amount:,}** <:{emoji_name}:{emoji_id}>.",
+                "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for."
             },
             "magic_eight_ball_workflow": {
                 "responses": [
@@ -268,6 +287,13 @@
                 "removed_successfully": "Rejoice, for I have hunted down each and every one of your channel timers.",
                 "no_timers_error": "Alas, you seem to have no channel timers."
             },
+            "remove_currency_workflow": {
+                "invalid_currency_error": "Pray, forgive me, but it seems this currency doesn't exist. It may have been removed already.",
+                "remove_confirmation": "Removing a currency means that **ALL** users will lose all amount of that currency.\nAre you sure you'd like to remove the currency **{currency_name}**?",
+                "currency_removed_successfully": "I have made sure this currency is not in circulation anymore.",
+                "no_changes_performed": "Rest assured I haven't changed anything; the currency remains active.",
+                "view_currencies_button": "View all"
+            },
             "roll_number_workflow": {
                 "unusual_roll_result": "I rolled an unusually shaped die for you and got {value}. („• ᴗ •„)",
                 "usual_roll_result": "I rolled a {name} for you and got {value}. („• ᴗ •„)",
@@ -289,6 +315,13 @@
                 "successful_summon": "I'll be back in a moment with <@{user_id}>...",
                 "cannot_summon_bot_error": "I'm sorry, but I'd rather not disturb a fellow bot. (｡•́︿•̀｡)"
             },
+            "take_money_workflow": {
+                "too_little_money_error": "You can't take less than 1 of any currency from someone.",
+                "user_has_no_money_error": "<@{user_id}> has none of this currency at all, there is nothing left to take.",
+                "successfully_removed_money": "I've snatched the money successfully. <@{user_id}> now has **{amount:,}** <:{emoji_name}:{emoji_id}>.",
+                "successfully_removed_money_from_all": "I've snatched the money from everyone successfully.",
+                "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for."
+            },
             "view_bot_info_workflow": {
                 "embed_title": "Holo's information",
                 "embed_footer": "Brought to you by rexor12",
@@ -296,6 +329,12 @@
                 "project_home": "Project home",
                 "report_bug": "Report a bug",
                 "request_feature": "Request a feature"
+            },
+            "view_currencies_workflow": {
+                "no_custom_currencies_error": "Alas, your server doesn't have any custom currencies.",
+                "currency_detail": "**[{index}]** <:{emoji_name}:{emoji_id}> **{name}**\n{description}",
+                "currencies_description": "These are the currencies available in this server.\n\n{currencies}",
+                "embed_title": "Currencies"
             },
             "view_emoji_workflow": {
                 "emoji_not_found_error": "I'm sorry, but I couldn't find the emoji you requested. Please, double check for any typos. (｡•́︿•̀｡)",
@@ -340,6 +379,12 @@
             "view_user_banner_workflow": {
                 "embed_title": "{user}'s banner",
                 "no_banner_error": "I'm sorry, but <@{user_id}> doesn't have a banner. (｡•́︿•̀｡)"
+            },
+            "view_wallet_workflow": {
+                "empty_wallet_error": "Alas, it seems a mischievous wolf has taken all your coins.",
+                "wallet_description": "These are the funds available to you right now.\n\n{currencies}",
+                "currency_description": "• **{amount:,}** <:{emoji_name}:{emoji_id}>",
+                "embed_title": "Your wallet"
             }
         },
 

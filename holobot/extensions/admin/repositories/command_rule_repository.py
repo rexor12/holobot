@@ -2,6 +2,7 @@ from collections.abc import Awaitable, Sequence
 
 from holobot.extensions.admin.models import CommandRule
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query, WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
@@ -26,6 +27,10 @@ class CommandRuleRepository(
     @property
     def model_type(self) -> type[CommandRule]:
         return CommandRule
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -158,7 +163,7 @@ class CommandRuleRepository(
 
     def _map_record_to_model(self, record: CommandRuleRecord) -> CommandRule:
         return CommandRule(
-            identifier=record.id,
+            identifier=record.id.value,
             created_at=record.created_at,
             created_by=record.created_by,
             server_id=record.server_id,
@@ -171,7 +176,7 @@ class CommandRuleRepository(
 
     def _map_model_to_record(self, model: CommandRule) -> CommandRuleRecord:
         return CommandRuleRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             created_at=model.created_at,
             created_by=model.created_by,
             server_id=model.server_id,

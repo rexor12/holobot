@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 
 @dataclass(kw_only=True)
 class Wallet(AggregateRoot[str]):

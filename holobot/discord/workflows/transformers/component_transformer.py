@@ -29,7 +29,7 @@ _COMPONENT_STYLE_MAP: dict[ComponentStyle, hikari.InteractiveButtonTypesT] = {
 
 _TComponentBuilder = Callable[
     [Any, special_endpoints.ComponentBuilder | None, dict[str, int]],
-    special_endpoints.ComponentBuilder
+    special_endpoints.ComponentBuilder | None
 ]
 
 class _ControlData(NamedTuple):
@@ -67,10 +67,15 @@ class ComponentTransformer(IComponentTransformer):
 
         counters = dict[str, int]()
 
-        return list(map(
-            lambda c: self.__create_control(c, None, counters),
-            controls
-        ))
+        return list(
+            filter(
+                None,
+                map(
+                    lambda c: self.__create_control(c, None, counters),
+                    controls
+                )
+            )
+        )
 
     def create_modal(
         self,
@@ -227,7 +232,7 @@ class ComponentTransformer(IComponentTransformer):
         control: ComponentBase,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         assert_range(len(control.id), 1, 100, "control.id")
 
         if not (transformer := self.__control_transformers.get(type(control))):
@@ -306,7 +311,7 @@ class ComponentTransformer(IComponentTransformer):
         control: StackLayout,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         if container:
             raise ArgumentError("A stack layout cannot be placed in a container layout.")
 
@@ -331,14 +336,14 @@ class ComponentTransformer(IComponentTransformer):
         control: Button,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         assert_not_none(container, "container")
-        if not control.emoji_id:
+        if not control.emoji:
             assert_not_none(control.text, "control.text")
             assert_range(len(cast(str, control.text)), 1, 80, "control.text")
         if not isinstance(container, endpoints.MessageActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
-        if not control.text and not control.emoji_id:
+        if not control.text and not control.emoji:
             raise ArgumentError("control", "At least one of the button's text or emoji must be specified.")
 
         if control.style is ComponentStyle.LINK:
@@ -347,7 +352,7 @@ class ComponentTransformer(IComponentTransformer):
 
             return container.add_link_button(
                 control.url,
-                emoji=int(control.emoji_id) if control.emoji_id else hikari.UNDEFINED,
+                emoji=control.emoji or hikari.UNDEFINED,
                 label=control.text or hikari.UNDEFINED,
                 is_disabled=not control.is_enabled
             )
@@ -361,7 +366,7 @@ class ComponentTransformer(IComponentTransformer):
                 0,
                 control.custom_data
             ),
-            emoji=int(control.emoji_id) if control.emoji_id else hikari.UNDEFINED,
+            emoji=control.emoji or hikari.UNDEFINED,
             label=control.text or hikari.UNDEFINED,
             is_disabled=not control.is_enabled
         )
@@ -404,10 +409,13 @@ class ComponentTransformer(IComponentTransformer):
         control: Paginator,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         assert_not_none(control, "control")
         if container:
             raise ArgumentError(f"A paginator is a layout and cannot be placed in another layout, but was placed in '{type(container)}'.")
+
+        if control.auto_hide_buttons and control.is_first_page() and control.is_last_page():
+            return None
 
         previous_button_custom_data = {
             "page": str(control.current_page - 1),
@@ -432,7 +440,7 @@ class ComponentTransformer(IComponentTransformer):
                         text=None if self.__options.value.PaginatorPreviousEmoji else "Previous",
                         style=ComponentStyle.SECONDARY,
                         is_enabled=not control.is_first_page(),
-                        emoji_id=self.__options.value.PaginatorPreviousEmoji,
+                        emoji=self.__options.value.PaginatorPreviousEmoji,
                         custom_data=previous_button_custom_data
                     ),
                     Button(
@@ -441,7 +449,7 @@ class ComponentTransformer(IComponentTransformer):
                         text=None if self.__options.value.PaginatorNextEmoji else "Next",
                         style=ComponentStyle.SECONDARY,
                         is_enabled=not control.is_last_page(),
-                        emoji_id=self.__options.value.PaginatorNextEmoji,
+                        emoji=self.__options.value.PaginatorNextEmoji,
                         custom_data=next_button_custom_data
                     )
                 ]
@@ -455,7 +463,7 @@ class ComponentTransformer(IComponentTransformer):
         control: RoleSelector,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         assert_not_none(container, "control")
         assert_range(control.selection_count_min, 1, 25, "control.selection_count_min")
         assert_range(control.selection_count_max, 1, 25, "control.selection_count_max")
@@ -503,7 +511,7 @@ class ComponentTransformer(IComponentTransformer):
         control: ComboBox,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         assert_not_none(container, "control")
         assert_range(len(control.items), 1, 25, "control.items")
         assert_range(control.selection_count_min, 1, 25, "control.selection_count_min")
@@ -557,7 +565,7 @@ class ComponentTransformer(IComponentTransformer):
         control: TextBox,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
-    ) -> special_endpoints.ComponentBuilder:
+    ) -> special_endpoints.ComponentBuilder | None:
         assert_not_none(container, "container")
         assert_range(len(control.label), 1, 45, "control.label")
         assert_range(control.min_length, 0, 4000, "control.min_length")

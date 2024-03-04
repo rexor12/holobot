@@ -1,5 +1,6 @@
 from holobot.extensions.moderation.models import WarnSettings
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -21,6 +22,10 @@ class WarnSettingsRepository(
         return WarnSettings
 
     @property
+    def identifier_type(self) -> type[int]:
+        return int
+
+    @property
     def table_name(self) -> str:
         return "moderation_warn_settings"
 
@@ -40,7 +45,7 @@ class WarnSettingsRepository(
 
     def _map_record_to_model(self, record: WarnSettingsRecord) -> WarnSettings:
         return WarnSettings(
-            identifier=record.id,
+            identifier=record.id.value,
             modified_at=record.modified_at,
             server_id=record.server_id,
             decay_threshold=record.decay_threshold,
@@ -52,7 +57,7 @@ class WarnSettingsRepository(
 
     def _map_model_to_record(self, model: WarnSettings) -> WarnSettingsRecord:
         return WarnSettingsRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             modified_at=model.modified_at,
             server_id=model.server_id,
             decay_threshold=model.decay_threshold,

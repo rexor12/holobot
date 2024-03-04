@@ -2,6 +2,7 @@ from collections.abc import Awaitable, Callable
 
 from holobot.extensions.mudada.models import Transaction
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import WhereBuilder, WhereConstraintBuilder
 from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
@@ -22,6 +23,10 @@ class TransactionRepository(
     @property
     def model_type(self) -> type[Transaction]:
         return Transaction
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -130,7 +135,7 @@ class TransactionRepository(
 
     def _map_record_to_model(self, record: TransactionRecord) -> Transaction:
         return Transaction(
-            identifier=record.id,
+            identifier=record.id.value,
             created_at=record.created_at,
             owner_id=record.owner_id,
             target_id=record.target_id,
@@ -142,7 +147,7 @@ class TransactionRepository(
 
     def _map_model_to_record(self, model: Transaction) -> TransactionRecord:
         return TransactionRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             created_at=model.created_at,
             owner_id=model.owner_id,
             target_id=model.target_id,

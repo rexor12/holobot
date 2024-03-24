@@ -18,7 +18,7 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import AvatarOptions
+from holobot.extensions.general.options import AvatarOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable

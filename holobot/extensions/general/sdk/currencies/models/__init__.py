@@ -1,0 +1,1 @@
+from .icurrency import ICurrency

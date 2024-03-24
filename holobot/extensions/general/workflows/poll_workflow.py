@@ -14,7 +14,7 @@ from holobot.discord.sdk.workflows.interactables.models import Cooldown, Interac
 from holobot.discord.sdk.workflows.interactables.models.choice import Choice
 from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import GeneralOptions
+from holobot.extensions.general.options import GeneralOptions
 from holobot.sdk.caching import IObjectCache, SlidingExpirationCacheEntryPolicy
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider

@@ -207,7 +207,9 @@
         "EconomicOptions": {
             "CurrenciesEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/11qPSq6IU7nQZMd4VIXVm8tWQ-8nMXz0r",
             "WalletEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1_4IwEzzqUFGYkLyFeAXPwWLyqmA1TliK",
-            "MaxCurrencyCountPerServer": 2
+            "MaxCurrencyCountPerServer": 2,
+            "QuestsEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1JIjjvmy3XuTSsHVY_ZY_0PaqyVQooXfj",
+            "DailyCheckInQuestCode": "DAILY"
         },
         "GeneralOptions": {
             "ProgressBarRedEmoji": "<:barr2:1053832599807725638>",

@@ -7,7 +7,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import EconomicOptions
+from holobot.extensions.general.options import EconomicOptions
 from holobot.extensions.general.repositories import ICurrencyRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider

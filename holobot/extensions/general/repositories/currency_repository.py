@@ -1,6 +1,8 @@
 from collections.abc import Awaitable, Iterable
 
 from holobot.extensions.general.models import Currency
+from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
+from holobot.extensions.general.sdk.currencies.models import ICurrency
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.constraints import (
@@ -9,8 +11,6 @@ from holobot.sdk.database.queries.constraints import (
 from holobot.sdk.database.queries.constraints.logical_constraint_builder import or_expression
 from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.queries.query import Query
-from holobot.sdk.database.queries.where_builder import WhereBuilder
-from holobot.sdk.database.queries.where_constraint_builder import WhereConstraintBuilder
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -18,6 +18,7 @@ from .icurrency_repository import ICurrencyRepository
 from .records import CurrencyRecord
 
 @injectable(ICurrencyRepository)
+@injectable(ICurrencyDataProvider)
 class CurrencyRepository(
     RepositoryBase[int, CurrencyRecord, Currency],
     ICurrencyRepository
@@ -141,6 +142,13 @@ class CurrencyRepository(
                 )
                 for result in results
             )
+
+    def get_currency_by_code(self, server_id: str, code: str) -> Awaitable[ICurrency | None]:
+        return self._get_by_filter(lambda where: where.fields(
+            Connector.AND,
+            ("server_id", Equality.EQUAL, server_id),
+            ("code", Equality.EQUAL, code)
+        ))
 
     def _map_record_to_model(self, record: CurrencyRecord) -> Currency:
         return Currency(

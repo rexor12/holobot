@@ -17,3 +17,6 @@ class IUserDataProvider(Protocol):
         use_cache: bool = True
     ) -> UserData:
         ...
+
+    def get_self(self) -> UserData:
+        ...

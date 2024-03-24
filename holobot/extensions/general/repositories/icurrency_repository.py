@@ -2,10 +2,11 @@ from collections.abc import Awaitable, Iterable
 from typing import Protocol
 
 from holobot.extensions.general.models import Currency
+from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
-class ICurrencyRepository(IRepository[int, Currency], Protocol):
+class ICurrencyRepository(IRepository[int, Currency], ICurrencyDataProvider, Protocol):
     def paginate_by_server(
         self,
         server_id: str,

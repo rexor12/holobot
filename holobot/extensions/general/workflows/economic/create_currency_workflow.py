@@ -3,14 +3,14 @@ from holobot.discord.sdk.data_providers import IEmojiDataProvider
 from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components.button import Button
+from holobot.discord.sdk.workflows.interactables.components import Button
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import (
     Cooldown, InteractionResponse, StringOption
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import EconomicOptions
-from holobot.extensions.general.models.currency import Currency
+from holobot.extensions.general.models import Currency
+from holobot.extensions.general.options import EconomicOptions
 from holobot.extensions.general.repositories import ICurrencyRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.database import IUnitOfWorkProvider

@@ -3,6 +3,7 @@ import hikari
 from holobot.discord.bot import get_bot
 from holobot.discord.sdk.data_providers import IUserDataProvider
 from holobot.discord.sdk.models import UserData
+from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
 
@@ -28,6 +29,12 @@ class UserDataProvider(IUserDataProvider):
 
         member = await get_bot().get_guild_member_by_name(int(server_id), user_name, True)
         return await UserDataProvider.__safe_get_user_data_by_id(member.id, use_cache)
+
+    def get_self(self) -> UserData:
+        if not (bot_info := get_bot().get_me()):
+            raise InvalidOperationError("Self information is not available.")
+
+        return UserDataProvider.__transform_user_dto(bot_info)
 
     @staticmethod
     def __transform_user_dto(user: hikari.User) -> UserData:

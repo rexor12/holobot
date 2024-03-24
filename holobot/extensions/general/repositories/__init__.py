@@ -5,6 +5,10 @@ from .ichannel_timer_repository import IChannelTimerRepository
 from .icurrency_repository import ICurrencyRepository
 from .ifortune_cookie_repository import IFortuneCookieRepository
 from .imarriage_repository import IMarriageRepository
+from .iquest_proto_repository import IQuestProtoRepository
+from .iquest_repository import IQuestRepository
 from .iwallet_repository import IWalletRepository
 from .marriage_repository import MarriageRepository
+from .quest_proto_repository import QuestProtoRepository
+from .quest_repository import QuestRepository
 from .wallet_repository import WalletRepository

@@ -17,7 +17,6 @@ from holobot.extensions.mudada.repositories import ITransactionRepository
 from holobot.extensions.mudada.workflows.decorators import requires_event
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 _PAGE_SIZE = 5
@@ -27,7 +26,6 @@ class ShowGiftsWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
-        logger_factory: ILoggerFactory,
         member_data_provider: IMemberDataProvider,
         transaction_repository: ITransactionRepository
     ) -> None:
@@ -80,7 +78,7 @@ class ShowGiftsWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+                content=self.__i18n.get("interactions.invalid_interaction_data_error")
             )
 
         content, embed, components = await self.__create_page_content(

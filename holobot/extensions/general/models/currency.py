@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from holobot.extensions.general.sdk.currencies.models import ICurrency
 from holobot.sdk.database.entities import AggregateRoot
 from holobot.sdk.utils.datetime_utils import utcnow
 
 @dataclass(kw_only=True)
-class Currency(AggregateRoot[int]):
+class Currency(AggregateRoot[int], ICurrency):
     """Represents a global or server-specific currency."""
 
     identifier: int = -1

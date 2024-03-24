@@ -3,6 +3,7 @@ from .admin_take_gifts_workflow import AdminTakeGiftsWorkflow
 from .admin_toggle_event_workflow import AdminToggleEventWorkflow
 from .claim_gifts_workflow import ClaimGiftsWorkflow
 from .clear_gift_message_workflow import ClearGiftMessageWorkflow
+from .get_easter_daily_workflow import GetEasterDailyWorkflow
 from .give_gifts_workflow import GiveGiftsWorkflow
 from .reset_gifts_workflow import ResetGiftsWorkflow
 from .set_gift_message_workflow import SetGiftMessageWorkflow

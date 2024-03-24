@@ -127,6 +127,11 @@
                 "embed_footer": "Cookie #{id}",
                 "cooldown_error": "Alas, it appears I have eaten all the cookies. I would kindly ask that you attempt to take one a bit later. ({seconds_left:,.0f} seconds)"
             },
+            "get_daily_reward_workflow": {
+                "daily_reward_disabled": "Pray, forgive me, but the daily reward is disabled.",
+                "invalid_quest_id": "Pray, forgive me, but this feature is temporarily unavailable.",
+                "cooldown_error": "I've provided you with a bountiful harvest already. I'll be able to give you more in {cooldown}."
+            },
             "gift_money_workflow": {
                 "cannot_gift_to_self_error": "Silly, why would you want me to give you your own gifts?",
                 "too_much_money_error": "You can't gift more than **{amount:,}** of any currency to a user at a time.",
@@ -222,6 +227,14 @@
                 "description_option": "**Option #{index}**\n{option}",
                 "yes_option": "Yes",
                 "no_option": "No"
+            },
+            "quests": {
+                "quest_complete": "Quest Completed: _{name}_",
+                "received_rewards": "I bestow upon you these rewards:",
+                "reward_experience_points": "⦁ Experience points: +{xp:,d} <:xp:1027174654487568425>",
+                "reward_skill_points": "⦁ Skill points: +{sp:,d} <:sp:1027174653107638312>",
+                "reward_currency": "⦁ +{amount:,d} <:{emoji_name}:{emoji_id}>",
+                "reward_item": "⦁ [{item_name}]x{count}"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
@@ -579,6 +592,20 @@
                 "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
                 "missing_transaction_error":"Alas, you haven't given <@{user_id}> any gifts, yet.",
                 "message_updated_successfully": "I've removed your previously recorded message."
+            },
+            "get_easter_daily_workflow": {
+                "roll_messages": [
+                    "Though today's egg might seem less promising, worry not! With my bunny enthusiasm, I assure you the next daily egg holds new promise. Stay curious and hopeful, for delightful surprises await!\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "Wealth bounds forth! In my bunny charm, I unveil to you a golden egg, heralding a season rich with happiness.\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "Fortune hops into your hands! Playfully adorned in my bunny attire, I bring you a golden egg of promise. Reap a joyful harvest!\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "Treasure unfurls this Easter! As I embrace my inner bunny, I guide you to a wealth as plentiful as the spring's bloom.\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "An egg-ceptional find this Easter! As I don playful bunny ears in celebration, my wisdom blesses you with a bounty as vibrant and joyful as the spring season itself.\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>."
+                ],
+                "invalid_quest_error": "Pray, forgive me, but I cannot find my notes about this quest.",
+                "quest_on_cooldown_error": "Alas, you've cracked open an egg already. Check back tomorrow for more.",
+                "quest_unavailable_error": "Pray, forgive me, this quest is currently not available.",
+                "quest_not_currently_available_error": "Alas, you've already received your rewards today. Even the Easter Wolf needs to rest, so come back tomorrow.",
+                "choose_roll_message": "Carefully choose one of the Easter Wolf's eggs to crack open."
             },
             "give_gifts_workflow": {
                 "invalid_gift_count_error": "Alas, you can only transfer between **{min:,}** <:bonbon:1196752635773079572> and **{max:,}** <:bonbon:1196752635773079572> at a time. This cart can only hold so much...",

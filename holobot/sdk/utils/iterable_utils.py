@@ -1,5 +1,7 @@
-from collections.abc import Callable, Iterable
-from typing import TypeVar
+from collections.abc import Callable, Generator, Iterable
+from typing import Any, TypeVar
+
+from holobot.sdk.exceptions import ArgumentError
 
 T = TypeVar("T")
 T2 = TypeVar("T2")
@@ -32,3 +34,35 @@ def select_many(
     for item in iterable:
         for subitem in transformer(item):
             yield subitem
+
+def multi_to_dict(
+    iterable: Iterable[T],
+    key_selector: Callable[[T], Iterable[T2]]
+) -> dict[T2, T]:
+    result = dict[T2, T]()
+    for item in iterable:
+        for key in key_selector(item):
+            if key in result:
+                raise ArgumentError("iterable", f"Duplicate key '{str(key)}'.")
+
+            result[key] = item
+
+    return result
+
+def concat(
+    iterable1: Iterable[T],
+    iterable2: Iterable[T]
+) -> Generator[T, Any, None]:
+    for item in iterable1:
+        yield item
+
+    for item in iterable2:
+        yield item
+
+def of_type(
+    iterable: Iterable[T],
+    item_type: type[T2]
+) -> Generator[T2, Any, None]:
+    for item in iterable:
+        if isinstance(item, item_type):
+            yield item

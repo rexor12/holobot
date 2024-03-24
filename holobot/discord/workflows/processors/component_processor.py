@@ -125,6 +125,7 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
         expected_target_types: dict[str, type[ComponentStateBase]]
     ) -> Message:
         return Message(
+            author_id=str(interaction.message.author.id),
             server_id=str(interaction.guild_id),
             channel_id=str(interaction.channel_id),
             message_id=str(interaction.message.id),

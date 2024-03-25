@@ -2,8 +2,8 @@ from collections.abc import Awaitable
 
 from holobot.extensions.general.models import ChannelTimer
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
-from holobot.sdk.database.queries.enums import Equality
-from holobot.sdk.database.queries.enums import Order
+from holobot.sdk.database.entities import PrimaryKey
+from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -22,6 +22,10 @@ class ChannelTimerRepository(
     @property
     def model_type(self) -> type[ChannelTimer]:
         return ChannelTimer
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -50,7 +54,7 @@ class ChannelTimerRepository(
 
     def _map_record_to_model(self, record: ChannelTimerRecord) -> ChannelTimer:
         return ChannelTimer(
-            identifier=record.id,
+            identifier=record.id.value,
             user_id=record.user_id,
             server_id=record.server_id,
             channel_id=record.channel_id,
@@ -62,7 +66,7 @@ class ChannelTimerRepository(
 
     def _map_model_to_record(self, model: ChannelTimer) -> ChannelTimerRecord:
         return ChannelTimerRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             user_id=model.user_id,
             server_id=model.server_id,
             channel_id=model.channel_id,

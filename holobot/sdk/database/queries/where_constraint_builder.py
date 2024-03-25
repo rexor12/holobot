@@ -7,6 +7,7 @@ from .constraints import ColumnConstraintBuilder, IConstraintBuilder, LogicalCon
 from .enums import Connector, Equality, Order
 from .exists_builder import ExistsBuilder
 from .icompileable_query_part_builder import ICompileableQueryPartBuilder
+from .isupports_exists import ISupportsExists
 from .isupports_pagination import ISupportsPagination
 from .limit_builder import LimitBuilder
 from .order_by_builder import OrderByBuilder
@@ -16,7 +17,8 @@ from .where_builder import IWhereBuilder
 
 class WhereConstraintBuilder(
     ICompileableQueryPartBuilder[CompiledQuery],
-    ISupportsPagination
+    ISupportsPagination,
+    ISupportsExists
 ):
     def __init__(self, where_builder: IWhereBuilder) -> None:
         self.__where_builder: IWhereBuilder = where_builder

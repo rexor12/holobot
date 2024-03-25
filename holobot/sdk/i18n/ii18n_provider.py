@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterable
 from typing import Any, Protocol
 
 class II18nProvider(Protocol):
@@ -77,7 +77,7 @@ class II18nProvider(Protocol):
     def get_list_items(
         self,
         key: str,
-        item_arguments: Sequence[dict[str, Any]],
+        item_arguments: Iterable[dict[str, Any]],
         language: str | None = None
     ) -> tuple[str, ...]:
         """Gets a list of formatted strings associated to the specified key.
@@ -92,7 +92,7 @@ class II18nProvider(Protocol):
         :param key: The I18N key used to identify the resource.
         :type key: str
         :param item_arguments: A list of key-value pair collections to resolve text templates for each item, defaults to None
-        :type item_arguments: Sequence[dict[str, Any]]
+        :type item_arguments: Generator[dict[str, Any], None, None]
         :param language: An optional language for which to get the translation, defaults to None
         :type language: str | None, optional
         :return: The list of formatted strings or an empty list if there is no associated value.

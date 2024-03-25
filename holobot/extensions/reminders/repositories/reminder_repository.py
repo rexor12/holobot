@@ -3,6 +3,7 @@ from collections.abc import Awaitable
 from holobot.extensions.reminders.enums import ReminderLocation
 from holobot.extensions.reminders.models import Reminder
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -22,6 +23,10 @@ class ReminderRepository(
     @property
     def model_type(self) -> type[Reminder]:
         return Reminder
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -68,7 +73,7 @@ class ReminderRepository(
 
     def _map_record_to_model(self, record: ReminderRecord) -> Reminder:
         return Reminder(
-            identifier=record.id,
+            identifier=record.id.value,
             user_id=record.user_id,
             server_id=record.server_id,
             channel_id=record.channel_id,
@@ -86,7 +91,7 @@ class ReminderRepository(
 
     def _map_model_to_record(self, model: Reminder) -> ReminderRecord:
         return ReminderRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             user_id=model.user_id,
             server_id=model.server_id,
             channel_id=model.channel_id,

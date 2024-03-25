@@ -5,6 +5,7 @@ from typing import cast
 from holobot.extensions.general.enums import RankingType
 from holobot.extensions.general.models import Marriage, RankingInfo
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query
 from holobot.sdk.database.queries.constraints import (
     and_expression, column_expression, or_expression
@@ -30,6 +31,10 @@ class MarriageRepository(
     @property
     def model_type(self) -> type[Marriage]:
         return Marriage
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -156,7 +161,7 @@ class MarriageRepository(
 
     def _map_record_to_model(self, record: MarriageRecord) -> Marriage:
         return Marriage(
-            identifier=record.id,
+            identifier=record.id.value,
             server_id=record.server_id,
             user_id1=record.user_id1,
             user_id2=record.user_id2,
@@ -180,7 +185,7 @@ class MarriageRepository(
 
     def _map_model_to_record(self, model: Marriage) -> MarriageRecord:
         return MarriageRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             server_id=model.server_id,
             user_id1=model.user_id1,
             user_id2=model.user_id2,

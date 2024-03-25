@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 from holobot.sdk.utils import utcnow
 from ..enums import RuleState
 

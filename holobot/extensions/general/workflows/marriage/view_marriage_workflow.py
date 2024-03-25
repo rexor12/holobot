@@ -5,7 +5,7 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.managers import IMarriageManager
-from holobot.extensions.general.models import GeneralOptions
+from holobot.extensions.general.options import GeneralOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable

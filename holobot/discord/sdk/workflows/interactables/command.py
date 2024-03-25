@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+from holobot.discord.sdk.enums import Permission
 from .interactable import Interactable
 from .models import Option
 
@@ -24,6 +25,9 @@ class Command(Interactable):
 
     options: tuple[Option, ...] = field(default_factory=tuple)
     """The list of arguments the command takes."""
+
+    default_permissions: Permission = Permission.NONE
+    """The default permissions required for a user to be able to use this command."""
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self.group_name}, {self.subgroup_name}, {self.name})"

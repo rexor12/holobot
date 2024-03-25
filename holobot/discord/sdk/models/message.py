@@ -12,6 +12,7 @@ TComponent = TypeVar("TComponent", bound=ComponentStateBase)
 
 @dataclass(kw_only=True, frozen=True)
 class Message:
+    author_id: str
     server_id: str | None
     channel_id: str
     message_id: str

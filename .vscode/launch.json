@@ -6,14 +6,14 @@
     "configurations": [
         {
             "name": "Python: Attach using Process Id",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "processId": "${command:pickProcess}",
             "justMyCode": false
         },
         {
             "name": "Python: holobot",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "holobot",
             "console": "integratedTerminal",
@@ -21,7 +21,7 @@
         },
         {
             "name": "Python: Current file",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",

@@ -5,6 +5,7 @@ from .embed_field import EmbedField
 from .embed_footer import EmbedFooter
 from .emoji import Emoji
 from .interaction_context import InteractionContext
+from .interaction_info import InteractionInfo
 from .message import Message
 from .reaction import Reaction
 from .role import Role

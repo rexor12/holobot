@@ -2,7 +2,7 @@ from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
-from holobot.extensions.general.models import GeneralOptions
+from holobot.extensions.general.options import GeneralOptions
 from holobot.extensions.general.repositories import IFortuneCookieRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider

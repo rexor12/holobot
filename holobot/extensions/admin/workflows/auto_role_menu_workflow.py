@@ -895,7 +895,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
         return Button(
             id="armgr",
             owner_id=builder.owner_id,
-            emoji_id=self.__emoji_data_provider.extract_id(role_options.emoji_mention),
+            emoji=int(self.__emoji_data_provider.extract_id(role_options.emoji_mention)),
             style=ComponentStyle.SECONDARY,
             custom_data={
                 "e": "1" if builder.is_exclusive else "0",

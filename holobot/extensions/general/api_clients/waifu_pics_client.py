@@ -1,6 +1,6 @@
 from typing import Any
 
-from holobot.extensions.general.models import WaifuPicsOptions
+from holobot.extensions.general.options import WaifuPicsOptions
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory

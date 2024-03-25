@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from holobot.sdk.database.repositories import Record
+from holobot.sdk.database.entities import PrimaryKey, Record
 
 @dataclass
-class ChannelTimerRecord(Record[int]):
-    id: int
+class ChannelTimerRecord(Record):
+    id: PrimaryKey[int]
     user_id: str
     server_id: str
     channel_id: str

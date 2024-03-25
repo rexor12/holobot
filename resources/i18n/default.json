@@ -108,6 +108,12 @@
                 "too_many_timers_error": "Alas, it appears your server has an abundance of timers. A server may not have more than {max_timers} timer(s). (This is due to a Discord limitation regarding bot rate limits.)",
                 "timer_created_successfully": "I have just set up the timer you have requested. I shall start counting your apples within the next 5 minutes. Make sure I have all necessary permissions or I'm afraid I'll forget about this timer."
             },
+            "create_currency_workflow": {
+                "invalid_emoji_error": "Alas, I cannot seem to find the emoji you described or it is an animated emoji. Pray, choose a static emoji from the current server.",
+                "too_many_currencies_error": "Alas, it appears your server has already reached the maximum number of currencies I can manage. Pray, remove some if you would like to add new ones.",
+                "currency_created_successfully": "I have just introduced the new currency **{name}** <:{emoji_name}:{emoji_id}>.",
+                "view_currencies_button": "View all"
+            },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
@@ -120,6 +126,24 @@
                 "embed_title": "Fortune Cookie",
                 "embed_footer": "Cookie #{id}",
                 "cooldown_error": "Alas, it appears I have eaten all the cookies. I would kindly ask that you attempt to take one a bit later. ({seconds_left:,.0f} seconds)"
+            },
+            "get_daily_reward_workflow": {
+                "daily_reward_disabled": "Pray, forgive me, but the daily reward is disabled.",
+                "invalid_quest_id": "Pray, forgive me, but this feature is temporarily unavailable.",
+                "cooldown_error": "I've provided you with a bountiful harvest already. I'll be able to give you more in {cooldown}."
+            },
+            "gift_money_workflow": {
+                "cannot_gift_to_self_error": "Silly, why would you want me to give you your own gifts?",
+                "too_much_money_error": "You can't gift more than **{amount:,}** of any currency to a user at a time.",
+                "not_enough_money_error": "Pray, forgive me, but I must decline your transaction as you lack the required funds. Currently, you have **{amount:,}** <:{emoji_name}:{emoji_id}>.",
+                "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for.",
+                "currency_untradable_error": "Pray, forgive me, but this currency is so valuable that it cannot be traded between users.",
+                "successfully_gifted_money": "<@{target_user_id}>, <@{user_id}> has just gifted you **{amount:,}** <:{emoji_name}:{emoji_id}>."
+            },
+            "give_money_workflow": {
+                "too_much_money_error": "You can't give more than **{max_amount:,}** of any currency to a user at a time.",
+                "successfully_gave_money": "I've delivered the money successfully. <@{user_id}> now has **{amount:,}** <:{emoji_name}:{emoji_id}>.",
+                "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for."
             },
             "magic_eight_ball_workflow": {
                 "responses": [
@@ -204,6 +228,14 @@
                 "yes_option": "Yes",
                 "no_option": "No"
             },
+            "quests": {
+                "quest_complete": "Quest Completed: _{name}_",
+                "received_rewards": "I bestow upon you these rewards:",
+                "reward_experience_points": "⦁ Experience points: +{xp:,d} <:xp:1027174654487568425>",
+                "reward_skill_points": "⦁ Skill points: +{sp:,d} <:sp:1027174653107638312>",
+                "reward_currency": "⦁ +{amount:,d} <:{emoji_name}:{emoji_id}>",
+                "reward_item": "⦁ [{item_name}]x{count}"
+            },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
                 "invalid_action_error": "I'm sorry, but the action you specified isn't valid. Please, try again with a correct option. (｡•́︿•̀｡)",
@@ -268,6 +300,13 @@
                 "removed_successfully": "Rejoice, for I have hunted down each and every one of your channel timers.",
                 "no_timers_error": "Alas, you seem to have no channel timers."
             },
+            "remove_currency_workflow": {
+                "invalid_currency_error": "Pray, forgive me, but it seems this currency doesn't exist. It may have been removed already.",
+                "remove_confirmation": "Removing a currency means that **ALL** users will lose all amount of that currency.\nAre you sure you'd like to remove the currency **{currency_name}**?",
+                "currency_removed_successfully": "I have made sure this currency is not in circulation anymore.",
+                "no_changes_performed": "Rest assured I haven't changed anything; the currency remains active.",
+                "view_currencies_button": "View all"
+            },
             "roll_number_workflow": {
                 "unusual_roll_result": "I rolled an unusually shaped die for you and got {value}. („• ᴗ •„)",
                 "usual_roll_result": "I rolled a {name} for you and got {value}. („• ᴗ •„)",
@@ -289,6 +328,13 @@
                 "successful_summon": "I'll be back in a moment with <@{user_id}>...",
                 "cannot_summon_bot_error": "I'm sorry, but I'd rather not disturb a fellow bot. (｡•́︿•̀｡)"
             },
+            "take_money_workflow": {
+                "too_little_money_error": "You can't take less than 1 of any currency from someone.",
+                "user_has_no_money_error": "<@{user_id}> has none of this currency at all, there is nothing left to take.",
+                "successfully_removed_money": "I've snatched the money successfully. <@{user_id}> now has **{amount:,}** <:{emoji_name}:{emoji_id}>.",
+                "successfully_removed_money_from_all": "I've snatched the money from everyone successfully.",
+                "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for."
+            },
             "view_bot_info_workflow": {
                 "embed_title": "Holo's information",
                 "embed_footer": "Brought to you by rexor12",
@@ -296,6 +342,12 @@
                 "project_home": "Project home",
                 "report_bug": "Report a bug",
                 "request_feature": "Request a feature"
+            },
+            "view_currencies_workflow": {
+                "no_custom_currencies_error": "Alas, your server doesn't have any custom currencies.",
+                "currency_detail": "**[{index}]** <:{emoji_name}:{emoji_id}> **{name}**\n{description}",
+                "currencies_description": "These are the currencies available in this server.\n\n{currencies}",
+                "embed_title": "Currencies"
             },
             "view_emoji_workflow": {
                 "emoji_not_found_error": "I'm sorry, but I couldn't find the emoji you requested. Please, double check for any typos. (｡•́︿•̀｡)",
@@ -340,6 +392,12 @@
             "view_user_banner_workflow": {
                 "embed_title": "{user}'s banner",
                 "no_banner_error": "I'm sorry, but <@{user_id}> doesn't have a banner. (｡•́︿•̀｡)"
+            },
+            "view_wallet_workflow": {
+                "empty_wallet_error": "Alas, it seems a mischievous wolf has taken all your coins.",
+                "wallet_description": "These are the funds available to you right now.\n\n{currencies}",
+                "currency_description": "• **{amount:,}** <:{emoji_name}:{emoji_id}>",
+                "embed_title": "Your wallet"
             }
         },
 
@@ -534,6 +592,20 @@
                 "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
                 "missing_transaction_error":"Alas, you haven't given <@{user_id}> any gifts, yet.",
                 "message_updated_successfully": "I've removed your previously recorded message."
+            },
+            "get_easter_daily_workflow": {
+                "roll_messages": [
+                    "Though today's egg might seem less promising, worry not! With my bunny enthusiasm, I assure you the next daily egg holds new promise. Stay curious and hopeful, for delightful surprises await!\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "Wealth bounds forth! In my bunny charm, I unveil to you a golden egg, heralding a season rich with happiness.\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "Fortune hops into your hands! Playfully adorned in my bunny attire, I bring you a golden egg of promise. Reap a joyful harvest!\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "Treasure unfurls this Easter! As I embrace my inner bunny, I guide you to a wealth as plentiful as the spring's bloom.\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>.",
+                    "An egg-ceptional find this Easter! As I don playful bunny ears in celebration, my wisdom blesses you with a bounty as vibrant and joyful as the spring season itself.\nYour reward is {amount:,} <:{emoji_name}:{emoji_id}>."
+                ],
+                "invalid_quest_error": "Pray, forgive me, but I cannot find my notes about this quest.",
+                "quest_on_cooldown_error": "Alas, you've cracked open an egg already. Check back tomorrow for more.",
+                "quest_unavailable_error": "Pray, forgive me, this quest is currently not available.",
+                "quest_not_currently_available_error": "Alas, you've already received your rewards today. Even the Easter Wolf needs to rest, so come back tomorrow.",
+                "choose_roll_message": "Carefully choose one of the Easter Wolf's eggs to crack open."
             },
             "give_gifts_workflow": {
                 "invalid_gift_count_error": "Alas, you can only transfer between **{min:,}** <:bonbon:1196752635773079572> and **{max:,}** <:bonbon:1196752635773079572> at a time. This cart can only hold so much...",

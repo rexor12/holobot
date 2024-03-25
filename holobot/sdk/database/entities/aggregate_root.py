@@ -2,7 +2,9 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-TIdentifier = TypeVar("TIdentifier", int, str)
+from .identifier import Identifier
+
+TIdentifier = TypeVar("TIdentifier", bound=int | str | Identifier)
 
 @dataclass(kw_only=True)
 class AggregateRoot(ABC, Generic[TIdentifier]):

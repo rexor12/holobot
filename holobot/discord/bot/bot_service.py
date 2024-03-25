@@ -20,6 +20,7 @@ REQUIRED_INTENTS = (
     | hikari.Intents.ALL_GUILDS
     | hikari.Intents.ALL_MESSAGE_REACTIONS
     | hikari.Intents.ALL_MESSAGES
+    | hikari.Intents.MESSAGE_CONTENT
 )
 
 @injectable(BotServiceInterface)

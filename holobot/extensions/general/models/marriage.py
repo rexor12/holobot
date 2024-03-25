@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 
 @dataclass(kw_only=True)
 class Marriage(AggregateRoot[int]):

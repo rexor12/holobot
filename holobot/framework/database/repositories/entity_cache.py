@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from holobot.sdk.caching import IObjectCache, SlidingExpirationCacheEntryPolicy
-from holobot.sdk.database import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot
 from holobot.sdk.database.repositories.ientity_cache import IEntityCache, _TEntity, _TIdentifier
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.ioc.decorators import injectable

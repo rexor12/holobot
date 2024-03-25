@@ -4,9 +4,9 @@ from typing import Any, Protocol, TypeVar
 from asyncpg import Connection
 
 from holobot.sdk.concurrency import IAsyncDisposable
-from .aggregate_root import AggregateRoot
+from holobot.sdk.database.entities import AggregateRoot, Identifier
 
-TIdentifier = TypeVar("TIdentifier", int, str)
+TIdentifier = TypeVar("TIdentifier", bound=int | str | Identifier)
 
 class IUnitOfWork(IAsyncDisposable, Protocol):
     """Interface for a unit of work."""

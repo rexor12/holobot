@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from holobot.sdk.database.repositories import Record
+from holobot.sdk.database.entities import PrimaryKey, Record
 
 @dataclass
-class MarriageRecord(Record[int]):
-    id: int
+class MarriageRecord(Record):
+    id: PrimaryKey[int]
     server_id: str
     user_id1: str
     user_id2: str

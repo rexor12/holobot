@@ -131,6 +131,8 @@ class InteractionProcessorBase(
                 return value
             case (hikari.OptionType.USER, hikari.Snowflake()):
                 return int(value)
+            case (hikari.OptionType.USER, str()):
+                return int(value)
             case (hikari.OptionType.ROLE, int()):
                 return value
             case (hikari.OptionType.ROLE, hikari.Snowflake()):

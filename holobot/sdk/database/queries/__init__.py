@@ -8,6 +8,7 @@ from .icompileable_query_part_builder import ICompileableQueryPartBuilder
 from .icompiled_query import ICompiledQuery
 from .insert_builder import InsertBuilder
 from .iquery_part_builder import IQueryPartBuilder
+from .isupports_exists import ISupportsExists
 from .isupports_pagination import ISupportsPagination
 from .iwhere_builder import IWhereBuilder
 from .join_builder import JoinBuilder

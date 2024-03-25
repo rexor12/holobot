@@ -180,8 +180,8 @@
         "DiscordOptions": {
             "BotToken": "__HOLO_BOT_TOKEN__",
             "DevelopmentServerId": "__HOLO_DEVELOPMENT_SERVER_ID__",
-            "PaginatorPreviousEmoji": "1041667997951086652",
-            "PaginatorNextEmoji": "1041668000815796316",
+            "PaginatorPreviousEmoji": 1041667997951086652,
+            "PaginatorNextEmoji": 1041668000815796316,
             "IsNetworkTraceEnabled": "__HOLO_IS_DISCORD_NETWORK_TRACE_ENABLED__"
         },
         "EnvironmentOptions": {
@@ -203,6 +203,13 @@
     "General": {
         "AvatarOptions": {
             "ArtworkArtistName": "__HOLO_AVATAR_ARTWORK_ARTIST__"
+        },
+        "EconomicOptions": {
+            "CurrenciesEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/11qPSq6IU7nQZMd4VIXVm8tWQ-8nMXz0r",
+            "WalletEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1_4IwEzzqUFGYkLyFeAXPwWLyqmA1TliK",
+            "MaxCurrencyCountPerServer": 2,
+            "QuestsEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1JIjjvmy3XuTSsHVY_ZY_0PaqyVQooXfj",
+            "DailyCheckInQuestCode": "DAILY"
         },
         "GeneralOptions": {
             "ProgressBarRedEmoji": "<:barr2:1053832599807725638>",

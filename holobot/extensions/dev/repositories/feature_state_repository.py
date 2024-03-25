@@ -1,5 +1,6 @@
 from holobot.extensions.dev.models import FeatureState
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from .ifeature_sate_repository import IFeatureStateRepository
@@ -19,6 +20,10 @@ class FeatureStateRepository(
         return FeatureState
 
     @property
+    def identifier_type(self) -> type[str]:
+        return str
+
+    @property
     def table_name(self) -> str:
         return "feature_states"
 
@@ -31,12 +36,12 @@ class FeatureStateRepository(
 
     def _map_record_to_model(self, record: FeatureStateRecord) -> FeatureState:
         return FeatureState(
-            identifier=record.id,
+            identifier=record.id.value,
             is_enabled=record.is_enabled
         )
 
     def _map_model_to_record(self, model: FeatureState) -> FeatureStateRecord:
         return FeatureStateRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             is_enabled=model.is_enabled
         )

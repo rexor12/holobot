@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from holobot.sdk.database.repositories import Record
+from holobot.sdk.database.entities import PrimaryKey, Record
 
 @dataclass(kw_only=True)
-class WarnSettingsRecord(Record[int]):
-    id: int
+class WarnSettingsRecord(Record):
+    id: PrimaryKey[int]
     modified_at: datetime
     server_id: str
     decay_threshold: timedelta | None

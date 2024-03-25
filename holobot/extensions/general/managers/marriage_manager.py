@@ -3,7 +3,8 @@ from datetime import timedelta
 
 from holobot.extensions.general.enums import RankingType, ReactionType
 from holobot.extensions.general.exceptions import AlreadyMarriedError, NotMarriedError
-from holobot.extensions.general.models import GeneralOptions, Marriage, RankingInfo
+from holobot.extensions.general.models import Marriage, RankingInfo
+from holobot.extensions.general.options import GeneralOptions
 from holobot.extensions.general.repositories import IMarriageRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable

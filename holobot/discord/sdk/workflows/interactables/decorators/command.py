@@ -15,6 +15,7 @@ def command(
     options: tuple[Option, ...] = (),
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
+    default_permissions: Permission = Permission.NONE,
     defer_type: DeferType = DeferType.NONE,
     server_ids: set[str] | None = None,
     cooldown: Cooldown | None = None
@@ -36,6 +37,8 @@ def command(
     :type is_ephemeral: bool, optional
     :param required_permissions: Any required permissions in addition to the workflow's requirements, defaults to Permission.NONE
     :type required_permissions: Permission, optional
+    :param default_permissions: Default permissions required for users to be able to use the command, defaults to Permission.NONE
+    :type default_permissions: Permission, optional
     :param defer_type: The type of the deferral of the response, defaults to DeferType.NONE
     :type defer_type: DeferType, optional
     :param server_ids: The identifiers of the servers the command is available in, defaults to None
@@ -54,6 +57,7 @@ def command(
             options=options,
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,
+            default_permissions=default_permissions,
             defer_type=defer_type,
             server_ids=server_ids or set(),
             cooldown=cooldown

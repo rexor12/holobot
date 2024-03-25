@@ -3,6 +3,7 @@ from collections.abc import Awaitable
 from holobot.extensions.moderation.models import LogSettings
 from holobot.extensions.moderation.repositories.records import LogSettingsRecord
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
+from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries.enums import Equality
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -21,6 +22,10 @@ class LogSettingsRepository(
     @property
     def model_type(self) -> type[LogSettings]:
         return LogSettings
+
+    @property
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -49,7 +54,7 @@ class LogSettingsRepository(
 
     def _map_record_to_model(self, record: LogSettingsRecord) -> LogSettings:
         return LogSettings(
-            identifier=record.id,
+            identifier=record.id.value,
             modified_at=record.modified_at,
             server_id=record.server_id,
             channel_id=record.channel_id
@@ -57,7 +62,7 @@ class LogSettingsRepository(
 
     def _map_model_to_record(self, model: LogSettings) -> LogSettingsRecord:
         return LogSettingsRecord(
-            id=model.identifier,
+            id=PrimaryKey(model.identifier),
             modified_at=model.modified_at,
             server_id=model.server_id,
             channel_id=model.channel_id

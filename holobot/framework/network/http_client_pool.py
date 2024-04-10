@@ -53,6 +53,14 @@ class HttpClientPool(IHttpClientPool, IStartable):
         except HTTPError as error:
             self.__raise_on_error(error)
 
+    async def get_raw(self, url: str, query_parameters: dict[str, Any] | None = None) -> bytes:
+        try:
+            async with self.__session.get(url, params=query_parameters, timeout=DEFAULT_TIMEOUT) as response:
+                return await response.read()
+        except HTTPError as error:
+            self.__raise_on_error(error)
+            raise Exception # Won't be hit
+
     async def post(self, url: str, json: dict[str, Any]) -> Any:
         try:
             async with self.__session.post(url, json=json, timeout=DEFAULT_TIMEOUT) as response:

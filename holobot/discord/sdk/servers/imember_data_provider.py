@@ -12,6 +12,13 @@ class IMemberDataProvider(Protocol):
     ) -> Awaitable[MemberData]:
         ...
 
+    def try_get_basic_data_by_id(
+        self,
+        server_id: str,
+        user_id: str
+    ) -> Awaitable[MemberData | None]:
+        ...
+
     def get_basic_data_by_ids(
         self,
         server_id: str,

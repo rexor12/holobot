@@ -39,9 +39,11 @@ class UserDataProvider(IUserDataProvider):
     @staticmethod
     def __transform_user_dto(user: hikari.User) -> UserData:
         bot_user = get_bot().get_me()
+        avatar_url_small = user.make_avatar_url(size=128)
         return UserData(
             user_id=str(user.id),
             avatar_url=user.avatar_url and user.avatar_url.url,
+            avatar_url_small=avatar_url_small and avatar_url_small.url,
             banner_url=user.banner_url and user.banner_url.url,
             is_self=user == bot_user,
             is_bot=user.is_bot,

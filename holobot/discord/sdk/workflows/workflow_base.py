@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Any, Protocol
 
 from holobot.discord.sdk.actions import (
@@ -60,7 +61,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         embed: Embed | None = None,
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False,
-        is_ephemeral: bool | UndefinedType = UNDEFINED
+        is_ephemeral: bool | UndefinedType = UNDEFINED,
+        attachments: Sequence[bytes] | UndefinedType = UNDEFINED
     ) -> InteractionResponse:
         """Reply to the interaction with a normal message.
 
@@ -74,6 +76,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         :type suppress_user_mentions: bool, optional
         :param is_ephemeral: Whether the response is ephemeral. This parameter overrides the associated interactable's preference if and only if the response is not deferred.
         :type is_ephemeral: bool | UndefinedType, optional
+        :param attachments: Files to be attached to the message.
+        :type attachments: Sequence[bytes] | UndefinedType, optional
         :return: The interaction response.
         :rtype: InteractionResponse
         """
@@ -84,7 +88,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
                 embed=embed,
                 components=components or [],
                 suppress_user_mentions=suppress_user_mentions,
-                is_ephemeral=is_ephemeral
+                is_ephemeral=is_ephemeral,
+                attachments=attachments
             )
         )
 
@@ -94,7 +99,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         content: UndefinedOrNoneOr[str] = UNDEFINED,
         embed: UndefinedOrNoneOr[Embed] = UNDEFINED,
         components: ComponentBase | list[LayoutBase] | None = None,
-        suppress_user_mentions: bool = False
+        suppress_user_mentions: bool = False,
+        attachments: Sequence[bytes] | UndefinedType = UNDEFINED
     ) -> InteractionResponse:
         """Edit an already existing message.
 
@@ -108,6 +114,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         :type components: ComponentBase | list[LayoutBase] | None, optional
         :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False
         :type suppress_user_mentions: bool, optional
+        :param attachments: Files to be attached to the message.
+        :type attachments: Sequence[bytes] | UndefinedType, optional
         :return: The interaction response.
         :rtype: InteractionResponse
         """
@@ -117,7 +125,8 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
                 content=content,
                 embed=embed,
                 components=components or [],
-                suppress_user_mentions=suppress_user_mentions
+                suppress_user_mentions=suppress_user_mentions,
+                attachments=attachments
             )
         )
 

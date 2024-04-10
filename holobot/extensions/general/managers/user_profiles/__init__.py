@@ -1,0 +1,2 @@
+from .iuser_profile_manager import IUserProfileManager
+from .user_profile_manager import UserProfileManager

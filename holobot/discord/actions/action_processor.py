@@ -88,7 +88,8 @@ class ActionProcessor(IActionProcessor):
                         if should_be_ephemeral
                         else hikari.MessageFlag.NONE
                     ),
-                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED
+                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED,
+                    attachments=ActionProcessor.__convert_to_dto(action.attachments, lambda i: i)
                 )
                 return
 
@@ -97,7 +98,8 @@ class ActionProcessor(IActionProcessor):
                     content=ActionProcessor.__convert_to_dto(action.content, lambda i: str(i)),
                     embed=ActionProcessor.__convert_to_dto(action.embed, embed_to_dto),
                     components=components,
-                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED
+                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED,
+                    attachments=ActionProcessor.__convert_to_dto(action.attachments, lambda i: i)
                 )
                 return
 
@@ -122,7 +124,8 @@ class ActionProcessor(IActionProcessor):
                     embed=ActionProcessor.__convert_to_dto(action.embed, embed_to_dto),
                     components=components,
                     flags=hikari.MessageFlag.EPHEMERAL if is_ephemeral else hikari.MessageFlag.NONE,
-                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED
+                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED,
+                    attachments=ActionProcessor.__convert_to_dto(action.attachments, lambda i: i)
                 )
                 return
 
@@ -131,7 +134,8 @@ class ActionProcessor(IActionProcessor):
                     content=ActionProcessor.__convert_to_dto(action.content, lambda i: str(i)),
                     embed=ActionProcessor.__convert_to_dto(action.embed, embed_to_dto),
                     components=components,
-                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED
+                    user_mentions=not action.suppress_user_mentions or hikari.UNDEFINED,
+                    attachments=ActionProcessor.__convert_to_dto(action.attachments, lambda i: i)
                 )
                 return
 

@@ -89,7 +89,7 @@ class GetBasicWeatherWorkflow(WorkflowBase):
     def __create_embed(self, weather: Weather) -> Embed:
         if weather.wind and weather.wind.degrees is not None:
             wind_direction_key = _WIND_DIRECTIONS_BY_EIGHTH[
-                int(weather.wind.degrees * len(_WIND_DIRECTIONS_BY_EIGHTH) / 360)
+                int(weather.wind.degrees * len(_WIND_DIRECTIONS_BY_EIGHTH) / 360) % len(_WIND_DIRECTIONS_BY_EIGHTH)
             ]
             wind_direction = self.__i18n_provider.get(
                 f"extensions.weather.get_basic_weather_workflow.wind_directions.{wind_direction_key}"

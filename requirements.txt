@@ -3,6 +3,7 @@ asyncpg==0.29.0                     # Used for working with PostgreSQL databases
 dateparser==1.2.0                   # Used for date-time natural language processing.
 hikari==2.0.0.dev122                # Discord bot framework.
 kanata==4.0.0.0                     # Dependency injection framework.
+pillow==10.3.0                      # Image manipulation.
 python-dateutil==2.8.2              # Utilities for date and time.
 structlog==24.1.0                   # Used for structured logging.
 tzlocal==5.2                        # Used for determining the current system timezone.

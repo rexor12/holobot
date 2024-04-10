@@ -145,6 +145,12 @@
                 "successfully_gave_money": "I've delivered the money successfully. <@{user_id}> now has **{amount:,}** <:{emoji_name}:{emoji_id}>.",
                 "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for."
             },
+            "give_reputation_point_workflow": {
+                "cannot_choose_self_error": "Alas, I'm afraid you cannot increase your own reputation. Interact with other people to earn their praises.",
+                "not_a_member_error": "Alas, it seems you're trying to give a reputation point to someone who isn't a member of this server.",
+                "cooldown_error": "Alas, it seems you have already given a reputation point to <@{last_user_id}> today. Try again at <t:{reset_at}:t>.",
+                "reputation_given_successfully": "<@{target_user_id}>, you've just received a reputation point."
+            },
             "magic_eight_ball_workflow": {
                 "responses": [
                     "Yes.",
@@ -321,6 +327,10 @@
                 "die_50": "icosikaipentagonal trapezohedron",
                 "die_120": "disdyakis triacontahedron"
             },
+            "show_user_profile_workflow": {
+                "not_a_member_error": "Alas, it seems you're trying to view the profile of someone who isn't a member of this server.",
+                "profile_not_found_error": "Alas, it seems you're trying to view the profile of someone who hasn't interacted with me yet. Check back later."
+            },
             "summon_user_workflow": {
                 "self_summon": "And thus, be summoned, <@{user_id}>! („• ᴗ •„)",
                 "dm_summon_with_message": "{user_name} requests your presence at <#{channel_id}>:\n> {message}",
@@ -335,6 +345,33 @@
                 "successfully_removed_money_from_all": "I've snatched the money from everyone successfully.",
                 "invalid_currency_error": "I'm afraid we don't have any of the currency you're looking for."
             },
+            "user_profile_titles": [
+                "Background Character",
+                "Silent Spectator",
+                "Aspiring Cub",
+
+                "Wallflower Warrior",
+                "Stalker",
+                "Hunter",
+
+                "Coordinated Carnivore",
+                "Predator",
+                "Apex Predator",
+
+                "Leader of the Pack",
+                "Sovereign Beastlord",
+                "Feral Overlord",
+
+                "Overpowered Anthropomorph",
+                "Ascended Entity",
+                "Transcendent Avatar",
+
+                "Emperor of the Void",
+                "Lupine Void Monarch",
+                "Divine Sovereign",
+
+                "God Walking Amongst Mere Mortals"
+            ],
             "view_bot_info_workflow": {
                 "embed_title": "Holo's information",
                 "embed_footer": "Brought to you by rexor12",

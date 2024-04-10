@@ -9,6 +9,7 @@ class MemberData:
     nick_name: str | None
     is_self: bool
     is_bot: bool
+    color: int | None
 
     @property
     def display_name(self) -> str:

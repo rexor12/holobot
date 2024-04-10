@@ -4,12 +4,13 @@ import hikari
 
 from holobot.discord.bot import get_bot
 from holobot.discord.sdk.enums import Permission
-from holobot.discord.sdk.exceptions import UserNotFoundError
+from holobot.discord.sdk.exceptions import ServerNotFoundError, UserNotFoundError
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.servers.models import MemberData
 from holobot.discord.utils.permission_utils import PERMISSION_TO_MODELS
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils import assert_not_none
+from holobot.sdk.utils.iterable_utils import first_or_default
 
 @injectable(IMemberDataProvider)
 class MemberDataProvider(IMemberDataProvider):
@@ -23,6 +24,17 @@ class MemberDataProvider(IMemberDataProvider):
 
         user = await get_bot().get_guild_member(int(server_id), int(user_id))
         return MemberDataProvider.__member_to_basic_data(user)
+
+    async def try_get_basic_data_by_id(
+        self,
+        server_id: str,
+        user_id: str
+    ) -> MemberData | None:
+        try:
+            user = await get_bot().get_guild_member(int(server_id), int(user_id))
+            return MemberDataProvider.__member_to_basic_data(user)
+        except (UserNotFoundError, ServerNotFoundError):
+            return None
 
     async def get_basic_data_by_ids(
         self,
@@ -111,6 +123,11 @@ class MemberDataProvider(IMemberDataProvider):
     @staticmethod
     def __member_to_basic_data(user: hikari.Member) -> MemberData:
         bot_user = get_bot().get_me()
+        color_role = first_or_default(
+            sorted(user.get_roles(), key=lambda i: i.position, reverse=True),
+            lambda i: bool(i.color)
+        )
+
         return MemberData(
             user_id=str(user.id),
             avatar_url=user.avatar_url and user.avatar_url.url,
@@ -118,7 +135,8 @@ class MemberDataProvider(IMemberDataProvider):
             name=user.username,
             nick_name=user.nickname,
             is_self=bot_user == user,
-            is_bot=user.is_bot
+            is_bot=user.is_bot,
+            color=int(color_role.color) if color_role else None
         )
 
     @staticmethod

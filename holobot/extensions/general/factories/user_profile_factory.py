@@ -71,8 +71,8 @@ class UserProfileFactory(IUserProfileFactory):
             card_border=self.__load_image(environment, "card_border.png"),
             reputation_icon=self.__load_image(environment, "reputation_icon.png"),
             default_avatar=self.__load_image(environment, "default_avatar.png"),
-            font_medium=self.__load_font(environment, "AGPMod.ttf", 20),
-            font_large=self.__load_font(environment, "AGPMod.ttf", 30)
+            font_medium=self.__load_font(environment, "AGPmod.ttf", 20),
+            font_large=self.__load_font(environment, "AGPmod.ttf", 30)
         )
 
     def create_profile_image(

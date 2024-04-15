@@ -1,6 +1,5 @@
 from datetime import datetime, time, timedelta, timezone
 
-from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -14,7 +13,6 @@ from holobot.extensions.general.repositories.user_profiles import IReputationCoo
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.datetime_utils import utcnow
 
 _MIDNIGHT = time(hour=0, minute=0, tzinfo=timezone.utc)
@@ -24,7 +22,6 @@ class GiveReputationPointWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
-        logger_factory: ILoggerFactory,
         member_data_provider: IMemberDataProvider,
         reputation_cooldown_repository: IReputationCooldownRepository,
         unit_of_work_provider: IUnitOfWorkProvider,
@@ -44,8 +41,7 @@ class GiveReputationPointWorkflow(WorkflowBase):
         cooldown=Cooldown(duration=5),
         options=(
             Option("user", "The user you'd like to give a reputation point to.", OptionType.USER),
-        ),
-        defer_type=DeferType.DEFER_MESSAGE_CREATION
+        )
     )
     async def give_reputation_point(
         self,
@@ -94,15 +90,31 @@ class GiveReputationPointWorkflow(WorkflowBase):
                 )
                 await self.__reputation_cooldown_repository.add(cooldown)
 
-            await self.__user_profile_manager.add_reputation_point(target_user_id)
+            change_info = await self.__user_profile_manager.add_reputation_point(target_user_id)
             unit_of_work.complete()
+
+        last_custom_background = change_info.last_custom_background
+        if (
+            not last_custom_background
+            or last_custom_background.required_reputation < change_info.reputation_points
+        ):
+            return self._reply(
+                content=self.__i18n.get(
+                    "extensions.general.give_reputation_point_workflow.reputation_given_successfully",
+                    {
+                        "target_user_id": target_user_id
+                    }
+                )
+            )
 
         return self._reply(
             content=self.__i18n.get(
-                "extensions.general.give_reputation_point_workflow.reputation_given_successfully",
+                "extensions.general.give_reputation_point_workflow.reputation_given_successfully_with_unlock",
                 {
-                    "source_user_id": source_user_id,
-                    "target_user_id": target_user_id
+                    "target_user_id": target_user_id,
+                    "custom_background_name": self.__i18n.get(
+                        f"extensions.general.custom_background_names.{last_custom_background.code}"
+                    )
                 }
             )
         )

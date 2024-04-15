@@ -8,3 +8,4 @@ from holobot.sdk.database.repositories import manually_generated_key
 class UserProfileRecord(Record):
     id: PrimaryKey[str]
     reputation_points: int
+    background_image_code: str | None

@@ -33,6 +33,8 @@ def to_dto(model: Embed) -> HikariEmbed:
 
     if model.thumbnail_url:
         dto.set_thumbnail(model.thumbnail_url)
+    elif model.image_attachment:
+        dto.set_image(model.image_attachment)
     elif model.image_url:
         dto.set_image(model.image_url)
 

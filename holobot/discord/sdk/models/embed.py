@@ -10,5 +10,6 @@ class Embed:
     color: int | None = 0xEB7D00
     thumbnail_url: str | None = None
     image_url: str | None = None
+    image_attachment: bytes | None = None
     fields: list[EmbedField] = field(default_factory=list)
     footer: EmbedFooter | None = None

@@ -330,6 +330,115 @@
             "MarriageEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1WxjyhkUSFMsupnrO36Lp_jQKgF9PVvIg",
             "FortuneCookieEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1a3refqlc9_K8O0VoGipnsS8FpI_Y89c5"
         },
+        "UserProfileOptions": {
+            "ReputationTable": [
+                {
+                    "RequiredReputation": 0,
+                    "Color": "#9d9d9d"
+                },
+                {
+                    "RequiredReputation": 50,
+                    "Color": "#9d9d9d"
+                },
+                {
+                    "RequiredReputation": 100,
+                    "Color": "#9d9d9d"
+                },
+
+                {
+                    "RequiredReputation": 200,
+                    "Color": "#ffffff"
+                },
+                {
+                    "RequiredReputation": 350,
+                    "Color": "#ffffff"
+                },
+                {
+                    "RequiredReputation": 500,
+                    "Color": "#ffffff"
+                },
+
+                {
+                    "RequiredReputation": 750,
+                    "Color": "#1eff00"
+                },
+                {
+                    "RequiredReputation": 1000,
+                    "Color": "#1eff00"
+                },
+                {
+                    "RequiredReputation": 1500,
+                    "Color": "#1eff00"
+                },
+
+                {
+                    "RequiredReputation": 2000,
+                    "Color": "#0070dd"
+                },
+                {
+                    "RequiredReputation": 4000,
+                    "Color": "#0070dd"
+                },
+                {
+                    "RequiredReputation": 6000,
+                    "Color": "#0070dd"
+                },
+
+                {
+                    "RequiredReputation": 8000,
+                    "Color": "#a335ee"
+                },
+                {
+                    "RequiredReputation": 10000,
+                    "Color": "#a335ee"
+                },
+                {
+                    "RequiredReputation": 15000,
+                    "Color": "#a335ee"
+                },
+
+                {
+                    "RequiredReputation": 30000,
+                    "Color": "#ff8000"
+                },
+                {
+                    "RequiredReputation": 50000,
+                    "Color": "#ff8000"
+                },
+                {
+                    "RequiredReputation": 75000,
+                    "Color": "#ff8000"
+                },
+
+                {
+                    "RequiredReputation": 100000,
+                    "Color": "#e6cc80"
+                }
+            ],
+            "CustomBackgroundsPath": "resources/images/user_profiles/custom_backgrounds",
+            "CustomBackgrounds": [
+                {
+                    "Code": "1",
+                    "RequiredReputation": 25,
+                    "FileName": "1.png"
+                },
+                {
+                    "Code": "2",
+                    "RequiredReputation": 100,
+                    "FileName": "2.png"
+                },
+                {
+                    "Code": "3",
+                    "RequiredReputation": 200,
+                    "FileName": "3.png"
+                },
+                {
+                    "Code": "4",
+                    "RequiredReputation": 750,
+                    "FileName": "4.png"
+                }
+            ]
+        },
         "WaifuPicsOptions": {
             "CircuitBreakerFailureThreshold": 1,
             "CircuitBreakerRecoveryTime": 300,

@@ -37,11 +37,13 @@ class UserProfileRepository(
     def _map_record_to_model(self, record: UserProfileRecord) -> UserProfile:
         return UserProfile(
             identifier=record.id.value,
-            reputation_points=record.reputation_points
+            reputation_points=record.reputation_points,
+            background_image_code=record.background_image_code
         )
 
     def _map_model_to_record(self, model: UserProfile) -> UserProfileRecord:
         return UserProfileRecord(
             id=PrimaryKey(model.identifier),
-            reputation_points=model.reputation_points
+            reputation_points=model.reputation_points,
+            background_image_code=model.background_image_code
         )

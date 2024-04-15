@@ -100,7 +100,7 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         embed: UndefinedOrNoneOr[Embed] = UNDEFINED,
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False,
-        attachments: Sequence[bytes] | UndefinedType = UNDEFINED
+        attachments: Sequence[bytes] | None | UndefinedType = UNDEFINED
     ) -> InteractionResponse:
         """Edit an already existing message.
 
@@ -115,7 +115,7 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
         :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False
         :type suppress_user_mentions: bool, optional
         :param attachments: Files to be attached to the message.
-        :type attachments: Sequence[bytes] | UndefinedType, optional
+        :type attachments: Sequence[bytes] | None | UndefinedType, optional
         :return: The interaction response.
         :rtype: InteractionResponse
         """

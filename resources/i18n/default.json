@@ -29,6 +29,10 @@
             "view_all": "View all",
             "yes": "Yes",
             "no": "No"
+        },
+        "labels": {
+            "yes": "Yes",
+            "no": "No"
         }
     },
 
@@ -114,6 +118,12 @@
                 "currency_created_successfully": "I have just introduced the new currency **{name}** <:{emoji_name}:{emoji_id}>.",
                 "view_currencies_button": "View all"
             },
+            "custom_background_names": {
+                "1": "Town of Beginnings",
+                "2": "Midnight Street",
+                "3": "Rising Shadow",
+                "4": "Feral Battle"
+            },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
@@ -149,7 +159,8 @@
                 "cannot_choose_self_error": "Alas, I'm afraid you cannot increase your own reputation. Interact with other people to earn their praises.",
                 "not_a_member_error": "Alas, it seems you're trying to give a reputation point to someone who isn't a member of this server.",
                 "cooldown_error": "Alas, it seems you have already given a reputation point to <@{last_user_id}> today. Try again at <t:{reset_at}:t>.",
-                "reputation_given_successfully": "<@{target_user_id}>, you've just received a reputation point."
+                "reputation_given_successfully": "<@{target_user_id}>, you've just received **+1** <:reputation:1228232389264674879>.",
+                "reputation_given_successfully_with_unlock": "<@{target_user_id}>, you've just received **+1** <:reputation:1228232389264674879>.\nYou have unlocked the custom background **{custom_background_name}**."
             },
             "magic_eight_ball_workflow": {
                 "responses": [
@@ -329,7 +340,7 @@
             },
             "show_user_profile_workflow": {
                 "not_a_member_error": "Alas, it seems you're trying to view the profile of someone who isn't a member of this server.",
-                "profile_not_found_error": "Alas, it seems you're trying to view the profile of someone who hasn't interacted with me yet. Check back later."
+                "profile_not_found_error": "Alas, it seems you're trying to view the profile of someone who hasn't received any reputation points <:reputation:1228232389264674879>, yet."
             },
             "summon_user_workflow": {
                 "self_summon": "And thus, be summoned, <@{user_id}>! („• ᴗ •„)",
@@ -417,6 +428,15 @@
                 "age_top2_descriptor": "💙 **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>",
                 "age_top3_descriptor": "❤️ **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>",
                 "age_other_descriptor": "{rank}. **{user_name1}** x **{user_name2}** • Married <t:{married_at}:R>"
+            },
+            "view_profile_backgrounds_workflow": {
+                "no_available_backgrounds_error": "Pray, forgive me, there are no available backgrounds at this time. Please, check back later.",
+                "profile_not_found_error": "Alas, it seems you haven't received any reputation points <:reputation:1228232389264674879>, yet. Get at least one reputation point <:reputation:1228232389264674879> and try again.",
+                "embed_title": "Background preview",
+                "embed_description": "**Name:** {name}\n**Required reputation:** {required_reputation}<:reputation:1228232389264674879>\n**Unlocked:** {is_unlocked}",
+                "apply_background_button": "Set as background",
+                "background_locked_error": "Alas, it seems you don't have enough reputation points <:reputation:1228232389264674879> to use this background, yet. You still need another **{required_points:,}** <:reputation:1228232389264674879>.",
+                "updated_successfully": "I've updated your preferences; **{background_name}** is now your new profile background."
             },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",

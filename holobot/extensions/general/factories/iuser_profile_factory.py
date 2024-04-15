@@ -9,6 +9,7 @@ class IUserProfileFactory(Protocol):
         self,
         user_name: str,
         user_profile: UserProfile,
-        avatar: bytes | None
+        avatar: bytes | None,
+        custom_background_code: str | None = None
     ) -> bytes:
         ...

@@ -25,6 +25,7 @@ class ShowWalletWorkflow(WorkflowBase):
 
     @command(
         group_name="mudada",
+        subgroup_name="valentine",
         name="wallet",
         description="Displays your wallet's contents.",
         defer_type=DeferType.DEFER_MESSAGE_CREATION,

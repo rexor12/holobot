@@ -40,6 +40,7 @@ class GiveGiftsWorkflow(WorkflowBase):
     @requires_event(VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
+        subgroup_name="valentine",
         name="give",
         description="Gives the specified number of gifts to a user of your choice.",
         options=(

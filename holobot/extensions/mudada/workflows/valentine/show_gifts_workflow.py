@@ -37,6 +37,7 @@ class ShowGiftsWorkflow(WorkflowBase):
     @requires_event(VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
+        subgroup_name="valentine",
         name="gifts",
         description="Displays the list of gifts you have prepared so far.",
         server_ids={MUDADA_SERVER_ID},

@@ -666,6 +666,11 @@
                 "quest_not_currently_available_error": "Alas, you've already received your rewards today. Even the Easter Wolf needs to rest, so come back tomorrow.",
                 "choose_roll_message": "Carefully choose one of the Easter Wolf's eggs to crack open."
             },
+            "get_summer_daily_workflow": {
+                "invalid_quest_id": "Pray, forgive me, but this feature is temporarily unavailable.",
+                "cooldown_error": "I've provided you with a bountiful harvest already. Try again at <t:{reset_at}:t>.",
+                "quest_complete": "Rejoice, for you've earned yourself **{amount:,}** <:{emoji_name}:{emoji_id}>. Make sure to check back tomorrow, too!"
+            },
             "give_gifts_workflow": {
                 "invalid_gift_count_error": "Alas, you can only transfer between **{min:,}** <:bonbon:1196752635773079572> and **{max:,}** <:bonbon:1196752635773079572> at a time. This cart can only hold so much...",
                 "message_too_long_error": "Pray, forgive me, but I'd like to ask you to reformat your message so that it isn't longer than {max_length:,} characters.",

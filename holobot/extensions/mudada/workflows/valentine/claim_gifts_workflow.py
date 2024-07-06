@@ -37,6 +37,7 @@ class ClaimGiftsWorkflow(WorkflowBase):
 
     @command(
         group_name="mudada",
+        subgroup_name="valentine",
         name="claimgifts",
         description="View and claim your available gifts.",
         server_ids={MUDADA_SERVER_ID},

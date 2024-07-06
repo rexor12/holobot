@@ -31,6 +31,7 @@ class ResetGiftsWorkflow(WorkflowBase):
     @requires_event(VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
+        subgroup_name="valentine",
         name="reset",
         description="Resets ALL of your prepared gifts, returning the gifts to you.",
         server_ids={MUDADA_SERVER_ID},

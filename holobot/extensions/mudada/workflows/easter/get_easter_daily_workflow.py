@@ -44,6 +44,7 @@ class GetEasterDailyWorkflow(WorkflowBase):
     @requires_event(EASTER_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
+        subgroup_name="easter",
         name="daily",
         description="Get your daily Easter Egg.",
         server_ids=set((MUDADA_SERVER_ID,))
@@ -103,7 +104,6 @@ class GetEasterDailyWorkflow(WorkflowBase):
                 rewards = await self.__quest_manager.complete_quest(context.server_id, context.author_id, quest_proto_id)
                 currency = first(of_type(rewards.granted_items, CurrencyQuestReward))
                 reward_tier = get_generic(currency.extension_data, int, "tier") or 0
-                print(reward_tier)
 
                 unit_of_work.complete()
 

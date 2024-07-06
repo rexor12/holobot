@@ -157,7 +157,7 @@ class UserProfileFactory(IUserProfileFactory):
 
         if reputation_points < 100_000:
             reputation_bar_scale = min(1, (reputation_points - rank_info.last_required) / (rank_info.next_required - rank_info.last_required))
-            reputation_bar_width = int(240 * reputation_bar_scale)
+            reputation_bar_width = int(307 * reputation_bar_scale)
             profile_image.paste(self.__assets.progress_bar_background, (220, 85))
             if reputation_bar_width > 0:
                 drawing_context.rectangle(((220, 85), (220 + reputation_bar_width, 99)), fill=rank_info.color)

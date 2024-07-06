@@ -52,7 +52,7 @@ class ReputationDataProvider(IReputationDataProvider):
             last_required=(
                 0
                 if current_rank <= 0
-                else self.__rank_infos[current_rank - 1][0]
+                else self.__rank_infos[current_rank][0]
             ),
             color=(
                 self.__rank_infos[len(self.__rank_infos) - 1][1]

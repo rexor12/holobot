@@ -14,3 +14,7 @@ class MemberData:
     @property
     def display_name(self) -> str:
         return self.nick_name or self.name
+
+    @property
+    def dominant_avatar_url(self) -> str | None:
+        return self.server_specific_avatar_url or self.avatar_url

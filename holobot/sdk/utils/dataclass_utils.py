@@ -90,7 +90,7 @@ def __get_parameter_info(
                 default_value,
                 default_factory
             )
-        case builtins.tuple | builtins.list:  # Needs dot notation: https://peps.python.org/pep-0634/#value-patterns
+        case builtins.tuple | builtins.list | builtins.set:  # Needs dot notation: https://peps.python.org/pep-0634/#value-patterns
             args = typing.get_args(parameter_type)
             if origin is tuple and (len(args) != 2 or args[1] is not Ellipsis):
                 raise ValueError(f"Expected a tuple with two arguments, the second being Ellipsis, but got {args!r} instead.")

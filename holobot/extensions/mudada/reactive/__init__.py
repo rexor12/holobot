@@ -1,1 +1,1 @@
-# from .handle_kakera_shop_exchange import HandleKakeraShopExchange
+from .handle_kakera_exchange import HandleKakeraExchange

@@ -2,7 +2,7 @@ from collections.abc import Awaitable, Iterable, Sequence
 from datetime import timedelta
 
 from holobot.extensions.general.enums import QuestResetType
-from holobot.extensions.general.models import Quest, QuestProto, Wallet, WalletId
+from holobot.extensions.general.models import Quest, QuestProto, Wallet
 from holobot.extensions.general.repositories import (
     ICurrencyRepository, IQuestProtoRepository, IQuestRepository, IWalletRepository
 )
@@ -17,6 +17,7 @@ from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import (
     CurrencyQuestReward, IQuest, QuestId, QuestProtoId, QuestRewardBase
 )
+from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc, utcnow

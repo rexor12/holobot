@@ -1,7 +1,8 @@
 from collections.abc import Awaitable
 from typing import Protocol
 
-from holobot.extensions.general.models import Wallet, WalletId, WalletWithDetailsDto
+from holobot.extensions.general.models import Wallet, WalletWithDetailsDto
+from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 

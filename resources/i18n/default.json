@@ -28,7 +28,9 @@
             "remove": "Remove",
             "view_all": "View all",
             "yes": "Yes",
-            "no": "No"
+            "no": "No",
+            "accept": "Accept",
+            "decline": "Decline"
         },
         "labels": {
             "yes": "Yes",
@@ -678,11 +680,19 @@
                 "nothing_to_return_error": "You haven't given anyone any gifts, yet.",
                 "successful_reset": "I've retrieved all **{returned_amount:,}** <:bonbon:1196752635773079572>. You now have **{total_amount:,}** <:bonbon:1196752635773079572> left."
             },
+            "set_exchange_quota_workflow": {
+                "exchange_quota_set": "<@{user_id}> can now exchange an additional **{remaining_amount}** <:kakera:1258854943893360640>."
+            },
             "set_gift_message_workflow": {
                 "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
                 "message_too_long_error": "Pray, forgive me, but I'd like to ask you to reformat your message so that it isn't longer than {max_length:,} characters.",
                 "missing_transaction_error":"Alas, you haven't given <@{user_id}> any gifts, yet.",
                 "message_updated_successfully": "I've taken note of your message."
+            },
+            "show_exchange_quota_workflow": {
+                "embed_title": "{name}'s exchange quota",
+                "embed_description": "Remaining amount: {remaining_amount:,} <:kakera:1258854943893360640>\nExchanged amount: {exchanged_amount:,} <:kakera:1258854943893360640>\nLost amount: {lost_amount:,} <:kakera:1258854943893360640>\n\nPlease, make sure you don't give me more <:kakera:1258854943893360640> Kakera than the amount shown as remaining here; otherwise, you will likely lose it.",
+                "non_participant_footer": "The user hasn't participated in the event, yet."
             },
             "show_reservations_workflow": {
                 "no_reservations_error": "Alas, you seem not to have given any gifts, yet.",

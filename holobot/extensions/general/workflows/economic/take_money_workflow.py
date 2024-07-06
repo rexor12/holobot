@@ -8,8 +8,8 @@ from holobot.discord.sdk.workflows.interactables.models import (
     AutocompleteOption, InteractionResponse, Option
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import WalletId
 from holobot.extensions.general.repositories import ICurrencyRepository, IWalletRepository
+from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.extensions.general.workflows.economic.utils import get_currency_autocomplete_choices
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider

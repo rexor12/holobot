@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .wallet_id import WalletId
+from holobot.extensions.general.sdk.wallets.models import WalletId
 
 @dataclass(kw_only=True)
 class WalletWithDetailsDto:

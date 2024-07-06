@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
+from holobot.extensions.general.sdk.wallets.models import IWallet, WalletId
 from holobot.sdk.database.entities import AggregateRoot
-from .wallet_id import WalletId
 
 @dataclass(kw_only=True)
-class Wallet(AggregateRoot[WalletId]):
+class Wallet(AggregateRoot[WalletId], IWallet):
     """Represents a user's wallet."""
 
     amount: int

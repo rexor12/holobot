@@ -1,6 +1,7 @@
 from collections.abc import Awaitable
 
-from holobot.extensions.general.models import Wallet, WalletId, WalletWithDetailsDto
+from holobot.extensions.general.models import Wallet, WalletWithDetailsDto
+from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import WhereBuilder, WhereConstraintBuilder

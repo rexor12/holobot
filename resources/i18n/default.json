@@ -686,7 +686,7 @@
                 "successful_reset": "I've retrieved all **{returned_amount:,}** <:bonbon:1196752635773079572>. You now have **{total_amount:,}** <:bonbon:1196752635773079572> left."
             },
             "set_exchange_quota_workflow": {
-                "exchange_quota_set": "<@{user_id}> can now exchange an additional **{remaining_amount}** <:kakera:1258854943893360640>."
+                "exchange_quota_set": "<@{user_id}> can now exchange an additional **{remaining_amount:,}** <:kakera:1258854943893360640>."
             },
             "set_gift_message_workflow": {
                 "self_transfer_error": "Silly, why would you want me to give you your own gifts?",
@@ -696,7 +696,7 @@
             },
             "show_exchange_quota_workflow": {
                 "embed_title": "{name}'s exchange quota",
-                "embed_description": "Remaining amount: {remaining_amount:,} <:kakera:1258854943893360640>\nExchanged amount: {exchanged_amount:,} <:kakera:1258854943893360640>\nLost amount: {lost_amount:,} <:kakera:1258854943893360640>\n\nPlease, make sure you don't give me more <:kakera:1258854943893360640> Kakera than the amount shown as remaining here; otherwise, you will likely lose it.",
+                "embed_description": "Remaining: {remaining_amount:,} <:kakera:1258854943893360640>\nExchanged: {exchanged_amount:,} <:kakera:1258854943893360640>\nLost: {lost_amount:,} <:kakera:1258854943893360640>\n\nPlease, make sure you don't give me more <:kakera:1258854943893360640> Kakera than the amount shown as remaining here; otherwise, you will likely lose it.",
                 "non_participant_footer": "The user hasn't participated in the event, yet."
             },
             "show_reservations_workflow": {

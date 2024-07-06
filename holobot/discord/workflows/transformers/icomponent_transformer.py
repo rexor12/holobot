@@ -12,7 +12,7 @@ from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 
 class ComponentId(NamedTuple):
     identifier: str
-    index: int
+    component_index: int
 
 class IComponentTransformer(Protocol):
     def create_controls(

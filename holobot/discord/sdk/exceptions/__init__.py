@@ -8,4 +8,5 @@ from .permission_error import PermissionError
 from .role_already_exists_error import RoleAlreadyExistsError
 from .role_not_found_error import RoleNotFoundError
 from .server_not_found_error import ServerNotFoundError
+from .thread_not_found_error import ThreadNotFoundError
 from .user_not_found_error import UserNotFoundError

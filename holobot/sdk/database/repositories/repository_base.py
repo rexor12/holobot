@@ -190,6 +190,25 @@ class RepositoryBase(
                 if result is not None else None
             )
 
+    async def get_all(self) -> tuple[TModel, ...]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns(*self.column_names)
+                .from_table(self.table_name)
+            )
+            results = await query.compile().fetch(session.connection)
+
+            models = tuple(
+                self._map_record_to_model(self._map_query_result_to_record(result))
+                for result in results
+            )
+
+            for model in models:
+                await self.__try_set_model(model)
+
+            return models
+
     async def count(self) -> int | None:
         async with (session := await self._get_session()):
             result = await (Query

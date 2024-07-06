@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 from holobot.sdk.configs import OptionsDefinition
@@ -9,6 +9,7 @@ class DiscordOptions(OptionsDefinition):
 
     BotToken: str = ""
     DevelopmentServerId: int = 0
+    DebugServerIds: set[str] = field(default_factory=set)
     PaginatorPreviousEmoji: int | None = None
     PaginatorNextEmoji: int | None = None
     IsNetworkTraceEnabled: bool = False

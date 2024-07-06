@@ -1,7 +1,7 @@
-from typing import Any
+from typing import Any, ClassVar
 
 class OptionsDefinition:
-    section_name: str = NotImplemented
+    section_name: ClassVar[str] = NotImplemented
 
     def __new__(cls: type, *args, **kwargs) -> Any:
         if cls is OptionsDefinition:

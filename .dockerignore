@@ -7,3 +7,4 @@ scripts
 simulator
 .gitignore
 generate_version.py
+config.override.json

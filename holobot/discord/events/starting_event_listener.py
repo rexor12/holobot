@@ -43,19 +43,41 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
             cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
             cb.extend(builders)
 
+        is_debug_mode_enabled = self.__debugger.is_debug_mode_enabled()
         development_server_id = self.__options.value.DevelopmentServerId
-        if self.__debugger.is_debug_mode_enabled():
+        if is_debug_mode_enabled:
             if str(development_server_id) in command_builders:
                 cb = get_or_add(command_builders, "", lambda _: list[CommandBuilder](), None)
                 cb.extend(command_builders.pop(str(development_server_id)))
+            self.__logger.debug(
+                "Skipping registration of some server-specific commands due to debug mode"
+            )
 
         for server_id, builders in command_builders.items():
-            await bot.rest.set_application_commands(
-                application=application.id,
-                commands=builders,
-                guild=int(server_id) if server_id != ""
-                      else development_server_id if self.__debugger.is_debug_mode_enabled()
-                      else hikari.UNDEFINED
-            )
+            if (
+                is_debug_mode_enabled
+                and server_id != ""
+                and server_id not in self.__options.value.DebugServerIds
+            ):
+                self.__logger.debug(
+                    "Skipping registration of non-debug server specific commands",
+                    server_id=server_id
+                )
+                continue
+
+            try:
+                await bot.rest.set_application_commands(
+                    application=application.id,
+                    commands=builders,
+                    guild=int(server_id) if server_id != ""
+                        else development_server_id if is_debug_mode_enabled
+                        else hikari.UNDEFINED
+                )
+            except Exception as error:
+                self.__logger.error(
+                    "Failed to register some server-specific application commands",
+                    error,
+                    server_id=server_id
+                )
 
         self.__logger.info("Registered all application commands")

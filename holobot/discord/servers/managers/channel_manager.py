@@ -1,12 +1,16 @@
 from collections.abc import Iterable
+from datetime import timedelta
 
 from hikari import (
-    BadRequestError as HikariBadRequestError, ChannelFollowerWebhook,
-    ForbiddenError as HikariForbiddenError, GuildNewsChannel
+    UNDEFINED as HikariUndefined, BadRequestError as HikariBadRequestError, ChannelFollowerWebhook,
+    ChannelType as HikariChannelType, ForbiddenError as HikariForbiddenError, GuildNewsChannel,
+    GuildTextChannel, NotFoundError as HikariNotFoundError
 )
 
 from holobot.discord.bot import get_bot
-from holobot.discord.sdk.exceptions import ChannelNotFoundError, ForbiddenError, InvalidChannelError
+from holobot.discord.sdk.exceptions import (
+    ChannelNotFoundError, ForbiddenError, InvalidChannelError, ThreadNotFoundError
+)
 from holobot.discord.sdk.servers.managers import IChannelManager
 from holobot.discord.sdk.servers.models import ServerChannel
 from holobot.discord.transformers.server_channel import to_model
@@ -109,3 +113,59 @@ class ChannelManager(IChannelManager):
             raise ForbiddenError(
                 f"Cannot change channel name of channel '{channel_id}' of server '{server_id}'."
             ) from error
+
+    async def create_thread(
+        self,
+        server_id: str,
+        channel_id: str,
+        thread_name: str,
+        is_private: bool,
+        initial_message: str,
+        auto_archive_after: timedelta | None = None,
+        can_invite_others: bool = True
+    ) -> str:
+        assert_not_none(server_id, "server_id")
+        assert_not_none(channel_id, "channel_id")
+        assert_range(len(thread_name), 1, 60, "thread_name")
+        assert_not_none(initial_message, "initial_message")
+
+        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+        if not isinstance(channel, GuildTextChannel):
+            raise InvalidChannelError(server_id, channel_id, "Thread creation is supported for server text channels only.")
+
+        try:
+            thread = await get_bot().rest.create_thread(
+                channel,
+                HikariChannelType.GUILD_PRIVATE_THREAD if is_private else HikariChannelType.GUILD_PUBLIC_THREAD,
+                thread_name,
+                auto_archive_duration=auto_archive_after or HikariUndefined,
+                invitable=can_invite_others if not is_private else HikariUndefined
+            )
+
+            await thread.send(initial_message)
+
+            return str(thread.id)
+        except HikariForbiddenError as error:
+            raise ForbiddenError(
+                f"Cannot create a new thread in the channel '{channel_id}' of server '{server_id}'."
+            ) from error
+
+    async def add_thread_member(
+        self,
+        thread_id: str,
+        user_id: str
+    ) -> None:
+        assert_not_none(thread_id, "thread_id")
+        assert_not_none(user_id, "user_id")
+
+        try:
+            await get_bot().rest.add_thread_member(
+                int(thread_id),
+                int(user_id)
+            )
+        except HikariForbiddenError as error:
+            raise ForbiddenError(
+                f"Cannot add user '{user_id}' to thread '{thread_id}'."
+            ) from error
+        except HikariNotFoundError as error:
+            raise ThreadNotFoundError(thread_id) from error

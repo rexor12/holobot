@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from holobot.sdk.configs import OptionsDefinition
 
 @dataclass
 class SteamCommunityOptions(OptionsDefinition):
-    section_name: str = "Steam"
+    section_name: ClassVar[str] = "Steam"
 
     BaseUrl: str = ""
     """The base URL for the Steam Community API."""

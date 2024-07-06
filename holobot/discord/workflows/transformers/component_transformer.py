@@ -34,7 +34,7 @@ _TComponentBuilder = Callable[
 
 class _ControlData(NamedTuple):
     identifier: str
-    index: int
+    component_index: int
     owner_id: str
     version: int
     custom_data: dict[str, str]

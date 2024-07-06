@@ -16,7 +16,10 @@ _LOG_LEVEL_TO_NAME = {
     LogLevel.TRACE: "debug"
 }
 
-class LoggerWrapper(BoundLoggerBase, FilteringBoundLogger):
+# Ignoring type-checking here because the overlapping attributes
+# of the base classes have the wrong type hints, possibly because
+# they don't take a generic type parameter.
+class LoggerWrapper(BoundLoggerBase, FilteringBoundLogger): # type:ignore
     """A synchronous bound logger that supports filtering by log level."""
 
     _MIN_LOG_LEVEL: LogLevel = LogLevel.INFORMATION

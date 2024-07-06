@@ -12,6 +12,7 @@ from holobot.sdk.utils.dict_utils import merge
 @injectable(IConfigurator)
 class Configurator(IConfigurator):
     _MAIN_CONFIG_FILE_NAME = "config.json"
+    _OVERRIDE_CONFIG_FILE_NAME = "config.override.json"
     _ENV_CONFIG_FILE_NAME = "config.{env}.json"
     _ENV_VAR_REGEX = re.compile(r"^__(?P<name>\w+)__$")
 
@@ -68,6 +69,8 @@ class Configurator(IConfigurator):
                     Configurator._ENV_CONFIG_FILE_NAME.format(env=env)
                 )
             )
+
+        config_file_paths.append(os.path.join(environment.root_path, Configurator._OVERRIDE_CONFIG_FILE_NAME))
 
         effective_config = dict[str, Any]()
         for config_file_path in config_file_paths:

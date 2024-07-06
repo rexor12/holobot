@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from holobot.sdk.configs import OptionsDefinition
 
 @dataclass
 class GeneralOptions(OptionsDefinition):
-    section_name: str = "Steam"
+    section_name: ClassVar[str] = "Steam"
 
     StoreAppPageUrl: str = ""
     """The template format of the Steam Store's page of an application.

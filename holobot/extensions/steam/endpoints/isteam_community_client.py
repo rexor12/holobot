@@ -1,7 +1,8 @@
+from collections.abc import Awaitable
 from typing import Protocol
 
 from holobot.extensions.steam.models import SteamApp
 
 class ISteamCommunityClient(Protocol):
-    async def search_apps(self, name: str) -> tuple[SteamApp, ...]:
+    def search_apps(self, search_text: str) -> Awaitable[tuple[SteamApp, ...]]:
         ...

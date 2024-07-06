@@ -106,11 +106,14 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
                 if isinstance(value_or_factory, Callable)
                 else value_or_factory
             )
+
+            # Ignoring type-checking below, because for some reason
+            # the wrong types are inferred.
             entry = _CacheEntry(value, policy)
-            self.__entries[key] = entry
+            self.__entries[key] = entry # type:ignore
 
             if not isinstance(policy, NoExpirationCacheEntryPolicy):
-                self.__expires[key] = entry
+                self.__expires[key] = entry # type:ignore
 
             return entry.value
 

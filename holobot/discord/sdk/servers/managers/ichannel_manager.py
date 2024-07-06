@@ -1,4 +1,5 @@
 from collections.abc import Awaitable, Iterable
+from datetime import timedelta
 from typing import Protocol
 
 from holobot.discord.sdk.servers.models import ServerChannel
@@ -17,8 +18,8 @@ class IChannelManager(Protocol):
         self,
         server_id: str,
         channel_id: str,
-        target_server_id: str,
-        target_channel_id: str
+        source_server_id: str,
+        source_channel_id: str
     ) -> None:
         ...
 
@@ -31,4 +32,23 @@ class IChannelManager(Protocol):
         ...
 
     def change_channel_name(self, server_id: str, channel_id: str, name: str) -> Awaitable[None]:
+        ...
+
+    def create_thread(
+        self,
+        server_id: str,
+        channel_id: str,
+        thread_name: str,
+        is_private: bool,
+        initial_message: str,
+        auto_archive_after: timedelta | None = None,
+        can_invite_others: bool = True
+    ) -> Awaitable[str]:
+        ...
+
+    def add_thread_member(
+        self,
+        thread_id: str,
+        user_id: str
+    ) -> Awaitable[None]:
         ...

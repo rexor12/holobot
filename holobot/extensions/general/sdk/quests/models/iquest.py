@@ -9,7 +9,7 @@ class IQuest(Protocol):
     identifier: QuestId
     """The identifier of the quest."""
 
-    completed_at: datetime
+    completed_at: datetime | None
     """The date and time at which the quest was completed."""
 
     objective_count_1: int

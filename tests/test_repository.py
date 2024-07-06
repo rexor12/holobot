@@ -5,9 +5,9 @@ from datetime import timedelta
 from holobot.extensions.general.models.channel_timer import ChannelTimer
 from holobot.extensions.general.models.currency import Currency
 from holobot.extensions.general.models.wallet import Wallet
-from holobot.extensions.general.models.wallet_id import WalletId
 from holobot.extensions.general.repositories import ChannelTimerRepository
 from holobot.extensions.general.repositories.wallet_repository import WalletRepository
+from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.extensions.todo_lists.models.todo_item import TodoItem
 from holobot.extensions.todo_lists.repositories.todo_item_repository import TodoItemRepository
 from holobot.framework.database import DatabaseManager

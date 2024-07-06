@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from collections.abc import Coroutine, Generator
+from collections.abc import Awaitable, Generator
 from types import coroutine
 from typing import Any, Generic, TypeVar
 
@@ -90,7 +90,7 @@ class InteractionProcessorBase(
         interaction: TInteraction,
         descriptor: InteractionDescriptor[TInteractable],
         response: InteractionResponse
-    ) -> Coroutine[Any, Any, None]:
+    ) -> Awaitable[None]:
         ...
 
     async def _send_error_response(
@@ -109,9 +109,9 @@ class InteractionProcessorBase(
 
     @staticmethod
     def _resolve_argument(
-        value: hikari.Snowflake | str | int | bool | None,
+        value: hikari.Snowflake | str | int | float | bool | None,
         option_type: hikari.OptionType | int
-    ) -> str | int | bool | None:
+    ) -> str | int | float | bool | None:
         if value is None:
             return value
 

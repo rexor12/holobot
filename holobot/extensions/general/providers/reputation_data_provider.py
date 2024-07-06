@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import cast
 
 from PIL import ImageColor
 
@@ -18,7 +19,11 @@ class ReputationDataProvider(IReputationDataProvider):
         super().__init__()
         self.__rank_infos = sorted(
             map(
-                lambda i: (i.RequiredReputation, ImageColor.getcolor(i.Color, "RGBA")),
+                lambda i: (
+                    i.RequiredReputation,
+                    # It's always tuple[int, ...] for the RGBA color mode.
+                    cast(tuple[int, ...], ImageColor.getcolor(i.Color, "RGBA"))
+                ),
                 options.value.ReputationTable
             ),
             key=lambda i: i[0]

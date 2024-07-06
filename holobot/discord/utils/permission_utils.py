@@ -8,7 +8,6 @@ PERMISSION_TO_DTOS: dict[Permission, Permissions] = {
     Permission.VIEW_CHANNEL: Permissions.VIEW_CHANNEL,
     Permission.MANAGE_CHANNELS: Permissions.MANAGE_CHANNELS,
     Permission.MANAGE_ROLES: Permissions.MANAGE_ROLES,
-    Permission.MANAGE_EMOJIS_AND_STICKERS: Permissions.MANAGE_EMOJIS_AND_STICKERS,
     Permission.VIEW_AUDIT_LOG: Permissions.VIEW_AUDIT_LOG,
     Permission.MANAGE_WEBHOOKS: Permissions.MANAGE_WEBHOOKS,
     Permission.MANAGE_SERVER: Permissions.MANAGE_GUILD,

@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterable, Iterable
+
 import hikari
 
 from holobot.discord.bot import get_bot
@@ -17,6 +19,16 @@ class UserDataProvider(IUserDataProvider):
         assert_not_none(user_id, "user_id")
 
         return await UserDataProvider.__safe_get_user_data_by_id(int(user_id), use_cache)
+
+    async def get_user_data_by_ids(
+        self,
+        user_ids: Iterable[str]
+    ) -> AsyncIterable[UserData]:
+        assert_not_none(user_ids, "user_ids")
+
+        for user_id in user_ids:
+            user = await get_bot().get_user_by_id(int(user_id), True)
+            yield UserDataProvider.__transform_user_dto(user)
 
     async def get_user_data_by_name(
         self,

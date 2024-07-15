@@ -440,6 +440,13 @@
                 "background_locked_error": "Alas, it seems you don't have enough reputation points <:reputation:1228232389264674879> to use this background, yet. You still need another **{required_points:,}** <:reputation:1228232389264674879>.",
                 "updated_successfully": "I've updated your preferences; **{background_name}** is now your new profile background."
             },
+            "view_reputation_ranking_workflow": {
+                "no_reputations_error": "Alas, it seems no one in this server has received any reputation points, yet. Be the first to give one to someone.",
+                "message": "Global reputation point ranking",
+                "table_header": "+-----+----------------+------------+\n| Rank|            User|  Reputation|\n+-----+----------------+------------+",
+                "table_entry": "|{rank}|{user_name}|{reputation_points}|",
+                "table_footer": "+-----+----------------+------------+"
+            },
             "view_user_avatar_workflow": {
                 "embed_footer": "Artwork by {artist}",
                 "embed_title_global": "{user}'s global avatar",

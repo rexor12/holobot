@@ -66,15 +66,23 @@ class UserProfileRepository(
             )
 
     def _map_record_to_model(self, record: UserProfileRecord) -> UserProfile:
-        return UserProfile(
+        model = UserProfile(
             identifier=record.id.value,
             reputation_points=record.reputation_points,
-            background_image_code=record.background_image_code
+            background_image_code=record.background_image_code,
+            show_badges=record.show_badges
         )
+
+        # TODO Map badges.
+
+        return model
 
     def _map_model_to_record(self, model: UserProfile) -> UserProfileRecord:
         return UserProfileRecord(
             id=PrimaryKey(model.identifier),
             reputation_points=model.reputation_points,
-            background_image_code=model.background_image_code
+            background_image_code=model.background_image_code,
+            show_badges=model.show_badges,
+            badge_sid1=model.badges[0].server_id,
+            badge_id1=model.badges[0].badge_id,
         )

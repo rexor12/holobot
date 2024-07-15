@@ -72,7 +72,7 @@ class UserProfileFactory(IUserProfileFactory):
     ) -> bytes:
         user_profile_image = self.__draw_user_profile_image(
             user_name,
-            user_profile.reputation_points,
+            user_profile,
             Image.open(io.BytesIO(avatar)) if avatar is not None else None,
             self.__get_background_image(custom_background_code or user_profile.background_image_code)
         )
@@ -123,10 +123,11 @@ class UserProfileFactory(IUserProfileFactory):
     def __draw_user_profile_image(
         self,
         username: str,
-        reputation_points: int,
+        user_profile: UserProfile,
         avatar: Image.Image | None,
         background_image: Image.Image
     ) -> Image.Image:
+        reputation_points = user_profile.reputation_points
         rank_info = self.__reputation_data_provider.get_rank_info(reputation_points)
         title = self.__i18n.get_list_item("extensions.general.user_profile_titles", rank_info.current_rank)
         if avatar is None:
@@ -147,7 +148,7 @@ class UserProfileFactory(IUserProfileFactory):
         profile_image.paste(self.__assets.avatar_border, (22, 22), self.__assets.avatar_border)
         profile_image.paste(self.__assets.text_background, mask=self.__assets.text_background)
         profile_image.paste(self.__assets.reputation_icon, (192, 81), self.__assets.reputation_icon)
-        # profile_image.paste(self.__assets.badges_background, mask=self.__assets.badges_background)
+        self.__draw_badges(profile_image, user_profile)
         profile_image.paste(self.__assets.card_border, mask=self.__assets.card_border)
 
         drawing_context = ImageDraw.Draw(profile_image)
@@ -166,3 +167,18 @@ class UserProfileFactory(IUserProfileFactory):
             drawing_context.text(xy=(220, 80), text=f"{reputation_points}", font=self.__assets.font_medium, fill=(91, 7, 7), stroke_width=1, stroke_fill="black")
 
         return profile_image
+
+    def __draw_badges(
+        self,
+        profile_image: Image.Image,
+        user_profile: UserProfile
+    ) -> None:
+        if not user_profile.show_badges:
+            return
+
+        profile_image.paste(self.__assets.badges_background, mask=self.__assets.badges_background)
+        for badge_id in user_profile.badges:
+            if not badge_id:
+                continue
+
+            # TODO Load badge and draw it. Cache?

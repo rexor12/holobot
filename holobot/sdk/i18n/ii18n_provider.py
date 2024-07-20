@@ -99,3 +99,23 @@ class II18nProvider(Protocol):
         :rtype: tuple[str, ...]
         """
         ...
+
+    def get_random_list_item(
+        self,
+        key: str,
+        language: str | None = None
+    ) -> str:
+        """Gets a random element from a list of strings associated to the specified key.
+
+        - If there is no value associated to the specified key, the key is returned.
+        - If there is no value associated to the specified key in the specified language,
+        the default translation is returned (or the key, as per the above).
+
+        :param key: The I18N key used to identify the resource.
+        :type key: str
+        :param language: An optional language for which to get the translation, defaults to None
+        :type language: str | None, optional
+        :return: The randomly selected text or the key itself if there is no associated value.
+        :rtype: str
+        """
+        ...

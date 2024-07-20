@@ -1,5 +1,6 @@
 import glob
 import os
+import random
 from collections.abc import Iterable
 from json import load
 from typing import Any
@@ -125,6 +126,25 @@ class I18nProvider(II18nProvider, IStartable):
                 key=key
             )
             return ()
+
+    def get_random_list_item(
+        self,
+        key: str,
+        language: str | None = None
+    ) -> str:
+        try:
+            value = self.__resolve_key(key, _ARGUMENTS_SENTINEL, language)
+            if not isinstance(value, tuple):
+                return key
+
+            return random.choice(value)
+        except Exception as error:
+            self.__logger.error(
+                "Failed to resolve list-type I18N key",
+                error,
+                key=key
+            )
+            return key
 
     @staticmethod
     def __build_map(file_path: str) -> I18nGroup:

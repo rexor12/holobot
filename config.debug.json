@@ -16,6 +16,17 @@
         }
     },
 
+    "General": {
+        "RockPaperScissorsOptions": {
+            "RockEmojiId": 1263953427692785695,
+            "RockEmojiName": "pstplane",
+            "PaperEmojiId": 1263953437654126766,
+            "PaperEmojiName": "pstship",
+            "ScissorsEmojiId": 1263953444125802546,
+            "ScissorsEmojiName": "psttank"
+        }
+    },
+
     "Reminders": {
         "ReminderProcessingOptions": {
             "IsEnabled": true

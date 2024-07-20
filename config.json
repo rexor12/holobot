@@ -331,6 +331,14 @@
             "MarriageEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1WxjyhkUSFMsupnrO36Lp_jQKgF9PVvIg",
             "FortuneCookieEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1a3refqlc9_K8O0VoGipnsS8FpI_Y89c5"
         },
+        "RockPaperScissorsOptions": {
+            "RockEmojiId": 1263954019660075041,
+            "RockEmojiName": "pstplane",
+            "PaperEmojiId": 1263954026991718460,
+            "PaperEmojiName": "pstship",
+            "ScissorsEmojiId": 1263954032821665893,
+            "ScissorsEmojiName": "psttank"
+        },
         "UserProfileOptions": {
             "ReputationTable": [
                 {

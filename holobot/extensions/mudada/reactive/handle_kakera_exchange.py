@@ -20,7 +20,7 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
 
 _GIFT_MESSAGE_REGEX = re.compile(r"^<@!?(?P<user_id>\d+)> just gifted \*\*(?P<amount>\d+)\*\*<:kakera:\d+>to <@!?(?P<user_id2>\d+)>$")
-_TRADE_MESSAGE_REGEX = re.compile(r"^<@!?(?P<user_id>\d+)>, type the name\(s\) of the character\(s\) you want to trade against \*\*(?P<amount>\d)\*\*<:kakera:\d+>$")
+_TRADE_MESSAGE_REGEX = re.compile(r"^<@!?(?P<user_id>\d+)>, type the name\(s\) of the character\(s\) you want to trade against \*\*(?P<amount>\d+)\*\*<:kakera:\d+>$")
 
 @injectable(IListener[MessageReceivedEvent])
 class HandleKakeraExchange(IListener[MessageReceivedEvent]):
@@ -98,7 +98,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
                 await self.__messaging.send_channel_message(
                     server_id=event.message.server_id,
                     channel_id=event.message.channel_id,
-                    content=f"<@{source_user_id}>, the currency associated to the exchange feature cannot be found. Please, ask the moderator team to return your {kakera_amount} <:kakera:1258854943893360640>."
+                    content=f"<@{source_user_id}>, the currency associated to the exchange feature cannot be found. Please, ask the moderator team to return your **{kakera_amount:,}** <:kakera:1258854943893360640>."
                 )
                 return
 
@@ -125,7 +125,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
                 await self.__messaging.send_channel_message(
                     server_id=event.message.server_id,
                     channel_id=event.message.channel_id,
-                    content=f"<@{source_user_id}>, you have exchanged more <:kakera:1258854943893360640> Kakera than you are allowed to. Please, ask the moderator team to return the {exchange_quota.lost_amount} <:kakera:1258854943893360640> that you've lost so far."
+                    content=f"<@{source_user_id}>, you have exchanged more <:kakera:1258854943893360640> Kakera than you are allowed to. Please, ask the moderator team to return the **{exchange_quota.lost_amount:,}** <:kakera:1258854943893360640> that you've lost so far."
                 )
 
             await self.__wallet_manager.give_money(
@@ -141,7 +141,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
         await self.__messaging.send_channel_message(
             server_id=event.message.server_id,
             channel_id=event.message.channel_id,
-            content=f"<@{source_user_id}>, your {kakera_amount} <:kakera:1258854943893360640> has been exchanged for {exchanged_amount} <:{currency.emoji_name}:{currency.emoji_id}>. You can still exchange {mudera_left} <:{currency.emoji_name}:{currency.emoji_id}>."
+            content=f"<@{source_user_id}>, your **{kakera_amount:,}** <:kakera:1258854943893360640> has been exchanged for **{exchanged_amount:,}** <:{currency.emoji_name}:{currency.emoji_id}>. You can still exchange **{mudera_left:,}** <:kakera:1258854943893360640>."
         )
 
     async def __exchange_mudera(

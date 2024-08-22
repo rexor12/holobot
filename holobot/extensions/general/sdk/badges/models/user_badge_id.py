@@ -3,7 +3,10 @@ from dataclasses import dataclass
 from holobot.sdk.database.entities import Identifier
 
 @dataclass(kw_only=True)
-class BadgeId(Identifier):
+class UserBadgeId(Identifier):
+    user_id: str
+    """The identifier of the user."""
+
     server_id: str
     """The identifier of the server the badge belongs to.
 
@@ -14,20 +17,12 @@ class BadgeId(Identifier):
     """The server-local identifier of the badge."""
 
     def __str__(self) -> str:
-        return f"Badge/{self.server_id}/{self.badge_id}"
-
-    def __eq__(self, value: object) -> bool:
-        if not isinstance(value, BadgeId):
-            return False
-
-        return (
-            self.server_id == value.server_id
-            and self.badge_id == value.badge_id
-        )
+        return f"UserBadge/{self.user_id}/{self.server_id}/{self.badge_id}"
 
     @staticmethod
-    def create(server_id: str, badge_id: int) -> 'BadgeId':
-        return BadgeId(
+    def create(user_id: str, server_id: str, badge_id: int) -> 'UserBadgeId':
+        return UserBadgeId(
+            user_id=user_id,
             server_id=server_id,
             badge_id=badge_id
         )

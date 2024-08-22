@@ -1,6 +1,8 @@
 from collections.abc import Iterator, Sequence
 from typing import Generic, SupportsIndex, TypeVar
 
+from holobot.sdk.utils.iterable_utils import find_or_none
+
 TItem = TypeVar("TItem")
 
 class Inventory(Generic[TItem]):
@@ -26,7 +28,14 @@ class Inventory(Generic[TItem]):
     def set_item(self, slot_index: int, item: TItem) -> None:
         self[slot_index] = item
 
-    def remove_item(self, slot_index: int) -> TItem | None:
+    def remove_item(self, slot_index_or_item: int | TItem) -> TItem | None:
+        if isinstance(slot_index_or_item, int):
+            slot_index = slot_index_or_item
+        else:
+            slot_index = find_or_none(self.__slots, lambda i: i == slot_index_or_item)
+            if slot_index is None:
+                return None
+
         item = self.__slots[slot_index]
         self.__slots[slot_index] = None
 

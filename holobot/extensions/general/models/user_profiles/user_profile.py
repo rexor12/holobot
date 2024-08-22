@@ -9,7 +9,7 @@ from holobot.sdk.database.entities import AggregateRoot
 class UserProfile(AggregateRoot[str]):
     """Represents a user's profile."""
 
-    MAX_BADGE_COUNT: ClassVar[int] = 6
+    MAX_BADGE_COUNT: ClassVar[int] = 8
     """The maximum number of badges a user can set up for display."""
 
     reputation_points: int = 0

@@ -31,6 +31,10 @@ class UserProfilesMigration(MigrationBase):
             " ADD COLUMN badge_id5 BIGINT DEFAULT NULL,\n"
             " ADD COLUMN badge_sid6 VARCHAR(20) DEFAULT NULL,\n"
             " ADD COLUMN badge_id6 BIGINT DEFAULT NULL\n"
+            " ADD COLUMN badge_sid7 VARCHAR(20) DEFAULT NULL,\n"
+            " ADD COLUMN badge_id7 BIGINT DEFAULT NULL,\n"
+            " ADD COLUMN badge_sid8 VARCHAR(20) DEFAULT NULL,\n"
+            " ADD COLUMN badge_id8 BIGINT DEFAULT NULL,\n"
         ))
 
     async def __upgrade_to_v1(self, connection: Connection) -> None:

@@ -1,8 +1,9 @@
 from holobot.extensions.general.models.user_profiles import RankingInfo, UserProfile
+from holobot.extensions.general.sdk.badges.models import BadgeId
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.enums import Equality, Order
+from holobot.sdk.database.queries.enums import Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -73,16 +74,27 @@ class UserProfileRepository(
             show_badges=record.show_badges
         )
 
-        # TODO Map badges.
+        for index, _ in enumerate(model.badges):
+            badge_id = getattr(record, f"badge_id{index + 1}", None)
+            server_id = getattr(record, f"badge_sid{index + 1}", None)
+            if badge_id is not None and server_id is not None:
+                model.badges.set_item(index, BadgeId(server_id=server_id, badge_id=badge_id))
 
         return model
 
     def _map_model_to_record(self, model: UserProfile) -> UserProfileRecord:
-        return UserProfileRecord(
+        record = UserProfileRecord(
             id=PrimaryKey(model.identifier),
             reputation_points=model.reputation_points,
             background_image_code=model.background_image_code,
-            show_badges=model.show_badges,
-            badge_sid1=model.badges[0].server_id,
-            badge_id1=model.badges[0].badge_id,
+            show_badges=model.show_badges
         )
+
+        for index, badge in enumerate(model.badges):
+            if badge is None:
+                continue
+
+            setattr(record, f"badge_id{index + 1}", badge.badge_id)
+            setattr(record, f"badge_sid{index + 1}", badge.server_id)
+
+        return record

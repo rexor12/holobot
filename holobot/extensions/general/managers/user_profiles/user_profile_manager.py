@@ -40,3 +40,13 @@ class UserProfileManager(IUserProfileManager):
             reputation_points=1,
             last_custom_background=self.__reputation_data_provider.get_last_unlocked_custom_background(1)
         )
+
+    async def get_or_create(self, user_id: str) -> UserProfile:
+        user_profile = await self.__user_profile_repository.get(user_id)
+        if user_profile:
+            return user_profile
+
+        user_profile = UserProfile(identifier=user_id)
+        await self.__user_profile_repository.add(user_profile)
+
+        return user_profile

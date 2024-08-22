@@ -7,15 +7,16 @@ from .enums import Order
 from .exists_builder import ExistsBuilder
 from .function_builder import FunctionBuilder
 from .icompileable_query_part_builder import ICompileableQueryPartBuilder
+from .isupports_pagination import ISupportsPagination
 from .join_builder import JOIN_TYPE, JoinBuilder
 from .paginate_builder import PaginateBuilder
-from .isupports_pagination import ISupportsPagination
 from .where_builder import WhereBuilder
 
 class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagination):
     def __init__(self) -> None:
         super().__init__()
         self.__columns: list[str] = []
+        self.__constants: list[tuple[str, Any]] = []
         self.__table_name: str | None = None
         self.__table_alias: str | None = None
         self.__is_count_select: bool = False
@@ -31,6 +32,10 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagina
     def columns(self, *column_names: str) -> SelectBuilder:
         for column_name in column_names:
             self.column(column_name)
+        return self
+
+    def constant(self, value: Any, alias: str) -> SelectBuilder:
+        self.__constants.append((alias, value))
         return self
 
     def count(self) -> SelectBuilder:
@@ -75,10 +80,18 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagina
         return CompiledQuery(*self.build())
 
     def build(self) -> tuple[str, tuple[Any, ...]]:
-        if not self.__columns and not self.__is_count_select:
+        if not self.__is_count_select and not self.__columns and not self.__constants:
             raise ValueError("At least one column must be specified.")
 
-        sql = ["SELECT", "COUNT(*)" if self.__is_count_select else ", ".join(self.__columns)]
+        sql = ["SELECT"]
+        if self.__is_count_select:
+            sql.append("COUNT(*)")
+        else:
+            sql.append(", ".join(self.__columns))
+            if self.__columns and self.__constants:
+                sql.append(", ")
+
+            sql.append(", ".join(map(lambda t: f"{t[1]} AS {t[0]}", self.__constants)))
 
         if self.__has_from_part:
             sql.append("FROM")

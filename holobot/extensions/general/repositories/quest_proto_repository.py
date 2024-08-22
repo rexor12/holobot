@@ -55,6 +55,8 @@ class QuestProtoRepository(
             reward_currency_count_1=record.reward_currency_count_1,
             reward_currency_id_2=record.reward_currency_id_2,
             reward_currency_count_2=record.reward_currency_count_2,
+            reward_badge_sid_1=record.reward_badge_sid_1,
+            reward_badge_id_1=record.reward_badge_id_1,
             title=record.title,
             note=record.note,
             completion_text=record.completion_text
@@ -85,6 +87,8 @@ class QuestProtoRepository(
             reward_currency_count_1=model.reward_currency_count_1,
             reward_currency_id_2=model.reward_currency_id_2,
             reward_currency_count_2=model.reward_currency_count_2,
+            reward_badge_sid_1=model.reward_badge_sid_1,
+            reward_badge_id_1=model.reward_badge_id_1,
             title=model.title,
             note=model.note,
             completion_text=model.completion_text

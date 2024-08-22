@@ -370,7 +370,7 @@ class RepositoryBase(
         async with (session := await self._get_session()):
             query = filter_builder(Query
                 .select()
-                .column("id")
+                .constant("1", "_T")
                 .from_table(self.table_name)
                 .where()
             )

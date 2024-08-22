@@ -3,7 +3,8 @@ from holobot.discord.sdk.data_providers import IUserDataProvider
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow
-from holobot.discord.sdk.workflows.interactables.decorators import command
+from holobot.discord.sdk.workflows.interactables.components import ButtonState
+from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -52,25 +53,52 @@ class ShowUserProfileWorkflow(UserProfileWorkflowBase):
         context: InteractionContext,
         user: int | None = None
     ) -> InteractionResponse:
+        image_or_error = await self.__get_user_profile_image(
+            context,
+            str(user) if user else None
+        )
+
+        if isinstance(image_or_error, str):
+            return self._reply(content=image_or_error)
+
+        return self._reply(attachments=(image_or_error,))
+
+    @component(identifier="vprofile")
+    async def set_user_profile_badge(
+        self,
+        context: InteractionContext,
+        state: ButtonState
+    ) -> InteractionResponse:
+        if (user_id := state.custom_data.get("u")) is None:
+            return self._reply(
+                content=self.__i18n.get("interactions.invalid_interaction_data_error"),
+                is_ephemeral=True
+            )
+
+        image_or_error = await self.__get_user_profile_image(context, user_id)
+        if isinstance(image_or_error, str):
+            return self._edit_message(content=image_or_error, embed=None, components=None)
+
+        return self._edit_message(content=None, embed=None, components=None, attachments=(image_or_error,))
+
+    async def __get_user_profile_image(
+        self,
+        context: InteractionContext,
+        user_id: str | None
+    ) -> bytes | str:
         if isinstance(context, ServerChatInteractionContext):
-            target_user_id = str(user) if user else context.author_id
+            target_user_id = user_id if user_id else context.author_id
             if not await self.__member_data_provider.is_member(context.server_id, target_user_id):
-                return self._reply(
-                    content=self.__i18n.get("extensions.general.show_user_profile_workflow.not_a_member_error")
-                )
+                return self.__i18n.get("extensions.general.show_user_profile_workflow.not_a_member_error")
         else:
             target_user_id = context.author_id
 
         if not (user_profile := await self.__user_profile_repository.get(target_user_id)):
-            return self._reply(
-                content=self.__i18n.get("extensions.general.show_user_profile_workflow.profile_not_found_error")
-            )
+            return self.__i18n.get("extensions.general.show_user_profile_workflow.profile_not_found_error")
 
         user_profile_image = await self._generate_user_profile(
             target_user_id,
             user_profile
         )
 
-        return self._reply(
-            attachments=(user_profile_image,)
-        )
+        return user_profile_image

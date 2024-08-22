@@ -1,7 +1,7 @@
 from holobot.discord.sdk.models import Embed, EmbedFooter
 from holobot.extensions.general.options import EconomicOptions
 from holobot.extensions.general.sdk.quests.dtos import QuestRewardDescriptor
-from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward
+from holobot.extensions.general.sdk.quests.models import BadgeQuestReward, CurrencyQuestReward
 from holobot.sdk.i18n import II18nProvider
 
 def create_quest_reward_embed(
@@ -34,18 +34,22 @@ def create_quest_reward_embed(
             description.append("\n")
 
         for item in rewards.granted_items:
-            # TODO Non-currency items.
-            if not isinstance(item, CurrencyQuestReward):
-                continue
-
-            description.append(i18n_provider.get(
-                "extensions.general.quests.reward_currency",
-                {
-                    "amount": item.count,
-                    "emoji_name": item.emoji_name,
-                    "emoji_id": item.emoji_id
-                }
-            ))
+            if isinstance(item, CurrencyQuestReward):
+                description.append(i18n_provider.get(
+                    "extensions.general.quests.reward_currency",
+                    {
+                        "amount": item.count,
+                        "emoji_name": item.emoji_name,
+                        "emoji_id": item.emoji_id
+                    }
+                ))
+            elif isinstance(item, BadgeQuestReward):
+                description.append(i18n_provider.get(
+                    "extensions.general.quests.reward_badge",
+                    {
+                        "name": item.name
+                    }
+                ))
 
     return Embed(
         title=i18n_provider.get(

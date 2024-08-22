@@ -27,6 +27,16 @@ def first_or_default(
         else next(filter(predicate, iterable), default_value)
     )
 
+def find_or_none(
+    iterable: Iterable[T],
+    predicate: Callable[[T], bool]
+) -> int | None:
+    for index, item in enumerate(iterable):
+        if predicate(item):
+            return index
+
+    return None
+
 def select_many(
     iterable: Iterable[T],
     transformer: Callable[[T], Iterable[T2]]
@@ -66,3 +76,22 @@ def of_type(
     for item in iterable:
         if isinstance(item, item_type):
             yield item
+
+def batch(
+    iterable: Iterable[T],
+    batch_size: int
+) -> Generator[Iterable[T], Any, None]:
+    iterator = iterable.__iter__()
+    items: list[T] = []
+    has_items = True
+    while has_items:
+        try:
+            for _ in range(batch_size):
+                items.append(iterator.__next__())
+        except StopIteration:
+            has_items = False
+
+        if len(items) > 0:
+            yield items
+
+        items.clear()

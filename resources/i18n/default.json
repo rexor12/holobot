@@ -254,7 +254,8 @@
                 "reward_experience_points": "⦁ Experience points: +{xp:,d} <:xp:1027174654487568425>",
                 "reward_skill_points": "⦁ Skill points: +{sp:,d} <:sp:1027174653107638312>",
                 "reward_currency": "⦁ +{amount:,d} <:{emoji_name}:{emoji_id}>",
-                "reward_item": "⦁ [{item_name}]x{count}"
+                "reward_item": "⦁ [{item_name}]x{count}",
+                "reward_badge": "⦁ Badge: {name}"
             },
             "react_workflow": {
                 "no_image_error": "I'm sorry, but I couldn't find a matching picture for you. Please, try again a bit later or try another category. (｡•́︿•̀｡)",
@@ -573,6 +574,18 @@
                 "no_avatar_error": "I'm sorry, but <@{user_id}> doesn't have an avatar. (｡•́︿•̀｡)",
                 "global_button": "Global",
                 "server_button": "Server"
+            },
+            "view_user_badges_workflow": {
+                "no_user_badges_error": "Alas, it seems you haven't unlocked any badges, yet.",
+                "no_other_user_badges_error": "Alas, it seems <@{user_id}> hasn't unlocked any badges, yet.",
+                "badge_description": "<:{emoji_name}:{emoji_id}> **{name}** ⦁ <t:{unlocked_at}:R>\n    _{description}_",
+                "embed_title": "{username}'s badges",
+                "equip_button": "Equip",
+                "invalid_badge_error": "Alas, it seems this badge no longer exists.",
+                "equip_position_confirmation": "Pray, tell me, where should I display <:{emoji_name}:{emoji_id}> **{badge_name}**?",
+                "badge_not_owned_error": "Alas, it seems you don't own this badge. Has the wolf stolen it?",
+                "badges_updated": "I've updated your user profile badge list.",
+                "view_profile_button": "View profile"
             },
             "view_user_banner_workflow": {
                 "embed_title": "{user}'s banner",

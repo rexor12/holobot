@@ -1,6 +1,5 @@
 import io
 import os
-import re
 from dataclasses import dataclass, field
 
 from PIL import Image, ImageDraw, ImageFont
@@ -15,7 +14,19 @@ from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.system import IEnvironment
 from .iuser_profile_factory import IUserProfileFactory
 
-_IMAGE_FILE_NAME_REGEX = re.compile(r"^(?P<name>\w+)\.(png|jpg)$", re.IGNORECASE)
+_BADGES_PER_ROW: int = 25
+"""Defines the number of badge icons present in a single row of the badge_icons.png file."""
+
+_BADGE_SIZE: int = 40
+"""Defines the width and height of a badge icon."""
+
+_BADGE_PADDING: int = 4
+"""Defines the empty space between badges in the profile picture."""
+
+
+_AVATAR_MASK = Image.new("L", (128, 128), 0)
+_AVATAR_MASK_DRAWING_CONTEX = ImageDraw.Draw(_AVATAR_MASK)
+_AVATAR_MASK_DRAWING_CONTEX.ellipse((0, 0, 128, 128), fill=255)
 
 @dataclass(kw_only=True, frozen=True)
 class _AssetCollection:
@@ -31,6 +42,7 @@ class _AssetCollection:
     font_small: ImageFont.FreeTypeFont
     font_medium: ImageFont.FreeTypeFont
     font_large: ImageFont.FreeTypeFont
+    badges: Image.Image
     custom_backgrounds: dict[str, Image.Image] = field(default_factory=dict)
 
 @injectable(IUserProfileFactory)
@@ -60,6 +72,7 @@ class UserProfileFactory(IUserProfileFactory):
             font_small=self.__load_font(environment, "AGPmod.ttf", 15),
             font_medium=self.__load_font(environment, "AGPmod.ttf", 20),
             font_large=self.__load_font(environment, "AGPmod.ttf", 30),
+            badges=self.__load_image(environment, "badge_icons.png"),
             custom_backgrounds=self.__load_custom_backgrounds(environment, options.value.CustomBackgroundsPath)
         )
 
@@ -135,11 +148,8 @@ class UserProfileFactory(IUserProfileFactory):
         else:
             avatar = avatar.resize((128, 128), Image.Resampling.LANCZOS)
 
-        avatar_mask = Image.new("L", (128, 128), 0)
-        avatar_mask_drawing_context = ImageDraw.Draw(avatar_mask)
-        avatar_mask_drawing_context.ellipse((0, 0, 128, 128), fill=255)
         avatar_cropped = Image.new("RGBA", avatar.size, (255, 255, 255, 0))
-        avatar_cropped.paste(avatar, mask=avatar_mask)
+        avatar_cropped.paste(avatar, mask=_AVATAR_MASK)
 
         profile_image = Image.new("RGBA", (548, 174), None)
         profile_image.paste(self.__assets.card_background)
@@ -177,8 +187,14 @@ class UserProfileFactory(IUserProfileFactory):
             return
 
         profile_image.paste(self.__assets.badges_background, mask=self.__assets.badges_background)
-        for badge_id in user_profile.badges:
+        for badge_index, badge_id in enumerate(user_profile.badges):
             if not badge_id:
                 continue
 
-            # TODO Load badge and draw it. Cache?
+            badge_x = (badge_id.badge_id % _BADGES_PER_ROW) * _BADGE_SIZE
+            badge_y = (badge_id.badge_id // _BADGES_PER_ROW) * _BADGE_SIZE
+            badge_icon = self.__assets.badges.crop(
+                (badge_x, badge_y, badge_x + _BADGE_SIZE, badge_y + _BADGE_SIZE)
+            )
+            target_position = (badge_index * (_BADGE_SIZE + _BADGE_PADDING) + 183, 120)
+            profile_image.paste(badge_icon, target_position, badge_icon)

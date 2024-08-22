@@ -10,8 +10,16 @@ class QuestProtoMigration(MigrationBase):
 
     def __init__(self):
         super().__init__(QuestProtoMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
+            0: MigrationPlan(0, 1, self.__initialize_table),
+            1: MigrationPlan(1, 2, self.__upgrade_to_v1)
         }, {})
+
+    async def __upgrade_to_v1(self, connection: Connection) -> None:
+        await connection.execute((
+            f"ALTER TABLE {QuestProtoMigration._TABLE_NAME}\n"
+            " ADD COLUMN reward_badge_sid_1 VARCHAR(20) DEFAULT NULL,\n"
+            " ADD COLUMN reward_badge_id_1 INTEGER DEFAULT NULL"
+        ))
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((

@@ -13,11 +13,9 @@ from holobot.extensions.todo_lists.repositories.todo_item_repository import Todo
 from holobot.framework.database import DatabaseManager
 from holobot.framework.database.database_options import DatabaseOptions
 from holobot.framework.database.unit_of_work_provider import UnitOfWorkProvider
-from holobot.framework.logging import DefaultLogger
 from holobot.sdk.configs import IOptions
-from holobot.sdk.logging import ILogger, ILoggerFactory
-from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.utils.datetime_utils import utcnow
+from tests.machinery import TestLoggerFactory
 
 USER_ID = "401490060156862466"
 SERVER_ID = "999259836439081030"
@@ -39,10 +37,6 @@ class TestOptionsProvider(IOptions[DatabaseOptions]):
             IsSslEnabled=False,
             AutoCreateDatabase=False
         )
-
-class TestLoggerFactory(ILoggerFactory):
-    def create(self, target_type: type) -> ILogger:
-        return DefaultLogger(target_type.__name__, lambda: LogLevel.DEBUG)
 
 async def test_channel_timers():
     entity = ChannelTimer(

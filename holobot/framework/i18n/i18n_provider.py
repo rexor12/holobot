@@ -20,6 +20,11 @@ _DEFAULT_LANGUAGE = "default"
 class I18nProvider(II18nProvider, IStartable):
     """Implementation of a service used to resolve internationalization keys."""
 
+    @property
+    def priority(self) -> int:
+        return 10
+
+
     def __init__(
         self,
         environment: IEnvironment,

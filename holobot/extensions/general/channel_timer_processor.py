@@ -32,6 +32,10 @@ class ChannelTimerProcessor(IStartable):
         self.__token_source: CancellationTokenSource | None = None
         self.__background_task: Awaitable[None] | None = None
 
+    @property
+    def priority(self) -> int:
+        return 1000
+
     async def start(self):
         self.__logger.info("Channel timers are enabled")
         self.__token_source = CancellationTokenSource()

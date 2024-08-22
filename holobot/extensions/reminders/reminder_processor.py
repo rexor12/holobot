@@ -21,6 +21,10 @@ from .repositories import IReminderRepository
 
 @injectable(IStartable)
 class ReminderProcessor(IStartable):
+    @property
+    def priority(self) -> int:
+        return 1000
+
     def __init__(
         self,
         i18n_provider: II18nProvider,

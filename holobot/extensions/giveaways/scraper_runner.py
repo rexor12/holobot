@@ -22,6 +22,10 @@ from .scrapers import IScraper
 @injectable(IStartable)
 @injectable(IScraperManager)
 class ScraperRunner(IScraperManager, IStartable):
+    @property
+    def priority(self) -> int:
+        return 1000
+
     def __init__(
         self,
         external_giveaway_item_repository: IExternalGiveawayItemRepository,

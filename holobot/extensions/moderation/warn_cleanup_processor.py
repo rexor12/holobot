@@ -12,6 +12,10 @@ from .repositories import IWarnRepository
 
 @injectable(IStartable)
 class WarnCleanupProcessor(IStartable):
+    @property
+    def priority(self) -> int:
+        return 1000
+
     def __init__(
         self,
         config_provider: IConfigProvider,

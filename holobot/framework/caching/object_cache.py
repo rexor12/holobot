@@ -12,6 +12,10 @@ TValue = TypeVar("TValue")
 class ObjectCache(IObjectCache, IStartable):
     """In-memory cache meant to be used as a global singleton in the application."""
 
+    @property
+    def priority(self) -> int:
+        return 100
+
     def __init__(self) -> None:
         super().__init__()
         self.__cache: ConcurrentMemoryCache[Any, Any] | None = None

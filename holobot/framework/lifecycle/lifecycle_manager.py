@@ -17,7 +17,7 @@ class LifecycleManager(LifecycleManagerInterface):
     ) -> None:
         self.__execution_context_factory = execution_context_factory
         self.__logger = logger_factory.create(LifecycleManager)
-        self.__startables = startables
+        self.__startables = sorted(startables, key=lambda i: i.priority)
 
     async def start_all(self):
         with self.__execution_context_factory.create("Started startables", "Started all"):

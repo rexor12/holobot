@@ -1,4 +1,3 @@
-import asyncio
 import ssl
 from collections.abc import Awaitable
 
@@ -17,6 +16,10 @@ from .session import Session
 @injectable(IStartable)
 @injectable(IDatabaseManager)
 class DatabaseManager(IDatabaseManager, IStartable):
+    @property
+    def priority(self) -> int:
+        return 10
+
     def __init__(
         self,
         database_options: IOptions[DatabaseOptions],
@@ -26,19 +29,19 @@ class DatabaseManager(IDatabaseManager, IStartable):
         self.__database_options = database_options
         self.__logger = logger_factory.create(DatabaseManager)
         self.__migrations: tuple[MigrationInterface, ...] = migrations
-        self.__connection_pool: asyncpg.Pool = asyncio.get_event_loop().run_until_complete(
-            self.__initialize_database()
-        )
+        self.__connection_pool: asyncpg.Pool | None = None
 
     def start(self) -> Awaitable[None]:
         return COMPLETED_TASK
 
     async def stop(self) -> None:
-        await self.__connection_pool.close()
+        if self.__connection_pool:
+            await self.__connection_pool.close()
         self.__logger.info("Successfully shut down")
 
     async def upgrade_all(self) -> None:
         self.__logger.info("Upgrading the database...")
+        self.__connection_pool = await self.__initialize_database()
         async with self.__connection_pool.acquire() as connection:
             connection: asyncpg.Connection
             async with connection.transaction():
@@ -48,6 +51,7 @@ class DatabaseManager(IDatabaseManager, IStartable):
 
     async def downgrade_many(self, version_by_table: tuple[str, int]) -> None:
         self.__logger.info("Rolling back the database...")
+        assert self.__connection_pool
         async with self.__connection_pool.acquire() as connection:
             connection: asyncpg.Connection
             async with connection.transaction():
@@ -57,6 +61,7 @@ class DatabaseManager(IDatabaseManager, IStartable):
         self.__logger.info("Successfully rolled back the database")
 
     async def acquire_connection(self) -> ISession:
+        assert self.__connection_pool
         connection: asyncpg.Connection = await self.__connection_pool.acquire()
         return Session(connection, self.__connection_pool)
 

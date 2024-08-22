@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 from typing import Any
@@ -78,7 +79,7 @@ logger.info("Loaded all modules")
 scope = LifetimeScope(catalog_builder.build())
 try:
     logger.info("Starting the kernel...")
-    scope.resolve(Kernel).run()
+    asyncio.run(scope.resolve(Kernel).run())
     logger.info("The kernel has stopped")
 except CyclicGraphException as error:
     logger.fatal(

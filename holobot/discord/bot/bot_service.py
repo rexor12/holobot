@@ -43,7 +43,7 @@ class BotService(BotServiceInterface):
         if self.__bot_task is not None:
             raise InvalidOperationError("The bot is running already.")
 
-        self.__bot_task = asyncio.get_event_loop().create_task(
+        self.__bot_task = asyncio.get_running_loop().create_task(
             self.__bot.start(
                 activity=hikari.Activity(
                     name=f"v{self.__environment.version}",

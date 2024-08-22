@@ -12,6 +12,10 @@ from holobot.sdk.lifecycle import IStartable
 @injectable(IStartable)
 @injectable(IWorkflow)
 class MagicEightBallWorkflow(WorkflowBase, IStartable):
+    @property
+    def priority(self) -> int:
+        return 2000
+
     def __init__(
         self,
         i18n_provider: II18nProvider

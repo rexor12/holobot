@@ -45,7 +45,7 @@ def wait(
     :rtype: Awaitable[None]
     """
 
-    active_loop = loop or asyncio.get_event_loop()
+    active_loop = loop or asyncio.get_running_loop()
     timeout_seconds = timeout if isinstance(timeout, int) else timeout.total_seconds()
     return CancellationPromise(
         active_loop.create_task(asyncio.sleep(timeout_seconds, None)),

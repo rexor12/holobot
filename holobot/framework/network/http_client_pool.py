@@ -1,5 +1,4 @@
-from collections.abc import Callable, Generator
-from types import coroutine
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from aiohttp import ClientSession, TCPConnector
@@ -14,39 +13,46 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import HttpStatusError, ImATeapotError, TooManyRequestsError
+from holobot.sdk.threading.utils import COMPLETED_TASK
 
 DEFAULT_TIMEOUT = ClientTimeout(total=5)
 
-# https://julien.danjou.info/python-and-fast-http-clients/
 @injectable(IStartable)
 @injectable(IHttpClientPool)
 class HttpClientPool(IHttpClientPool, IStartable):
+    @property
+    def priority(self) -> int:
+        return 10
+
     def __init__(
         self,
         logger_factory: ILoggerFactory,
         options: IOptions[EnvironmentOptions]
     ) -> None:
+        self.__options = options
         self.__error_map: dict[int, Callable[[CIMultiDict], Exception]] = {
             403: lambda _: HTTPForbidden(),
             404: lambda _: HTTPNotFound(),
             ImATeapotError.STATUS_CODE: ImATeapotError.from_headers,
             TooManyRequestsError.STATUS_CODE: TooManyRequestsError.from_headers
         }
-        self.__session = ClientSession(
-            connector=TCPConnector(limit=options.value.HttpPoolSize)
-        )
+        self.__session: ClientSession | None = None
         self.__logger = logger_factory.create(HttpClientPool)
 
-    @coroutine
-    def start(self) -> Generator[None, None, None]:
-        yield
+    def start(self) -> Awaitable[None]:
+        self.__session = ClientSession(
+            connector=TCPConnector(limit=self.__options.value.HttpPoolSize)
+        )
+        return COMPLETED_TASK
 
     async def stop(self):
         self.__logger.debug("Closing session...")
-        await self.__session.close()
+        if self.__session:
+            await self.__session.close()
         self.__logger.debug("Successfully closed session")
 
     async def get(self, url: str, query_parameters: dict[str, Any] | None = None) -> Any:
+        assert self.__session
         try:
             async with self.__session.get(url, params=query_parameters, timeout=DEFAULT_TIMEOUT) as response:
                 return await response.json()
@@ -54,6 +60,7 @@ class HttpClientPool(IHttpClientPool, IStartable):
             self.__raise_on_error(error)
 
     async def get_raw(self, url: str, query_parameters: dict[str, Any] | None = None) -> bytes:
+        assert self.__session
         try:
             async with self.__session.get(url, params=query_parameters, timeout=DEFAULT_TIMEOUT) as response:
                 return await response.read()
@@ -62,6 +69,7 @@ class HttpClientPool(IHttpClientPool, IStartable):
             raise Exception # Won't be hit
 
     async def post(self, url: str, json: dict[str, Any]) -> Any:
+        assert self.__session
         try:
             async with self.__session.post(url, json=json, timeout=DEFAULT_TIMEOUT) as response:
                 return await response.json()

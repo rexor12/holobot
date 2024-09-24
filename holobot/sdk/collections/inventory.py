@@ -41,6 +41,10 @@ class Inventory(Generic[TItem]):
 
         return item
 
+    def remove_all(self,) -> None:
+        for index in range(len(self.__slots)):
+            self.__slots[index] = None
+
     def __getitem__(self, i: SupportsIndex, /) -> TItem | None:
         return self.__slots[i]
 

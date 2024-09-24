@@ -1,9 +1,14 @@
+from collections.abc import Awaitable
+
 from holobot.extensions.general.models.user_profiles import RankingInfo, UserProfile
 from holobot.extensions.general.sdk.badges.models import BadgeId
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.enums import Order
+from holobot.sdk.database.queries.constraints import (
+    and_expression, column_expression, or_expression
+)
+from holobot.sdk.database.queries.enums import Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -65,6 +70,30 @@ class UserProfileRepository(
                     for record in result.records
                 ]
             )
+
+    def is_badge_equipped(
+        self,
+        user_id: str,
+        badge_id: BadgeId
+    ) -> Awaitable[bool]:
+        return self._exists_by_filter(
+            lambda where: where.expression(and_expression(
+                column_expression("id", Equality.EQUAL, user_id),
+                or_expression(
+                    and_expression(
+                        column_expression("badge_id1", Equality.EQUAL, badge_id.badge_id),
+                        column_expression("badge_sid1", Equality.EQUAL, badge_id.server_id)
+                    ),
+                    *[
+                        and_expression(
+                            column_expression(f"badge_id{index + 2}", Equality.EQUAL, badge_id.badge_id),
+                            column_expression(f"badge_sid{index + 2}", Equality.EQUAL, badge_id.server_id)
+                        )
+                        for index in range(UserProfile.MAX_BADGE_COUNT - 1)
+                    ]
+                ),
+            ))
+        )
 
     def _map_record_to_model(self, record: UserProfileRecord) -> UserProfile:
         model = UserProfile(

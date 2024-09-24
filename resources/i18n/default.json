@@ -105,6 +105,12 @@
         },
 
         "general": {
+            "clear_badge_workflow": {
+                "cleared_all_badges": "I have removed all your badges from display.",
+                "cleared_badge": "I have removed your badge from _slot {slot_index}_.",
+                "view_profile_button": "View profile",
+                "view_badges_button": "View badges"
+            },
             "create_channel_timer_workflow": {
                 "time_input_parsing_error": "It would be truly splendid if you could kindly tell me the time in a manner that I, too, can comprehend. (Use the format `HH:MM` for time input.)",
                 "base_time_out_of_range_error": "It would be truly splendid if you could kindly tell me the base time between 00:00 and 23:59.",
@@ -579,13 +585,15 @@
                 "no_user_badges_error": "Alas, it seems you haven't unlocked any badges, yet.",
                 "no_other_user_badges_error": "Alas, it seems <@{user_id}> hasn't unlocked any badges, yet.",
                 "badge_description": "<:{emoji_name}:{emoji_id}> **{name}** ⦁ <t:{unlocked_at}:R>\n    _{description}_",
+                "badge_description_equipped": "<:{emoji_name}:{emoji_id}> **{name}** ⦁ <t:{unlocked_at}:R> ⦁ _Equipped_\n    _{description}_",
                 "embed_title": "{username}'s badges",
                 "equip_button": "Equip",
                 "invalid_badge_error": "Alas, it seems this badge no longer exists.",
                 "equip_position_confirmation": "Pray, tell me, where should I display <:{emoji_name}:{emoji_id}> **{badge_name}**?",
                 "badge_not_owned_error": "Alas, it seems you don't own this badge. Has the wolf stolen it?",
-                "badges_updated": "I've updated your user profile badge list.",
-                "view_profile_button": "View profile"
+                "badges_updated": "Your user profile now has <:{emoji_name}:{emoji_id}> **{badge_name}** on display in _slot {slot_index}_.",
+                "view_profile_button": "View profile",
+                "equip_another_button": "Back to badges"
             },
             "view_user_banner_workflow": {
                 "embed_title": "{user}'s banner",

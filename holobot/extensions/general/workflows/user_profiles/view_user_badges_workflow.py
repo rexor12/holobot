@@ -106,6 +106,36 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         )
 
     @component(
+        identifier="ubadgepagir",
+        is_bound=True
+    )
+    async def change_to_first_page(
+        self,
+        context: InteractionContext,
+        state: ButtonState
+    ) -> InteractionResponse:
+        if not (user_id := state.custom_data.get("u")):
+            return self._reply(
+                content=self.__i18n.get("interactions.invalid_interaction_data_error"),
+                embed=None,
+                components=None
+            )
+
+        content, embed, components = await self.__create_page_content(
+            state.owner_id,
+            0,
+            ViewUserBadgesWorkflow._DEFAULT_PAGE_SIZE,
+            user_id
+        )
+
+        return self._edit_message(
+            content=content,
+            embed=embed,
+            components=components,
+            suppress_user_mentions=True
+        )
+
+    @component(
         identifier="setbadge",
         is_bound=True
     )
@@ -195,7 +225,11 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                 server_id=badge_server_id,
                 badge_id=badge_id
             )
-            if not await self.__user_badge_repository.exists(user_badge_id):
+            typed_badge_id = BadgeId(server_id=badge_server_id, badge_id=badge_id)
+            if (
+                not await self.__user_badge_repository.exists(user_badge_id)
+                or not (badge := await self.__badge_repository.get(typed_badge_id))
+            ):
                 return self._edit_message(
                     content=self.__i18n.get(
                         "extensions.general.view_user_badges_workflow.badge_not_owned_error"
@@ -204,7 +238,6 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                     components=None
                 )
 
-            typed_badge_id = BadgeId(server_id=badge_server_id, badge_id=badge_id)
             user_profile = await self.__user_profile_manager.get_or_create(context.author_id)
             user_profile.badges.remove_item(typed_badge_id)
             user_profile.badges.set_item(slot_index, typed_badge_id)
@@ -214,16 +247,37 @@ class ViewUserBadgesWorkflow(WorkflowBase):
 
             return self._edit_message(
                 content=self.__i18n.get(
-                    "extensions.general.view_user_badges_workflow.badges_updated"
+                    "extensions.general.view_user_badges_workflow.badges_updated",
+                    {
+                        "emoji_name": badge.emoji_name,
+                        "emoji_id": badge.emoji_id,
+                        "badge_name": badge.name,
+                        "slot_index": str(slot_index + 1)
+                    }
                 ),
                 embed=None,
-                components=Button(
-                    id="vprofile",
-                    owner_id=context.author_id,
-                    text=self.__i18n.get(
-                        "extensions.general.view_user_badges_workflow.view_profile_button"
-                    ),
-                    custom_data={ "u": context.author_id }
+                components=StackLayout(
+                    id="dummy",
+                    children=[
+                        Button(
+                            id="vprofile",
+                            owner_id=context.author_id,
+                            text=self.__i18n.get(
+                                "extensions.general.view_user_badges_workflow.view_profile_button"
+                            ),
+                            custom_data={ "u": context.author_id }
+                        ),
+                        Button(
+                            id="ubadgepagir",
+                            owner_id=context.author_id,
+                            text=self.__i18n.get(
+                                "extensions.general.view_user_badges_workflow.equip_another_button"
+                            ),
+                            custom_data={
+                                "u": context.author_id
+                            }
+                        )
+                    ]
                 )
             )
 
@@ -268,8 +322,13 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                 if not badge:
                     continue
 
+                is_equipped = await self.__user_profile_repository.is_badge_equipped(user_id, badge_id)
                 badge_descriptors.append(self.__i18n.get(
-                    "extensions.general.view_user_badges_workflow.badge_description",
+                    (
+                        "extensions.general.view_user_badges_workflow.badge_description_equipped"
+                        if is_equipped
+                        else "extensions.general.view_user_badges_workflow.badge_description"
+                    ),
                     {
                         "emoji_name": badge.emoji_name,
                         "emoji_id": badge.emoji_id,

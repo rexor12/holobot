@@ -42,7 +42,7 @@ class Kernel(KernelInterface):
             self.__logger.info("Application started")
 
             await stop_event.wait()
-        except asyncio.exceptions.CancelledError as error:
+        except asyncio.exceptions.CancelledError:
             self.__logger.info("Shutting down due to the application runtime event being cancelled...")
         except KeyboardInterrupt:
             self.__logger.info("Shutting down due to keyboard interrupt...")

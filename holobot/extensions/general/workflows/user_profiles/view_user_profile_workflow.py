@@ -48,7 +48,7 @@ class ShowUserProfileWorkflow(UserProfileWorkflowBase):
         defer_type=DeferType.DEFER_MESSAGE_CREATION,
         cooldown=Cooldown(duration=5)
     )
-    async def show_user_profile(
+    async def view_user_profile(
         self,
         context: InteractionContext,
         user: int | None = None
@@ -64,7 +64,7 @@ class ShowUserProfileWorkflow(UserProfileWorkflowBase):
         return self._reply(attachments=(image_or_error,))
 
     @component(identifier="vprofile")
-    async def set_user_profile_badge(
+    async def view_user_profile2(
         self,
         context: InteractionContext,
         state: ButtonState

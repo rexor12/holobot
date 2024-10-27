@@ -10,3 +10,4 @@ class EnvironmentOptions(OptionsDefinition):
     IsDebug: bool = False
     LogLevel: str = "Information"
     HttpPoolSize: int = 100
+    ResourceDirectoryPath: str = ""

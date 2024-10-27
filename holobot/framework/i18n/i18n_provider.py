@@ -2,6 +2,7 @@ import glob
 import os
 import random
 from collections.abc import Iterable
+from functools import cmp_to_key
 from json import load
 from typing import Any
 
@@ -17,6 +18,7 @@ from .types import I18nGroup
 
 _ARGUMENTS_SENTINEL: dict[str, Any] = {}
 _DEFAULT_LANGUAGE = "default"
+_OVERRIDE_FILE_EXTENSION = ".override.json"
 
 @injectable(IStartable)
 @injectable(II18nProvider)
@@ -150,20 +152,28 @@ class I18nProvider(II18nProvider, II18nManager, IStartable):
             return key
 
     def reload_all(self) -> None:
-        # TODO Merge files, eg. hu-hu.json + hu-hu.override.json, like configs
         languages: dict[str, I18nGroup] = {}
         if self.__options.value.ResourceDirectoryPath:
             i18n_directory = os.path.join(self.__options.value.ResourceDirectoryPath, "i18n")
         else:
             i18n_directory = os.path.join(self.__environment.root_path, "resources", "i18n")
 
-        for file_name in glob.glob("*.json", root_dir=i18n_directory):
+        i18n_files = sorted(
+            glob.glob("*.json", root_dir=i18n_directory),
+            key=cmp_to_key(I18nProvider.__compare_file_names)
+        )
+
+        for file_name in i18n_files:
             file_info = os.path.splitext(file_name)
             name_parts = file_info[0].split("_")
             language = _DEFAULT_LANGUAGE if len(name_parts) < 2 else name_parts[1]
-            languages[language] = I18nProvider.__build_map(
-                os.path.join(i18n_directory, file_name)
-            )
+            i18n_group = I18nProvider.__build_map(os.path.join(i18n_directory, file_name))
+            if language in languages:
+                languages[language].merge(i18n_group)
+                self.__logger.debug("Merged I18N files", merge_source=file_name)
+            else:
+                languages[language] = i18n_group
+                self.__logger.debug("Loaded I18N file", file_name=file_name)
 
         self.__languages = languages
 
@@ -202,6 +212,13 @@ class I18nProvider(II18nProvider, II18nManager, IStartable):
 
         value = current_group.value.get(subkeys[-1])
         return None if isinstance(value, I18nGroup) else value
+
+    @staticmethod
+    def __compare_file_names(a: str, b: str) -> int:
+        if a.endswith(_OVERRIDE_FILE_EXTENSION) or b.endswith(_OVERRIDE_FILE_EXTENSION):
+            return 1
+
+        return 0
 
     def __get_value_by_key(
         self,

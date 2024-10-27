@@ -95,6 +95,9 @@
         "dev": {
             "maintenance_mode_enabled_error": "I'm sorry, but I'm undergoing maintenance right now. Please, try again a bit later. („• ᴗ •„)",
 
+            "reload_i18n_workflow": {
+                "reloaded_files": "Successfully reloaded all I18N files."
+            },
             "set_log_level_workflow": {
                 "log_level_changed": "The log level has been changed."
             },

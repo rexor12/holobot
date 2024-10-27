@@ -5,11 +5,14 @@ from collections.abc import Iterable
 from json import load
 from typing import Any
 
-from holobot.sdk.i18n import II18nProvider
+from holobot.framework.configs import EnvironmentOptions
+from holobot.sdk.configs import IOptions
+from holobot.sdk.i18n import II18nManager, II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.system import IEnvironment
+from holobot.sdk.threading.utils import COMPLETED_TASK
 from .types import I18nGroup
 
 _ARGUMENTS_SENTINEL: dict[str, Any] = {}
@@ -17,7 +20,8 @@ _DEFAULT_LANGUAGE = "default"
 
 @injectable(IStartable)
 @injectable(II18nProvider)
-class I18nProvider(II18nProvider, IStartable):
+@injectable(II18nManager)
+class I18nProvider(II18nProvider, II18nManager, IStartable):
     """Implementation of a service used to resolve internationalization keys."""
 
     @property
@@ -28,24 +32,18 @@ class I18nProvider(II18nProvider, IStartable):
     def __init__(
         self,
         environment: IEnvironment,
-        logger_factory: ILoggerFactory
+        logger_factory: ILoggerFactory,
+        options: IOptions[EnvironmentOptions]
     ) -> None:
         super().__init__()
         self.__environment = environment
         self.__logger = logger_factory.create(I18nProvider)
+        self.__options = options
         self.__languages: dict[str, I18nGroup] = {}
 
-    async def start(self):
-        languages: dict[str, I18nGroup] = {}
-        i18n_directory = os.path.join(self.__environment.root_path, "resources", "i18n")
-        for file_name in glob.glob("*.json", root_dir=i18n_directory):
-            file_info = os.path.splitext(file_name)
-            name_parts = file_info[0].split("_")
-            language = _DEFAULT_LANGUAGE if len(name_parts) < 2 else name_parts[1]
-            languages[language] = I18nProvider.__build_map(
-                os.path.join(i18n_directory, file_name)
-            )
-        self.__languages = languages
+    def start(self):
+        self.reload_all()
+        return COMPLETED_TASK
 
     async def stop(self):
         pass
@@ -150,6 +148,24 @@ class I18nProvider(II18nProvider, IStartable):
                 key=key
             )
             return key
+
+    def reload_all(self) -> None:
+        # TODO Merge files, eg. hu-hu.json + hu-hu.override.json, like configs
+        languages: dict[str, I18nGroup] = {}
+        if self.__options.value.ResourceDirectoryPath:
+            i18n_directory = os.path.join(self.__options.value.ResourceDirectoryPath, "i18n")
+        else:
+            i18n_directory = os.path.join(self.__environment.root_path, "resources", "i18n")
+
+        for file_name in glob.glob("*.json", root_dir=i18n_directory):
+            file_info = os.path.splitext(file_name)
+            name_parts = file_info[0].split("_")
+            language = _DEFAULT_LANGUAGE if len(name_parts) < 2 else name_parts[1]
+            languages[language] = I18nProvider.__build_map(
+                os.path.join(i18n_directory, file_name)
+            )
+
+        self.__languages = languages
 
     @staticmethod
     def __build_map(file_path: str) -> I18nGroup:

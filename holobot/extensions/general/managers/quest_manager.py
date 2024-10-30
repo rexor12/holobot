@@ -315,6 +315,9 @@ class QuestManager(IQuestManager):
         currencies: Iterable[CurrencyQuestReward]
     ) -> None:
         for currency in currencies:
+            if currency.count <= 0:
+                continue
+
             wallet_id = WalletId(
                 user_id=user_id,
                 currency_id=currency.currency_id,

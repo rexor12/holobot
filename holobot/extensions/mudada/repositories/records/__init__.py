@@ -1,5 +1,6 @@
 from .easter_reward_record import EasterRewardRecord
 from .exchange_quota_record import ExchangeQuotaRecord
 from .feature_state_record import FeatureStateRecord
+from .halloween_reward_record import HalloweenRewardRecord
 from .transaction_record import TransactionRecord
 from .wallet_record import WalletRecord

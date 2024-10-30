@@ -831,6 +831,28 @@
                 "too_many_gifts_error": "Alas, these gifts cannot be delivered to <@{user_id}>. You must give each person a number of gifts between **{min_amount:,}** <:bonbon:1196752635773079572> and **{max_amount:,}** <:bonbon:1196752635773079572>.",
                 "successful_transaction": "I've delivered **{amount:,}** <:bonbon:1196752635773079572>  to <@{user_id}> successfully (**{target_amount:,}** <:bonbon:1196752635773079572> in total). You now have **{amount_left:,}** <:bonbon:1196752635773079572> left."
             },
+            "get_halloween_daily_workflow": {
+                "roll_messages": [
+                    "Brewed in moonlight's glow, my potion unseals [a gift]({image_url}) that will haunt you with joy and luck all season long!\n**Your reward is {amount:,} <:{emoji_name}:{emoji_id}>.**",
+                    "Ghastly treasures arise! From my haunted charm, I reveal [a spectral gift]({image_url}), a token of delight in this bewitching season.\n**Your reward is {amount:,} <:{emoji_name}:{emoji_id}>.**",
+                    "Cobwebs shiver, and shadows dance as I unveil [a ghostly gift]({image_url}), spun with joy to haunt your Halloween with smiles!\n**Your reward is {amount:,} <:{emoji_name}:{emoji_id}>.**",
+                    "Beware the charm I wield! In shadow and glow, I unearth [a chilling treat]({image_url}), conjured to fill your Halloween with delight.\n**Your reward is {amount:,} <:{emoji_name}:{emoji_id}>.**",
+                    "Bewitched, bedazzled, behold! From my cauldron emerges [a spine-tingling prize]({image_url}), a spark of Halloween to thrill your nights!\n**Your reward is {amount:,} <:{emoji_name}:{emoji_id}>.**"
+                ],
+                "roll_images": [
+                    "https://i.imgur.com/CXJuNlC.jpeg",
+                    "https://i.imgur.com/Yz0a9lc.jpeg",
+                    "https://i.imgur.com/OkLjet7.jpeg",
+                    "https://i.imgur.com/n1vRznP.jpeg",
+                    "https://i.imgur.com/z5nsq8a.jpeg"
+                ],
+                "invalid_quest_error": "Pray, forgive me, but I cannot find my notes about this quest.",
+                "quest_on_cooldown_error": "Alas, you've opened a Trick-or-Treat bag already. Check back tomorrow for more.",
+                "quest_unavailable_error": "Pray, forgive me, this quest is currently not available.",
+                "quest_not_currently_available_error": "Alas, you've already received your rewards today. Even the Spooky Wolf needs to rest, so come back tomorrow.",
+                "choose_roll_message": "Carefully choose one of the Spooky Wolf's Trick-or-Treat bags to open.",
+                "got_tricked": "The bag rustles… but alas, only whispers of shadows inside. The [Spooky Wolf](https://i.imgur.com/XlnRaWW.jpeg) has tricked you this time!\n||This has a 10% chance of happening and the next time you're guaranteed an x2 reward multiplier.||"
+            },
             "reset_reservations_workflow": {
                 "nothing_to_return_error": "You haven't given anyone any gifts, yet.",
                 "successful_reset": "I've retrieved all **{returned_amount:,}** <:bonbon:1196752635773079572>. You now have **{total_amount:,}** <:bonbon:1196752635773079572> left."

@@ -14,7 +14,7 @@ from holobot.extensions.general.sdk.quests.exceptions import (
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestProtoId
 from holobot.extensions.mudada.constants import (
-    EASTER_2024_EVENT_TOGGLE_FEATURE_NAME, MUDADA_SERVER_ID
+    HALLOWEEN_2024_EVENT_TOGGLE_FEATURE_NAME, MUDADA_SERVER_ID
 )
 from holobot.extensions.mudada.workflows.decorators import requires_event
 from holobot.sdk.database import IUnitOfWorkProvider
@@ -24,10 +24,10 @@ from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.dict_utils import get_generic
 from holobot.sdk.utils.iterable_utils import first, of_type
 
-_QUEST_CODE = "MUDADA_EASTER_2024"
+_QUEST_CODE = "MUDADA_HALLOWEEN_2024"
 
 @injectable(IWorkflow)
-class GetEasterDailyWorkflow(WorkflowBase):
+class GetHalloweenDailyWorkflow(WorkflowBase):
     def __init__(
         self,
         i18n_provider: II18nProvider,
@@ -37,19 +37,19 @@ class GetEasterDailyWorkflow(WorkflowBase):
     ) -> None:
         super().__init__()
         self.__i18n = i18n_provider
-        self.__logger = logger_factory.create(GetEasterDailyWorkflow)
+        self.__logger = logger_factory.create(GetHalloweenDailyWorkflow)
         self.__quest_manager = quest_manager
         self.__unit_of_work_provider = unit_of_work_provider
 
-    @requires_event(EASTER_2024_EVENT_TOGGLE_FEATURE_NAME)
+    @requires_event(HALLOWEEN_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
-        subgroup_name="easter",
+        subgroup_name="halloween",
         name="daily",
-        description="Get your daily Easter Egg.",
+        description="Get your daily pumpkin.",
         server_ids=set((MUDADA_SERVER_ID,))
     )
-    async def get_easter_daily_reward(
+    async def get_halloween_daily_reward(
         self,
         context: ServerChatInteractionContext
     ) -> InteractionResponse:
@@ -61,19 +61,19 @@ class GetEasterDailyWorkflow(WorkflowBase):
         )
         if quest_status != QuestStatus.AVAILABLE:
             return self._reply(content=self.__i18n.get(
-                "extensions.mudada.get_easter_daily_workflow.quest_not_currently_available_error"
+                "extensions.mudada.get_halloween_daily_workflow.quest_not_currently_available_error"
             ))
 
         return self._reply(
-            content=self.__i18n.get("extensions.mudada.get_easter_daily_workflow.choose_roll_message"),
+            content=self.__i18n.get("extensions.mudada.get_halloween_daily_workflow.choose_roll_message"),
             components=StackLayout(
                 id="dummy",
                 children=[
                     Button(
-                        id="mdd_easter_egg",
+                        id="mdd_hallow_pkin",
                         owner_id=context.author_id,
                         style=ComponentStyle.SECONDARY,
-                        emoji=1221560899899490454
+                        emoji=1299389613877760071
                     )
                     for _ in range(5)
                 ]
@@ -81,7 +81,7 @@ class GetEasterDailyWorkflow(WorkflowBase):
         )
 
     @component(
-        identifier="mdd_easter_egg",
+        identifier="mdd_hallow_pkin",
         is_bound=True,
         defer_type=DeferType.DEFER_MESSAGE_UPDATE
     )
@@ -104,17 +104,28 @@ class GetEasterDailyWorkflow(WorkflowBase):
                 rewards = await self.__quest_manager.complete_quest(context.server_id, context.author_id, quest_proto_id)
                 currency = first(of_type(rewards.granted_items, CurrencyQuestReward))
                 reward_tier = get_generic(currency.extension_data, int, "tier") or 0
+                is_tricked = get_generic(currency.extension_data, bool, "is_tricked") or False
 
                 unit_of_work.complete()
 
+                if is_tricked:
+                    return self._edit_message(
+                        content=self.__i18n.get(
+                            "extensions.mudada.get_halloween_daily_workflow.got_tricked"
+                        )
+                    )
+
                 return self._edit_message(
                     content=self.__i18n.get_list_item(
-                        "extensions.mudada.get_easter_daily_workflow.roll_messages",
+                        "extensions.mudada.get_halloween_daily_workflow.roll_messages",
                         reward_tier,
                         {
                             "emoji_id": currency.emoji_id,
                             "emoji_name": currency.emoji_name,
-                            "amount": currency.count
+                            "amount": currency.count,
+                            "image_url": self.__i18n.get_random_list_item(
+                                "extensions.mudada.get_halloween_daily_workflow.roll_images"
+                            )
                         }
                     ),
                     embed=None,
@@ -122,19 +133,19 @@ class GetEasterDailyWorkflow(WorkflowBase):
                 )
             except InvalidQuestException:
                 return self._edit_message(
-                    content=self.__i18n.get("extensions.mudada.get_easter_daily_workflow.invalid_quest_error"),
+                    content=self.__i18n.get("extensions.mudada.get_halloween_daily_workflow.invalid_quest_error"),
                     embed=None,
                     components=None
                 )
             except QuestOnCooldownException:
                 return self._edit_message(
-                    content=self.__i18n.get("extensions.mudada.get_easter_daily_workflow.quest_on_cooldown_error"),
+                    content=self.__i18n.get("extensions.mudada.get_halloween_daily_workflow.quest_on_cooldown_error"),
                     embed=None,
                     components=None
                 )
             except QuestUnavailableException:
                 return self._edit_message(
-                    content=self.__i18n.get("extensions.mudada.get_easter_daily_workflow.quest_unavailable_error"),
+                    content=self.__i18n.get("extensions.mudada.get_halloween_daily_workflow.quest_unavailable_error"),
                     embed=None,
                     components=None
                 )

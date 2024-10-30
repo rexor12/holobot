@@ -20,9 +20,10 @@ OFFER_IMAGE_TYPES: tuple[str, ...] = (
 )
 
 # Epic Games always updates the free games on Thursdays at 10 PM CT.
+# But we'll check daily for random promotions.
 EPIC_UPDATE_TIMEZONE = zoneinfo.ZoneInfo("US/Central")
-EPIC_UPDATE_DAYOFWEEK = 3
 EPIC_UPDATE_TIME = time(hour=10)
+EXECUTION_DELAY = timedelta(seconds=5 * 60)
 
 @injectable(IScraper)
 class EpicGamesScraper(IScraper):
@@ -43,27 +44,19 @@ class EpicGamesScraper(IScraper):
         return "Epic Games Store"
 
     def get_next_scrape_time(self, last_scrape_time: datetime | None) -> datetime:
+        now = utcnow()
         if last_scrape_time is None:
-            return utcnow() - timedelta(minutes=1)
+            return now - timedelta(minutes=1)
 
-        today = datetime.now(EPIC_UPDATE_TIMEZONE).date()
-        time_to_nearest_release_day = timedelta(days=EPIC_UPDATE_DAYOFWEEK - today.weekday())
-        if today.weekday() >= EPIC_UPDATE_DAYOFWEEK:
-            previous_thursday = today - timedelta(days=today.weekday() - EPIC_UPDATE_DAYOFWEEK)
-            next_thursday = today + timedelta(weeks=1) + time_to_nearest_release_day
-        else:
-            previous_thursday = today - timedelta(weeks=1) + time_to_nearest_release_day
-            next_thursday = today + time_to_nearest_release_day
-        execution_delay = timedelta(seconds=self.__options.value.ExecutionDelay)
-        previous_release_time = datetime.combine(previous_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE) + execution_delay
-        if last_scrape_time < previous_release_time:
-            if utcnow() > previous_release_time:
-                return utcnow() - timedelta(minutes=1)
-            else:
-                return previous_release_time.astimezone(timezone.utc)
+        today = now.astimezone(EPIC_UPDATE_TIMEZONE).date()
+        release_time_today = datetime.combine(today, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE) + EXECUTION_DELAY
+        if last_scrape_time < release_time_today:
+            if now > release_time_today:
+                return now - timedelta(minutes=1)
+            return release_time_today.astimezone(timezone.utc)
 
-        next_release_time = datetime.combine(next_thursday, EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE)
-        return next_release_time.astimezone(timezone.utc) + execution_delay
+        release_time_tomorrow = datetime.combine(today + timedelta(days=1), EPIC_UPDATE_TIME, EPIC_UPDATE_TIMEZONE) + EXECUTION_DELAY
+        return release_time_tomorrow.astimezone(timezone.utc)
 
     async def scrape(self) -> Sequence[ExternalGiveawayItem]:
         options = self.__options.value

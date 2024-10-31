@@ -4,13 +4,14 @@ from collections.abc import Iterable
 from holobot.extensions.general.sdk import IQuestRewardFactory
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestRewardBase
+from holobot.extensions.mudada.configs import MudadaOptions
 from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
 from holobot.extensions.mudada.models.halloween_reward import HalloweenReward
 from holobot.extensions.mudada.repositories import IHalloweenRewardRepository
+from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.datetime_utils import utcnow
 
-_CURRENCY_CODE = "MUDERATEST"
 _REWARD_BY_TIERS = {
     0: 11000,
     1: 12000,
@@ -32,10 +33,12 @@ class Halloween2024QuestRewardFactory(IQuestRewardFactory):
     def __init__(
         self,
         currency_data_provider: ICurrencyDataProvider,
-        halloween_reward_repository: IHalloweenRewardRepository
+        halloween_reward_repository: IHalloweenRewardRepository,
+        options: IOptions[MudadaOptions]
     ) -> None:
         self.__currency_data_provider = currency_data_provider
         self.__halloween_reward_repository = halloween_reward_repository
+        self.__options = options
 
     async def create_quest_rewards(
         self,
@@ -43,7 +46,10 @@ class Halloween2024QuestRewardFactory(IQuestRewardFactory):
         server_id: str,
         user_id: str
     ) -> Iterable[QuestRewardBase]:
-        currency = await self.__currency_data_provider.get_currency_by_code(server_id, _CURRENCY_CODE)
+        currency = await self.__currency_data_provider.get_currency_by_code(
+            server_id,
+            self.__options.value.MuderaCurrencyCode
+        )
         if not currency:
             return ()
 

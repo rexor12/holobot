@@ -15,3 +15,6 @@ class QuestStatus(IntEnum):
 
     IN_PROGRESS = 3
     """The quest is currently in progress by the user."""
+
+    ON_COOLDOWN = 4
+    """The quest is available, but on cooldown for the user right now."""

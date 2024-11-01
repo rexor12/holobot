@@ -1,5 +1,7 @@
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.models import InteractionContext
+from holobot.discord.sdk.models.embed import Embed, EmbedFooter
+from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComponentStyle, StackLayout
@@ -13,10 +15,7 @@ from holobot.extensions.general.sdk.quests.exceptions import (
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestProtoId
-from holobot.extensions.mudada.constants import (
-    HALLOWEEN_2024_EVENT_TOGGLE_FEATURE_NAME, MUDADA_SERVER_ID
-)
-from holobot.extensions.mudada.workflows.decorators import requires_event
+from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -32,16 +31,17 @@ class GetHalloweenDailyWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
+        member_data_provider: IMemberDataProvider,
         quest_manager: IQuestManager,
         unit_of_work_provider: IUnitOfWorkProvider
     ) -> None:
         super().__init__()
         self.__i18n = i18n_provider
         self.__logger = logger_factory.create(GetHalloweenDailyWorkflow)
+        self.__member_data_provider = member_data_provider
         self.__quest_manager = quest_manager
         self.__unit_of_work_provider = unit_of_work_provider
 
-    @requires_event(HALLOWEEN_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
         subgroup_name="halloween",
@@ -59,9 +59,13 @@ class GetHalloweenDailyWorkflow(WorkflowBase):
             context.author_id,
             quest_proto_id
         )
-        if quest_status != QuestStatus.AVAILABLE:
+        if quest_status == QuestStatus.ON_COOLDOWN:
             return self._reply(content=self.__i18n.get(
-                "extensions.mudada.get_halloween_daily_workflow.quest_not_currently_available_error"
+                "extensions.mudada.get_halloween_daily_workflow.quest_on_cooldown_error"
+            ))
+        elif quest_status != QuestStatus.AVAILABLE:
+            return self._reply(content=self.__i18n.get(
+                "extensions.mudada.get_halloween_daily_workflow.quest_unavailable_error"
             ))
 
         return self._reply(
@@ -97,6 +101,14 @@ class GetHalloweenDailyWorkflow(WorkflowBase):
                 components=None
             )
 
+        member = await self.__member_data_provider.get_basic_data_by_id(context.server_id, context.author_id)
+        if not member:
+            return self._edit_message(
+                content=self.__i18n.get("user_not_found_error"),
+                embed=None,
+                components=None
+            )
+
         quest_proto_id = QuestProtoId(server_id=context.server_id, code=_QUEST_CODE)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             try:
@@ -110,25 +122,52 @@ class GetHalloweenDailyWorkflow(WorkflowBase):
 
                 if is_tricked:
                     return self._edit_message(
-                        content=self.__i18n.get(
-                            "extensions.mudada.get_halloween_daily_workflow.got_tricked"
-                        )
+                        content=None,
+                        embed=Embed(
+                            title=self.__i18n.get(
+                                "extensions.mudada.get_halloween_daily_workflow.trick_title"
+                            ),
+                            description=self.__i18n.get(
+                                "extensions.mudada.get_halloween_daily_workflow.trick_message"
+                            ),
+                            image_url=self.__i18n.get_random_list_item(
+                                "extensions.mudada.get_halloween_daily_workflow.trick_images"
+                            ),
+                            color=member.color,
+                            footer=EmbedFooter(
+                                text=self.__i18n.get(
+                                    "extensions.mudada.get_halloween_daily_workflow.embed_footer"
+                                )
+                            )
+                        ),
+                        components=None
                     )
 
                 return self._edit_message(
-                    content=self.__i18n.get_list_item(
-                        "extensions.mudada.get_halloween_daily_workflow.roll_messages",
-                        reward_tier,
-                        {
-                            "emoji_id": currency.emoji_id,
-                            "emoji_name": currency.emoji_name,
-                            "amount": currency.count,
-                            "image_url": self.__i18n.get_random_list_item(
-                                "extensions.mudada.get_halloween_daily_workflow.roll_images"
+                    content=None,
+                    embed=Embed(
+                        title=self.__i18n.get(
+                            "extensions.mudada.get_halloween_daily_workflow.treat_title"
+                        ),
+                        description=self.__i18n.get_list_item(
+                            "extensions.mudada.get_halloween_daily_workflow.treat_messages",
+                            reward_tier,
+                            {
+                                "emoji_id": currency.emoji_id,
+                                "emoji_name": currency.emoji_name,
+                                "amount": currency.count
+                            }
+                        ),
+                        image_url=self.__i18n.get_random_list_item(
+                            "extensions.mudada.get_halloween_daily_workflow.treat_images"
+                        ),
+                        color=member.color,
+                        footer=EmbedFooter(
+                            text=self.__i18n.get(
+                                "extensions.mudada.get_halloween_daily_workflow.embed_footer"
                             )
-                        }
+                        )
                     ),
-                    embed=None,
                     components=None
                 )
             except InvalidQuestException:

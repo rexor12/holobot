@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from holobot.sdk.database.entities import PrimaryKey, Record
 
@@ -33,3 +33,5 @@ class QuestProtoRecord(Record):
     title: str | None
     note: str | None
     completion_text: str | None
+    valid_from: datetime | None
+    valid_to: datetime | None

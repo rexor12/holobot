@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from holobot.extensions.general.enums import QuestResetType
 from holobot.extensions.general.sdk.quests.models import QuestProtoId
@@ -46,3 +46,9 @@ class QuestProto(AggregateRoot[QuestProtoId]):
 
     completion_text: str | None = None
     """An optional text that is displayed as part of the quest completion."""
+
+    valid_from: datetime | None = None
+    """An optional date-time from which the quest is available (inclusive)."""
+
+    valid_to: datetime | None = None
+    """An optional date-time until which the quest is available (inclusive)."""

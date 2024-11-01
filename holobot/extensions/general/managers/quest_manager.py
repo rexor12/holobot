@@ -103,6 +103,13 @@ class QuestManager(IQuestManager):
         if not quest_proto:
             raise InvalidQuestException(quest_proto_id, "This quest prototype doesn't exist.")
 
+        now = utcnow()
+        if (
+            (quest_proto.valid_from is not None and now < quest_proto.valid_from)
+            or (quest_proto.valid_to is not None and now > quest_proto.valid_to)
+        ):
+            raise QuestUnavailableException(quest_proto_id, "This quest has expired already or is not available yet.")
+
         if not (quest := await self.__get_quest(server_id, user_id, quest_proto_id)):
             raise QuestNotStartedException(quest_proto_id)
 
@@ -113,7 +120,7 @@ class QuestManager(IQuestManager):
             )
 
         # TODO Add character XP, SP and items.
-        quest.completed_at = utcnow()
+        quest.completed_at = now
         await self.__quest_repository.update(quest)
         granted_items = await self.__grant_rewards(quest.identifier.server_id, user_id, quest_proto)
 
@@ -141,9 +148,14 @@ class QuestManager(IQuestManager):
             if not quest.completed_at:
                 return QuestStatus.IN_PROGRESS
 
-        can_start_quest, _ = QuestManager.__can_start_quest(quest_proto, quest)
+        can_start_quest, cooldown = QuestManager.__can_start_quest(quest_proto, quest)
+        if can_start_quest:
+            return QuestStatus.AVAILABLE
 
-        return QuestStatus.AVAILABLE if can_start_quest else QuestStatus.UNAVAILABLE
+        if cooldown is not None:
+            return QuestStatus.ON_COOLDOWN
+
+        return QuestStatus.UNAVAILABLE
 
     @staticmethod
     def __are_objectives_complete(
@@ -169,6 +181,14 @@ class QuestManager(IQuestManager):
 
         # The quest is still in progress or the quest is non-repeatable.
         if not quest.completed_at or quest_proto.reset_type is QuestResetType.NONE:
+            return (False, None)
+
+        # The quest has expired already or is not available yet.
+        now = utcnow()
+        if (
+            (quest_proto.valid_from is not None and now < quest_proto.valid_from)
+            or (quest_proto.valid_to is not None and now > quest_proto.valid_to)
+        ):
             return (False, None)
 
         match quest_proto.reset_type:

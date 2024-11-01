@@ -59,7 +59,9 @@ class QuestProtoRepository(
             reward_badge_id_1=record.reward_badge_id_1,
             title=record.title,
             note=record.note,
-            completion_text=record.completion_text
+            completion_text=record.completion_text,
+            valid_from=record.valid_from,
+            valid_to=record.valid_to
         )
 
     def _map_model_to_record(self, model: QuestProto) -> QuestProtoRecord:
@@ -91,5 +93,7 @@ class QuestProtoRepository(
             reward_badge_id_1=model.reward_badge_id_1,
             title=model.title,
             note=model.note,
-            completion_text=model.completion_text
+            completion_text=model.completion_text,
+            valid_from=model.valid_from,
+            valid_to=model.valid_to
         )

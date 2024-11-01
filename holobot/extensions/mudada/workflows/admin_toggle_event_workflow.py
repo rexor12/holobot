@@ -9,9 +9,7 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.mudada.constants import (
-    EASTER_2024_EVENT_TOGGLE_FEATURE_NAME, HALLOWEEN_2024_EVENT_TOGGLE_FEATURE_NAME,
-    MUDADA_SERVER_ID, SUMMER_2024_DAILY_EVENT_TOGGLE_FEATURE_NAME,
-    VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
+    MUDADA_SERVER_ID, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
 )
 from holobot.extensions.mudada.models.feature_state import FeatureState
 from holobot.extensions.mudada.repositories import IFeatureStateRepository
@@ -23,15 +21,9 @@ from holobot.sdk.ioc.decorators import injectable
 class EventType(IntEnum):
     UNKNOWN = 0
     VALENTINES2024 = 1
-    EASTER2024 = 2
-    SUMMER2024 = 3
-    HALLOWEEN2024 = 4
 
 EVENT_TYPE_TO_FEATURE_STATE_NAME_MAP: dict[EventType, str] = {
-    EventType.VALENTINES2024: VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME,
-    EventType.EASTER2024: EASTER_2024_EVENT_TOGGLE_FEATURE_NAME,
-    EventType.SUMMER2024: SUMMER_2024_DAILY_EVENT_TOGGLE_FEATURE_NAME,
-    EventType.HALLOWEEN2024: HALLOWEEN_2024_EVENT_TOGGLE_FEATURE_NAME
+    EventType.VALENTINES2024: VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
 }
 
 @injectable(IWorkflow)
@@ -61,9 +53,6 @@ class AdminToggleEventWorkflow(WorkflowBase):
                 OptionType.INTEGER,
                 choices=(
                     Choice("Valentine's Day", EventType.VALENTINES2024),
-                    Choice("Easter", EventType.EASTER2024),
-                    Choice("Summer Beach Episode Daily", EventType.SUMMER2024),
-                    Choice("Halloween Daily", EventType.HALLOWEEN2024)
                 )
             ),
             Option("enabled", "The new state of the event.", OptionType.BOOLEAN)

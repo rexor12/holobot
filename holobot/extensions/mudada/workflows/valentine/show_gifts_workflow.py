@@ -9,9 +9,10 @@ from holobot.discord.sdk.workflows.interactables.components import (
 from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.mudada.constants import (
-    MUDADA_SERVER_ID, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
+    MUDADA_FEATURE_NAME, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
 )
 from holobot.extensions.mudada.repositories import ITransactionRepository
 from holobot.extensions.mudada.workflows.decorators import requires_event
@@ -40,7 +41,7 @@ class ShowGiftsWorkflow(WorkflowBase):
         subgroup_name="valentine",
         name="gifts",
         description="Displays the list of gifts you have prepared so far.",
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         defer_type=DeferType.DEFER_MESSAGE_CREATION,
         cooldown=Cooldown(duration=10),
         is_ephemeral=True

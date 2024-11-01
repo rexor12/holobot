@@ -4,7 +4,7 @@ from hikari import CommandType
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
 
 from holobot.discord.bot import Bot
-from holobot.discord.sdk.enums import Permission
+from holobot.discord.sdk.authorization import IAuthorizationDataProvider
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables import (
     Autocomplete, Command, Component, MenuItem, Modal
@@ -35,11 +35,13 @@ TAutocompleteGroupMap = dict[str, TAutocompleteSubgroupMap]
 class WorkflowRegistry(IWorkflowRegistry):
     def __init__(
         self,
+        authorization_data_provider: IAuthorizationDataProvider,
         debugger: DebuggerInterface,
         logger_factory: ILoggerFactory,
         workflows: tuple[IWorkflow, ...]
     ) -> None:
         super().__init__()
+        self.__authorization_data_provider = authorization_data_provider
         self.__log = logger_factory.create(WorkflowRegistry)
         self.__initialize_groups(workflows, debugger)
 
@@ -90,7 +92,7 @@ class WorkflowRegistry(IWorkflowRegistry):
     ) -> tuple[IWorkflow, Modal] | None:
         return self.__modals.get(identifier)
 
-    def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
+    async def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
         self.__log.info("Registering commands...")
         builders_by_servers: dict[str, dict[str, CommandGroupBuilder | CommandBuilder]] = {}
         subgroup_builders_by_servers: dict[str, dict[str, CommandSubGroupBuilder]] = {}
@@ -99,7 +101,8 @@ class WorkflowRegistry(IWorkflowRegistry):
             for subgroup_name, subgroup in group.items():
                 for command_name, command in subgroup.items():
                     total_command_count += 1
-                    for server_id in command[1].server_ids or ("",):
+                    authorized_server_ids = await self.__authorization_data_provider.get_authorized_server_ids(command[1])
+                    for server_id in authorized_server_ids:
                         builders_by_server = get_or_add(builders_by_servers, server_id, lambda _: dict[str, CommandGroupBuilder | CommandBuilder](), None)
                         subgroup_builders_by_server = get_or_add(subgroup_builders_by_servers, server_id, lambda _: dict[str, CommandSubGroupBuilder](), None)
                         group_builder = None
@@ -132,11 +135,12 @@ class WorkflowRegistry(IWorkflowRegistry):
             for server_id, builders in builders_by_servers.items()
         }
 
-    def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
+    async def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
         self.__log.info("Registering user menu items...")
         builders = {}
         for menu_item in sorted(self.__menu_items.values(), key=lambda i: i[1].priority, reverse=True):
-            for server_id in menu_item[1].server_ids or ("",):
+            authorized_server_ids = await self.__authorization_data_provider.get_authorized_server_ids(menu_item[1])
+            for server_id in authorized_server_ids:
                 server_builders = get_or_add(builders, server_id, lambda _: list(), None)
                 if (server_builders := builders.get(server_id)) is None:
                     builders[server_id] = server_builders = []

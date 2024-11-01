@@ -5,8 +5,9 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.extensions.mudada.repositories import IWalletRepository
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
@@ -37,7 +38,7 @@ class AdminTakeGiftsWorkflow(WorkflowBase):
             Option("user", "The user you'd like to take gifts from.", OptionType.USER, False)
         ),
         required_permissions=Permission.ADMINISTRATOR,
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         defer_type=DeferType.DEFER_MESSAGE_CREATION
     )
     async def admin_take_gifts(

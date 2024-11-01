@@ -4,9 +4,10 @@ from collections.abc import Iterable
 from holobot.extensions.general.sdk import IQuestRewardFactory
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestRewardBase
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.configs import MudadaOptions
 from holobot.extensions.mudada.models.easter_reward import EasterReward
 from holobot.extensions.mudada.repositories import IEasterRewardRepository
+from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.datetime_utils import utcnow
 
@@ -23,7 +24,7 @@ _REWARD_BY_TIERS = {
 class EasterQuestRewardFactory(IQuestRewardFactory):
     @property
     def relevant_server_ids(self) -> tuple[str, ...]:
-        return (MUDADA_SERVER_ID,)
+        return (self.__options.value.MudadaServerId,)
 
     @property
     def relevant_quest_codes(self) -> tuple[str, ...]:
@@ -32,10 +33,12 @@ class EasterQuestRewardFactory(IQuestRewardFactory):
     def __init__(
         self,
         currency_data_provider: ICurrencyDataProvider,
-        easter_reward_repository: IEasterRewardRepository
+        easter_reward_repository: IEasterRewardRepository,
+        options: IOptions[MudadaOptions],
     ) -> None:
         self.__currency_data_provider = currency_data_provider
         self.__easter_reward_repository = easter_reward_repository
+        self.__options = options
 
     async def create_quest_rewards(
         self,

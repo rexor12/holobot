@@ -1,14 +1,14 @@
 {
-    "feature_disabled_error": "I'm sorry, but this feature is disabled. Please, try again later. (｡•́︿•̀｡)",
-    "feature_quota_exhausted_error": "I'm sorry, but I've exhausted my quota for this feature due to massive user interest. Please, try again later. (｡•́︿•̀｡)",
-    "rate_limit_error": "I'm sorry, but an error occurred when I tried to communicate with the server this feature relies on. Please, try again in a few minutes. (｡•́︿•̀｡)",
-    "missing_required_argument_error": "I'm sorry, but I cannot handle your request due to a missing argument: {argname}. Please, try again by specifying the argument. (｡•́︿•̀｡)",
-    "server_not_found_error": "I'm sorry, but I couldn't find the requested server. Please, double check for any typos. (｡•́︿•̀｡)",
+    "feature_disabled_error": "Alas, this is something I cannot do right now. (Feature disabled)",
+    "feature_quota_exhausted_error": "I'm sorry, but I've exhausted my quota for this feature due to massive user interest. Please, try again later.",
+    "rate_limit_error": "Alas, I am only able to tend to so many cubs' needs simultaneously. Kindly try again after waiting for a bit.",
+    "missing_required_argument_error": "I'm sorry, but I cannot handle your request due to a missing argument: {argname}. Please, try again by specifying the argument.",
+    "server_not_found_error": "I'm sorry, but I couldn't find the requested server. Please, double check for any typos.",
     "channel_not_found_error": "Alas, I cannot find the channel you requested. Pray, verify I have all the necessary permissions to access it.",
-    "user_not_found_error": "I'm sorry, but I couldn't find the requested user. Please, double check for any typos. (｡•́︿•̀｡)",
-    "missing_dm_permission_error": "I'm sorry, but I don't have the permission to DM users. Please, kindly ask your server administrator to grant me the permission. Thank you! („• ᴗ •„)",
-    "invalid_argument_error": "I'm sorry, but you invoked the command with an invalid argument. Please, double check for any typos and if you believe this is an issue with me, report it (see `/info`). Thank you! („• ᴗ •„)",
-    "database_serialization_error": "I'm sorry, but an error has occurred while processing your request. Please, try again and if the issue persists, report it (see `/info`). Thank you! („• ᴗ •„)",
+    "user_not_found_error": "Alas, I cannot locate the person you're trying to find. Perhaps they've left?",
+    "missing_dm_permission_error": "I'm sorry, but I don't have the permission to DM users. Please, kindly ask your server administrator to grant me the permission. Thank you!",
+    "invalid_argument_error": "I'm sorry, but you invoked the command with an invalid argument. Please, double check for any typos and if you believe this is an issue with me, report it (see `/info`). Thank you!",
+    "database_serialization_error": "I'm sorry, but an error has occurred while processing your request. Please, try again and if the issue persists, report it (see `/info`). Thank you!",
 
     "interactions": {
         "halted_interaction_error": "You are forbidden from using this command, akin to a restless wolf barred from its hunting grounds.",
@@ -17,7 +17,7 @@
         "server_only_interaction_error": "Alas, I cannot perform your request in the current location. Try it in a server.",
         "unbound_interaction_user_error": "Pray, refrain from laying claim to what is not rightfully yours, as the owner guards it with a watchful eye.",
         "unhandled_interaction_error": "Pray forgive me, something unexpected has interrupted my hunt. I have notified my master about this mishap.",
-        "not_available_for_server_error": "I'm sorry, but this command isn't available for your server. (｡•́︿•̀｡)",
+        "not_available_for_server_error": "Pray stop pulling the wolf's tail. This command isn't available in this server.",
         "cooldown_error": "Your enthusiasm is duly noted, but pray, grant me a moment's respite. ({seconds_left:,.0f} seconds)",
         "interaction_context_not_supported_error": "Alas, I cannot perform your request in the current location."
     },
@@ -93,7 +93,7 @@
         },
 
         "dev": {
-            "maintenance_mode_enabled_error": "I'm sorry, but I'm undergoing maintenance right now. Please, try again a bit later. („• ᴗ •„)",
+            "maintenance_mode_enabled_error": "Pray forgive me, I'm cleaning the house right now. I kindly ask you to wait for a bit. (Maintenance mode)",
 
             "reload_i18n_workflow": {
                 "reloaded_files": "Successfully reloaded all I18N files."

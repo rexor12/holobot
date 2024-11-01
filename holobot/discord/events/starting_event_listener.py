@@ -1,10 +1,8 @@
 import hikari
 from hikari.api.special_endpoints import CommandBuilder
 
-from holobot.discord import DiscordOptions
 from holobot.discord.bot import Bot
 from holobot.discord.workflows import IWorkflowRegistry
-from holobot.sdk.configs import IOptions
 from holobot.sdk.diagnostics import DebuggerInterface
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -20,13 +18,11 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         self,
         debugger: DebuggerInterface,
         logger_factory: ILoggerFactory,
-        options: IOptions[DiscordOptions],
         workflow_registry: IWorkflowRegistry
     ) -> None:
         super().__init__()
         self.__debugger = debugger
         self.__logger = logger_factory.create(StartingEventListener)
-        self.__options = options
         self.__workflow_registry = workflow_registry
 
     @property
@@ -34,44 +30,39 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         return _EVENT_TYPE
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
-        application = await bot.rest.fetch_application()
-        command_builders: dict[str, list[CommandBuilder]] = {}
-        for server_id, builders in self.__workflow_registry.get_command_builders(bot).items():
-            cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
-            cb.extend(builders)
-        for server_id, builders in self.__workflow_registry.get_menu_item_builders(bot).items():
-            cb = get_or_add(command_builders, server_id, lambda _: list[CommandBuilder](), None)
-            cb.extend(builders)
+        command_builders = await self.__get_command_builders(bot)
+        await self.__register_commands(bot, command_builders)
+        self.__logger.info("Registered all application commands")
 
-        is_debug_mode_enabled = self.__debugger.is_debug_mode_enabled()
-        development_server_id = self.__options.value.DevelopmentServerId
-        if is_debug_mode_enabled:
-            if str(development_server_id) in command_builders:
-                cb = get_or_add(command_builders, "", lambda _: list[CommandBuilder](), None)
-                cb.extend(command_builders.pop(str(development_server_id)))
-            self.__logger.debug(
-                "Skipping registration of some server-specific commands due to debug mode"
-            )
-
+    async def __get_command_builders(
+        self,
+        bot: Bot
+    ) -> dict[str, list[CommandBuilder]]:
+        builder_tree: dict[str, list[CommandBuilder]] = {}
+        command_builders = await self.__workflow_registry.get_command_builders(bot)
         for server_id, builders in command_builders.items():
-            if (
-                is_debug_mode_enabled
-                and server_id != ""
-                and server_id not in self.__options.value.DebugServerIds
-            ):
-                self.__logger.debug(
-                    "Skipping registration of non-debug server specific commands",
-                    server_id=server_id
-                )
-                continue
+            cb = get_or_add(builder_tree, server_id, lambda _: list[CommandBuilder](), None)
+            cb.extend(builders)
 
+        menu_item_builders = await self.__workflow_registry.get_menu_item_builders(bot)
+        for server_id, builders in menu_item_builders.items():
+            cb = get_or_add(builder_tree, server_id, lambda _: list[CommandBuilder](), None)
+            cb.extend(builders)
+
+        return builder_tree
+
+    async def __register_commands(
+        self,
+        bot: Bot,
+        command_builders: dict[str, list[CommandBuilder]]
+    ) -> None:
+        application = await bot.rest.fetch_application()
+        for server_id, builders in command_builders.items():
             try:
                 await bot.rest.set_application_commands(
                     application=application.id,
                     commands=builders,
-                    guild=int(server_id) if server_id != ""
-                        else development_server_id if is_debug_mode_enabled
-                        else hikari.UNDEFINED
+                    guild=int(server_id) if server_id != "" else hikari.UNDEFINED
                 )
             except Exception as error:
                 self.__logger.error(
@@ -79,5 +70,3 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
                     error,
                     server_id=server_id
                 )
-
-        self.__logger.info("Registered all application commands")

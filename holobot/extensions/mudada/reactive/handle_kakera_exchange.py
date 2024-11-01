@@ -11,7 +11,6 @@ from holobot.extensions.general.sdk.wallets.exceptions import (
 )
 from holobot.extensions.general.sdk.wallets.managers import IWalletManager
 from holobot.extensions.mudada.configs import MudadaOptions
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID, MUDAE_USER_ID
 from holobot.extensions.mudada.models.exchange_quota import ExchangeQuota
 from holobot.extensions.mudada.repositories import IExchangeQuotaRepository
 from holobot.sdk.configs import IOptions
@@ -49,8 +48,8 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
 
     async def on_event(self, event: MessageReceivedEvent) -> None:
         if (
-            event.message.server_id != MUDADA_SERVER_ID
-            or not event.message.author_id == MUDAE_USER_ID
+            event.message.server_id != self.__options.value.MudadaServerId
+            or not event.message.author_id == self.__options.value.MudaeUserId
             or not event.message.content
         ):
             return
@@ -200,6 +199,6 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
 
     def __get_currency_id(self) -> Awaitable[ICurrency | None]:
         return self.__currency_data_provider.get_currency_by_code(
-            MUDADA_SERVER_ID,
+            self.__options.value.MudadaServerId,
             self.__options.value.MuderaCurrencyCode
         )

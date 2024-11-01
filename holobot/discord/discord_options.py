@@ -8,8 +8,6 @@ class DiscordOptions(OptionsDefinition):
     section_name: ClassVar[str] = "Core"
 
     BotToken: str = ""
-    DevelopmentServerId: int = 0
-    DebugServerIds: set[str] = field(default_factory=set)
     PaginatorPreviousEmoji: int | None = None
     PaginatorNextEmoji: int | None = None
     IsNetworkTraceEnabled: bool = False

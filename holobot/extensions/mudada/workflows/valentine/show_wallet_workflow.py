@@ -3,10 +3,10 @@ from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.extensions.mudada.repositories import IWalletRepository
-from holobot.extensions.mudada.workflows.decorators import requires_event
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -30,7 +30,7 @@ class ShowWalletWorkflow(WorkflowBase):
         description="Displays your wallet's contents.",
         defer_type=DeferType.DEFER_MESSAGE_CREATION,
         cooldown=Cooldown(duration=10),
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         is_ephemeral=True
     )
     async def show_wallet(

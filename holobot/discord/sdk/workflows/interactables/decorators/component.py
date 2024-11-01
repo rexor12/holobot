@@ -1,5 +1,5 @@
 import inspect
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterable
 from typing import Any, TypeVar
 
 from holobot.discord.sdk.actions.enums import DeferType
@@ -9,6 +9,7 @@ from holobot.discord.sdk.workflows.constants import DECORATOR_METADATA_NAME
 from holobot.discord.sdk.workflows.interactables import Component
 from holobot.discord.sdk.workflows.interactables.components import ComponentStateBase
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import RestrictionBase
 
 TState = TypeVar("TState", bound=ComponentStateBase)
 
@@ -19,7 +20,7 @@ def component(
     is_ephemeral: bool = False,
     required_permissions: Permission = Permission.NONE,
     defer_type: DeferType = DeferType.NONE,
-    server_ids: set[str] | None = None,
+    restrictions: Iterable[RestrictionBase] | None = None,
     cooldown: Cooldown | None = None
 ) -> Callable[[Callable[[Any, InteractionContext, TState], Awaitable[InteractionResponse]]], Callable[[Any, InteractionContext, TState], Awaitable[InteractionResponse]]]:
     """A decorator that can be used to conveniently turn a function
@@ -35,8 +36,8 @@ def component(
     :type required_permissions: Permission, optional
     :param defer_type: The type of the deferral of the response, defaults to DeferType.NONE
     :type defer_type: DeferType, optional
-    :param server_ids: The identifiers of the servers the command is available in, defaults to None
-    :type server_ids: set[str] | None, optional
+    :param restrictions: A set of restrictions that determine in which servers the component is available, defaults to None
+    :type restrictions: Iterable[RestrictionBase] | None, optional
     :param cooldown: Determines how often can the interactable be invoked.
     :type cooldown: Cooldown | None, optional
     """
@@ -55,7 +56,7 @@ def component(
             is_ephemeral=is_ephemeral,
             required_permissions=required_permissions,
             defer_type=defer_type,
-            server_ids=server_ids or set(),
+            restrictions=restrictions or (),
             cooldown=cooldown
         ))
         return target

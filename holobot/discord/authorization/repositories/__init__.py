@@ -1,0 +1,2 @@
+from .iinteractable_authorization_repository import IInteractableAuthorizationRepository
+from .interactable_authorization_repository import InteractableAuthorizationRepository

@@ -7,6 +7,12 @@ from holobot.sdk.configs import OptionsDefinition
 class MudadaOptions(OptionsDefinition):
     section_name: ClassVar[str] = "Mudada"
 
+    MudadaServerId: str = ""
+    """The identifier of the Mudada server."""
+
+    MudaeUserId: str = ""
+    """The identifier of the Mudae user."""
+
     MuderaCurrencyCode: str = "MUDERATEST"
     """The code of the currency Kakera can be exchanged for and vice-versa."""
 

@@ -5,7 +5,6 @@ from holobot.extensions.general.sdk import IQuestRewardFactory
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestRewardBase
 from holobot.extensions.mudada.configs import MudadaOptions
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
 from holobot.extensions.mudada.models.halloween_reward import HalloweenReward
 from holobot.extensions.mudada.repositories import IHalloweenRewardRepository
 from holobot.sdk.configs import IOptions
@@ -24,7 +23,7 @@ _REWARD_BY_TIERS = {
 class Halloween2024QuestRewardFactory(IQuestRewardFactory):
     @property
     def relevant_server_ids(self) -> tuple[str, ...]:
-        return (MUDADA_SERVER_ID,)
+        return (self.__options.value.MudadaServerId,)
 
     @property
     def relevant_quest_codes(self) -> tuple[str, ...]:

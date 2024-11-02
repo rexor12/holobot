@@ -8,6 +8,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.sdk.quests.enums import QuestStatus
 from holobot.extensions.general.sdk.quests.exceptions import (
@@ -15,7 +16,7 @@ from holobot.extensions.general.sdk.quests.exceptions import (
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestProtoId
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -47,7 +48,7 @@ class GetHalloweenDailyWorkflow(WorkflowBase):
         subgroup_name="halloween",
         name="daily",
         description="Get your daily pumpkin.",
-        server_ids=set((MUDADA_SERVER_ID,))
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def get_halloween_daily_reward(
         self,
@@ -87,7 +88,8 @@ class GetHalloweenDailyWorkflow(WorkflowBase):
     @component(
         identifier="mdd_hallow_pkin",
         is_bound=True,
-        defer_type=DeferType.DEFER_MESSAGE_UPDATE
+        defer_type=DeferType.DEFER_MESSAGE_UPDATE,
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def claim_all_gifts(
         self,

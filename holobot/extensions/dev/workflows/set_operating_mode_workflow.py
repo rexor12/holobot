@@ -4,6 +4,8 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
+from holobot.extensions.dev.constants import DEV_FEATURE_NAME
 from holobot.extensions.dev.managers import IMaintenanceManager
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -37,8 +39,7 @@ class SetOperatingModeWorkflow(WorkflowBase):
                 Choice("Maintenance", _MAINTENANCE_MODE)
             )),
         ),
-        # TODO Provide development server ID dynamically. (#135)
-        server_ids={"999259836439081030"}
+        restrictions=(FeatureRestriction(feature_name=DEV_FEATURE_NAME),)
     )
     async def set_maintenance_mode(
         self,

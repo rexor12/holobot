@@ -1,13 +1,16 @@
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions.feature_restriction import (
+    FeatureRestriction
+)
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.sdk.quests.exceptions import (
     InvalidQuestException, QuestOnCooldownException, QuestUnavailableException
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestProtoId
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -37,7 +40,7 @@ class GetSummerDailyWorkflow(WorkflowBase):
         subgroup_name="summer",
         name="daily",
         description="Gives you daily rewards during the Mudada Summer Beach Episode event.",
-        server_ids=set((MUDADA_SERVER_ID,))
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def get_summer_daily(
         self,

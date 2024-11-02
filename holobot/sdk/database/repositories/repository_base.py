@@ -76,8 +76,7 @@ class RepositoryBase(
         :rtype: tuple[str, ...]
         """
 
-        # TODO "This is a cached value."
-        return tuple(self.__columns.keys())
+        return self.__column_names
 
     @property
     @abstractmethod
@@ -143,6 +142,7 @@ class RepositoryBase(
             parameter_info.name: parameter_info
             for parameter_info in get_parameter_infos(self.record_type, _CUSTOM_RESOLVERS)
         }
+        self.__column_names = tuple(self.__columns.keys())
         self.__id_columns = {
             name: parameter_info
             for name, parameter_info in self.__columns.items()

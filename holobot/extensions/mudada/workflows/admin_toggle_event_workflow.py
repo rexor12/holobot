@@ -7,9 +7,10 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.mudada.constants import (
-    MUDADA_SERVER_ID, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
+    MUDADA_FEATURE_NAME, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
 )
 from holobot.extensions.mudada.models.feature_state import FeatureState
 from holobot.extensions.mudada.repositories import IFeatureStateRepository
@@ -58,7 +59,7 @@ class AdminToggleEventWorkflow(WorkflowBase):
             Option("enabled", "The new state of the event.", OptionType.BOOLEAN)
         ),
         required_permissions=Permission.ADMINISTRATOR,
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         defer_type=DeferType.DEFER_MESSAGE_CREATION
     )
     async def toggle_event(

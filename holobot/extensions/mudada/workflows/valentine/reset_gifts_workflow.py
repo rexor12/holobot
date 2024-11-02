@@ -3,9 +3,10 @@ from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.mudada.constants import (
-    MUDADA_SERVER_ID, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
+    MUDADA_FEATURE_NAME, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
 )
 from holobot.extensions.mudada.repositories import ITransactionRepository, IWalletRepository
 from holobot.extensions.mudada.workflows.decorators import requires_event
@@ -34,7 +35,7 @@ class ResetGiftsWorkflow(WorkflowBase):
         subgroup_name="valentine",
         name="reset",
         description="Resets ALL of your prepared gifts, returning the gifts to you.",
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         defer_type=DeferType.DEFER_MESSAGE_CREATION,
         is_ephemeral=True
     )

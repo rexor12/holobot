@@ -5,9 +5,10 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.mudada.configs import MudadaOptions
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.extensions.mudada.repositories import IExchangeQuotaRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
@@ -33,7 +34,7 @@ class ShowExchangeQuotaWorkflow(WorkflowBase):
         subgroup_name="quota",
         name="view",
         description="Displays your exchange quota.",
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         defer_type=DeferType.DEFER_MESSAGE_CREATION,
         cooldown=Cooldown(duration=5),
         options=(

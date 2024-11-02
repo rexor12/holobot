@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
 from holobot.discord.sdk.actions.enums import DeferType
 from holobot.discord.sdk.enums.permission import Permission
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import RestrictionBase
 
 @dataclass(kw_only=True)
 class Interactable:
@@ -40,10 +41,13 @@ class Interactable:
     defer_type: DeferType = DeferType.NONE
     """Determines the type of deferral of the response."""
 
-    server_ids: set[str] = field(default_factory=set)
-    """A set of identifiers that specifies the servers the interactable is available in.
+    restrictions: Iterable[RestrictionBase] = field(default_factory=tuple)
+    """A set of server restrictions that determine
+    which servers the interactable is available for.
 
-    If the set is empty, the interactable will be available globally.
+    - If no restrictions are specified, the interactable will be available globally.
+    - If multiple restrictions are specified, the interactable is available
+    if and only if at least one of the restrictions allows it.
     """
 
     cooldown: Cooldown | None = None

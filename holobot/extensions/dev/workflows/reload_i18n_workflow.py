@@ -3,6 +3,8 @@ from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
+from holobot.extensions.dev.constants import DEV_FEATURE_NAME
 from holobot.sdk.i18n import II18nManager, II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory, ILoggerManager
@@ -29,8 +31,7 @@ class ReloadI18nWorkflow(WorkflowBase):
         description="Reloads the I18N file(s).",
         name="reloadi18n",
         group_name="dev",
-        # TODO Provide development server ID dynamically. (#135)
-        server_ids={"999259836439081030"}
+        restrictions=(FeatureRestriction(feature_name=DEV_FEATURE_NAME),)
     )
     async def reload_i18n_files(
         self,

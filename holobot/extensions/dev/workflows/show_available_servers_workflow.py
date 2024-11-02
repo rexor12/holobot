@@ -11,6 +11,8 @@ from holobot.discord.sdk.workflows.interactables.components.models import (
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
+from holobot.extensions.dev.constants import DEV_FEATURE_NAME
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
@@ -33,8 +35,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         description="Displays information about the servers the bot is in.",
         name="servers",
         group_name="dev",
-        # TODO Provide development server ID dynamically. (#135)
-        server_ids={"999259836439081030"}
+        restrictions=(FeatureRestriction(feature_name=DEV_FEATURE_NAME),)
     )
     async def show_available_servers(
         self,

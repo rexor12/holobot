@@ -9,8 +9,9 @@ from holobot.discord.sdk.workflows.interactables.components.models import (
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.mudada.constants import MUDADA_SERVER_ID
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.extensions.mudada.models import Wallet
 from holobot.extensions.mudada.repositories import ITransactionRepository, IWalletRepository
 from holobot.sdk.database import IUnitOfWorkProvider
@@ -40,7 +41,7 @@ class ClaimGiftsWorkflow(WorkflowBase):
         subgroup_name="valentine",
         name="claimgifts",
         description="View and claim your available gifts.",
-        server_ids={MUDADA_SERVER_ID},
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),),
         defer_type=DeferType.DEFER_MESSAGE_CREATION,
         cooldown=Cooldown(duration=10),
         is_ephemeral=True

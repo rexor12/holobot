@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Awaitable, Sequence
 from typing import Protocol, TypeVar
 
 from hikari.api.special_endpoints import (
@@ -74,7 +74,10 @@ class IWorkflowRegistry(Protocol):
         """
         ...
 
-    def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
+    def get_command_builders(
+        self,
+        bot: Bot
+    ) -> Awaitable[dict[str, Sequence[SlashCommandBuilder]]]:
         """Gets the command builders for each server's commands.
 
         An empty string should be used as the key for global commands;
@@ -87,7 +90,10 @@ class IWorkflowRegistry(Protocol):
         """
         ...
 
-    def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
+    def get_menu_item_builders(
+        self,
+        bot: Bot
+    ) -> Awaitable[dict[str, Sequence[ContextMenuCommandBuilder]]]:
         """Gets the menu item builders for each server's menu items.
 
         An empty string should be used as the key for global menu items;

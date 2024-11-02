@@ -32,6 +32,8 @@ class AuthorizationDataProvider(IAuthorizationDataProvider):
             elif isinstance(restriction, ServerListRestriction):
                 if server_id in restriction.server_ids:
                     return True
+            else:
+                raise TypeError(f"Unknown restriction type '{type(restriction)}'.")
 
         return False
 

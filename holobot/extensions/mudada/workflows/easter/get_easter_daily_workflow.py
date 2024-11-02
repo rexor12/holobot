@@ -14,10 +14,7 @@ from holobot.extensions.general.sdk.quests.exceptions import (
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import CurrencyQuestReward, QuestProtoId
-from holobot.extensions.mudada.constants import (
-    EASTER_2024_EVENT_TOGGLE_FEATURE_NAME, MUDADA_FEATURE_NAME
-)
-from holobot.extensions.mudada.workflows.decorators import requires_event
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -42,7 +39,6 @@ class GetEasterDailyWorkflow(WorkflowBase):
         self.__quest_manager = quest_manager
         self.__unit_of_work_provider = unit_of_work_provider
 
-    @requires_event(EASTER_2024_EVENT_TOGGLE_FEATURE_NAME)
     @command(
         group_name="mudada",
         subgroup_name="easter",

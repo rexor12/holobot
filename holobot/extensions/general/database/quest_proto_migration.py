@@ -12,8 +12,15 @@ class QuestProtoMigration(MigrationBase):
         super().__init__(QuestProtoMigration._TABLE_NAME, {
             0: MigrationPlan(0, 1, self.__initialize_table),
             1: MigrationPlan(1, 2, self.__upgrade_to_v1),
-            2: MigrationPlan(2, 3, self.__upgrade_to_v2)
+            2: MigrationPlan(2, 3, self.__upgrade_to_v2),
+            3: MigrationPlan(3, 4, self.__upgrade_to_v3)
         }, {})
+
+    async def __upgrade_to_v3(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {QuestProtoMigration._TABLE_NAME}\n"
+            " ADD COLUMN max_repeats SMALLINT DEFAULT NULL"
+        )
 
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute(

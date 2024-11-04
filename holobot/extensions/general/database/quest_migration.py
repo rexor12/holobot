@@ -10,8 +10,15 @@ class QuestMigration(MigrationBase):
 
     def __init__(self):
         super().__init__(QuestMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
+            0: MigrationPlan(0, 1, self.__initialize_table),
+            1: MigrationPlan(1, 2, self.__upgrade_to_v2)
         }, {})
+
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {QuestMigration._TABLE_NAME}\n"
+            " ADD COLUMN repeat_count SMALLINT DEFAULT NULL"
+        )
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((

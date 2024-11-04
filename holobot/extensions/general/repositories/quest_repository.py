@@ -36,7 +36,8 @@ class QuestRepository(
             ),
             completed_at=record.completed_at,
             objective_count_1=record.objective_count_1,
-            objective_count_2=record.objective_count_2
+            objective_count_2=record.objective_count_2,
+            repeat_count=record.repeat_count
         )
 
     def _map_model_to_record(self, model: Quest) -> QuestRecord:
@@ -46,5 +47,6 @@ class QuestRepository(
             quest_proto_code=PrimaryKey(model.identifier.quest_proto_code),
             completed_at=model.completed_at,
             objective_count_1=model.objective_count_1,
-            objective_count_2=model.objective_count_2
+            objective_count_2=model.objective_count_2,
+            repeat_count=model.repeat_count
         )

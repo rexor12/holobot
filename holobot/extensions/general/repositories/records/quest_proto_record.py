@@ -35,3 +35,4 @@ class QuestProtoRecord(Record):
     completion_text: str | None
     valid_from: datetime | None
     valid_to: datetime | None
+    max_repeats: int | None

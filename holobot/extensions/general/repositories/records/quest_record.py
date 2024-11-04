@@ -13,3 +13,4 @@ class QuestRecord(Record):
     completed_at: datetime | None
     objective_count_1: int
     objective_count_2: int
+    repeat_count: int | None

@@ -61,7 +61,8 @@ class QuestProtoRepository(
             note=record.note,
             completion_text=record.completion_text,
             valid_from=record.valid_from,
-            valid_to=record.valid_to
+            valid_to=record.valid_to,
+            max_repeats=record.max_repeats
         )
 
     def _map_model_to_record(self, model: QuestProto) -> QuestProtoRecord:
@@ -95,5 +96,6 @@ class QuestProtoRepository(
             note=model.note,
             completion_text=model.completion_text,
             valid_from=model.valid_from,
-            valid_to=model.valid_to
+            valid_to=model.valid_to,
+            max_repeats=model.max_repeats
         )

@@ -13,8 +13,8 @@ from holobot.extensions.general.sdk.badges.models.badge_id import BadgeId
 from holobot.extensions.general.sdk.quests.dtos import QuestRewardDescriptor
 from holobot.extensions.general.sdk.quests.enums import QuestStatus
 from holobot.extensions.general.sdk.quests.exceptions import (
-    InvalidQuestException, QuestNotStartedException, QuestOnCooldownException,
-    QuestStillInProgressException, QuestUnavailableException
+    InvalidQuestException, QuestCompletedAlreadyException, QuestNotStartedException,
+    QuestOnCooldownException, QuestStillInProgressException, QuestUnavailableException
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import (
@@ -23,7 +23,6 @@ from holobot.extensions.general.sdk.quests.models import (
 from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.threading.utils import COMPLETED_TASK
 from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc, utcnow
 from holobot.sdk.utils.iterable_utils import multi_to_dict, of_type
 
@@ -68,10 +67,14 @@ class QuestManager(IQuestManager):
             if not quest.completed_at:
                 return quest
 
-        can_start_quest, cooldown = QuestManager.__can_start_quest(quest_proto, quest)
-        if not can_start_quest:
-            if cooldown is not None:
-                raise QuestOnCooldownException(quest_proto_id, cooldown)
+        availability, cooldown = QuestManager.__get_quest_status(quest_proto, quest)
+        if availability == QuestStatus.ON_COOLDOWN:
+            # cooldown must be non-None if the quest is on cooldown.
+            assert cooldown
+            raise QuestOnCooldownException(quest_proto_id, cooldown)
+        elif availability == QuestStatus.COMPLETED:
+            raise QuestCompletedAlreadyException(quest_proto_id)
+        elif availability != QuestStatus.AVAILABLE:
             raise QuestUnavailableException(
                 quest_proto_id,
                 "The quest cannot be started at this time."
@@ -121,6 +124,7 @@ class QuestManager(IQuestManager):
 
         # TODO Add character XP, SP and items.
         quest.completed_at = now
+        quest.repeat_count = quest.repeat_count + 1 if quest.repeat_count is not None else 1
         await self.__quest_repository.update(quest)
         granted_items = await self.__grant_rewards(quest.identifier.server_id, user_id, quest_proto)
 
@@ -144,18 +148,10 @@ class QuestManager(IQuestManager):
         if not quest_proto:
             return QuestStatus.MISSING
 
-        if (quest := await self.__get_quest(server_id, user_id, quest_proto_id)):
-            if not quest.completed_at:
-                return QuestStatus.IN_PROGRESS
+        quest = await self.__get_quest(server_id, user_id, quest_proto_id)
+        status, _ = QuestManager.__get_quest_status(quest_proto, quest)
 
-        can_start_quest, cooldown = QuestManager.__can_start_quest(quest_proto, quest)
-        if can_start_quest:
-            return QuestStatus.AVAILABLE
-
-        if cooldown is not None:
-            return QuestStatus.ON_COOLDOWN
-
-        return QuestStatus.UNAVAILABLE
+        return status
 
     @staticmethod
     def __are_objectives_complete(
@@ -171,17 +167,27 @@ class QuestManager(IQuestManager):
         )
 
     @staticmethod
-    def __can_start_quest(
+    def __get_quest_status(
         quest_proto: QuestProto,
         quest: Quest | None
-    ) -> tuple[bool, timedelta | None]:
+    ) -> tuple[QuestStatus, timedelta | None]:
         # The quest has never been started, yet.
         if not quest:
-            return (True, None)
+            return (QuestStatus.AVAILABLE, None)
 
-        # The quest is still in progress or the quest is non-repeatable.
-        if not quest.completed_at or quest_proto.reset_type is QuestResetType.NONE:
-            return (False, None)
+        if not quest.completed_at:
+            return (QuestStatus.IN_PROGRESS, None)
+
+        if quest_proto.reset_type is QuestResetType.NONE:
+            return (QuestStatus.COMPLETED, None)
+
+        # The (repeatable) quest cannot be completed any more times by the user.
+        if (
+            quest_proto.max_repeats is not None
+            and quest.repeat_count is not None
+            and quest.repeat_count >= quest_proto.max_repeats
+        ):
+            return (QuestStatus.COMPLETED, None)
 
         # The quest has expired already or is not available yet.
         now = utcnow()
@@ -189,49 +195,65 @@ class QuestManager(IQuestManager):
             (quest_proto.valid_from is not None and now < quest_proto.valid_from)
             or (quest_proto.valid_to is not None and now > quest_proto.valid_to)
         ):
-            return (False, None)
+            return (QuestStatus.UNAVAILABLE, None)
 
         match quest_proto.reset_type:
             case QuestResetType.INTERVAL:
                 if quest_proto.reset_time is None:
-                    return (False, None)
+                    return (QuestStatus.UNAVAILABLE, None)
 
                 elapsed_time = utcnow() - quest.completed_at
                 return (
-                    elapsed_time >= quest_proto.reset_time,
+                    (
+                        QuestStatus.AVAILABLE
+                        if elapsed_time >= quest_proto.reset_time
+                        else QuestStatus.ON_COOLDOWN
+                    ),
                     quest_proto.reset_time - elapsed_time
                 )
             case QuestResetType.DAILY_AT:
                 if quest_proto.reset_time is None:
-                    return (False, None)
+                    return (QuestStatus.UNAVAILABLE, None)
 
                 last_reset_time = today_midnight_utc() + quest_proto.reset_time
                 next_reset_time = last_reset_time + timedelta(days=1)
                 return (
-                    quest.completed_at < last_reset_time,
+                    (
+                        QuestStatus.AVAILABLE
+                        if quest.completed_at < last_reset_time
+                        else QuestStatus.ON_COOLDOWN
+                    ),
                     next_reset_time - utcnow()
                 )
             case QuestResetType.WEEKLY_AT:
                 if quest_proto.reset_time is None:
-                    return (False, None)
+                    return (QuestStatus.UNAVAILABLE, None)
 
                 last_reset_time = get_last_day_of_week(0) + quest_proto.reset_time
                 next_reset_time = last_reset_time + timedelta(days=1)
                 return (
-                    quest.completed_at < last_reset_time,
+                    (
+                        QuestStatus.AVAILABLE
+                        if quest.completed_at < last_reset_time
+                        else QuestStatus.ON_COOLDOWN
+                    ),
                     next_reset_time - utcnow()
                 )
             case QuestResetType.MONTHLY_AT:
                 if quest_proto.reset_time is None:
-                    return (False, None)
+                    return (QuestStatus.UNAVAILABLE, None)
 
                 last_reset_time = today_midnight_utc().replace(day=0) + quest_proto.reset_time
                 return (
-                    quest.completed_at < last_reset_time,
+                    (
+                        QuestStatus.AVAILABLE
+                        if quest.completed_at < last_reset_time
+                        else QuestStatus.ON_COOLDOWN
+                    ),
                     None # TODO Figure out how many days are in a month.
                 )
             case QuestResetType.ON_COMPLETION:
-                return (True, None)
+                return (QuestStatus.AVAILABLE, None)
             case QuestResetType.CUSTOM:
                 # TODO Implement custom quest reset handling.
                 raise NotImplementedError

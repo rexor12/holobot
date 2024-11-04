@@ -52,3 +52,9 @@ class QuestProto(AggregateRoot[QuestProtoId]):
 
     valid_to: datetime | None = None
     """An optional date-time until which the quest is available (inclusive)."""
+
+    max_repeats: int | None = None
+    """The maximum number of times the quest can be repeated, if repeatable.
+
+    Not specifying a value means the quest is infinitely repeatable.
+    """

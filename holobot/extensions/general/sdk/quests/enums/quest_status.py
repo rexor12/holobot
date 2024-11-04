@@ -18,3 +18,6 @@ class QuestStatus(IntEnum):
 
     ON_COOLDOWN = 4
     """The quest is available, but on cooldown for the user right now."""
+
+    COMPLETED = 5
+    """The quest has been completed already."""

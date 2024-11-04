@@ -16,3 +16,6 @@ class Quest(AggregateRoot[QuestId], IQuest):
 
     objective_count_2: int = 0
     """The objective tracker for the second objective."""
+
+    repeat_count: int | None = None
+    """The number of times the quest has been repeated by the user, if at all."""

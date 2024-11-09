@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from typing import Any, Protocol
 
 from holobot.discord.sdk.actions import (
     AutocompleteAction, DeleteAction, EditMessageAction, ReplyAction, ShowModalAction
@@ -10,15 +9,11 @@ from holobot.discord.sdk.workflows.interactables.components import ComponentBase
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.interactables.views import Modal
 from holobot.sdk.utils.type_utils import UNDEFINED, UndefinedOrNoneOr, UndefinedType
-from .constants import WORKFLOW_PREDEFINED_INTERACTABLES
+from .constants import DECORATOR_METADATA_NAME, WORKFLOW_PREDEFINED_INTERACTABLES
 from .interactables import Interactable
 from .iworkflow import IWorkflow
-from .workflow_meta import WorkflowMeta
 
-class MixinMeta(WorkflowMeta, type(Protocol)):
-    pass
-
-class WorkflowBase(IWorkflow, metaclass=MixinMeta):
+class WorkflowBase(IWorkflow):
     @property
     def name(self) -> str:
         return self.__name
@@ -30,6 +25,22 @@ class WorkflowBase(IWorkflow, metaclass=MixinMeta):
     @property
     def interactables(self) -> tuple[Interactable, ...]:
         return tuple(self.__interactables)
+
+    # This method is responsible for collecting the interactables
+    # that decorators have set up in the class or its base classes.
+    def __init_subclass__(cls) -> None:
+        interactables = list[Interactable]()
+
+        # Collect any interactables base classes may have already added.
+        for base in cls.__bases__:
+            interactables.extend(getattr(base, WORKFLOW_PREDEFINED_INTERACTABLES, ()))
+
+        # Add the current class's own interactables defined by decorators.
+        for member in cls.__dict__.values():
+            if workflow_metadata := getattr(member, DECORATOR_METADATA_NAME, None):
+                interactables.append(workflow_metadata)
+
+        setattr(cls, WORKFLOW_PREDEFINED_INTERACTABLES, interactables)
 
     def __init__(
         self,

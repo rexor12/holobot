@@ -18,8 +18,8 @@ _DEFAULT_SILENCE_DURATION = timedelta(minutes=1)
 class UserManager(IUserManager):
     async def silence_user(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         duration: timedelta | None = None
     ) -> None:
         assert_not_none(server_id, "server_id")
@@ -33,7 +33,7 @@ class UserManager(IUserManager):
                 textify_timedelta(SILENCE_DURATION_MAX)
             )
 
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        member = await get_bot().get_guild_member(server_id, user_id)
         try:
             await member.edit(communication_disabled_until=utcnow() + duration)
         except hikari.ForbiddenError as error:
@@ -41,12 +41,12 @@ class UserManager(IUserManager):
                 f"Cannot time-out user '{user_id}' in server '{user_id}'."
             ) from error
 
-    async def kick_user(self, server_id: str, user_id: str, reason: str) -> None:
+    async def kick_user(self, server_id: int, user_id: int, reason: str) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         assert_not_none(reason, "reason")
 
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        member = await get_bot().get_guild_member(server_id, user_id)
         try:
             await member.kick(reason=reason)
         except hikari.ForbiddenError as error:
@@ -54,13 +54,13 @@ class UserManager(IUserManager):
                 f"Cannot kick user '{user_id}' in server '{server_id}'."
             ) from error
 
-    async def ban_user(self, server_id: str, user_id: str, reason: str, delete_message_days: int = 0) -> None:
+    async def ban_user(self, server_id: int, user_id: int, reason: str, delete_message_days: int = 0) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         assert_not_none(reason, "reason")
         assert_range(delete_message_days, 0, 7, "delete_message_days")
 
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        member = await get_bot().get_guild_member(server_id, user_id)
         try:
             await member.ban(reason=reason, delete_message_seconds=delete_message_days * 86400)
         except hikari.ForbiddenError as error:
@@ -68,9 +68,9 @@ class UserManager(IUserManager):
                 f"Cannot ban user '{user_id}' in server '{server_id}'."
             ) from error
 
-    async def has_role(self, server_id: str, user_id: str, role_id: str) -> bool:
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
-        role = await get_bot().get_guild_role(int(server_id), int(role_id))
+    async def has_role(self, server_id: int, user_id: int, role_id: int) -> bool:
+        member = await get_bot().get_guild_member(server_id, user_id)
+        role = await get_bot().get_guild_role(server_id, role_id)
         try:
             user_roles = member.get_roles()
             if not user_roles:
@@ -82,26 +82,26 @@ class UserManager(IUserManager):
                 f"Cannot fetch roles of user '{user_id}' in server '{server_id}'."
             ) from error
 
-    async def get_role_ids(self, server_id: str, user_id: str) -> set[str]:
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+    async def get_role_ids(self, server_id: int, user_id: int) -> set[int]:
+        member = await get_bot().get_guild_member(server_id, user_id)
         try:
             user_roles = member.get_roles()
             if not user_roles:
                 user_roles = await member.fetch_roles()
 
-            return set(map(lambda i: str(i.id), user_roles))
+            return set(map(lambda i: i.id, user_roles))
         except hikari.ForbiddenError as error:
             raise ForbiddenError(
                 f"Cannot fetch roles of user '{user_id}' in server '{server_id}'."
             ) from error
 
-    async def assign_role(self, server_id: str, user_id: str, role_id: str) -> None:
+    async def assign_role(self, server_id: int, user_id: int, role_id: int) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         assert_not_none(role_id, "role_id")
 
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
-        role = await get_bot().get_guild_role(int(server_id), int(role_id))
+        member = await get_bot().get_guild_member(server_id, user_id)
+        role = await get_bot().get_guild_role(server_id, role_id)
         try:
             await member.add_role(role)
         except hikari.ForbiddenError as error:
@@ -109,13 +109,13 @@ class UserManager(IUserManager):
                 f"Cannot assign role '{role_id}' to user '{user_id}' in server '{server_id}'."
             ) from error
 
-    async def remove_role(self, server_id: str, user_id: str, role_id: str) -> None:
+    async def remove_role(self, server_id: int, user_id: int, role_id: int) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
         assert_not_none(role_id, "role_id")
 
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
-        role = await get_bot().get_guild_role(int(server_id), int(role_id))
+        member = await get_bot().get_guild_member(server_id, user_id)
+        role = await get_bot().get_guild_role(server_id, role_id)
         try:
             await member.remove_role(role)
         except hikari.ForbiddenError as error:
@@ -125,13 +125,13 @@ class UserManager(IUserManager):
 
     async def unsilence_user(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        member = await get_bot().get_guild_member(int(server_id), int(user_id))
+        member = await get_bot().get_guild_member(server_id, user_id)
         try:
             await member.edit(communication_disabled_until=None)
         except hikari.ForbiddenError as error:

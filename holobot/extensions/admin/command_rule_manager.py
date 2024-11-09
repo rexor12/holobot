@@ -15,7 +15,7 @@ class CommandRuleManager(CommandRuleManagerInterface):
         self.__repository: ICommandRuleRepository = rule_repository
         self.__registry: CommandRegistryInterface = command_registry
 
-    async def get_rules_by_server(self, server_id: str, page_index: int, page_size: int, group: str | None = None, subgroup: str | None = None) -> PaginationResult[CommandRule]:
+    async def get_rules_by_server(self, server_id: int, page_index: int, page_size: int, group: str | None = None, subgroup: str | None = None) -> PaginationResult[CommandRule]:
         assert_not_none(server_id, "server_id")
         if subgroup is not None:
             assert_not_none(group, "group")
@@ -44,12 +44,12 @@ class CommandRuleManager(CommandRuleManagerInterface):
     async def remove_rule(self, rule_id: int) -> None:
         await self.__repository.delete(rule_id)
 
-    async def remove_rules_by_server(self, server_id: str) -> None:
+    async def remove_rules_by_server(self, server_id: int) -> None:
         assert_not_none(server_id, "server_id")
 
         await self.__repository.delete_by_server(server_id)
 
-    async def can_execute(self, server_id: str, channel_id: str, group: str | None, subgroup: str | None, command: str) -> bool:
+    async def can_execute(self, server_id: int, channel_id: int, group: str | None, subgroup: str | None, command: str) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(command, "command")

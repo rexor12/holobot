@@ -58,15 +58,14 @@ class AdminGiveGiftsWorkflow(WorkflowBase):
                 content=self.__i18n.get("extensions.mudada.admin_give_gifts_workflow.too_many_gifts_error")
             )
 
-        user_id = str(user)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
-            wallet = await self.__wallet_repository.get(user_id)
+            wallet = await self.__wallet_repository.get(user)
             if wallet:
                 wallet.amount += number
                 await self.__wallet_repository.update(wallet)
             else:
                 wallet = Wallet(
-                    identifier=user_id,
+                    identifier=user,
                     amount=number
                 )
                 await self.__wallet_repository.add(wallet)

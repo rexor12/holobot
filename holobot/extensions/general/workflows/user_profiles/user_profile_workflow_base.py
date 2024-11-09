@@ -26,7 +26,7 @@ class UserProfileWorkflowBase(WorkflowBase):
 
     async def _generate_user_profile(
         self,
-        user_id: str,
+        user_id: int,
         user_profile: UserProfile,
         custom_background_code: str | None = None
     ) -> bytes:

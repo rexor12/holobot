@@ -6,4 +6,4 @@ from holobot.discord.sdk.models import InteractionContext
 class DirectMessageInteractionContext(InteractionContext):
     """A context for direct message-specific chat interactions."""
 
-    channel_id: str
+    channel_id: int

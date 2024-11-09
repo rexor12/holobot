@@ -7,5 +7,5 @@ class ComponentStateBase:
     identifier: str
     """The identifier of the component this state belongs to."""
 
-    owner_id: str
+    owner_id: int
     """The identifier of the user the component state belongs to."""

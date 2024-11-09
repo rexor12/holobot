@@ -5,6 +5,7 @@ from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button, StackLayout
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import ButtonState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
@@ -57,7 +58,7 @@ class MarryWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        target_user_id = str(user)
+        target_user_id = user
         if target_user_id == context.author_id:
             return self._reply(
                 content=self.__i18n_provider.get(
@@ -99,7 +100,7 @@ class MarryWorkflow(WorkflowBase):
                             "extensions.general.marry_workflow.confirm_yes"
                         ),
                         custom_data={
-                            "uid": context.author_id
+                            "uid": str(context.author_id)
                         }
                     ),
                     Button(
@@ -110,7 +111,7 @@ class MarryWorkflow(WorkflowBase):
                         ),
                         style=ComponentStyle.SECONDARY,
                         custom_data={
-                            "uid": context.author_id
+                            "uid": str(context.author_id)
                         }
                     ),
                 ]
@@ -128,7 +129,7 @@ class MarryWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if (
             not isinstance(context, ServerChatInteractionContext)
-            or not (user_id := state.custom_data.get("uid", None))
+            or not (user_id := get_custom_int(state.custom_data, "uid", None))
         ):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
@@ -190,7 +191,7 @@ class MarryWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if (
             not isinstance(context, ServerChatInteractionContext)
-            or not (user_id := state.custom_data.get("uid", None))
+            or not (user_id := get_custom_int(state.custom_data, "uid", None))
         ):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
@@ -223,7 +224,7 @@ class MarryWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if (
             not isinstance(context, ServerChatInteractionContext)
-            or not (user_id := state.custom_data.get("uid", None))
+            or not (user_id := get_custom_int(state.custom_data, "uid", None))
         ):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
@@ -250,9 +251,9 @@ class MarryWorkflow(WorkflowBase):
 
     def __try_marry(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str
+        server_id: int,
+        user_id1: int,
+        user_id2: int
     ) -> Awaitable[None]:
         async def try_marry(_: None) -> None:
             async with (unit_of_work := await self.__unit_of_work_provider.create_new(IsolationLevel.SERIALIZABLE)):
@@ -264,8 +265,8 @@ class MarryWorkflow(WorkflowBase):
 
     def __get_already_married_response(
         self,
-        user_id: str,
-        spouse_id: str,
+        user_id: int,
+        spouse_id: int,
         localization_key: str,
         is_edit: bool
     ) -> InteractionResponse:
@@ -283,8 +284,8 @@ class MarryWorkflow(WorkflowBase):
 
     def __get_renew_response(
         self,
-        user_id: str,
-        spouse_id: str
+        user_id: int,
+        spouse_id: int
     ) -> InteractionResponse:
         return self._reply(
             content=self.__i18n_provider.get(
@@ -304,7 +305,7 @@ class MarryWorkflow(WorkflowBase):
                             "extensions.general.marry_workflow.confirm_yes"
                         ),
                         custom_data={
-                            "uid": user_id
+                            "uid": str(user_id)
                         }
                     ),
                     Button(
@@ -315,7 +316,7 @@ class MarryWorkflow(WorkflowBase):
                         ),
                         style=ComponentStyle.SECONDARY,
                         custom_data={
-                            "uid": user_id
+                            "uid": str(user_id)
                         }
                     ),
                 ]
@@ -324,8 +325,8 @@ class MarryWorkflow(WorkflowBase):
 
     def __get_self_already_married_response(
         self,
-        user_id: str,
-        spouse_id: str,
+        user_id: int,
+        spouse_id: int,
         is_edit: bool = False
     ) -> InteractionResponse:
         return self.__get_already_married_response(
@@ -337,8 +338,8 @@ class MarryWorkflow(WorkflowBase):
 
     def __get_other_already_married_response(
         self,
-        user_id: str,
-        spouse_id: str,
+        user_id: int,
+        spouse_id: int,
         is_edit: bool = False
     ) -> InteractionResponse:
         return self.__get_already_married_response(

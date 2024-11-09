@@ -3,11 +3,8 @@ from dataclasses import dataclass
 from holobot.sdk.database.entities import AggregateRoot
 
 @dataclass(kw_only=True)
-class ExchangeQuota(AggregateRoot[str]):
+class ExchangeQuota(AggregateRoot[int]):
     """Represents a Mudada exchange quota."""
-
-    identifier: str
-    """The identifier of the user the exchange quota belongs to."""
 
     amount: int
     """The amount of the currency the user has exchanged

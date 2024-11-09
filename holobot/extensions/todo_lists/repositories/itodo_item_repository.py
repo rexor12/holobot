@@ -6,19 +6,19 @@ from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
 class ITodoItemRepository(IRepository[int, TodoItem], Protocol):
-    def count_by_user(self, user_id: str) -> Awaitable[int]:
+    def count_by_user(self, user_id: int) -> Awaitable[int]:
         ...
 
     def get_many(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[TodoItem]]:
         ...
 
-    def delete_by_user(self, user_id: str, todo_id: int) -> Awaitable[int]:
+    def delete_by_user(self, user_id: int, todo_id: int) -> Awaitable[int]:
         ...
 
-    def delete_all_by_user(self, user_id: str) -> Awaitable[int]:
+    def delete_all_by_user(self, user_id: int) -> Awaitable[int]:
         ...

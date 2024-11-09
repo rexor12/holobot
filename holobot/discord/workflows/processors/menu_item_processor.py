@@ -1,3 +1,4 @@
+from typing import cast
 from uuid import uuid4
 
 from hikari import CommandInteraction, CommandType
@@ -45,8 +46,8 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         return InteractionDescriptor(
             workflow=invocation_target[0] if invocation_target else None,
             interactable=invocation_target[1] if invocation_target else None,
-            initiator_id=str(interaction.user.id),
-            bound_user_id=str(interaction.user.id),
+            initiator_id=interaction.user.id,
+            bound_user_id=interaction.user.id,
             context=self.__get_interaction_context(interaction)
         )
 
@@ -64,9 +65,9 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
 
         event = MenuItemProcessedEvent(
             interactable=descriptor.interactable,
-            server_id=str(interaction.guild_id) if interaction.guild_id else None,
-            channel_id=str(interaction.channel_id),
-            user_id=str(interaction.user.id),
+            server_id=interaction.guild_id,
+            channel_id=interaction.channel_id,
+            user_id=interaction.user.id,
             response=response
         )
         for event_listener in self.__event_listeners:
@@ -83,26 +84,26 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
             case CommandType.MESSAGE:
                 return ServerMessageInteractionContext(
                     request_id=uuid4(),
-                    author_id=str(interaction.user.id),
+                    author_id=interaction.user.id,
                     author_name=interaction.user.username,
                     author_nickname=interaction.member.nickname if interaction.member else None,
                     message=None,
-                    server_id=str(interaction.guild_id),
+                    server_id=interaction.guild_id,
                     server_name=guild.name if (guild := interaction.get_guild()) else None,
-                    channel_id=str(interaction.channel_id),
-                    target_message_id=str(interaction.target_id)
+                    channel_id=interaction.channel_id,
+                    target_message_id=cast(int, interaction.target_id)
                 )
             case CommandType.USER:
                 return ServerUserInteractionContext(
                     request_id=uuid4(),
-                    author_id=str(interaction.user.id),
+                    author_id=interaction.user.id,
                     author_name=interaction.user.username,
                     author_nickname=interaction.member.nickname if interaction.member else None,
                     message=None,
-                    server_id=str(interaction.guild_id),
+                    server_id=interaction.guild_id,
                     server_name=guild.name if (guild := interaction.get_guild()) else None,
-                    channel_id=str(interaction.channel_id),
-                    target_user_id=str(interaction.target_id)
+                    channel_id=interaction.channel_id,
+                    target_user_id=cast(int, interaction.target_id)
                 )
             case _:
                 raise InteractionContextNotSupportedError()

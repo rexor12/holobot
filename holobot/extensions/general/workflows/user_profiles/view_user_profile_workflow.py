@@ -4,6 +4,7 @@ from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.workflows import IWorkflow
 from holobot.discord.sdk.workflows.interactables.components import ButtonState
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
@@ -55,7 +56,7 @@ class ShowUserProfileWorkflow(UserProfileWorkflowBase):
     ) -> InteractionResponse:
         image_or_error = await self.__get_user_profile_image(
             context,
-            str(user) if user else None
+            user if user else None
         )
 
         if isinstance(image_or_error, str):
@@ -69,7 +70,7 @@ class ShowUserProfileWorkflow(UserProfileWorkflowBase):
         context: InteractionContext,
         state: ButtonState
     ) -> InteractionResponse:
-        if (user_id := state.custom_data.get("u")) is None:
+        if (user_id := get_custom_int(state.custom_data, "u")) is None:
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 is_ephemeral=True
@@ -84,7 +85,7 @@ class ShowUserProfileWorkflow(UserProfileWorkflowBase):
     async def __get_user_profile_image(
         self,
         context: InteractionContext,
-        user_id: str | None
+        user_id: int | None
     ) -> bytes | str:
         if isinstance(context, ServerChatInteractionContext):
             target_user_id = user_id if user_id else context.author_id

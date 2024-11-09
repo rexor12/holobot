@@ -64,7 +64,7 @@ class MuteUserWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
+        user_id = user
         reason = reason.strip()
         try:
             mute_duration = parse_interval(duration.strip()) if duration else None

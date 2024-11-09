@@ -45,8 +45,8 @@ class WalletRepository(
 
     def get_wallets(
         self,
-        user_id: str,
-        server_id: str | None = None,
+        user_id: int,
+        server_id: int | None = None,
         include_global: bool = False
     ) -> Awaitable[tuple[Wallet, ...]]:
         return self._get_many_by_filter(lambda where: WalletRepository.__build_wallet_constraint(
@@ -58,8 +58,8 @@ class WalletRepository(
 
     async def paginate_wallets_with_details(
         self,
-        user_id: str,
-        server_id: str | None = None,
+        user_id: int,
+        server_id: int | None = None,
         include_global: bool = False,
         page_index: int = 0,
         page_size: int = 5
@@ -134,8 +134,8 @@ class WalletRepository(
     @staticmethod
     def __build_wallet_constraint(
         where: WhereBuilder,
-        user_id: str,
-        server_id: str | None,
+        user_id: int,
+        server_id: int | None,
         include_global: bool
     ) -> WhereConstraintBuilder:
         constraint = (where
@@ -149,7 +149,7 @@ class WalletRepository(
             constraint = constraint.and_expression(
                 or_expression(
                     column_expression("wallets.server_id", Equality.EQUAL, server_id),
-                    column_expression("wallets.server_id", Equality.EQUAL, "0")
+                    column_expression("wallets.server_id", Equality.EQUAL, 0)
                 )
             )
         else:

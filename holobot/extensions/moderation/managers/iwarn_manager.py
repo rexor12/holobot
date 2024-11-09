@@ -7,8 +7,8 @@ from ..models import WarnStrike
 class IWarnManager(Protocol):
     async def get_warns(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> PaginationResult[WarnStrike]:
@@ -16,48 +16,48 @@ class IWarnManager(Protocol):
 
     async def warn_user(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         reason: str,
-        warner_id: str
+        warner_id: int
     ) -> WarnStrike:
         ...
 
-    async def clear_warns_for_user(self, server_id: str, user_id: str) -> int:
+    async def clear_warns_for_user(self, server_id: int, user_id: int) -> int:
         ...
 
-    async def clear_warns_for_server(self, server_id: str) -> int:
+    async def clear_warns_for_server(self, server_id: int) -> int:
         ...
 
     async def enable_auto_mute(
         self,
-        server_id: str,
+        server_id: int,
         warn_count: int,
         duration: timedelta | None
     ) -> None:
         ...
 
-    async def disable_auto_mute(self, server_id: str) -> None:
+    async def disable_auto_mute(self, server_id: int) -> None:
         ...
 
-    async def enable_auto_kick(self, server_id: str, warn_count: int) -> None:
+    async def enable_auto_kick(self, server_id: int, warn_count: int) -> None:
         ...
 
-    async def disable_auto_kick(self, server_id: str) -> None:
+    async def disable_auto_kick(self, server_id: int) -> None:
         ...
 
-    async def enable_auto_ban(self, server_id: str, warn_count: int) -> None:
+    async def enable_auto_ban(self, server_id: int, warn_count: int) -> None:
         ...
 
-    async def disable_auto_ban(self, server_id: str) -> None:
+    async def disable_auto_ban(self, server_id: int) -> None:
         ...
 
-    async def get_warn_decay(self, server_id: str) -> timedelta | None:
+    async def get_warn_decay(self, server_id: int) -> timedelta | None:
         ...
 
     async def set_warn_decay(
         self,
-        server_id: str,
+        server_id: int,
         decay_time: timedelta | None
     ) -> None:
         ...

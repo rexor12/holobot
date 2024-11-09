@@ -130,7 +130,7 @@ class SearchGoogleWorkflow(WorkflowBase):
         )
 
     @staticmethod
-    def __get_cache_key(user_id: str, results_id: str) -> str:
+    def __get_cache_key(user_id: int, results_id: str) -> str:
         return f"google_search/{user_id}/{results_id}"
 
     async def __search(self, search_type: SearchType, query: str) -> SearchResult:
@@ -150,7 +150,7 @@ class SearchGoogleWorkflow(WorkflowBase):
 
     async def __save_search_result(
         self,
-        author_id: str,
+        author_id: int,
         query: str,
         search_type: SearchType,
         result: SearchResult
@@ -197,7 +197,7 @@ class SearchGoogleWorkflow(WorkflowBase):
 
     async def __create_page(
         self,
-        owner_id: str,
+        owner_id: int,
         results_id: str,
         result_index: int
     ) -> tuple[

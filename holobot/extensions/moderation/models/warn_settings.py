@@ -8,7 +8,7 @@ from holobot.sdk.utils import utcnow
 class WarnSettings(AggregateRoot[int]):
     identifier: int = -1
     modified_at: datetime = field(default_factory=utcnow)
-    server_id: str
+    server_id: int
     decay_threshold: timedelta | None = None
     auto_mute_after: int = 0
     auto_mute_duration: timedelta | None = None

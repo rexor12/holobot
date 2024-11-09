@@ -5,10 +5,10 @@ from datetime import datetime
 class RankingInfo:
     """Basic information about a marriage."""
 
-    user_id1: str
+    user_id1: int
     """The identifier of one of the users."""
 
-    user_id2: str
+    user_id2: int
     """The identifier of the other user."""
 
     level: int

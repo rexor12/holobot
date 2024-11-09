@@ -58,7 +58,7 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
             await self.__try_add_reaction(
                 event.server_id,
                 event.user_id,
-                str(target_user_id),
+                target_user_id,
                 _REACTION_TYPE_BY_COMMAND[event.interactable.name]
             )
         except SerializationError as error:
@@ -73,9 +73,9 @@ class UpdateMarriageOnReaction(IListener[CommandProcessedEvent]):
 
     def __try_add_reaction(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str,
+        server_id: int,
+        user_id1: int,
+        user_id2: int,
         reaction_type: ReactionType
     ) -> Awaitable[None]:
         async def try_add_reaction(_: None) -> None:

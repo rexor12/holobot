@@ -17,7 +17,7 @@ class EmojiDataProvider(IEmojiDataProvider):
     async def find_emoji(
         self,
         name_or_mention: str,
-        source_server_id: str | None = None
+        source_server_id: int | None = None
     ) -> Emoji | None:
         emoji = await self.__find_emoji(name_or_mention, source_server_id)
         if isinstance(emoji, Emoji):
@@ -25,20 +25,20 @@ class EmojiDataProvider(IEmojiDataProvider):
 
         return to_model(emoji) if emoji else None
 
-    def extract_id(self, mention: str) -> str:
+    def extract_id(self, mention: str) -> int:
         if not (match := EMOJI_REGEX.match(mention)):
             raise ArgumentError("mention", "Invalid emoji mention.")
 
-        return match.group("id")
+        return int(match.group("id"))
 
     async def __find_emoji(
         self,
         name_or_mention: str,
-        source_server_id: str | None = None
+        source_server_id: int | None = None
     ) -> HikariEmoji | Emoji | None:
         if (match := EMOJI_REGEX.match(name_or_mention)) is not None:
             if emoji := get_bot().cache.get_emoji(int(match["id"])):
-                if not source_server_id or str(emoji.guild_id) == source_server_id:
+                if not source_server_id or emoji.guild_id == source_server_id:
                     return emoji
                 return None
 
@@ -48,7 +48,7 @@ class EmojiDataProvider(IEmojiDataProvider):
         return next((
                 emoji for emoji in get_bot().cache.get_emojis_view().values()
                 if (
-                    (not source_server_id or str(emoji.guild_id) == source_server_id)
+                    (not source_server_id or emoji.guild_id == source_server_id)
                     and emoji.name.lower() == name_or_mention
                 )
             ),

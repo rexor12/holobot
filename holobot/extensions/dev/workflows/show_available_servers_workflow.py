@@ -92,7 +92,7 @@ class ShowAvailableServersWorkflow(WorkflowBase):
         page_index: int,
         page_size: int,
         server_index: int,
-        initiator_id: str
+        initiator_id: int
     ) -> tuple[
             UndefinedOrNoneOr[str],
             UndefinedOrNoneOr[Embed],

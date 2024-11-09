@@ -11,13 +11,13 @@ class ChannelTimer(AggregateRoot[int]):
     identifier: int = -1
     """The identifier of the entity."""
 
-    user_id: str
+    user_id: int
     """The identifier of the user who set up the timer."""
 
-    server_id: str
+    server_id: int
     """The identifier of the server that contains the target channel."""
 
-    channel_id: str
+    channel_id: int
     """The identifier of the channel to be used as a timer."""
 
     base_time: datetime = field(default_factory=utcnow)

@@ -51,7 +51,7 @@ class WarnRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    async def get_warn_count_by_user(self, server_id: str, user_id: str) -> int:
+    async def get_warn_count_by_user(self, server_id: int, user_id: int) -> int:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
@@ -68,8 +68,8 @@ class WarnRepository(
 
     async def get_warns_by_user(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         page_index: int,
         max_count: int
     ) -> PaginationResult[WarnStrike]:
@@ -136,14 +136,14 @@ class WarnRepository(
                 raise ValueError("Unexpected error while creating a new warn.")
             return id
 
-    def clear_warns_by_server(self, server_id: str) -> Awaitable[int]:
+    def clear_warns_by_server(self, server_id: int) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
 
         return self._delete_by_filter(
             lambda where: where.field("server_id", Equality.EQUAL, server_id)
         )
 
-    def clear_warns_by_user(self, server_id: str, user_id: str) -> Awaitable[int]:
+    def clear_warns_by_user(self, server_id: int, user_id: int) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 

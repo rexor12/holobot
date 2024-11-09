@@ -2,6 +2,6 @@ from dataclasses import dataclass
 
 @dataclass
 class Role:
-    id: str
+    id: int
     name: str
     description: str | None = None

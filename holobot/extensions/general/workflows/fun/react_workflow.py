@@ -123,7 +123,7 @@ class ReactWorkflow(WorkflowBase):
             try:
                 user_data = await self.__member_data_provider.get_basic_data_by_id(
                     context.server_id,
-                    str(target)
+                    target
                 )
                 target_user_id = user_data.user_id
             except UserNotFoundError:

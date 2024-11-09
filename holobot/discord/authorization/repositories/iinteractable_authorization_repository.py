@@ -12,7 +12,7 @@ class IInteractableAuthorizationRepository(
 ):
     def has_authorization(
         self,
-        server_id: str,
+        server_id: int,
         interactable_id: str
     ) -> Awaitable[bool | None]:
         ...
@@ -20,5 +20,5 @@ class IInteractableAuthorizationRepository(
     def get_authorized_server_ids(
         self,
         interactable_id: str
-    ) -> Awaitable[Iterable[str]]:
+    ) -> Awaitable[Iterable[int]]:
         ...

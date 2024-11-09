@@ -6,22 +6,22 @@ from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
 class ITransactionRepository(IRepository[int, Transaction], Protocol):
-    def get_by_users(self, owner_id: str, target_id: str) -> Awaitable[Transaction | None]:
+    def get_by_users(self, owner_id: int, target_id: int) -> Awaitable[Transaction | None]:
         ...
 
     def get_total_transaction_amount(
         self,
-        owner_id: str,
+        owner_id: int,
         include_finalized: bool
     ) -> Awaitable[int]:
         ...
 
-    def delete_all_by_user(self, owner_id: str, delete_finalized: bool) -> Awaitable[int]:
+    def delete_all_by_user(self, owner_id: int, delete_finalized: bool) -> Awaitable[int]:
         ...
 
     def paginate_by_owner(
         self,
-        owner_id: str,
+        owner_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[Transaction]]:
@@ -29,7 +29,7 @@ class ITransactionRepository(IRepository[int, Transaction], Protocol):
 
     def paginate_by_target(
         self,
-        target_id: str,
+        target_id: int,
         page_index: int,
         page_size: int,
         finalized_only: bool
@@ -38,7 +38,7 @@ class ITransactionRepository(IRepository[int, Transaction], Protocol):
 
     def get_finalized_uncompleted_by_target(
         self,
-        target_id: str
+        target_id: int
     ) -> Awaitable[tuple[Transaction, ...]]:
         ...
 

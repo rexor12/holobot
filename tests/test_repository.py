@@ -17,12 +17,12 @@ from holobot.sdk.configs import IOptions
 from holobot.sdk.utils.datetime_utils import utcnow
 from tests.machinery import TestLoggerFactory
 
-USER_ID = "401490060156862466"
-SERVER_ID = "999259836439081030"
-CHANNEL_ID = "1194764988980662372"
+USER_ID = 401490060156862466
+SERVER_ID = 999259836439081030
+CHANNEL_ID = 1194764988980662372
 CURRENCY_ID1 = 1
 CURRENCY_ID2 = 2
-EMOJI_ID = "11111111111"
+EMOJI_ID = 11111111111
 EMOJI_NAME = "test"
 
 class TestOptionsProvider(IOptions[DatabaseOptions]):
@@ -86,14 +86,14 @@ async def test_wallets():
     #     identifier=WalletId(user_id=USER_ID, server_id=SERVER_ID, currency_id=CURRENCY_ID2),
     #     amount=5125
     # )
-    wallets = await wallet_repository.get_wallets("401490060156862466", "1196136683037540362", include_global=True)
+    wallets = await wallet_repository.get_wallets(401490060156862466, 1196136683037540362, include_global=True)
     for wallet in wallets:
         print(f"Wallet ID: {wallet.identifier}")
 
 async def test_paginate_wallets_with_details():
     result = await wallet_repository.paginate_wallets_with_details(
-        "401490060156862466",
-        "999259836439081030",
+        401490060156862466,
+        999259836439081030,
         True,
         0,
         5
@@ -105,7 +105,7 @@ async def test_paginate_wallets_with_details():
 
 async def test_todo_items():
     todo_item = TodoItem(
-        user_id="401490060156862466",
+        user_id=401490060156862466,
         message="Test message, hello!"
     )
 

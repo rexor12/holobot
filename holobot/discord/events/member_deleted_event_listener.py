@@ -24,8 +24,8 @@ class MemberDeletedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
         local_event = ServerMemberLeftEvent(
-            server_id=str(event.guild_id),
-            user_id=str(event.user_id)
+            server_id=event.guild_id,
+            user_id=event.user_id
         )
 
         for listener in self.__listeners:

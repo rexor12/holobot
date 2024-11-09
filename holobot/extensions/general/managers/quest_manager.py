@@ -55,8 +55,8 @@ class QuestManager(IQuestManager):
 
     async def start_quest(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> IQuest:
         quest_proto = await self.__quest_proto_repository.get(quest_proto_id)
@@ -98,8 +98,8 @@ class QuestManager(IQuestManager):
 
     async def complete_quest(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> QuestRewardDescriptor:
         quest_proto = await self.__quest_proto_repository.get(quest_proto_id)
@@ -140,8 +140,8 @@ class QuestManager(IQuestManager):
 
     async def get_quest_status(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> QuestStatus:
         quest_proto = await self.__quest_proto_repository.get(quest_proto_id)
@@ -265,8 +265,8 @@ class QuestManager(IQuestManager):
 
     def __get_quest(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> Awaitable[Quest | None]:
         return self.__quest_repository.get(
@@ -279,8 +279,8 @@ class QuestManager(IQuestManager):
 
     async def __grant_rewards(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto: QuestProto
     ) -> Sequence[QuestRewardBase]:
         granted_rewards = list[QuestRewardBase]()
@@ -352,8 +352,8 @@ class QuestManager(IQuestManager):
 
     async def __grant_currencies(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         currencies: Iterable[CurrencyQuestReward]
     ) -> None:
         for currency in currencies:
@@ -378,7 +378,7 @@ class QuestManager(IQuestManager):
 
     async def __grant_badges(
         self,
-        user_id: str,
+        user_id: int,
         badges: Iterable[BadgeQuestReward]
     ) -> None:
         for badge in badges:

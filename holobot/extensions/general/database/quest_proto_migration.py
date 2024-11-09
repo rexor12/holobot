@@ -1,44 +1,70 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class QuestProtoMigration(MigrationBase):
-    _TABLE_NAME = "quest_protos"
-
     def __init__(self):
-        super().__init__(QuestProtoMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table),
-            1: MigrationPlan(1, 2, self.__upgrade_to_v1),
-            2: MigrationPlan(2, 3, self.__upgrade_to_v2),
-            3: MigrationPlan(3, 4, self.__upgrade_to_v3)
-        }, {})
+        super().__init__(
+            "quest_protos",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(2, self.__upgrade_to_v2),
+                MigrationPlan(3, self.__upgrade_to_v3),
+                MigrationPlan(4, self.__upgrade_to_v4),
+                MigrationPlan(202411071725, self.__upgrade_to_v5)
+            ]
+        )
 
-    async def __upgrade_to_v3(self, connection: Connection) -> None:
+    async def __upgrade_to_v5(self, connection: Connection) -> None:
+        pk_name = await self._query_primary_key_name(connection, self.table_name)
+        await connection.execute(f"ALTER TABLE {self.table_name} DROP CONSTRAINT {pk_name}")
+
         await connection.execute(
-            f"ALTER TABLE {QuestProtoMigration._TABLE_NAME}\n"
+            f"ALTER TABLE {self.table_name}"
+            " ALTER COLUMN reward_badge_sid_1 DROP DEFAULT"
+        )
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            " ALTER COLUMN server_id TYPE BIGINT USING server_id::BIGINT,\n"
+            " ALTER COLUMN reward_badge_sid_1 TYPE BIGINT USING reward_badge_sid_1::BIGINT"
+        )
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}"
+            " ALTER COLUMN reward_badge_sid_1 SET DEFAULT NULL"
+        )
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name} ADD PRIMARY KEY (server_id, code)"
+        )
+
+    async def __upgrade_to_v4(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
             " ADD COLUMN max_repeats SMALLINT DEFAULT NULL"
         )
 
-    async def __upgrade_to_v2(self, connection: Connection) -> None:
+    async def __upgrade_to_v3(self, connection: Connection) -> None:
         await connection.execute(
-            f"ALTER TABLE {QuestProtoMigration._TABLE_NAME}\n"
+            f"ALTER TABLE {self.table_name}\n"
             " ADD COLUMN valid_from TIMESTAMP WITH TIME ZONE DEFAULT NULL,\n"
             " ADD COLUMN valid_to TIMESTAMP WITH TIME ZONE DEFAULT NULL"
         )
 
-    async def __upgrade_to_v1(self, connection: Connection) -> None:
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute((
-            f"ALTER TABLE {QuestProtoMigration._TABLE_NAME}\n"
+            f"ALTER TABLE {self.table_name}\n"
             " ADD COLUMN reward_badge_sid_1 VARCHAR(20) DEFAULT NULL,\n"
             " ADD COLUMN reward_badge_id_1 INTEGER DEFAULT NULL"
         ))
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((
-            f"CREATE TABLE {QuestProtoMigration._TABLE_NAME} (\n"
+            f"CREATE TABLE {self.table_name} (\n"
             " server_id VARCHAR(20) NOT NULL,\n"
             " code VARCHAR(160) NOT NULL,\n"
             " reset_type SMALLINT NOT NULL DEFAULT 0,\n"

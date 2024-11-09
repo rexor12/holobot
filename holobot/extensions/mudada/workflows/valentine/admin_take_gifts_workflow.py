@@ -63,15 +63,14 @@ class AdminTakeGiftsWorkflow(WorkflowBase):
                 )
             )
 
-        user_id = str(user)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
-            wallet = await self.__wallet_repository.get(user_id)
+            wallet = await self.__wallet_repository.get(user)
             if not wallet:
                 return self._reply(
                     content=self.__i18n.get(
                         "extensions.mudada.admin_take_gifts_workflow.user_has_no_gifts_error",
                         {
-                            "user_id": user_id
+                            "user_id": user
                         }
                     )
                 )

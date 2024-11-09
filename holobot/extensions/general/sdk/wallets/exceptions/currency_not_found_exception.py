@@ -4,13 +4,13 @@ class CurrencyNotFoundException(Exception):
         return self.__currency_id
 
     @property
-    def server_id(self) -> str | None:
+    def server_id(self) -> int | None:
         return self.__server_id
 
     def __init__(
         self,
         currency_id: int,
-        server_id: str | None,
+        server_id: int | None,
         message: str | None = None
     ) -> None:
         super().__init__(message)

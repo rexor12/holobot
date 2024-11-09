@@ -61,7 +61,7 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
             )
 
         return (
-            await self.__view_user_permissions(context, str(user))
+            await self.__view_user_permissions(context, user)
             if user else await self.__view_moderators(context)
         )
 
@@ -119,7 +119,7 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
     async def __view_user_permissions(
         self,
         context: ServerChatInteractionContext,
-        user_id: str
+        user_id: int
     ) -> InteractionResponse:
         user = await self.__try_get_moderator_user(context.server_id, user_id)
         return (
@@ -155,8 +155,8 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        server_id: str,
-        owner_id: str,
+        server_id: int,
+        owner_id: int,
         page_index: int,
         page_size: int,
         user_index: int
@@ -268,8 +268,8 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
 
     async def __try_get_user_data(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> MemberData | None:
         try:
             user_data = await self.__member_data_provider.get_basic_data_by_id(
@@ -282,8 +282,8 @@ class ViewUserPermissionsWorkflow(WorkflowBase):
 
     async def __try_get_moderator_user(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> User | None:
         try:
             return await self.__user_repository.get_by_server(server_id, user_id)

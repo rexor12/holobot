@@ -79,7 +79,7 @@ class RemoveTodoItemWorkflow(WorkflowBase):
                 components=self.__get_view_all_button(context.author_id)
             )
 
-    def __get_view_all_button(self, author_id: str) -> Button:
+    def __get_view_all_button(self, author_id: int) -> Button:
         return Button(
             id="todo_viewall",
             owner_id=author_id,

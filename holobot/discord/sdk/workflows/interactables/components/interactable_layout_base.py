@@ -6,5 +6,5 @@ from .layout_base import LayoutBase
 class InteractableLayoutBase(LayoutBase):
     """Base class for a layout that can be interacted with."""
 
-    owner_id: str
+    owner_id: int
     """The identifier of the user who owns the layout."""

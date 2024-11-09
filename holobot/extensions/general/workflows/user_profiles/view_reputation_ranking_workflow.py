@@ -72,7 +72,7 @@ class ViewReputationRankingWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> tuple[

@@ -35,7 +35,7 @@ class QuestProto(AggregateRoot[QuestProtoId]):
     reward_currency_count_1: int
     reward_currency_id_2: int | None = None
     reward_currency_count_2: int
-    reward_badge_sid_1: str | None
+    reward_badge_sid_1: int | None
     reward_badge_id_1: int | None
 
     title: str | None = None

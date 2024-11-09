@@ -50,7 +50,7 @@ class UnmuteUserWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
+        user_id = user
         try:
             await self.__user_manager.unsilence_user(context.server_id, user_id)
         except UserNotFoundError:

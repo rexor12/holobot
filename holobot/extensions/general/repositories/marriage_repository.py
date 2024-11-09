@@ -49,8 +49,8 @@ class MarriageRepository(
 
     def get_by_user(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> Awaitable[Marriage | None]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -69,9 +69,9 @@ class MarriageRepository(
 
     def get_by_users(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str
+        server_id: int,
+        user_id1: int,
+        user_id2: int
     ) -> Awaitable[Marriage | None]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id1, "user_id1")
@@ -97,9 +97,9 @@ class MarriageRepository(
 
     async def delete_by_user(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str
+        server_id: int,
+        user_id1: int,
+        user_id2: int
     ) -> bool:
         result = await self._delete_by_filter(
             lambda where: where.expression(
@@ -123,7 +123,7 @@ class MarriageRepository(
 
     async def paginate_rankings(
         self,
-        server_id: str,
+        server_id: int,
         ranking_type: RankingType,
         page_index: int,
         page_size: int

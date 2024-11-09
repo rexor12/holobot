@@ -5,6 +5,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComponentBase, ComponentStyle, LayoutBase, Paginator, PaginatorState,
     StackLayout
 )
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
@@ -66,7 +67,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
             context.author_id,
             0,
             ViewUserBadgesWorkflow._DEFAULT_PAGE_SIZE,
-            str(user) if user else context.author_id
+            user if user else context.author_id
         )
 
         return self._reply(
@@ -84,7 +85,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         context: InteractionContext,
         state: PaginatorState
     ) -> InteractionResponse:
-        if not (user_id := state.custom_data.get("u")):
+        if not (user_id := get_custom_int(state.custom_data, "u")):
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 embed=None,
@@ -114,7 +115,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         context: InteractionContext,
         state: ButtonState
     ) -> InteractionResponse:
-        if not (user_id := state.custom_data.get("u")):
+        if not (user_id := get_custom_int(state.custom_data, "u")):
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 embed=None,
@@ -145,9 +146,8 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         state: ButtonState
     ) -> InteractionResponse:
         if (
-            (badge_server_id := state.custom_data.get(_BADGE_SERVER_ID_PARAMETER)) is None
-            or (badge_id_str := state.custom_data.get(_BADGE_ID_PARAMETER)) is None
-            or (badge_id := try_parse_int(badge_id_str)) is None
+            (badge_server_id := get_custom_int(state.custom_data, _BADGE_SERVER_ID_PARAMETER)) is None
+            or (badge_id := get_custom_int(state.custom_data, _BADGE_ID_PARAMETER)) is None
         ):
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
@@ -166,6 +166,41 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                 components=None
             )
 
+        layouts = list[LayoutBase]()
+        for slot_indices in batch(range(UserProfile.MAX_BADGE_COUNT), 4):
+            layouts.append(StackLayout(
+                id="dummy",
+                children=[
+                    Button(
+                        id="setbadgex",
+                        owner_id=state.owner_id,
+                        text=str(slot_index + 1),
+                        style=ComponentStyle.SECONDARY,
+                        custom_data={
+                            _BADGE_SERVER_ID_PARAMETER: str(badge_server_id),
+                            _BADGE_ID_PARAMETER: str(badge_id),
+                            _SLOT_INDEX_PARAMETER: str(slot_index)
+                        }
+                    )
+                    for slot_index in slot_indices
+                ]
+            ))
+        layouts.append(StackLayout(
+            id="dummy",
+            children=[
+                Button(
+                    id="ubadgepagir",
+                    owner_id=context.author_id,
+                    text=self.__i18n.get(
+                        "extensions.general.view_user_badges_workflow.equip_another_button"
+                    ),
+                    custom_data={
+                        "u": str(context.author_id)
+                    }
+                )
+            ]
+        ))
+
         return self._edit_message(
             content=self.__i18n.get(
                 "extensions.general.view_user_badges_workflow.equip_position_confirmation",
@@ -176,26 +211,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                 }
             ),
             embed=None,
-            components=[
-                StackLayout(
-                    id="dummy",
-                    children=[
-                        Button(
-                            id="setbadgex",
-                            owner_id=state.owner_id,
-                            text=str(slot_index + 1),
-                            style=ComponentStyle.SECONDARY,
-                            custom_data={
-                                _BADGE_SERVER_ID_PARAMETER: badge_server_id,
-                                _BADGE_ID_PARAMETER: badge_id_str,
-                                _SLOT_INDEX_PARAMETER: str(slot_index)
-                            }
-                        )
-                        for slot_index in slot_indices
-                    ]
-                )
-                for slot_indices in batch(range(UserProfile.MAX_BADGE_COUNT), 4)
-            ]
+            components=layouts
         )
 
     @component(
@@ -208,11 +224,9 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         state: ButtonState
     ) -> InteractionResponse:
         if (
-            (badge_server_id := state.custom_data.get(_BADGE_SERVER_ID_PARAMETER)) is None
-            or (badge_id_str := state.custom_data.get(_BADGE_ID_PARAMETER)) is None
-            or (badge_id := try_parse_int(badge_id_str)) is None
-            or (slot_index_str := state.custom_data.get(_SLOT_INDEX_PARAMETER)) is None
-            or (slot_index := try_parse_int(slot_index_str)) is None
+            (badge_server_id := get_custom_int(state.custom_data, _BADGE_SERVER_ID_PARAMETER)) is None
+            or (badge_id := get_custom_int(state.custom_data, _BADGE_ID_PARAMETER)) is None
+            or (slot_index := get_custom_int(state.custom_data, _SLOT_INDEX_PARAMETER)) is None
         ):
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
@@ -265,7 +279,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                             text=self.__i18n.get(
                                 "extensions.general.view_user_badges_workflow.view_profile_button"
                             ),
-                            custom_data={ "u": context.author_id }
+                            custom_data={ "u": str(context.author_id) }
                         ),
                         Button(
                             id="ubadgepagir",
@@ -274,7 +288,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                                 "extensions.general.view_user_badges_workflow.equip_another_button"
                             ),
                             custom_data={
-                                "u": context.author_id
+                                "u": str(context.author_id)
                             }
                         )
                     ]
@@ -283,10 +297,10 @@ class ViewUserBadgesWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        owner_id: str,
+        owner_id: int,
         page_index: int,
         page_size: int,
-        user_id: str
+        user_id: int
     ) -> tuple[
         UndefinedOrNoneOr[str],
         UndefinedOrNoneOr[Embed],
@@ -350,7 +364,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                     style=ComponentStyle.SECONDARY,
                     emoji=badge.emoji_id,
                     custom_data={
-                        _BADGE_SERVER_ID_PARAMETER: badge.identifier.server_id,
+                        _BADGE_SERVER_ID_PARAMETER: str(badge.identifier.server_id),
                         _BADGE_ID_PARAMETER: str(badge.identifier.badge_id)
                     }
                 ))

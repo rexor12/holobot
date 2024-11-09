@@ -1,21 +1,31 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class ChannelTimerMigration(MigrationBase):
-    _TABLE_NAME = "channel_timers"
-
     def __init__(self) -> None:
-        super().__init__(ChannelTimerMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
-        }, {})
+        super().__init__(
+            "channel_timers",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(202411071725, self.__upgrade_to_v2),
+            ]
+        )
+
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            " ALTER COLUMN user_id TYPE BIGINT USING user_id::BIGINT,\n"
+            " ALTER COLUMN server_id TYPE BIGINT USING server_id::BIGINT,\n"
+            " ALTER COLUMN channel_id TYPE BIGINT USING channel_id::BIGINT\n"
+        )
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((
-            f"CREATE TABLE {ChannelTimerMigration._TABLE_NAME} ("
+            f"CREATE TABLE {self.table_name} ("
             " id SERIAL PRIMARY KEY,\n"
             " user_id VARCHAR(20) NOT NULL,"
             " server_id VARCHAR(20) NOT NULL,"

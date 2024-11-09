@@ -29,7 +29,7 @@ class Bot(hikari.GatewayBot, IBot):
         try:
             return await self.rest.fetch_user(user_id)
         except hikari.NotFoundError as error:
-            raise UserNotFoundError(str(user_id)) from error
+            raise UserNotFoundError(user_id, None) from error
         except hikari.ForbiddenError as error:
             raise ForbiddenError(f"Failed to fetch user with identifier '{user_id}'.") from error
 
@@ -60,9 +60,9 @@ class Bot(hikari.GatewayBot, IBot):
             if channel := first_or_default(channels, lambda i: i.id == channel_id):
                 return channel
 
-            raise ChannelNotFoundError(str(channel_id), str(guild_or_id))
+            raise ChannelNotFoundError(channel_id, int(guild_or_id))
         except hikari.NotFoundError as error:
-            raise ChannelNotFoundError(str(channel_id), str(guild_or_id)) from error
+            raise ChannelNotFoundError(channel_id, int(guild_or_id)) from error
         except hikari.ForbiddenError as error:
             raise ForbiddenError(
                 f"Failed to fetch channel with identifier '{channel_id}'"
@@ -86,7 +86,7 @@ class Bot(hikari.GatewayBot, IBot):
         try:
             return await self.rest.fetch_member(guild, user_id)
         except hikari.NotFoundError as error:
-            raise UserNotFoundError(str(user_id)) from error
+            raise UserNotFoundError(user_id, None) from error
         except hikari.ForbiddenError as error:
             raise ForbiddenError(
                 f"Failed to fetch member with identifier '{user_id}'"
@@ -139,7 +139,7 @@ class Bot(hikari.GatewayBot, IBot):
 
         best_match = first_or_default(sorted(relevant_members, key=lambda p: p[1], reverse=True))
         if not best_match:
-            raise UserNotFoundError(user_name)
+            raise UserNotFoundError(None, user_name)
 
         if use_cache:
             return best_match[0]
@@ -164,9 +164,9 @@ class Bot(hikari.GatewayBot, IBot):
             if role := first_or_default(roles, lambda i: i.id == role_id):
                 return role
 
-            raise RoleNotFoundError(str(guild_or_id), str(role_id))
+            raise RoleNotFoundError(int(guild_or_id), role_id)
         except hikari.NotFoundError as error:
-            raise RoleNotFoundError(str(role_id), str(guild_or_id)) from error
+            raise RoleNotFoundError(role_id, int(guild_or_id)) from error
         except hikari.ForbiddenError as error:
             raise ForbiddenError(
                 f"Failed to fetch role with identifier '{role_id}'"
@@ -203,7 +203,7 @@ class Bot(hikari.GatewayBot, IBot):
         try:
             return await self.rest.fetch_guild(guild_id)
         except hikari.NotFoundError as error:
-            raise ServerNotFoundError(str(guild_id)) from error
+            raise ServerNotFoundError(guild_id) from error
         except hikari.ForbiddenError as error:
             raise ForbiddenError(
                 f"Failed to fetch server with identifier '{guild_id}'."

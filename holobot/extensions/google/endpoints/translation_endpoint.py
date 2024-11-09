@@ -1,8 +1,9 @@
 import json
 from typing import Any, cast
 
-import aiogoogle
 import aiogoogle.auth.creds as aiogoogle_creds
+import aiogoogle.client as aiogoogle_client
+import aiogoogle.resource as aiogoogle_resource
 
 from holobot.extensions.google.exceptions import QuotaExhaustedError
 from holobot.extensions.google.models import GoogleClientOptions, Language, Translation
@@ -95,7 +96,7 @@ class TranslationEndpoint:
 
     async def __get_endpoint(
         self
-    ) -> tuple[aiogoogle.Aiogoogle, aiogoogle.GoogleAPI] | None:
+    ) -> tuple[aiogoogle_client.Aiogoogle, aiogoogle_resource.GoogleAPI] | None:
         if not self.__options.value.ServiceAccountCredentialFile:
             return None
 
@@ -107,7 +108,7 @@ class TranslationEndpoint:
             ],
             **service_account_key
         )
-        client = aiogoogle.Aiogoogle(service_account_creds=creds)
+        client = aiogoogle_client.Aiogoogle(service_account_creds=creds)
         async with client:
             return (client, await client.discover("translate", "v2"))
 

@@ -56,8 +56,7 @@ class GiftMoneyWorkflow(WorkflowBase):
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(content=self.__i18n.get("interactions.server_only_interaction_error"))
 
-        user_id = str(user)
-        if user_id == context.author_id:
+        if user == context.author_id:
             return self._reply(
                 content=self.__i18n.get("extensions.general.gift_money_workflow.cannot_gift_to_self_error")
             )
@@ -90,7 +89,7 @@ class GiftMoneyWorkflow(WorkflowBase):
                 )
 
             own_wallet_id = WalletId.create(context.author_id, currency_id, currency_item.server_id)
-            target_wallet_id = WalletId.create(user_id, currency_id, currency_item.server_id)
+            target_wallet_id = WalletId.create(user, currency_id, currency_item.server_id)
             own_wallet = await self.__wallet_repository.get(own_wallet_id)
             if not own_wallet or own_wallet.amount < amount:
                 return self._reply(

@@ -66,8 +66,8 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
             arguments={
                 "state": state
             },
-            initiator_id=str(interaction.user.id),
-            bound_user_id=state.owner_id if state else str(interaction.user.id),
+            initiator_id=interaction.user.id,
+            bound_user_id=state.owner_id if state else interaction.user.id,
             context=context
         )
 
@@ -85,9 +85,9 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
         event = ComponentProcessedEvent(
             interactable=descriptor.interactable,
-            server_id=str(interaction.guild_id),
-            channel_id=str(interaction.channel_id),
-            user_id=str(interaction.user.id),
+            server_id=interaction.guild_id,
+            channel_id=interaction.channel_id,
+            user_id=interaction.user.id,
             response=response
         )
         for event_listener in self.__event_listeners:
@@ -101,22 +101,22 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
         if interaction.guild_id:
             return ServerChatInteractionContext(
                 request_id=uuid4(),
-                author_id=str(interaction.user.id),
+                author_id=interaction.user.id,
                 author_name=interaction.user.username,
                 author_nickname=interaction.member.nickname if interaction.member else None,
                 message=self.__create_message(interaction, expected_target_types),
-                server_id=str(interaction.guild_id),
+                server_id=interaction.guild_id,
                 server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=str(interaction.channel_id)
+                channel_id=interaction.channel_id
             )
 
         return DirectMessageInteractionContext(
             request_id=uuid4(),
-            author_id=str(interaction.user.id),
+            author_id=interaction.user.id,
             author_name=interaction.user.username,
             author_nickname=None,
             message=self.__create_message(interaction, expected_target_types),
-            channel_id=str(interaction.channel_id)
+            channel_id=interaction.channel_id
         )
 
     def __create_message(
@@ -125,10 +125,10 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
         expected_target_types: dict[str, type[ComponentStateBase]]
     ) -> Message:
         return Message(
-            author_id=str(interaction.message.author.id),
-            server_id=str(interaction.guild_id),
-            channel_id=str(interaction.channel_id),
-            message_id=str(interaction.message.id),
+            author_id=interaction.message.author.id,
+            server_id=interaction.guild_id,
+            channel_id=interaction.channel_id,
+            message_id=interaction.message.id,
             content=interaction.message.content,
             embeds=tuple(map(to_model, interaction.message.embeds)),
             components=self.__component_transformer.create_control_states(

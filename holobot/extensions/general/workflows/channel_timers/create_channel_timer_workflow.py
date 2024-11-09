@@ -99,9 +99,8 @@ class CreateChannelTimerWorkflow(WorkflowBase):
                 is_ephemeral=True
             )
 
-        channel_id = str(channel)
         try:
-            server_channel = await self.__channel_manager.get_channel_by_id(context.server_id, channel_id)
+            server_channel = await self.__channel_manager.get_channel_by_id(context.server_id, channel)
             if not server_channel.is_voice:
                 return self._reply(
                     content="extensions.general.create_channel_timer_workflow.invalid_channel_error"
@@ -149,7 +148,7 @@ class CreateChannelTimerWorkflow(WorkflowBase):
             await self.__channel_timer_repository.add(ChannelTimer(
                 user_id=context.author_id,
                 server_id=context.server_id,
-                channel_id=channel_id,
+                channel_id=channel,
                 base_time=datetime(
                     now.year,
                     now.month,

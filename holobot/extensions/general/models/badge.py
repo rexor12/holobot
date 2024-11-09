@@ -8,7 +8,7 @@ from holobot.sdk.database.entities import AggregateRoot
 class Badge(AggregateRoot[BadgeId]):
     """Represents a badge."""
 
-    created_by: str
+    created_by: int
     """The identifier of the user who created the badge."""
 
     created_at: datetime

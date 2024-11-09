@@ -1,6 +1,7 @@
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import Button, StackLayout
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import ButtonState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
@@ -55,14 +56,14 @@ class DivorceWorkflow(WorkflowBase):
                         id="divorce_yes",
                         owner_id=context.author_id,
                         text=self.__i18n_provider.get("common.buttons.yes"),
-                        custom_data={ "uid": spouse_id }
+                        custom_data={ "uid": str(spouse_id) }
                     ),
                     Button(
                         id="divorce_no",
                         owner_id=context.author_id,
                         text=self.__i18n_provider.get("common.buttons.no"),
                         style=ComponentStyle.SECONDARY,
-                        custom_data={ "uid": spouse_id }
+                        custom_data={ "uid": str(spouse_id) }
                     ),
                 ]
             ),
@@ -80,7 +81,7 @@ class DivorceWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if (
             not isinstance(context, ServerChatInteractionContext)
-            or not (spouse_id := state.custom_data.get("uid", None))
+            or not (spouse_id := get_custom_int(state.custom_data, "uid", None))
         ):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")

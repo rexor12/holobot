@@ -6,7 +6,7 @@ from holobot.sdk.database.repositories import manually_generated_key
 @manually_generated_key
 @dataclass
 class ExchangeQuotaRecord(Record):
-    id: PrimaryKey[str]
+    id: PrimaryKey[int]
     amount: int
     exchanged_amount: int
     lost_amount: int

@@ -19,7 +19,7 @@ class LogManager(ILogManager):
         self.__log_settings_repository: ILogSettingsRepository = log_settings_repository
         self.__messaging: IMessaging = messaging
 
-    async def set_log_channel(self, server_id: str, channel_id: str | None) -> None:
+    async def set_log_channel(self, server_id: int, channel_id: int | None) -> None:
         assert_not_none(server_id, "server_id")
 
         if not channel_id:
@@ -38,7 +38,7 @@ class LogManager(ILogManager):
         log_settings.channel_id = channel_id
         await self.__log_settings_repository.update(log_settings)
 
-    async def publish_log_entry(self, server_id: str, message: str) -> bool:
+    async def publish_log_entry(self, server_id: int, message: str) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(message, "message")
 

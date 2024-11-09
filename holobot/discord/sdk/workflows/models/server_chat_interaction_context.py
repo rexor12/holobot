@@ -6,6 +6,6 @@ from holobot.discord.sdk.models import InteractionContext
 class ServerChatInteractionContext(InteractionContext):
     """A context for server-specific chat interactions."""
 
-    server_id: str
+    server_id: int
     server_name: str
-    channel_id: str
+    channel_id: int

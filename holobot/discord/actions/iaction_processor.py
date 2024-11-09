@@ -1,14 +1,12 @@
-from abc import ABCMeta, abstractmethod
 from collections.abc import Coroutine
-from typing import Any
+from typing import Any, Protocol
 
 from hikari import PartialInteraction
 
 from holobot.discord.sdk.actions import ActionBase
 from holobot.discord.sdk.actions.enums import DeferType
 
-class IActionProcessor(metaclass=ABCMeta):
-    @abstractmethod
+class IActionProcessor(Protocol):
     def process(
         self,
         context: PartialInteraction,

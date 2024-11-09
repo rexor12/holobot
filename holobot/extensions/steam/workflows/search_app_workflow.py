@@ -103,12 +103,12 @@ class SearchAppWorkflow(WorkflowBase):
         )
 
     @staticmethod
-    def __get_cache_key(user_id: str, results_id: str) -> str:
+    def __get_cache_key(user_id: int, results_id: str) -> str:
         return f"steam_app_search/{user_id}/{results_id}"
 
     async def __save_search_results(
         self,
-        author_id: str,
+        author_id: int,
         apps: tuple[SteamApp, ...]
     ) -> str:
         result_id = random_uuid(8)
@@ -124,7 +124,7 @@ class SearchAppWorkflow(WorkflowBase):
 
     async def __create_page(
         self,
-        owner_id: str,
+        owner_id: int,
         results_id: str,
         result_index: int
     ) -> tuple[

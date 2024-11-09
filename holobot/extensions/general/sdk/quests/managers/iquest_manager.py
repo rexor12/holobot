@@ -8,24 +8,24 @@ from holobot.extensions.general.sdk.quests.models import IQuest, QuestProtoId
 class IQuestManager(Protocol):
     def start_quest(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> Awaitable[IQuest]:
         ...
 
     def complete_quest(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> Awaitable[QuestRewardDescriptor]:
         ...
 
     def get_quest_status(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         quest_proto_id: QuestProtoId
     ) -> Awaitable[QuestStatus]:
         ...

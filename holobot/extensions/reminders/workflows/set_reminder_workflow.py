@@ -83,8 +83,8 @@ class SetReminderWorkflow(WorkflowBase):
                 )
             )
 
-        server_id: str | None = None
-        channel_id: str | None = None
+        server_id: int | None = None
+        channel_id: int | None = None
         reminder_location = ReminderLocation.DIRECT_MESSAGE
         if isinstance(context, ServerChatInteractionContext):
             server_id = context.server_id
@@ -139,8 +139,8 @@ class SetReminderWorkflow(WorkflowBase):
                 )
             )
 
-        server_id: str | None = None
-        channel_id: str | None = None
+        server_id: int | None = None
+        channel_id: int | None = None
         reminder_location = ReminderLocation.DIRECT_MESSAGE
         if isinstance(context, ServerChatInteractionContext):
             server_id = context.server_id
@@ -159,7 +159,7 @@ class SetReminderWorkflow(WorkflowBase):
 
     async def __set_reminder(
         self,
-        author_id: str,
+        author_id: int,
         reminder_config: ReminderConfig
     ) -> InteractionResponse:
         try:

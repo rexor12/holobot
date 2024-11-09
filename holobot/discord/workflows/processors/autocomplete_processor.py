@@ -91,8 +91,8 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
                 "options": autocomplete_options,
                 "target_option": target_option
             },
-            initiator_id=str(interaction.user.id),
-            bound_user_id=str(interaction.user.id),
+            initiator_id=interaction.user.id,
+            bound_user_id=interaction.user.id,
             context=self.__get_interaction_context(interaction)
         )
 
@@ -119,20 +119,20 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
         if interaction.guild_id:
             return ServerChatInteractionContext(
                 request_id=uuid4(),
-                author_id=str(interaction.user.id),
+                author_id=interaction.user.id,
                 author_name=interaction.user.username,
                 author_nickname=interaction.member.nickname if interaction.member else None,
                 message=None,
-                server_id=str(interaction.guild_id),
+                server_id=interaction.guild_id,
                 server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=str(interaction.channel_id)
+                channel_id=interaction.channel_id
             )
 
         return DirectMessageInteractionContext(
             request_id=uuid4(),
-            author_id=str(interaction.user.id),
+            author_id=interaction.user.id,
             author_name=interaction.user.username,
             author_nickname=None,
             message=None,
-            channel_id=str(interaction.channel_id)
+            channel_id=interaction.channel_id
         )

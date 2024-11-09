@@ -250,8 +250,8 @@ class InteractionProcessorBase(
         self,
         interaction: TInteraction,
         interactable: TInteractable,
-        initiator_id: str,
-        bound_user_id: str
+        initiator_id: int,
+        bound_user_id: int
     ) -> bool:
         if not interactable.is_bound or initiator_id == bound_user_id:
             return False

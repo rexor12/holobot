@@ -29,9 +29,9 @@ class MarriageManager(IMarriageManager):
 
     async def get_spouse_id(
         self,
-        server_id: str,
-        user_id: str
-    ) -> str | None:
+        server_id: int,
+        user_id: int
+    ) -> int | None:
         if not (marriage := await self.__marriage_repository.get_by_user(server_id, user_id)):
             return None
 
@@ -39,9 +39,9 @@ class MarriageManager(IMarriageManager):
 
     async def marry(
         self,
-        server_id: str,
-        user_id: str,
-        target_user_id: str
+        server_id: int,
+        user_id: int,
+        target_user_id: int
     ) -> None:
         if marriage := await self.__marriage_repository.get_by_user(server_id, user_id):
             raise AlreadyMarriedError(user_id, marriage.get_spouse(user_id))
@@ -62,9 +62,9 @@ class MarriageManager(IMarriageManager):
 
     async def divorce(
         self,
-        server_id: str,
-        user_id: str,
-        spouse_id: str
+        server_id: int,
+        user_id: int,
+        spouse_id: int
     ) -> None:
         if await self.__marriage_repository.delete_by_user(server_id, user_id, spouse_id):
             return
@@ -73,9 +73,9 @@ class MarriageManager(IMarriageManager):
 
     async def try_add_reaction(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str,
+        server_id: int,
+        user_id1: int,
+        user_id2: int,
         reaction_type: ReactionType
     ) -> bool:
         marriage = await self.__marriage_repository.get_by_users(server_id, user_id1, user_id2)
@@ -130,19 +130,19 @@ class MarriageManager(IMarriageManager):
 
     async def get_react_score_bonus(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str,
+        server_id: int,
+        user_id1: int,
+        user_id2: int,
     ) -> int:
         marriage = await self.__marriage_repository.get_by_users(server_id, user_id1, user_id2)
         return marriage.match_bonus if marriage else 0
 
-    def get_marriage(self, server_id: str, user_id: str) -> Awaitable[Marriage | None]:
+    def get_marriage(self, server_id: int, user_id: int) -> Awaitable[Marriage | None]:
         return self.__marriage_repository.get_by_user(server_id, user_id)
 
     def get_ranking_infos(
         self,
-        server_id: str,
+        server_id: int,
         ranking_type: RankingType,
         page_index: int,
         page_size: int

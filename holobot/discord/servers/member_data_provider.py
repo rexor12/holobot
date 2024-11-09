@@ -16,37 +16,37 @@ from holobot.sdk.utils.iterable_utils import first_or_default
 class MemberDataProvider(IMemberDataProvider):
     async def get_basic_data_by_id(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> MemberData:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        user = await get_bot().get_guild_member(int(server_id), int(user_id))
+        user = await get_bot().get_guild_member(server_id, user_id)
         return MemberDataProvider.__member_to_basic_data(user)
 
     async def try_get_basic_data_by_id(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> MemberData | None:
         try:
-            user = await get_bot().get_guild_member(int(server_id), int(user_id))
+            user = await get_bot().get_guild_member(server_id, user_id)
             return MemberDataProvider.__member_to_basic_data(user)
         except (UserNotFoundError, ServerNotFoundError):
             return None
 
     async def get_basic_data_by_ids(
         self,
-        server_id: str,
-        user_ids: Iterable[str]
+        server_id: int,
+        user_ids: Iterable[int]
     ) -> AsyncIterable[MemberData]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_ids, "user_ids")
 
         members = await get_bot().get_guild_members(
-            int(server_id),
-            map(lambda i: int(i), user_ids)
+            server_id,
+            map(lambda i: i, user_ids)
         )
 
         for member in members:
@@ -54,32 +54,32 @@ class MemberDataProvider(IMemberDataProvider):
 
     async def get_basic_data_by_name(
         self,
-        server_id: str,
+        server_id: int,
         name: str
     ) -> MemberData:
         assert_not_none(server_id, "server_id")
         assert_not_none(name, "name")
 
-        member = await get_bot().get_guild_member_by_name(int(server_id), name)
+        member = await get_bot().get_guild_member_by_name(server_id, name)
         return MemberDataProvider.__member_to_basic_data(member)
 
-    async def is_member(self, server_id: str, user_id: str) -> bool:
+    async def is_member(self, server_id: int, user_id: int) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
         try:
-            await get_bot().get_guild_member(int(server_id), int(user_id))
+            await get_bot().get_guild_member(server_id, user_id)
             return True
         except UserNotFoundError:
             return False
 
-    async def get_member_permissions(self, server_id: str, channel_id: str, user_id: str) -> Permission:
+    async def get_member_permissions(self, server_id: int, channel_id: int, user_id: int) -> Permission:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(user_id, "user_id")
 
-        guild = await get_bot().get_guild_by_id(int(server_id))
-        member = await get_bot().get_guild_member(guild, int(user_id))
+        guild = await get_bot().get_guild_by_id(server_id)
+        member = await get_bot().get_guild_member(guild, user_id)
         # Check if the user the owner of the server, in which case all permissions are granted.
         if member.id == guild.owner_id:
             return Permission.all_permissions()
@@ -90,7 +90,7 @@ class MemberDataProvider(IMemberDataProvider):
         if base_permissions & base_permissions.ADMINISTRATOR:
             return Permission.all_permissions()
 
-        channel = await get_bot().get_guild_channel(guild, int(channel_id))
+        channel = await get_bot().get_guild_channel(guild, channel_id)
         if not channel:
             return MemberDataProvider.__transform_permissions(base_permissions)
 
@@ -129,7 +129,7 @@ class MemberDataProvider(IMemberDataProvider):
         )
 
         return MemberData(
-            user_id=str(user.id),
+            user_id=user.id,
             avatar_url=user.avatar_url and user.avatar_url.url,
             server_specific_avatar_url=user.guild_avatar_url and user.guild_avatar_url.url,
             name=user.username,

@@ -5,6 +5,6 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 
 @dataclass
 class WarnDecayToggledResponse(InteractionResponse):
-    author_id: str = ""
+    author_id: int = 0
     is_enabled: bool = False
     duration: timedelta | None = None

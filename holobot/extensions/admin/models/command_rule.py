@@ -21,13 +21,13 @@ rule_to_emoji_map: dict[RuleState, str] = {
 class CommandRule(AggregateRoot[int]):
     identifier: int = -1
     created_at: datetime = field(default_factory=utcnow)
-    created_by: str
-    server_id: str
+    created_by: int
+    server_id: int
     state: RuleState = RuleState.ALLOW
     group: str | None = None
     subgroup: str | None = None
     command: str | None = None
-    channel_id: str | None = None
+    channel_id: int | None = None
 
     def __lt__(self, other: CommandRule) -> bool:
         return self.__get_weight() < other.__get_weight()

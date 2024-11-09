@@ -21,7 +21,7 @@ class TodoItemManager(ITodoItemManager):
         self.__todo_item_repository = todo_item_repository
         self.__options = options
 
-    async def get_by_user(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[TodoItem]:
+    async def get_by_user(self, user_id: int, page_index: int, page_size: int) -> PaginationResult[TodoItem]:
         return await self.__todo_item_repository.get_many(user_id, page_index, page_size)
 
     async def add_todo_item(self, todo_item: TodoItem) -> None:
@@ -37,7 +37,7 @@ class TodoItemManager(ITodoItemManager):
         todo_item.identifier = await self.__todo_item_repository.add(todo_item)
         self.__logger.debug("Set new to-do item", user_id=todo_item.user_id)
 
-    async def delete_by_user(self, user_id: str, todo_item_id: int) -> None:
+    async def delete_by_user(self, user_id: int, todo_item_id: int) -> None:
         if not user_id:
             raise ValueError("The user identifier cannot be none.")
 
@@ -45,13 +45,13 @@ class TodoItemManager(ITodoItemManager):
         if deleted_count == 0:
             raise InvalidTodoItemError("The specified to-do item doesn't exist or belong to the specified user.")
 
-    async def delete_all(self, user_id: str) -> int:
+    async def delete_all(self, user_id: int) -> int:
         if not user_id:
             raise ValueError("The user identifier cannot be none.")
 
         return await self.__todo_item_repository.delete_all_by_user(user_id)
 
-    async def __assert_todo_item_count(self, user_id: str) -> None:
+    async def __assert_todo_item_count(self, user_id: int) -> None:
         count = await self.__todo_item_repository.count_by_user(user_id)
         if count >= self.__options.value.TodoItemsPerUserMax:
             raise TooManyTodoItemsError(count)

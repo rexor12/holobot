@@ -4,7 +4,7 @@ from dataclasses import dataclass
 class RankingInfo:
     """Basic information about a user profile."""
 
-    user_id: str
+    user_id: int
     """The identifier of the user the profile belongs to."""
 
     reputation_points: int

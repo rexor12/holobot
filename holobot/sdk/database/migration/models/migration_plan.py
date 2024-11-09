@@ -1,18 +1,19 @@
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 
 from asyncpg.connection import Connection
 
 class MigrationPlan:
+    @property
+    def new_version(self) -> int:
+        return self.__new_version
+
     def __init__(
         self,
-        old_version: int,
         new_version: int,
-        function: Callable[[Connection], Coroutine[None, None, None]]
+        function: Callable[[Connection], Awaitable[None]]
     ):
-        self.old_version = old_version
-        self.new_version = new_version
+        self.__new_version = new_version
         self.__function = function
 
-    # TODO Abstract PostgreSQL away.
     async def execute(self, connection: Connection):
         await self.__function(connection)

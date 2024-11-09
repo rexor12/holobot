@@ -138,7 +138,7 @@ class ViewProfileBackgroundsWorkflow(UserProfileWorkflowBase):
 
     async def __get_content_view_by_index(
         self,
-        user_id: str,
+        user_id: int,
         index: int
     ) -> tuple[str | None, Embed | None, list[LayoutBase] | None]:
         custom_background = self.__reputation_data_provider.get_custom_background(index)
@@ -156,7 +156,7 @@ class ViewProfileBackgroundsWorkflow(UserProfileWorkflowBase):
 
     async def __get_content_view_by_code(
         self,
-        user_id: str,
+        user_id: int,
         code: str
     ) -> tuple[str | None, Embed | None, list[LayoutBase] | None]:
         custom_background = self.__reputation_data_provider.get_custom_background_by_code(code)
@@ -171,7 +171,7 @@ class ViewProfileBackgroundsWorkflow(UserProfileWorkflowBase):
 
     async def __get_content_view_by_custom_background(
         self,
-        user_id: str,
+        user_id: int,
         custom_background: CustomBackgroundInfo
     ) -> tuple[str | None, Embed | None, list[LayoutBase] | None]:
         if not (user_profile := await self.__user_profile_repository.get(user_id)):

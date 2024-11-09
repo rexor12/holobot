@@ -1,25 +1,25 @@
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import AsyncIterable, Awaitable, Iterable
 from typing import Protocol
 
 from holobot.discord.sdk.models import UserData
 
 class IUserDataProvider(Protocol):
-    async def get_user_data_by_id(
+    def get_user_data_by_id(
         self,
-        user_id: str,
+        user_id: int,
         use_cache: bool = True
-    ) -> UserData:
+    ) -> Awaitable[UserData]:
         ...
 
     def get_user_data_by_ids(
         self,
-        user_ids: Iterable[str]
+        user_ids: Iterable[int]
     ) -> AsyncIterable[UserData]:
         ...
 
     async def get_user_data_by_name(
         self,
-        server_id: str,
+        server_id: int,
         user_name: str,
         use_cache: bool = True
     ) -> UserData:

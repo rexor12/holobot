@@ -60,7 +60,7 @@ class BanUserWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
+        user_id = user
         reason = reason.strip()
 
         days = days if days is not None else 0

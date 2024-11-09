@@ -49,7 +49,7 @@ class ShowExchangeQuotaWorkflow(WorkflowBase):
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(content=self.__i18n.get("interactions.server_only_interaction_error"))
 
-        user_id = str(user) if user else context.author_id
+        user_id = user if user else context.author_id
         exchange_quota = await self.__exchange_quota_repository.get(user_id)
         if exchange_quota:
             remaining_amount = max(0, self.__options.value.ExchangeQuotaPerUser - exchange_quota.amount)

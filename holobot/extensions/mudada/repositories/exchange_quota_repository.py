@@ -9,7 +9,7 @@ from .records import ExchangeQuotaRecord
 
 @injectable(IExchangeQuotaRepository)
 class ExchangeQuotaRepository(
-    RepositoryBase[str, ExchangeQuotaRecord, ExchangeQuota],
+    RepositoryBase[int, ExchangeQuotaRecord, ExchangeQuota],
     IExchangeQuotaRepository
 ):
     @property
@@ -21,8 +21,8 @@ class ExchangeQuotaRepository(
         return ExchangeQuota
 
     @property
-    def identifier_type(self) -> type[str]:
-        return str
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:

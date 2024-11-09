@@ -5,7 +5,7 @@ from holobot.extensions.moderation.enums import ModeratorPermission
 
 @dataclass
 class ModeratorPermissionsChangedResponse(InteractionResponse):
-    author_id: str = ""
-    user_id: str = ""
+    author_id: int = 0
+    user_id: int = 0
     permission: ModeratorPermission = ModeratorPermission.NONE
     is_addition: bool = False

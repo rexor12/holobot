@@ -7,7 +7,7 @@ from holobot.sdk.configs import OptionsDefinition
 class MudadaOptions(OptionsDefinition):
     section_name: ClassVar[str] = "Mudada"
 
-    MudadaServerId: str = ""
+    MudadaServerId: int = 0
     """The identifier of the Mudada server."""
 
     MudaeUserId: str = ""

@@ -8,7 +8,7 @@ from .records import ReputationCooldownRecord
 
 @injectable(IReputationCooldownRepository)
 class ReputationCooldownRepository(
-    RepositoryBase[str, ReputationCooldownRecord, ReputationCooldown],
+    RepositoryBase[int, ReputationCooldownRecord, ReputationCooldown],
     IReputationCooldownRepository
 ):
     @property
@@ -20,8 +20,8 @@ class ReputationCooldownRepository(
         return ReputationCooldown
 
     @property
-    def identifier_type(self) -> type[str]:
-        return str
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:

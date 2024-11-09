@@ -12,7 +12,7 @@ from holobot.sdk.utils import assert_not_none, first_or_default
 
 @injectable(IRoleManager)
 class RoleManager(IRoleManager):
-    def get_role(self, server_id: str, role_name: str) -> Role | None:
+    def get_role(self, server_id: int, role_name: str) -> Role | None:
         assert_not_none(server_id, "server_id")
         assert_not_none(role_name, "role_name")
 
@@ -20,7 +20,7 @@ class RoleManager(IRoleManager):
         role = first_or_default(guild.get_roles().values(), lambda r: r.name == role_name)
         return to_model(role) if role else None
 
-    async def create_role(self, server_id: str, role_name: str, description: str) -> Role:
+    async def create_role(self, server_id: int, role_name: str, description: str) -> Role:
         assert_not_none(server_id, "server_id")
         assert_not_none(role_name, "role_name")
 
@@ -41,8 +41,8 @@ class RoleManager(IRoleManager):
             ) from error
 
     @staticmethod
-    def __get_guild(server_id: str) -> Guild:
-        guild = get_bot().cache.get_guild(int(server_id))
+    def __get_guild(server_id: int) -> Guild:
+        guild = get_bot().cache.get_guild(server_id)
         if not guild:
             raise ServerNotFoundError(server_id)
         return guild

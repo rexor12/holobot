@@ -7,7 +7,7 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 class WarnSettingsRecord(Record):
     id: PrimaryKey[int]
     modified_at: datetime
-    server_id: str
+    server_id: int
     decay_threshold: timedelta | None
     auto_mute_after: int
     auto_mute_duration: timedelta | None

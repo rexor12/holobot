@@ -5,8 +5,8 @@ from holobot.extensions.moderation.models import LogSettings
 from holobot.sdk.database.repositories import IRepository
 
 class ILogSettingsRepository(IRepository[int, LogSettings], Protocol):
-    def get_by_server(self, server_id: str) -> Awaitable[LogSettings | None]:
+    def get_by_server(self, server_id: int) -> Awaitable[LogSettings | None]:
         ...
 
-    def delete_by_server(self, server_id: str) -> Awaitable[int]:
+    def delete_by_server(self, server_id: int) -> Awaitable[int]:
         ...

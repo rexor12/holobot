@@ -5,7 +5,7 @@ from holobot.extensions.general.sdk.quests.models import QuestRewardBase
 
 class IQuestRewardFactory(Protocol):
     @property
-    def relevant_server_ids(self) -> tuple[str, ...]:
+    def relevant_server_ids(self) -> tuple[int, ...]:
         ...
 
     @property
@@ -15,7 +15,7 @@ class IQuestRewardFactory(Protocol):
     def create_quest_rewards(
         self,
         quest_code: str,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> Awaitable[Iterable[QuestRewardBase]]:
         ...

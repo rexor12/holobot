@@ -5,7 +5,7 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 
 @dataclass
 class AutoMuteToggledResponse(InteractionResponse):
-    author_id: str = ""
+    author_id: int = 0
     is_enabled: bool = False
     warn_count: int = 0
     duration: timedelta | None = None

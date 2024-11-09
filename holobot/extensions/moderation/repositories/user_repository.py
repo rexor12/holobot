@@ -42,8 +42,8 @@ class UserRepository(
 
     def get_by_server(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> Awaitable[User | None]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -58,8 +58,8 @@ class UserRepository(
 
     def delete_by_server(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -74,7 +74,7 @@ class UserRepository(
 
     def get_moderators(
         self,
-        server_id: str,
+        server_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[User]]:

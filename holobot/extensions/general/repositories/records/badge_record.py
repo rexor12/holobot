@@ -7,9 +7,9 @@ from holobot.sdk.database.repositories import manually_generated_key
 @manually_generated_key
 @dataclass
 class BadgeRecord(Record):
-    server_id: PrimaryKey[str]
+    server_id: PrimaryKey[int]
     badge_id: PrimaryKey[int]
-    created_by: str
+    created_by: int
     created_at: datetime
     name: str
     description: str | None

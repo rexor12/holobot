@@ -94,7 +94,7 @@ class ClearUserBadgeWorkflow(WorkflowBase):
                         text=self.__i18n.get(
                             "extensions.general.clear_badge_workflow.view_profile_button"
                         ),
-                        custom_data={ "u": context.author_id }
+                        custom_data={ "u": str(context.author_id) }
                     ),
                     Button(
                         id="ubadgepagir",
@@ -102,7 +102,7 @@ class ClearUserBadgeWorkflow(WorkflowBase):
                         text=self.__i18n.get(
                             "extensions.general.clear_badge_workflow.view_badges_button"
                         ),
-                        custom_data={ "u": context.author_id }
+                        custom_data={ "u": str(context.author_id) }
                     )
                 ]
             )

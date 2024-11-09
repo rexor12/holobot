@@ -76,7 +76,7 @@ class CommandRuleRepository(
 
     def get_many(
         self,
-        server_id: str,
+        server_id: int,
         group: str | None,
         subgroup: str | None,
         page_index: int,
@@ -99,8 +99,8 @@ class CommandRuleRepository(
 
     async def get_relevant(
         self,
-        server_id: str,
-        channel_id: str,
+        server_id: int,
+        channel_id: int,
         group: str | None,
         subgroup: str | None,
         command: str | None
@@ -156,7 +156,7 @@ class CommandRuleRepository(
                 for record in records
             )
 
-    def delete_by_server(self, server_id: str) -> Awaitable[int]:
+    def delete_by_server(self, server_id: int) -> Awaitable[int]:
         return self._delete_by_filter(
             lambda where: where.field("server_id", Equality.EQUAL, server_id)
         )

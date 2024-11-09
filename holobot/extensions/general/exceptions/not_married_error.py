@@ -1,8 +1,8 @@
 class NotMarriedError(Exception):
     def __init__(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         *args: object
     ) -> None:
         super().__init__(*args)
@@ -10,19 +10,19 @@ class NotMarriedError(Exception):
         self.user_id = user_id
 
     @property
-    def server_id(self) -> str:
+    def server_id(self) -> int:
         return self.__server_id
 
     @server_id.setter
-    def server_id(self, value: str) -> None:
+    def server_id(self, value: int) -> None:
         self.__server_id = value
 
     @property
-    def user_id(self) -> str:
+    def user_id(self) -> int:
         return self.__user_id
 
     @user_id.setter
-    def user_id(self, value: str) -> None:
+    def user_id(self, value: int) -> None:
         self.__user_id = value
 
     def __str__(self) -> str:

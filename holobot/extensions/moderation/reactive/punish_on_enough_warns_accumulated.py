@@ -1,4 +1,4 @@
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from holobot.discord.sdk import IMessaging
@@ -77,7 +77,7 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
             suppress_user_mentions=True
         )
 
-    async def __try_punish(self, server_id: str, user_id: str, warn_count: int, warn_settings: WarnSettings) -> tuple[bool, str, str]:
+    async def __try_punish(self, server_id: int, user_id: int, warn_count: int, warn_settings: WarnSettings) -> tuple[bool, str, str]:
         if warn_settings.auto_ban_after > 0 and warn_count >= warn_settings.auto_ban_after:
             is_success = await self.__try_execute_punishment(lambda: self.__user_manager.ban_user(server_id, user_id, self.__get_reason(warn_count)))
             return (is_success, "banned", "no_entry")
@@ -92,7 +92,7 @@ class PunishOnEnoughWarnsAccumulated(IListener[CommandProcessedEvent]):
 
         return (False, "", "")
 
-    async def __try_execute_punishment(self, action: Callable[[], Coroutine[Any, Any, None]]) -> bool:
+    async def __try_execute_punishment(self, action: Callable[[], Awaitable[None]]) -> bool:
         try:
             await action()
             return True

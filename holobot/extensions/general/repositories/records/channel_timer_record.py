@@ -6,9 +6,9 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 @dataclass
 class ChannelTimerRecord(Record):
     id: PrimaryKey[int]
-    user_id: str
-    server_id: str
-    channel_id: str
+    user_id: int
+    server_id: int
+    channel_id: int
     base_time: datetime
     countdown_interval: timedelta
     name_template: str | None

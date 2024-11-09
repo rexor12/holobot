@@ -26,7 +26,7 @@ class ReminderManager(IReminderManager):
         self.__reminder_repository = reminder_repository
         self.__options = options
 
-    async def set_reminder(self, user_id: str, config: ReminderConfig) -> Reminder:
+    async def set_reminder(self, user_id: int, config: ReminderConfig) -> Reminder:
         options = self.__options.value
         ReminderManager.__assert_message(options, config.message)
         if config.every_interval is not None and config.in_time is not None:
@@ -57,7 +57,7 @@ class ReminderManager(IReminderManager):
         self.__logger.debug("Set new reminder", user_id=user_id, next_trigger=reminder.next_trigger, base_trigger=reminder.base_trigger, repeats=reminder.is_repeating)
         return reminder
 
-    async def delete_reminder(self, user_id: str, reminder_id: int) -> None:
+    async def delete_reminder(self, user_id: int, reminder_id: int) -> None:
         if not user_id:
             raise ArgumentError("user_id", "The user identifier must not be empty.")
 
@@ -65,7 +65,7 @@ class ReminderManager(IReminderManager):
         if deleted_count == 0:
             raise InvalidReminderError("The specified reminder doesn't exist or belong to the specified user.")
 
-    async def get_by_user(self, user_id: str, page_index: int, page_size: int) -> PaginationResult[Reminder]:
+    async def get_by_user(self, user_id: int, page_index: int, page_size: int) -> PaginationResult[Reminder]:
         return await self.__reminder_repository.get_many(user_id, page_index, page_size)
 
     @staticmethod
@@ -81,14 +81,14 @@ class ReminderManager(IReminderManager):
                 options.MessageLengthMax
             )
 
-    async def __assert_reminder_count(self, user_id: str) -> None:
+    async def __assert_reminder_count(self, user_id: int) -> None:
         count = await self.__reminder_repository.count_by_user(user_id)
         if count >= self.__options.value.RemindersPerUserMax:
             raise TooManyRemindersError(count)
 
     async def __set_recurring_reminder(
         self,
-        user_id: str,
+        user_id: int,
         config: ReminderConfig
     ) -> Reminder:
         reminder = Reminder(
@@ -110,7 +110,7 @@ class ReminderManager(IReminderManager):
 
     async def __set_single_reminder(
         self,
-        user_id: str,
+        user_id: int,
         config: ReminderConfig,
         next_trigger: datetime
     ) -> Reminder:

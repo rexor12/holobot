@@ -17,7 +17,7 @@ class UserProfileManager(IUserProfileManager):
 
     async def add_reputation_point(
         self,
-        user_id: str
+        user_id: int
     ) -> ReputationChangeInfo:
         user_profile = await self.__user_profile_repository.get(user_id)
         if user_profile:
@@ -41,7 +41,7 @@ class UserProfileManager(IUserProfileManager):
             last_custom_background=self.__reputation_data_provider.get_last_unlocked_custom_background(1)
         )
 
-    async def get_or_create(self, user_id: str) -> UserProfile:
+    async def get_or_create(self, user_id: int) -> UserProfile:
         user_profile = await self.__user_profile_repository.get(user_id)
         if user_profile:
             return user_profile

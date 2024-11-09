@@ -8,7 +8,7 @@ from .records import HalloweenRewardRecord
 
 @injectable(IHalloweenRewardRepository)
 class HalloweenRewardRepository(
-    RepositoryBase[str, HalloweenRewardRecord, HalloweenReward],
+    RepositoryBase[int, HalloweenRewardRecord, HalloweenReward],
     IHalloweenRewardRepository
 ):
     @property
@@ -20,8 +20,8 @@ class HalloweenRewardRepository(
         return HalloweenReward
 
     @property
-    def identifier_type(self) -> type[str]:
-        return str
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:

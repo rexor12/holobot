@@ -173,8 +173,8 @@ class ActionProcessor(IActionProcessor):
             elif isinstance(interaction, hikari.ComponentInteraction):
                 if deferral is DeferType.NONE:
                     await self.__messaging.delete_message(
-                        str(interaction.channel_id),
-                        str(interaction.message.id)
+                        interaction.channel_id,
+                        interaction.message.id
                     )
                     return
 

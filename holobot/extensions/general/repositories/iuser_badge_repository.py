@@ -9,7 +9,7 @@ from holobot.sdk.queries import PaginationResult
 class IUserBadgeRepository(IRepository[UserBadgeId, UserBadge], Protocol):
     def paginate(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[UserBadge]]:

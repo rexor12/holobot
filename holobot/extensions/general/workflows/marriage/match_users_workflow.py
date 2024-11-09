@@ -82,7 +82,7 @@ class MatchUsersWorkflow(WorkflowBase):
 
         try:
             member_data1 = await (
-                self.__member_data_provider.get_basic_data_by_id(context.server_id, str(user))
+                self.__member_data_provider.get_basic_data_by_id(context.server_id, user)
                 if user2
                 else self.__member_data_provider.get_basic_data_by_id(
                     context.server_id,
@@ -91,7 +91,7 @@ class MatchUsersWorkflow(WorkflowBase):
             )
             member_data2 = await self.__member_data_provider.get_basic_data_by_id(
                 context.server_id,
-                str(user2) if user2 else str(user)
+                user2 if user2 else user
             )
             if not member_data1 or not member_data2:
                 return self._reply(
@@ -208,7 +208,7 @@ class MatchUsersWorkflow(WorkflowBase):
 
     async def __get_statistics(
         self,
-        server_id: str,
+        server_id: int,
         member_data1: MemberData,
         member_data2: MemberData
     ) -> tuple[_Statistics, datetime]:

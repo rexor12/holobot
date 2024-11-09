@@ -41,7 +41,7 @@ class UserBadgeRepository(
 
     def paginate(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[UserBadge]]:

@@ -12,6 +12,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ComponentBase, StackLayout
 )
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import ButtonState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
@@ -87,7 +88,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
 
         content, components = await self.__get_response_view(
             context,
-            str(user) if user else None,
+            user if user else None,
             avatar_kind
         )
 
@@ -111,7 +112,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
 
         content, components = await self.__get_response_view(
             context,
-            state.custom_data.get(_UID_PARAMETER_NAME, context.author_id),
+            get_custom_int(state.custom_data, _UID_PARAMETER_NAME, context.author_id),
             _AvatarKind.GLOBAL
         )
 
@@ -135,7 +136,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
 
         content, components = await self.__get_response_view(
             context,
-            state.custom_data.get(_UID_PARAMETER_NAME, context.author_id),
+            get_custom_int(state.custom_data, _UID_PARAMETER_NAME, context.author_id),
             _AvatarKind.SERVER_SPECIFIC
         )
 
@@ -180,7 +181,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
     async def __get_member(
         self,
         context: ServerChatInteractionContext,
-        user_id: str | None
+        user_id: int | None
     ) -> MemberData:
         if not user_id:
             return await self.__member_data_provider.get_basic_data_by_id(
@@ -196,7 +197,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
     async def __get_response_view(
         self,
         context: ServerChatInteractionContext,
-        user_id: str | None,
+        user_id: int | None,
         avatar_kind: _AvatarKind
     ) -> tuple[Embed | str, ComponentBase | None]:
 
@@ -243,7 +244,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
         layout = None
         if global_button_enabled or server_button_enabled:
             custom_data: dict[str, str] = {
-                _UID_PARAMETER_NAME: member_data.user_id
+                _UID_PARAMETER_NAME: str(member_data.user_id)
             }
             buttons: list[ComponentBase] = [
                 Button(

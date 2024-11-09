@@ -55,7 +55,7 @@ class ViewUserBannerWorkflow(WorkflowBase):
                 )
             else:
                 user_data = await self.__user_data_provider.get_user_data_by_id(
-                    str(user),
+                    user,
                     False
                 )
 

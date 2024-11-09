@@ -2,20 +2,21 @@ from pathlib import Path
 
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class FortuneCookieMigration(MigrationBase):
-    _TABLE_NAME = "fortune_cookies"
-
     def __init__(self) -> None:
-        super().__init__(FortuneCookieMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table),
-            1: MigrationPlan(1, 2, self.__upgrade_to_v1),
-            2: MigrationPlan(2, 3, self.__upgrade_to_v2)
-        }, {})
+        super().__init__(
+            "fortune_cookies",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(2, self.__upgrade_to_v1),
+                MigrationPlan(3, self.__upgrade_to_v2)
+            ]
+        )
 
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await self._execute_script(
@@ -31,7 +32,7 @@ class FortuneCookieMigration(MigrationBase):
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((
-            f"CREATE TABLE {FortuneCookieMigration._TABLE_NAME} ("
+            f"CREATE TABLE {self.table_name} ("
             " id SERIAL PRIMARY KEY,\n"
             " message VARCHAR(512) NOT NULL\n"
             ")"
@@ -42,7 +43,7 @@ class FortuneCookieMigration(MigrationBase):
         await connection.execute((
             "CREATE MATERIALIZED VIEW fortune_cookies_metadata AS\n"
             " SELECT COUNT(*) as total_row_count\n"
-            f" FROM {FortuneCookieMigration._TABLE_NAME}\n"
+            f" FROM {self.table_name}\n"
         ))
 
         # Create a function that can be set as a trigger to refresh the view.
@@ -75,7 +76,7 @@ class FortuneCookieMigration(MigrationBase):
         await connection.execute((
             "CREATE TRIGGER refresh_metadata\n"
             "AFTER INSERT OR DELETE OR TRUNCATE\n"
-            f"ON {FortuneCookieMigration._TABLE_NAME}\n"
+            f"ON {self.table_name}\n"
             "FOR EACH STATEMENT\n"
             "EXECUTE PROCEDURE refresh_fortune_cookies_metadata()"
         ))

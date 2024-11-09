@@ -5,27 +5,27 @@ from .models.embed import Embed
 from .workflows.interactables.components import ComponentBase, LayoutBase
 
 class IMessaging(Protocol):
-    async def send_private_message(self, user_id: str, message: str) -> None:
+    def send_private_message(self, user_id: int, message: str) -> Awaitable[None]:
         ...
 
-    async def send_channel_message(
+    def send_channel_message(
         self,
-        server_id: str,
-        channel_id: str,
+        server_id: int,
+        channel_id: int,
         content: str | Embed,
         components: ComponentBase | list[LayoutBase] | None = None,
         *,
         suppress_user_mentions: bool = False
-    ) -> str:
+    ) -> Awaitable[int]:
         ...
 
-    async def crosspost_message(
+    def crosspost_message(
         self,
-        server_id: str,
-        channel_id: str,
-        message_id: str
-    ) -> None:
+        server_id: int,
+        channel_id: int,
+        message_id: int
+    ) -> Awaitable[None]:
         ...
 
-    def delete_message(self, channel_id: str, message_id: str) -> Awaitable[None]:
+    def delete_message(self, channel_id: int, message_id: int) -> Awaitable[None]:
         ...

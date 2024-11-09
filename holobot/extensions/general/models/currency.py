@@ -15,10 +15,10 @@ class Currency(AggregateRoot[int], ICurrency):
     created_at: datetime = field(default_factory=utcnow)
     """The date and time at which this currency was created."""
 
-    created_by: str
+    created_by: int
     """The identifier of the user who created this currency."""
 
-    server_id: str | None
+    server_id: int | None
     """The identifier of the server the currency belongs to;
     or, None if it's globally available."""
 

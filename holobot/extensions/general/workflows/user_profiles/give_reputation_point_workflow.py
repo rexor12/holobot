@@ -52,7 +52,7 @@ class GiveReputationPointWorkflow(WorkflowBase):
             return self._reply(content=self.__i18n.get("interactions.server_only_interaction_error"))
 
         source_user_id = context.author_id
-        target_user_id = str(user)
+        target_user_id = user
         if target_user_id == source_user_id:
             return self._reply(
                 content=self.__i18n.get("extensions.general.give_reputation_point_workflow.cannot_choose_self_error")

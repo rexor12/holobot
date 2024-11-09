@@ -1,15 +1,15 @@
 class ThreadNotFoundError(Exception):
-    def __init__(self, thread_id: str, server_id: str | None = None, *args: object) -> None:
+    def __init__(self, thread_id: int, server_id: int | None = None, *args: object) -> None:
         super().__init__(*args)
-        self.__server_id: str | None = server_id
-        self.__thread_id: str = thread_id
+        self.__server_id = server_id
+        self.__thread_id = thread_id
 
     @property
-    def server_id(self) -> str | None:
+    def server_id(self) -> int | None:
         return self.__server_id
 
     @property
-    def thread_id(self) -> str:
+    def thread_id(self) -> int:
         return self.__thread_id
 
     def __str__(self) -> str:

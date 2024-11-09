@@ -87,6 +87,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
         ):
             return
 
+        source_user_id = int(source_user_id)
         kakera_amount = int(match.group("amount"))
         if kakera_amount < 1:
             return

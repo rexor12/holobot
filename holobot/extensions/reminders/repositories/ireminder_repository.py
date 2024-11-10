@@ -6,12 +6,12 @@ from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
 class IReminderRepository(IRepository[int, Reminder], Protocol):
-    def count_by_user(self, user_id: str) -> Awaitable[int]:
+    def count_by_user(self, user_id: int) -> Awaitable[int]:
         ...
 
     def get_many(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[Reminder]]:
@@ -20,5 +20,5 @@ class IReminderRepository(IRepository[int, Reminder], Protocol):
     def get_triggerable(self) -> Awaitable[tuple[Reminder, ...]]:
         ...
 
-    def delete_by_user(self, user_id: str, reminder_id: int) -> Awaitable[int]:
+    def delete_by_user(self, user_id: int, reminder_id: int) -> Awaitable[int]:
         ...

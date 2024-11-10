@@ -60,13 +60,13 @@ factory = UserProfileFactory(
 
 # Generate a profile image
 user_profile = UserProfile(
-    identifier="401490060156862466",
+    identifier=401490060156862466,
     reputation_points=37,
     background_image_code="3"
 )
-user_profile.badges.set_item(1, BadgeId(server_id="0", badge_id=0))
-user_profile.badges.set_item(2, BadgeId(server_id="0", badge_id=1))
-user_profile.badges.set_item(4, BadgeId(server_id="0", badge_id=9000))
+user_profile.badges.set_item(1, BadgeId(server_id=0, badge_id=0))
+user_profile.badges.set_item(2, BadgeId(server_id=0, badge_id=1))
+user_profile.badges.set_item(4, BadgeId(server_id=0, badge_id=9000))
 
 profile_image = factory.create_profile_image(
     "Test User Name",

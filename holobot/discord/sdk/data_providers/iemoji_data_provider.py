@@ -7,9 +7,9 @@ class IEmojiDataProvider(Protocol):
     def find_emoji(
         self,
         name_or_mention: str,
-        source_server_id: str | None = None
+        source_server_id: int | None = None
     ) -> Awaitable[Emoji | None]:
         ...
 
-    def extract_id(self, mention: str) -> str:
+    def extract_id(self, mention: str) -> int:
         ...

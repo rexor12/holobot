@@ -8,7 +8,7 @@ class InteractionContext:
     """A base context for interactions."""
 
     request_id: UUID
-    author_id: str
+    author_id: int
     author_name: str
     author_nickname: str | None
     message: Message | None

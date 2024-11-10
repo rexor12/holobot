@@ -7,6 +7,6 @@ from holobot.sdk.utils import utcnow
 @dataclass(kw_only=True)
 class TodoItem(AggregateRoot[int]):
     identifier: int = -1
-    user_id: str
+    user_id: int
     created_at: datetime = field(default_factory=utcnow)
     message: str

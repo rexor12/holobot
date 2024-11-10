@@ -8,6 +8,6 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 class UserRecord(Record):
     id: PrimaryKey[int]
     created_at: datetime
-    server_id: str
-    user_id: str
+    server_id: int
+    user_id: int
     permissions: ModeratorPermission

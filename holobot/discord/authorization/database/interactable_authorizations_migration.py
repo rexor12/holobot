@@ -1,21 +1,35 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class InteractableAuthorizationsMigration(MigrationBase):
-    _TABLE_NAME = "interactable_authorizations"
-
     def __init__(self) -> None:
-        super().__init__(InteractableAuthorizationsMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
-        }, {})
+        super().__init__(
+            "interactable_authorizations",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(202411071725, self.__upgrade_to_v2)
+            ]
+        )
+
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
+        pk_name = await self._query_primary_key_name(connection, self.table_name)
+        await connection.execute(f"ALTER TABLE {self.table_name} DROP CONSTRAINT {pk_name}")
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            " ALTER COLUMN server_id TYPE BIGINT USING server_id::BIGINT"
+        )
+        await connection.execute(
+            f"ALTER TABLE {self.table_name} ADD PRIMARY KEY (interactable_id, server_id)"
+        )
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((
-            f"CREATE TABLE {InteractableAuthorizationsMigration._TABLE_NAME} (\n"
+            f"CREATE TABLE {self.table_name} (\n"
             " interactable_id VARCHAR(100) NOT NULL,\n"
             " server_id VARCHAR(20) NOT NULL,\n"
             " status BOOLEAN NOT NULL,\n"

@@ -10,13 +10,13 @@ class Marriage(AggregateRoot[int]):
     identifier: int = -1
     """The identifier of the relationship."""
 
-    server_id: str
+    server_id: int
     """The identifier of the server on which this relationship exists."""
 
-    user_id1: str
+    user_id1: int
     """The identifier of one of the users."""
 
-    user_id2: str
+    user_id2: int
     """The identifier of the other user."""
 
     married_at: datetime
@@ -67,28 +67,13 @@ class Marriage(AggregateRoot[int]):
     match_bonus: int = 0
     """The bonus score this marriage gets for the match command."""
 
-    @property
-    def total_interactions(self) -> int:
-        """Gets the total number of interactions performed.
-
-        :return: The total number of interactions performed.
-        :rtype: int
-        """
-
-        return (
-            self.hug_count
-            + self.kiss_count
-            + self.pat_count
-            + self.poke_count
-        )
-
-    def get_spouse(self, user_id: str) -> str:
+    def get_spouse(self, user_id: int) -> int:
         """Gets the identifier of the user that isn't the specified one.
 
         :param user_id: The identifier of the excluded user.
-        :type user_id: str
+        :type user_id: int
         :return: The spouse of the user.
-        :rtype: str
+        :rtype: int
         """
 
         return self.user_id2 if self.user_id1 == user_id else self.user_id1

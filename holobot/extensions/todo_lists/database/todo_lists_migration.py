@@ -1,17 +1,25 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-TABLE_NAME = "todo_lists"
-
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class TodoListsMigration(MigrationBase):
     def __init__(self) -> None:
-        super().__init__(TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table)
-        }, {})
+        super().__init__(
+            "todo_lists",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(202411071725, self.__upgrade_to_v2)
+            ]
+        )
+
+    async def __upgrade_to_v2(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            " ALTER COLUMN user_id TYPE BIGINT USING user_id::BIGINT"
+        )
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute(f"DROP TABLE IF EXISTS {self.table_name}")

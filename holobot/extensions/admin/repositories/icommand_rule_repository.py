@@ -14,7 +14,7 @@ class ICommandRuleRepository(
 
     def get_many(
         self,
-        server_id: str,
+        server_id: int,
         group: str | None,
         subgroup: str | None,
         page_index: int,
@@ -24,13 +24,13 @@ class ICommandRuleRepository(
 
     def get_relevant(
         self,
-        server_id: str,
-        channel_id: str,
+        server_id: int,
+        channel_id: int,
         group: str | None,
         subgroup: str | None,
         command: str | None
     ) -> Awaitable[Sequence[CommandRule]]:
         ...
 
-    def delete_by_server(self, server_id: str) -> Awaitable[int]:
+    def delete_by_server(self, server_id: int) -> Awaitable[int]:
         ...

@@ -4,7 +4,7 @@ class ICurrency(Protocol):
     identifier: int
     """The identifier of the currency."""
 
-    server_id: str | None
+    server_id: int | None
     """The identifier of the server the currency belongs to;
     or, None if it's globally available."""
 

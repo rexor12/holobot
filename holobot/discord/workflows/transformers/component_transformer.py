@@ -35,7 +35,7 @@ _TComponentBuilder = Callable[
 class _ControlData(NamedTuple):
     identifier: str
     component_index: int
-    owner_id: str
+    owner_id: int
     version: int
     custom_data: dict[str, str]
 
@@ -101,7 +101,7 @@ class ComponentTransformer(IComponentTransformer):
         interaction: hikari.ModalInteraction
     ) -> ModalState:
         return ModalState(
-            owner_id=str(interaction.user.id),
+            owner_id=interaction.user.id,
             components={
                 state.identifier: state
                 for state in self.__create_modal_control_states(interaction, interaction.components)
@@ -185,7 +185,7 @@ class ComponentTransformer(IComponentTransformer):
         return _ControlData(
             component_id_parts[0],
             component_index,
-            custom_id_parts[1],
+            int(custom_id_parts[1]),
             version,
             custom_data
         )
@@ -194,7 +194,7 @@ class ComponentTransformer(IComponentTransformer):
     def __pack_custom_data(
         identifier: str,
         index: int,
-        owner_id: str,
+        owner_id: int,
         version: int,
         custom_data: dict[str, str]
     ) -> str:
@@ -380,7 +380,7 @@ class ComponentTransformer(IComponentTransformer):
         if not control.custom_id:
             return ButtonState(
                 identifier="dummy",
-                owner_id="dummy",
+                owner_id=0,
                 custom_data={},
                 emoji=None
             )

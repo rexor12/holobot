@@ -1,10 +1,10 @@
 class RoleAlreadyExistsError(Exception):
     @property
-    def server_id(self) -> str:
+    def server_id(self) -> int:
         return self.__server_id
 
     @server_id.setter
-    def server_id(self, value: str) -> None:
+    def server_id(self, value: int) -> None:
         self.__server_id = value
 
     @property
@@ -15,7 +15,7 @@ class RoleAlreadyExistsError(Exception):
     def role_name(self, value: str) -> None:
         self.__role_name = value
 
-    def __init__(self, server_id: str, role_name: str, *args: object) -> None:
+    def __init__(self, server_id: int, role_name: str, *args: object) -> None:
         super().__init__(*args)
         self.server_id = server_id
         self.role_name = role_name

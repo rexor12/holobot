@@ -6,5 +6,5 @@ from holobot.sdk.database.repositories import manually_generated_key
 @manually_generated_key
 @dataclass
 class WalletRecord(Record):
-    id: PrimaryKey[str]
+    id: PrimaryKey[int]
     amount: int

@@ -8,5 +8,5 @@ class PaginatorState(ComponentStateBase):
     current_page: int
     """The index of the currently selected page."""
 
-    custom_data: dict[str, Any]
+    custom_data: dict[str, str]
     """Additional data used by extensions."""

@@ -1,8 +1,11 @@
+from collections.abc import Awaitable
+from typing import Protocol
+
 from holobot.discord.sdk.models import Role
 
-class IRoleManager:
-    def get_role(self, server_id: str, role_name: str) -> Role | None:
-        raise NotImplementedError
+class IRoleManager(Protocol):
+    def get_role(self, server_id: int, role_name: str) -> Role | None:
+        ...
 
-    async def create_role(self, server_id: str, role_name: str, description: str) -> Role:
-        raise NotImplementedError
+    def create_role(self, server_id: int, role_name: str, description: str) -> Awaitable[Role]:
+        ...

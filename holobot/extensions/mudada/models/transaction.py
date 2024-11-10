@@ -14,10 +14,10 @@ class Transaction(AggregateRoot[int]):
     created_at: datetime = field(default_factory=utcnow)
     """The date and time at which the transaction was created."""
 
-    owner_id: str
+    owner_id: int
     """The identifier of the user who created the transaction."""
 
-    target_id: str
+    target_id: int
     """The identifier of the user who receives the funds."""
 
     amount: int

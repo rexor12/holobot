@@ -49,11 +49,11 @@ class GetDailyRewardWorkflow(WorkflowBase):
                 )
             )
 
-        quest_proto_id = QuestProtoId(server_id="0", code=self.__options.value.DailyCheckInQuestCode)
+        quest_proto_id = QuestProtoId(server_id=0, code=self.__options.value.DailyCheckInQuestCode)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             try:
-                await self.__quest_manager.start_quest("0", context.author_id, quest_proto_id)
-                rewards = await self.__quest_manager.complete_quest("0", context.author_id, quest_proto_id)
+                await self.__quest_manager.start_quest(0, context.author_id, quest_proto_id)
+                rewards = await self.__quest_manager.complete_quest(0, context.author_id, quest_proto_id)
 
                 unit_of_work.complete()
 

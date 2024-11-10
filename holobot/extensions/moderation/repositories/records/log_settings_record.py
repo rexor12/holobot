@@ -7,5 +7,5 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 class LogSettingsRecord(Record):
     id: PrimaryKey[int]
     modified_at: datetime
-    server_id: str
-    channel_id: str
+    server_id: int
+    channel_id: int

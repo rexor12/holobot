@@ -7,7 +7,7 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 class WarnStrikeRecord(Record):
     id: PrimaryKey[int]
     created_at: datetime
-    server_id: str
-    user_id: str
+    server_id: int
+    user_id: int
     reason: str
-    warner_id: str
+    warner_id: int

@@ -107,8 +107,8 @@ class ViewMarriageRankingWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         ranking_type: RankingType,
         page_index: int,
         page_size: int

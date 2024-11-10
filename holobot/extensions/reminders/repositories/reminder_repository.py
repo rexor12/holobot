@@ -39,14 +39,14 @@ class ReminderRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    def count_by_user(self, user_id: str) -> Awaitable[int]:
+    def count_by_user(self, user_id: int) -> Awaitable[int]:
         return self._count_by_filter(
             lambda where: where.field("user_id", Equality.EQUAL, user_id)
         )
 
     def get_many(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[Reminder]]:
@@ -62,7 +62,7 @@ class ReminderRepository(
             where.field("next_trigger", Equality.LESS_OR_EQUAL, "(NOW() AT TIME ZONE 'utc')", True)
         ))
 
-    def delete_by_user(self, user_id: str, reminder_id: int) -> Awaitable[int]:
+    def delete_by_user(self, user_id: int, reminder_id: int) -> Awaitable[int]:
         return self._delete_by_filter(
             lambda where: where.fields(
                 Connector.AND,

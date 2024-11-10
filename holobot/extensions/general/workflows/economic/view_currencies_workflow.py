@@ -111,8 +111,8 @@ class ViewCurrenciesWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        owner_id: str,
-        server_id: str,
+        owner_id: int,
+        server_id: int,
         page_index: int,
         page_size: int
     ) -> tuple[
@@ -136,7 +136,7 @@ class ViewCurrenciesWorkflow(WorkflowBase):
             ({
                 "index": index + 1,
                 "name": currency.name,
-                "description": currency.description,
+                "description": currency.description or "",
                 "emoji_name": currency.emoji_name,
                 "emoji_id": currency.emoji_id
             }

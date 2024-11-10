@@ -4,6 +4,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     ComponentBase, LayoutBase, Paginator, PaginatorState
 )
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
@@ -65,12 +66,15 @@ class ViewWalletWorkflow(WorkflowBase):
         context: InteractionContext,
         state: PaginatorState
     ) -> InteractionResponse:
-        if not isinstance(context, ServerChatInteractionContext):
+        if (
+            not isinstance(context, ServerChatInteractionContext)
+            or (user_id := get_custom_int(state.custom_data, "u", 0)) is None
+        ):
             return self._edit_message(content=self.__i18n.get("interactions.invalid_interaction_data_error"))
 
         content, embed, components = await self.__create_page_content(
-            state.custom_data.get("u", "0"),
-            state.custom_data.get("s", None),
+            user_id,
+            get_custom_int(state.custom_data, "s", None),
             state.custom_data.get("g", "0") == "1",
             max(state.current_page, 0),
             _PAGE_SIZE
@@ -84,8 +88,8 @@ class ViewWalletWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        user_id: str,
-        server_id: str | None,
+        user_id: int,
+        server_id: int | None,
         include_global: bool,
         page_index: int,
         page_size: int

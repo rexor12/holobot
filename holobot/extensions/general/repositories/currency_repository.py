@@ -48,7 +48,7 @@ class CurrencyRepository(
 
     def paginate_by_server(
         self,
-        server_id: str,
+        server_id: int,
         page_index: int,
         page_size: int,
         include_global: bool
@@ -68,10 +68,10 @@ class CurrencyRepository(
             lambda where: where.field("server_id", Equality.EQUAL, server_id)
         )
 
-    def count_by_server(self, server_id: str) -> Awaitable[int]:
+    def count_by_server(self, server_id: int) -> Awaitable[int]:
         return self._count_by_filter(lambda where: where.field("server_id", Equality.EQUAL, server_id))
 
-    def delete_by_server(self, currency_id: int, server_id: str) -> Awaitable[int]:
+    def delete_by_server(self, currency_id: int, server_id: int) -> Awaitable[int]:
         return self._delete_by_filter(lambda where: where.fields(
             Connector.AND,
             ("id", Equality.EQUAL, currency_id),
@@ -81,7 +81,7 @@ class CurrencyRepository(
     def try_get_by_server(
         self,
         currency_id: int,
-        server_id: str,
+        server_id: int,
         allow_global: bool
     ) -> Awaitable[Currency | None]:
         def build_filter():
@@ -104,7 +104,7 @@ class CurrencyRepository(
     async def search(
         self,
         text: str,
-        server_id: str,
+        server_id: int,
         max_count: int,
         include_global: bool
     ) -> Iterable[tuple[int, str]]:
@@ -143,7 +143,7 @@ class CurrencyRepository(
                 for result in results
             )
 
-    def get_currency_by_code(self, server_id: str, code: str) -> Awaitable[ICurrency | None]:
+    def get_currency_by_code(self, server_id: int, code: str) -> Awaitable[ICurrency | None]:
         return self._get_by_filter(lambda where: where.fields(
             Connector.AND,
             ("server_id", Equality.EQUAL, server_id),
@@ -177,7 +177,7 @@ class CurrencyRepository(
         )
 
     @staticmethod
-    def __build_server_filter(server_id: str, include_global: bool):
+    def __build_server_filter(server_id: int, include_global: bool):
         if include_global:
             return or_expression(
                 column_expression("server_id", Equality.EQUAL, server_id),

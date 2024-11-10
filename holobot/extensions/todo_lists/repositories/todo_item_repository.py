@@ -38,14 +38,14 @@ class TodoItemRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    def count_by_user(self, user_id: str) -> Awaitable[int]:
+    def count_by_user(self, user_id: int) -> Awaitable[int]:
         return self._count_by_filter(
             lambda where: where.field("user_id", Equality.EQUAL, user_id)
         )
 
     async def get_many(
         self,
-        user_id: str,
+        user_id: int,
         page_index: int,
         page_size: int
     ) -> PaginationResult[TodoItem]:
@@ -56,7 +56,7 @@ class TodoItemRepository(
             lambda where: where.field("user_id", Equality.EQUAL, user_id)
         )
 
-    def delete_by_user(self, user_id: str, todo_id: int) -> Awaitable[int]:
+    def delete_by_user(self, user_id: int, todo_id: int) -> Awaitable[int]:
         return self._delete_by_filter(
             lambda where: where.fields(
                 Connector.AND,
@@ -65,7 +65,7 @@ class TodoItemRepository(
             )
         )
 
-    def delete_all_by_user(self, user_id: str) -> Awaitable[int]:
+    def delete_all_by_user(self, user_id: int) -> Awaitable[int]:
         return self._delete_by_filter(
             lambda where: where.field("user_id", Equality.EQUAL, user_id)
         )

@@ -12,10 +12,10 @@ TComponent = TypeVar("TComponent", bound=ComponentStateBase)
 
 @dataclass(kw_only=True, frozen=True)
 class Message:
-    author_id: str
-    server_id: str | None
-    channel_id: str
-    message_id: str
+    author_id: int
+    server_id: int | None
+    channel_id: int
+    message_id: int
     content: str | None = None
     embeds: Sequence[Embed] = field(default_factory=tuple)
     components: Sequence[ComponentStateBase] = field(default_factory=tuple)

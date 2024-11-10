@@ -10,6 +10,6 @@ class GiveawayOptions(OptionsDefinition):
     EnableScrapers: bool = True
     RunnerResolution: int = 60
     RunnerDelay: int = 40
-    AnnouncementServerId: str = ""
-    AnnouncementChannelId: str = ""
+    AnnouncementServerId: int = 0
+    AnnouncementChannelId: int = 0
     GiveawayEmbedThumbnailUrl: str = ""

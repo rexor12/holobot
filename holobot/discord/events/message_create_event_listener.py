@@ -27,10 +27,10 @@ class MessageCreateEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
         local_event = MessageReceivedEvent(
             message=Message(
-                author_id=str(event.message.author.id),
-                server_id=str(event.message.guild_id) if event.message.guild_id else None,
-                channel_id=str(event.message.channel_id),
-                message_id=str(event.message_id),
+                author_id=event.message.author.id,
+                server_id=event.message.guild_id,
+                channel_id=event.message.channel_id,
+                message_id=event.message_id,
                 content=event.message.content,
                 embeds=tuple(map(to_model, event.message.embeds)),
                 # We're lazy so components aren't parsed for regular messages.
@@ -48,6 +48,6 @@ class MessageCreateEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
             return None
 
         return InteractionInfo(
-            author_id=str(interaction.user.id),
+            author_id=interaction.user.id,
             name=interaction.name
         )

@@ -8,7 +8,7 @@ from .records import EasterRewardRecord
 
 @injectable(IEasterRewardRepository)
 class EasterRewardRepository(
-    RepositoryBase[str, EasterRewardRecord, EasterReward],
+    RepositoryBase[int, EasterRewardRecord, EasterReward],
     IEasterRewardRepository
 ):
     @property
@@ -20,8 +20,8 @@ class EasterRewardRepository(
         return EasterReward
 
     @property
-    def identifier_type(self) -> type[str]:
-        return str
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:

@@ -38,7 +38,7 @@ class ChannelTimerRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    def count_by_server(self, server_id: str) -> Awaitable[int]:
+    def count_by_server(self, server_id: int) -> Awaitable[int]:
         return self._count_by_filter(lambda where: where.field("server_id", Equality.EQUAL, server_id))
 
     def paginate(self, page_index: int, page_size: int) -> Awaitable[PaginationResult[ChannelTimer]]:
@@ -49,7 +49,7 @@ class ChannelTimerRepository(
             None
         )
 
-    def remove_all_by_server(self, server_id: str) -> Awaitable[int]:
+    def remove_all_by_server(self, server_id: int) -> Awaitable[int]:
         return self._delete_by_filter(lambda where: where.field("server_id", Equality.EQUAL, server_id))
 
     def _map_record_to_model(self, record: ChannelTimerRecord) -> ChannelTimer:

@@ -13,10 +13,10 @@ class InteractionDescriptor(Generic[TInteractable]):
     interactable: TInteractable | None
     arguments: dict[str, Any] = field(default_factory=dict)
 
-    initiator_id: str
+    initiator_id: int
     """The identifier of the user who initiated this interaction."""
 
-    bound_user_id: str
+    bound_user_id: int
     """The identifier of the user who initiated the workflow."""
 
     context: InteractionContext

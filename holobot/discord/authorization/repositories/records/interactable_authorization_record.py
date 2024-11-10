@@ -6,5 +6,5 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 @dataclass(kw_only=True)
 class InteractableAuthorizationRecord(Record):
     interactable_id: PrimaryKey[str]
-    server_id: PrimaryKey[str]
+    server_id: PrimaryKey[int]
     status: bool

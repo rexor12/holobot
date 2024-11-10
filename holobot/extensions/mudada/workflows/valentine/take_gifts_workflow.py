@@ -58,7 +58,7 @@ class TakeGiftsWorkflow(WorkflowBase):
         if number < 1:
             return self._reply(content=self.__i18n.get("extensions.mudada.take_gifts_workflow.invalid_gift_count_error"))
 
-        target_user_id = str(user)
+        target_user_id = user
         if target_user_id == context.author_id:
             return self._reply(content=self.__i18n.get("extensions.mudada.take_gifts_workflow.self_transfer_error"))
 

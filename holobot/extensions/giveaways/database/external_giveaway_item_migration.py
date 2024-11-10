@@ -1,31 +1,32 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-_TABLE_NAME = "external_giveaway_items"
-
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class ExternalGiveawayItemMigration(MigrationBase):
     def __init__(self) -> None:
-        super().__init__(_TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table),
-            1: MigrationPlan(1, 2, self.__upgrade_to_v2)
-        }, {})
+        super().__init__(
+            "external_giveaway_items",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(2, self.__upgrade_to_v2)
+            ]
+        )
 
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute((
-            f"ALTER TABLE {_TABLE_NAME}"
+            f"ALTER TABLE {self.table_name}"
             " ALTER COLUMN url TYPE VARCHAR(1024),"
             " ALTER COLUMN preview_url TYPE VARCHAR(1024),"
             " ALTER COLUMN title TYPE VARCHAR(512)"
         ))
 
     async def __initialize_table(self, connection: Connection) -> None:
-        await connection.execute(f"DROP TABLE IF EXISTS {_TABLE_NAME}")
+        await connection.execute(f"DROP TABLE IF EXISTS {self.table_name}")
         await connection.execute((
-            f"CREATE TABLE {_TABLE_NAME} ("
+            f"CREATE TABLE {self.table_name} ("
             " id SERIAL PRIMARY KEY,"
             " created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),"
             " start_time TIMESTAMP DEFAULT NULL,"

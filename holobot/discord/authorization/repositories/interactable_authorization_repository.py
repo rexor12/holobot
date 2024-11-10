@@ -1,4 +1,4 @@
-from collections.abc import Awaitable, Iterable
+from collections.abc import Iterable
 
 from holobot.discord.authorization.models import (
     InteractableAuthorization, InteractableAuthorizationId
@@ -34,7 +34,7 @@ class InteractableAuthorizationRepository(
 
     async def has_authorization(
         self,
-        server_id: str,
+        server_id: int,
         interactable_id: str
     ) -> bool | None:
         async with (session := await self._get_session()):
@@ -58,7 +58,7 @@ class InteractableAuthorizationRepository(
     async def get_authorized_server_ids(
         self,
         interactable_id: str
-    ) -> Iterable[str]:
+    ) -> Iterable[int]:
         async with (session := await self._get_session()):
             query = (Query
                 .select()
@@ -69,7 +69,7 @@ class InteractableAuthorizationRepository(
             )
             results = await query.compile().fetch(session.connection)
 
-            return map(lambda i: i.get("server_id", ""), results)
+            return map(lambda i: i.get("server_id", 0), results)
 
     def _map_record_to_model(self, record: InteractableAuthorizationRecord) -> InteractableAuthorization:
         return InteractableAuthorization(

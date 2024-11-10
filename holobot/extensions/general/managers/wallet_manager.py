@@ -7,7 +7,7 @@ from holobot.extensions.general.sdk.wallets.managers import IWalletManager
 from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.sdk.ioc.decorators import injectable
 
-_GLOBAL_SERVER_ID = "0"
+_GLOBAL_SERVER_ID = 0
 
 @injectable(IWalletManager)
 class WalletManager(IWalletManager):
@@ -22,9 +22,9 @@ class WalletManager(IWalletManager):
 
     async def give_money(
         self,
-        user_id: str,
+        user_id: int,
         currency_id: int,
-        server_id: str | None,
+        server_id: int | None,
         amount: int
     ) -> None:
         wallet_id = WalletId(
@@ -49,9 +49,9 @@ class WalletManager(IWalletManager):
 
     async def take_money(
         self,
-        user_id: str,
+        user_id: int,
         currency_id: int,
-        server_id: str | None,
+        server_id: int | None,
         amount: int,
         allow_take_less: bool
     ) -> None:

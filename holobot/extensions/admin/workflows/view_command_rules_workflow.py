@@ -107,8 +107,8 @@ class ViewCommandRulesWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         group: str | None,
         subgroup: str | None,
         page_index: int,

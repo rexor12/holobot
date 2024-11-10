@@ -5,7 +5,7 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 
 @dataclass(kw_only=True)
 class QuestProtoRecord(Record):
-    server_id: PrimaryKey[str]
+    server_id: PrimaryKey[int]
     code: PrimaryKey[str]
     reset_type: int
     reset_time: timedelta | None
@@ -28,7 +28,7 @@ class QuestProtoRecord(Record):
     reward_currency_count_1: int
     reward_currency_id_2: int | None
     reward_currency_count_2: int
-    reward_badge_sid_1: str | None
+    reward_badge_sid_1: int | None
     reward_badge_id_1: int | None
     title: str | None
     note: str | None

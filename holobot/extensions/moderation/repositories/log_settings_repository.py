@@ -38,14 +38,14 @@ class LogSettingsRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    def get_by_server(self, server_id: str) -> Awaitable[LogSettings | None]:
+    def get_by_server(self, server_id: int) -> Awaitable[LogSettings | None]:
         assert_not_none(server_id, "server_id")
 
         return self._get_by_filter(lambda where: (
             where.field("server_id", Equality.EQUAL, server_id)
         ))
 
-    def delete_by_server(self, server_id: str) -> Awaitable[int]:
+    def delete_by_server(self, server_id: int) -> Awaitable[int]:
         assert_not_none(server_id, "server_id")
 
         return self._delete_by_filter(

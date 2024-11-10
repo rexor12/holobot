@@ -7,7 +7,7 @@ from ..workflows.interactables.models import InteractionResponse
 @dataclass(kw_only=True, frozen=True)
 class ModalProcessedEvent(EventBase):
     interactable: Interactable
-    server_id: str | None = ""
-    channel_id: str | None = ""
-    user_id: str = ""
+    server_id: int | None = None
+    channel_id: int | None = None
+    user_id: int = 0
     response: InteractionResponse = field(default_factory=InteractionResponse)

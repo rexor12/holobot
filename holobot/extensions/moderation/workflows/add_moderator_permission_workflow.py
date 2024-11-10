@@ -50,9 +50,8 @@ class AddModeratorPermissionWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
         typed_permission = ModeratorPermission(permission)
-        await self.__permission_manager.add_permissions(context.server_id, user_id, typed_permission)
+        await self.__permission_manager.add_permissions(context.server_id, user, typed_permission)
 
         permission_i18n = self.__i18n_provider.get(
             f"extensions.moderation.permissions.{typed_permission.value}"
@@ -60,7 +59,7 @@ class AddModeratorPermissionWorkflow(WorkflowBase):
 
         return ModeratorPermissionsChangedResponse(
             author_id=context.author_id,
-            user_id=user_id,
+            user_id=user,
             permission=typed_permission,
             is_addition=True,
             action=ReplyAction(
@@ -68,7 +67,7 @@ class AddModeratorPermissionWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get(
                     "extensions.moderation.add_moderator_permission_workflow.permission_assigned",
                     {
-                        "user_id": user_id,
+                        "user_id": user,
                         "permission": permission_i18n
                     }
                 )

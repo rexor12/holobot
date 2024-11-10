@@ -1,20 +1,42 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-TABLE_NAME = "reminders"
-
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class ReminderMigration(MigrationBase):
     def __init__(self) -> None:
-        super().__init__(TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table),
-            1: MigrationPlan(1, 2, self.__upgrade_to_v2),
-            2: MigrationPlan(2, 3, self.__upgrade_to_v3),
-            3: MigrationPlan(3, 4, self.__upgrade_to_v4),
-        }, {})
+        super().__init__(
+            "reminders",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(2, self.__upgrade_to_v2),
+                MigrationPlan(3, self.__upgrade_to_v3),
+                MigrationPlan(4, self.__upgrade_to_v4),
+                MigrationPlan(202411071725, self.__upgrade_to_v5)
+            ]
+        )
+
+    async def __upgrade_to_v5(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}"
+            " ALTER COLUMN server_id DROP DEFAULT,\n"
+            " ALTER COLUMN channel_id DROP DEFAULT"
+        )
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            " ALTER COLUMN user_id TYPE BIGINT USING user_id::BIGINT,\n"
+            " ALTER COLUMN server_id TYPE BIGINT USING server_id::BIGINT,\n"
+            " ALTER COLUMN channel_id TYPE BIGINT USING channel_id::BIGINT"
+        )
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}"
+            " ALTER COLUMN server_id SET DEFAULT NULL,\n"
+            " ALTER COLUMN channel_id SET DEFAULT NULL"
+        )
 
     async def __upgrade_to_v4(self, connection: Connection) -> None:
         await connection.execute((

@@ -68,8 +68,7 @@ class GiveMoneyWorkflow(WorkflowBase):
             )
 
         currency_id = int(currency)
-        user_id = str(user)
-        wallet_id = WalletId(user_id=user_id, currency_id=currency_id, server_id=context.server_id)
+        wallet_id = WalletId(user_id=user, currency_id=currency_id, server_id=context.server_id)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             currency_item = await self.__currency_repository.try_get_by_server(currency_id, context.server_id, False)
             if not currency_item:

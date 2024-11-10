@@ -19,38 +19,38 @@ from holobot.sdk.utils import assert_not_none, assert_range
 
 @injectable(IChannelManager)
 class ChannelManager(IChannelManager):
-    async def get_channels(self, server_id: str) -> Iterable[ServerChannel]:
+    async def get_channels(self, server_id: int) -> Iterable[ServerChannel]:
         assert_not_none(server_id, "server_id")
 
-        guild = await get_bot().get_guild_by_id(int(server_id))
+        guild = await get_bot().get_guild_by_id(server_id)
         return list(map(to_model, guild.get_channels().values()))
 
-    async def get_channel_by_id(self, server_id: str, channel_id: str) -> ServerChannel:
+    async def get_channel_by_id(self, server_id: int, channel_id: int) -> ServerChannel:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
 
-        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+        channel = await get_bot().get_guild_channel(server_id, channel_id)
 
         return to_model(channel)
 
     async def follow_news_channel(
         self,
-        server_id: str,
-        channel_id: str,
-        source_server_id: str,
-        source_channel_id: str
+        server_id: int,
+        channel_id: int,
+        source_server_id: int,
+        source_channel_id: int
     ) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(source_server_id, "source_server_id")
         assert_not_none(source_channel_id, "source_channel_id")
 
-        guild = await get_bot().get_guild_by_id(int(server_id))
-        if not (channel := await get_bot().get_guild_channel(guild, int(channel_id))):
+        guild = await get_bot().get_guild_by_id(server_id)
+        if not (channel := await get_bot().get_guild_channel(guild, channel_id)):
             raise ChannelNotFoundError(channel_id)
 
-        source_guild = await get_bot().get_guild_by_id(int(source_server_id))
-        if not (source_channel := await get_bot().get_guild_channel(source_guild, int(source_channel_id))):
+        source_guild = await get_bot().get_guild_by_id(source_server_id)
+        if not (source_channel := await get_bot().get_guild_channel(source_guild, source_channel_id)):
             raise ChannelNotFoundError(source_channel_id)
 
         if not isinstance(source_channel, GuildNewsChannel):
@@ -75,15 +75,15 @@ class ChannelManager(IChannelManager):
 
     async def unfollow_news_channel_for_all_channels(
         self,
-        server_id: str,
-        source_server_id: str,
-        source_channel_id: str
+        server_id: int,
+        source_server_id: int,
+        source_channel_id: int
     ) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(source_server_id, "source_server_id")
         assert_not_none(source_channel_id, "source_channel_id")
 
-        guild = await get_bot().get_guild_by_id(int(server_id))
+        guild = await get_bot().get_guild_by_id(server_id)
         try:
             webhooks = await get_bot().rest.fetch_guild_webhooks(guild)
             for webhook in webhooks:
@@ -91,8 +91,8 @@ class ChannelManager(IChannelManager):
                     isinstance(webhook, ChannelFollowerWebhook)
                     and webhook.source_guild
                     and webhook.source_channel
-                    and str(webhook.source_guild.id) == source_server_id
-                    and str(webhook.source_channel.id) == source_channel_id
+                    and webhook.source_guild.id == source_server_id
+                    and webhook.source_channel.id == source_channel_id
                 ):
                     await get_bot().rest.delete_webhook(webhook)
         except HikariForbiddenError as error:
@@ -100,12 +100,12 @@ class ChannelManager(IChannelManager):
                 f"Cannot unfollow news channel '{source_channel_id}' of guild '{source_server_id}' in server '{server_id}'."
             ) from error
 
-    async def change_channel_name(self, server_id: str, channel_id: str, name: str) -> None:
+    async def change_channel_name(self, server_id: int, channel_id: int, name: str) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_range(len(name), 1, 20, "name")
 
-        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+        channel = await get_bot().get_guild_channel(server_id, channel_id)
 
         try:
             await channel.edit(name=name)
@@ -116,20 +116,20 @@ class ChannelManager(IChannelManager):
 
     async def create_thread(
         self,
-        server_id: str,
-        channel_id: str,
+        server_id: int,
+        channel_id: int,
         thread_name: str,
         is_private: bool,
         initial_message: str,
         auto_archive_after: timedelta | None = None,
         can_invite_others: bool = True
-    ) -> str:
+    ) -> int:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_range(len(thread_name), 1, 60, "thread_name")
         assert_not_none(initial_message, "initial_message")
 
-        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+        channel = await get_bot().get_guild_channel(server_id, channel_id)
         if not isinstance(channel, GuildTextChannel):
             raise InvalidChannelError(server_id, channel_id, "Thread creation is supported for server text channels only.")
 
@@ -144,7 +144,7 @@ class ChannelManager(IChannelManager):
 
             await thread.send(initial_message)
 
-            return str(thread.id)
+            return thread.id
         except HikariForbiddenError as error:
             raise ForbiddenError(
                 f"Cannot create a new thread in the channel '{channel_id}' of server '{server_id}'."
@@ -152,17 +152,14 @@ class ChannelManager(IChannelManager):
 
     async def add_thread_member(
         self,
-        thread_id: str,
-        user_id: str
+        thread_id: int,
+        user_id: int
     ) -> None:
         assert_not_none(thread_id, "thread_id")
         assert_not_none(user_id, "user_id")
 
         try:
-            await get_bot().rest.add_thread_member(
-                int(thread_id),
-                int(user_id)
-            )
+            await get_bot().rest.add_thread_member(thread_id, user_id)
         except HikariForbiddenError as error:
             raise ForbiddenError(
                 f"Cannot add user '{user_id}' to thread '{thread_id}'."

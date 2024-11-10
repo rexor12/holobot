@@ -7,7 +7,7 @@ from holobot.sdk.database.repositories import manually_generated_key
 @manually_generated_key
 @dataclass
 class HalloweenRewardRecord(Record):
-    id: PrimaryKey[str]
+    id: PrimaryKey[int]
     last_update_at: datetime
     last_reward_tier: int
     is_tricked: bool

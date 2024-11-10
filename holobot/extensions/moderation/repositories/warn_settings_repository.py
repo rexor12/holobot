@@ -36,7 +36,7 @@ class WarnSettingsRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    async def get_by_server(self, server_id: str) -> WarnSettings | None:
+    async def get_by_server(self, server_id: int) -> WarnSettings | None:
         assert_not_none(server_id, "server_id")
 
         return await self._get_by_filter(lambda where: (

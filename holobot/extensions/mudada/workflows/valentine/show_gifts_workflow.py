@@ -99,11 +99,11 @@ class ShowGiftsWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         page_index: int,
         page_size: int,
-        owner_id: str
+        owner_id: int
     ) -> tuple[
         UndefinedOrNoneOr[str],
         UndefinedOrNoneOr[Embed],
@@ -154,8 +154,8 @@ class ShowGiftsWorkflow(WorkflowBase):
 
     async def __get_user_display_name(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> str:
         try:
             user_data = await self.__member_data_provider.get_basic_data_by_id(
@@ -163,6 +163,6 @@ class ShowGiftsWorkflow(WorkflowBase):
                 user_id
             )
 
-            return user_data.display_name or user_id
+            return user_data.display_name or str(user_id)
         except (ServerNotFoundError, UserNotFoundError):
-            return user_id
+            return str(user_id)

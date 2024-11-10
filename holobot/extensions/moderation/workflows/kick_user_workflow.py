@@ -55,7 +55,7 @@ class KickUserWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
+        user_id = user
         reason = reason.strip()
         reason_length_range = self.__config_provider.get_reason_length_range()
         if len(reason) not in reason_length_range:

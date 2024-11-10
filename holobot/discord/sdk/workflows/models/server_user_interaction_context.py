@@ -6,7 +6,7 @@ from holobot.discord.sdk.models import InteractionContext
 class ServerUserInteractionContext(InteractionContext):
     """A context for server-specific user context menu interactions."""
 
-    server_id: str
+    server_id: int
     server_name: str | None
-    channel_id: str
-    target_user_id: str
+    channel_id: int
+    target_user_id: int

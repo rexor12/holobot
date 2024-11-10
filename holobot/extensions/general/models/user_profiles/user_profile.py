@@ -6,7 +6,7 @@ from holobot.sdk.collections import Inventory
 from holobot.sdk.database.entities import AggregateRoot
 
 @dataclass(kw_only=True)
-class UserProfile(AggregateRoot[str]):
+class UserProfile(AggregateRoot[int]):
     """Represents a user's profile."""
 
     MAX_BADGE_COUNT: ClassVar[int] = 8

@@ -8,9 +8,9 @@ from holobot.sdk.utils import utcnow
 @dataclass(kw_only=True)
 class Reminder(AggregateRoot[int]):
     identifier: int = -1
-    user_id: str
-    server_id: str | None = None
-    channel_id: str | None = None
+    user_id: int
+    server_id: int | None = None
+    channel_id: int | None = None
     message: str | None = None
     location: ReminderLocation = ReminderLocation.DIRECT_MESSAGE
     created_at: datetime = field(default_factory=utcnow)

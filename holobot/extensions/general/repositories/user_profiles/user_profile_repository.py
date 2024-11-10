@@ -17,7 +17,7 @@ from .records import UserProfileRecord
 
 @injectable(IUserProfileRepository)
 class UserProfileRepository(
-    RepositoryBase[str, UserProfileRecord, UserProfile],
+    RepositoryBase[int, UserProfileRecord, UserProfile],
     IUserProfileRepository
 ):
     @property
@@ -29,8 +29,8 @@ class UserProfileRepository(
         return UserProfile
 
     @property
-    def identifier_type(self) -> type[str]:
-        return str
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:
@@ -73,7 +73,7 @@ class UserProfileRepository(
 
     def is_badge_equipped(
         self,
-        user_id: str,
+        user_id: int,
         badge_id: BadgeId
     ) -> Awaitable[bool]:
         return self._exists_by_filter(

@@ -84,7 +84,7 @@ class GiveGiftsWorkflow(WorkflowBase):
                 )
             )
 
-        target_user_id = str(user)
+        target_user_id = user
         if target_user_id == context.author_id:
             return self._reply(content=self.__i18n.get("extensions.mudada.give_gifts_workflow.self_transfer_error"))
 
@@ -151,7 +151,7 @@ class GiveGiftsWorkflow(WorkflowBase):
 
     def __create_gift_amount_error_response(
         self,
-        target_user_id: str,
+        target_user_id: int,
         amount: int
     ) -> InteractionResponse:
         return self._reply(

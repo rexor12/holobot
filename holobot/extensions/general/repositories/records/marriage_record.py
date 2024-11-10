@@ -6,9 +6,9 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 @dataclass
 class MarriageRecord(Record):
     id: PrimaryKey[int]
-    server_id: str
-    user_id1: str
-    user_id2: str
+    server_id: int
+    user_id1: int
+    user_id2: int
     married_at: datetime
     level: int
     last_level_up_at: datetime | None

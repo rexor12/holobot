@@ -39,7 +39,7 @@ class TransactionRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
-    def get_by_users(self, owner_id: str, target_id: str) -> Awaitable[Transaction | None]:
+    def get_by_users(self, owner_id: int, target_id: int) -> Awaitable[Transaction | None]:
         return self._get_by_filter(lambda where: where.fields(
             Connector.AND,
             ("owner_id", Equality.EQUAL, owner_id),
@@ -48,7 +48,7 @@ class TransactionRepository(
 
     async def get_total_transaction_amount(
         self,
-        owner_id: str,
+        owner_id: int,
         include_finalized: bool
     ) -> int:
         async with (session := await self._get_session()):
@@ -61,7 +61,7 @@ class TransactionRepository(
 
             return result or 0
 
-    def delete_all_by_user(self, owner_id: str, delete_finalized: bool) -> Awaitable[int]:
+    def delete_all_by_user(self, owner_id: int, delete_finalized: bool) -> Awaitable[int]:
         filter: Callable[[WhereBuilder], WhereConstraintBuilder] = (
             (lambda where: where.field("owner_id", Equality.EQUAL, owner_id))
             if delete_finalized
@@ -76,7 +76,7 @@ class TransactionRepository(
 
     def paginate_by_owner(
         self,
-        owner_id: str,
+        owner_id: int,
         page_index: int,
         page_size: int
     ) -> Awaitable[PaginationResult[Transaction]]:
@@ -89,7 +89,7 @@ class TransactionRepository(
 
     def paginate_by_target(
         self,
-        target_id: str,
+        target_id: int,
         page_index: int,
         page_size: int,
         finalized_only: bool
@@ -116,7 +116,7 @@ class TransactionRepository(
 
     def get_finalized_uncompleted_by_target(
         self,
-        target_id: str
+        target_id: int
     ) -> Awaitable[tuple[Transaction, ...]]:
         return self._get_many_by_filter(
             lambda where: where.fields(

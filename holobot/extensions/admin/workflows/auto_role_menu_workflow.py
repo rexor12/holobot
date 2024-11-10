@@ -16,6 +16,7 @@ from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComponentStyle, LayoutBase, RoleSelector, RoleSelectorState, StackLayout,
     TextBox, TextBoxState
 )
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.decorators import command, component, modal
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
@@ -33,19 +34,19 @@ _MAX_MENU_TITLE_LENGTH = 120
 _MAX_MENU_DESCRIPTION_LENGTH = 120
 
 class _RoleOptions(NamedTuple):
-    role_id: str
+    role_id: int
     emoji_mention: str
 
 @dataclass
 class _AutoRoleMenuBuilder:
     id: str
-    owner_id: str
+    owner_id: int
     is_exclusive: bool
     show_roles: bool
     title: str
     description: str | None
     roles: list[_RoleOptions] = field(default_factory=list)
-    current_role_id: str | None = None
+    current_role_id: int | None = None
     is_new: bool = True
 
 @injectable(IWorkflow)
@@ -121,10 +122,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
             title,
             description,
             [
-                _RoleOptions(
-                    str(role),
-                    emoji_data.mention
-                )
+                _RoleOptions(role, emoji_data.mention)
             ]
         )
         await self.__cache.add_or_replace(
@@ -304,7 +302,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
                 is_ephemeral=True
             )
 
-        builder.current_role_id = state.selected_values[0]
+        builder.current_role_id = int(state.selected_values[0])
 
         return self._show_modal(
             modal=Modal(
@@ -440,7 +438,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
         if (
             not isinstance(context, ServerChatInteractionContext)
             or not (is_finalized := state.custom_data.get("f"))
-            or not (role_id := state.custom_data.get("r"))
+            or not (role_id := get_custom_int(state.custom_data, "r"))
             or not (is_exclusive := state.custom_data.get("e"))
         ):
             return self._reply(
@@ -548,7 +546,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
                 if (
                     component.identifier == "armgr"
                     and isinstance(component, ButtonState)
-                    and (role_id := component.custom_data.get("r"))
+                    and (role_id := get_custom_int(component.custom_data, "r"))
                     and component.emoji
                     and component.emoji.mention
                 )
@@ -706,7 +704,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
         )
 
     @staticmethod
-    def __get_cache_key(server_id: str, state_id: str) -> str:
+    def __get_cache_key(server_id: int, state_id: str) -> str:
         return f"autorole/{server_id}/{state_id}"
 
     async def __try_remove_role(
@@ -899,7 +897,7 @@ class AutoRoleMenuWorkflow(WorkflowBase):
             style=ComponentStyle.SECONDARY,
             custom_data={
                 "e": "1" if builder.is_exclusive else "0",
-                "r": role_options.role_id,
+                "r": str(role_options.role_id),
                 "f": "1" if is_finalized else "0",
                 "i": builder.id
             }

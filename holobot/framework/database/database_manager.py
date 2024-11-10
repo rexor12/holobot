@@ -5,11 +5,12 @@ import asyncpg
 
 from holobot.sdk.configs import IOptions
 from holobot.sdk.database import IDatabaseManager, ISession
-from holobot.sdk.database.migration import MigrationInterface
+from holobot.sdk.database.migration import IMigration
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading.utils import COMPLETED_TASK
+from holobot.sdk.utils.iterable_utils import select_many
 from .database_options import DatabaseOptions
 from .session import Session
 
@@ -24,11 +25,11 @@ class DatabaseManager(IDatabaseManager, IStartable):
         self,
         database_options: IOptions[DatabaseOptions],
         logger_factory: ILoggerFactory,
-        migrations: tuple[MigrationInterface, ...]
+        migrations: tuple[IMigration, ...]
     ) -> None:
         self.__database_options = database_options
         self.__logger = logger_factory.create(DatabaseManager)
-        self.__migrations: tuple[MigrationInterface, ...] = migrations
+        self.__migrations: tuple[IMigration, ...] = migrations
         self.__connection_pool: asyncpg.Pool | None = None
 
     def start(self) -> Awaitable[None]:
@@ -45,20 +46,28 @@ class DatabaseManager(IDatabaseManager, IStartable):
         async with self.__connection_pool.acquire() as connection:
             connection: asyncpg.Connection
             async with connection.transaction():
-                for migration in self.__migrations:
-                    await self.__upgrade_table(connection, migration)
-        self.__logger.info("Successfully upgraded the database")
+                current_version = await self.__get_current_migration_version(connection)
+                sorted_plans = sorted(
+                    filter(
+                        lambda i: i.new_version > current_version,
+                        select_many(self.__migrations, lambda i: i.plans)
+                    ),
+                    key=lambda i: i.new_version
+                )
+                new_version = current_version
+                for plan in sorted_plans:
+                    self.__logger.info(
+                        "Applying migration...",
+                        version=plan.new_version
+                    )
+                    await plan.execute(connection)
+                    if plan.new_version > new_version:
+                        new_version = plan.new_version
 
-    async def downgrade_many(self, version_by_table: tuple[str, int]) -> None:
-        self.__logger.info("Rolling back the database...")
-        assert self.__connection_pool
-        async with self.__connection_pool.acquire() as connection:
-            connection: asyncpg.Connection
-            async with connection.transaction():
-                for migration in self.__migrations:
-                    # TODO Find the migration by the version_by_table.
-                    await self.__downgrade_table(connection, migration)
-        self.__logger.info("Successfully rolled back the database")
+                if new_version != current_version:
+                    await self.__update_migration_version(connection, new_version)
+
+        self.__logger.info("Successfully upgraded the database", new_version=new_version)
 
     async def acquire_connection(self) -> ISession:
         assert self.__connection_pool
@@ -88,13 +97,7 @@ class DatabaseManager(IDatabaseManager, IStartable):
         self.__logger.debug("Successfully initialized the connection pool")
 
         async with pool.acquire() as connection:
-            await connection.execute((
-                "CREATE TABLE IF NOT EXISTS table_info ("
-                " id SERIAL PRIMARY KEY,"
-                " name VARCHAR NOT NULL UNIQUE,"
-                " version INTEGER DEFAULT 0"
-                " )"
-            ))
+            await self.__initialize_migration_table(connection)
 
         return pool
 
@@ -116,53 +119,85 @@ class DatabaseManager(IDatabaseManager, IStartable):
             await connection.execute(f"CREATE DATABASE {name} ENCODING 'UTF8' TEMPLATE template0")
             self.__logger.debug("Successfully created the database")
 
-    async def __upgrade_table(
+    async def __initialize_migration_table(
         self,
-        connection: asyncpg.Connection,
-        migration: MigrationInterface
+        connection: asyncpg.Connection
     ) -> None:
-        current_version = await self.__get_current_table_version(
-            connection,
-            migration.table_name
+        await connection.execute(
+            "CREATE TABLE IF NOT EXISTS migration_info (\n"
+            " singleton_key BOOLEAN DEFAULT TRUE UNIQUE,\n"
+            " version BIGINT NOT NULL,\n"
+            " updated_at TIMESTAMP NOT NULL\n"
+            ")"
         )
-        new_version = await migration.upgrade(connection, current_version)
-        await self.__update_current_table_version(
-            connection,
-            migration.table_name,
-            new_version
+
+        # NOTE: For a while migration versions were local to their tables,
+        # but foreign references, etc. created the need to unify them.
+        # Therefore, there is a bit of migration magic happening here
+        # so that upgrades from older versions are seamless.
+        if not await self.__table_exists(connection, "table_info"):
+            return
+
+        highest_version = await connection.fetchval(
+            "SELECT MAX(version) AS highest_version FROM table_info"
         )
-        if new_version != current_version:
-            self.__logger.debug(
-                "Successfully upgraded table",
-                name=migration.table_name,
-                old_version=current_version,
-                new_version=new_version
+        if not isinstance(highest_version, int):
+            raise ValueError(
+                f"Couldn't determine the current migration version,"
+                " because the result is not an integer value."
             )
 
-    async def __downgrade_table(
-        self,
-        connection: asyncpg.Connection,
-        migration: MigrationInterface
-    ) -> None:
-        # TODO Implement database rollbacks.
-        raise NotImplementedError
+        await self.__update_migration_version(connection, highest_version)
+        await connection.execute("DROP TABLE table_info")
 
-    async def __get_current_table_version(
+    async def __table_exists(
         self,
         connection: asyncpg.Connection,
         table_name: str
-    ) -> int:
-        return await connection.fetchval("SELECT version FROM table_info WHERE name = $1", table_name) or 0
+    ) -> bool:
+        result = await connection.fetchval(
+            "SELECT\n"
+            "   CASE\n"
+            f"       WHEN to_regclass('{table_name}') IS NULL THEN 0\n"
+            "       ELSE 1\n"
+            "   END as table_exists"
+        )
 
-    async def __update_current_table_version(
+        if not isinstance(result, int):
+            raise ValueError(
+                f"Couldn't determine if the table {table_name} exists,"
+                " because the result is not a bool value."
+            )
+
+        return result == 1
+
+    async def __update_migration_version(
         self,
         connection: asyncpg.Connection,
-        table_name: str,
         version: int
     ) -> None:
-        await connection.execute((
-            "INSERT INTO table_info (name, version)"
-            " VALUES ($1, $2)"
-            " ON CONFLICT (name) DO"
-            " UPDATE SET version = $2"
-        ), table_name, version)
+        await connection.execute(
+            "INSERT INTO migration_info (version, updated_at)\n"
+            "VALUES ($1, NOW() AT TIME ZONE 'utc')\n"
+            "ON CONFLICT (singleton_key)\n"
+            "DO UPDATE SET\n"
+            " version = $1,\n"
+            " updated_at = NOW() AT TIME ZONE 'utc'",
+            version
+        )
+
+    async def __get_current_migration_version(
+        self,
+        connection: asyncpg.Connection
+    ) -> int:
+        result = await connection.fetchval(
+            "SELECT version FROM migration_info LIMIT 1"
+        )
+
+        if not isinstance(result, int):
+            raise ValueError(
+                "Couldn't determine the current migration version,"
+                " because the result is not an integer value."
+            )
+
+        return result

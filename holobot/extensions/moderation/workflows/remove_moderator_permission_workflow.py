@@ -50,7 +50,7 @@ class RemoveModeratorPermissionWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
+        user_id = user
         typed_permission = ModeratorPermission(permission)
         await self.__permission_manager.remove_permissions(context.server_id, user_id, typed_permission)
 

@@ -55,8 +55,8 @@ class ModalProcessor(InteractionProcessorBase[ModalInteraction, Modal]):
             arguments={
                 "state": state
             },
-            initiator_id=str(interaction.user.id),
-            bound_user_id=state.owner_id if state else str(interaction.user.id),
+            initiator_id=interaction.user.id,
+            bound_user_id=state.owner_id if state else interaction.user.id,
             context=self.__get_interaction_context(interaction)
         )
 
@@ -74,9 +74,9 @@ class ModalProcessor(InteractionProcessorBase[ModalInteraction, Modal]):
 
         event = ModalProcessedEvent(
             interactable=descriptor.interactable,
-            server_id=str(interaction.guild_id),
-            channel_id=str(interaction.channel_id),
-            user_id=str(interaction.user.id),
+            server_id=interaction.guild_id,
+            channel_id=interaction.channel_id,
+            user_id=interaction.user.id,
             response=response
         )
         for event_listener in self.__event_listeners:
@@ -89,20 +89,20 @@ class ModalProcessor(InteractionProcessorBase[ModalInteraction, Modal]):
         if interaction.guild_id:
             return ServerChatInteractionContext(
                 request_id=uuid4(),
-                author_id=str(interaction.user.id),
+                author_id=interaction.user.id,
                 author_name=interaction.user.username,
                 author_nickname=interaction.member.nickname if interaction.member else None,
                 message=None,
-                server_id=str(interaction.guild_id),
+                server_id=interaction.guild_id,
                 server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=str(interaction.channel_id)
+                channel_id=interaction.channel_id
             )
 
         return DirectMessageInteractionContext(
             request_id=uuid4(),
-            author_id=str(interaction.user.id),
+            author_id=interaction.user.id,
             author_name=interaction.user.username,
             author_nickname=None,
             message=None,
-            channel_id=str(interaction.channel_id)
+            channel_id=interaction.channel_id
         )

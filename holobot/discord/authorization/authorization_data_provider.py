@@ -17,7 +17,7 @@ class AuthorizationDataProvider(IAuthorizationDataProvider):
         super().__init__()
         self.__authorization_repository = interactable_authorization_repository
 
-    async def is_server_authorized(self, interactable: Interactable, server_id: str) -> bool:
+    async def is_server_authorized(self, interactable: Interactable, server_id: int) -> bool:
         if not interactable.restrictions:
             return True
 
@@ -37,11 +37,11 @@ class AuthorizationDataProvider(IAuthorizationDataProvider):
 
         return False
 
-    async def get_authorized_server_ids(self, interactable: Interactable) -> Iterable[str]:
+    async def get_authorized_server_ids(self, interactable: Interactable) -> Iterable[int]:
         if not interactable.restrictions:
-            return ("",)
+            return (0,)
 
-        server_ids = set[str]()
+        server_ids = set[int]()
         for restriction in interactable.restrictions:
             if isinstance(restriction, FeatureRestriction):
                 auth_server_ids = await self.__authorization_repository.get_authorized_server_ids(

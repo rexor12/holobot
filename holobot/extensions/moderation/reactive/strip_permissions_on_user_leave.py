@@ -59,7 +59,7 @@ class StripPermissionsOnUserLeave(IListener[ServerMemberLeftEvent]):
                 f":hammer: <@{event.user_id}> has had their moderation permissions removed."
             )
 
-    async def __try_log(self, server_id: str, message: str) -> None:
+    async def __try_log(self, server_id: int, message: str) -> None:
         try:
             await self.__log_manager.publish_log_entry(server_id, message)
         except (ChannelNotFoundError, ForbiddenError) as error:

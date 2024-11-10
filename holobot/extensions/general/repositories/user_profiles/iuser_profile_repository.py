@@ -6,7 +6,7 @@ from holobot.extensions.general.sdk.badges.models.badge_id import BadgeId
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
-class IUserProfileRepository(IRepository[str, UserProfile], Protocol):
+class IUserProfileRepository(IRepository[int, UserProfile], Protocol):
     def paginate_rankings(
         self,
         page_index: int,
@@ -16,7 +16,7 @@ class IUserProfileRepository(IRepository[str, UserProfile], Protocol):
 
     def is_badge_equipped(
         self,
-        user_id: str,
+        user_id: int,
         badge_id: BadgeId
     ) -> Awaitable[bool]:
         ...

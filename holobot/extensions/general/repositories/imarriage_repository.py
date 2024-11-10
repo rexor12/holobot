@@ -9,30 +9,30 @@ from holobot.sdk.queries import PaginationResult
 class IMarriageRepository(IRepository[int, Marriage], Protocol):
     def get_by_user(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> Awaitable[Marriage | None]:
         ...
 
     def get_by_users(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str
+        server_id: int,
+        user_id1: int,
+        user_id2: int
     ) -> Awaitable[Marriage | None]:
         ...
 
     def delete_by_user(
         self,
-        server_id: str,
-        user_id1: str,
-        user_id2: str
+        server_id: int,
+        user_id1: int,
+        user_id2: int
     ) -> Awaitable[bool]:
         ...
 
     def paginate_rankings(
         self,
-        server_id: str,
+        server_id: int,
         ranking_type: RankingType,
         page_index: int,
         page_size: int

@@ -113,7 +113,7 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
         page_size: int,
         item_type: str,
         item_index: int,
-        initiator_id: str
+        initiator_id: int
     ) -> tuple[
             UndefinedOrNoneOr[str],
             UndefinedOrNoneOr[Embed],

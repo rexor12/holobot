@@ -63,7 +63,7 @@ class ResetExchangeAmountWorkflow(WorkflowBase):
         else:
             used_amount = self.__options.value.ExchangeQuotaPerUser - remaining_amount
 
-        user_id = str(user)
+        user_id = user
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             exchange_quota = await self.__exchange_quota_repository.get(user_id)
             if exchange_quota:

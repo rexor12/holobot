@@ -7,9 +7,9 @@ from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IBotDataProvider)
 class BotDataProvider(IBotDataProvider):
-    def get_user_id(self) -> str:
+    def get_user_id(self) -> int | None:
         user = get_bot().get_me()
-        return str(user.id) if user else ""
+        return user.id if user else None
 
     def get_avatar_url(self) -> str:
         user = get_bot().get_me()
@@ -34,8 +34,8 @@ class BotDataProvider(IBotDataProvider):
         for guild_id, guild in guilds[offset:(offset + count)]:
             owner = guild.get_member(guild.owner_id)
             page.append(Server(
-                identifier=str(guild_id),
-                owner_id=str(guild.owner_id),
+                identifier=guild_id,
+                owner_id=guild.owner_id,
                 owner_name=owner.username if owner else None,
                 name=guild.name,
                 member_count=guild.member_count,

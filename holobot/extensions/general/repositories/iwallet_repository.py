@@ -12,16 +12,16 @@ class IWalletRepository(IRepository[WalletId, Wallet], Protocol):
 
     def get_wallets(
         self,
-        user_id: str,
-        server_id: str | None = None,
+        user_id: int,
+        server_id: int | None = None,
         include_global: bool = False
     ) -> Awaitable[tuple[Wallet, ...]]:
         ...
 
     def paginate_wallets_with_details(
         self,
-        user_id: str,
-        server_id: str | None = None,
+        user_id: int,
+        server_id: int | None = None,
         include_global: bool = False,
         page_index: int = 0,
         page_size: int = 5

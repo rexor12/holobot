@@ -11,7 +11,7 @@ class PermissionManager(IPermissionManager):
         super().__init__()
         self.__repository: IUserRepository = repository
 
-    async def add_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> None:
+    async def add_permissions(self, server_id: int, user_id: int, permissions: ModeratorPermission) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
@@ -31,7 +31,7 @@ class PermissionManager(IPermissionManager):
         )
         await self.__repository.add(user)
 
-    async def remove_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> None:
+    async def remove_permissions(self, server_id: int, user_id: int, permissions: ModeratorPermission) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
@@ -47,8 +47,8 @@ class PermissionManager(IPermissionManager):
 
     async def remove_all_permissions(
         self,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
@@ -63,7 +63,7 @@ class PermissionManager(IPermissionManager):
 
         return had_permissions
 
-    async def has_permissions(self, server_id: str, user_id: str, permissions: ModeratorPermission) -> bool:
+    async def has_permissions(self, server_id: int, user_id: int, permissions: ModeratorPermission) -> bool:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 

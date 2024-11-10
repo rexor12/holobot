@@ -5,6 +5,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComponentBase, LayoutBase, Paginator, StackLayout
 )
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.components.models import PaginatorState
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
@@ -55,7 +56,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user)
+        user_id = user
         if not await self.__member_data_provider.is_member(context.server_id, user_id):
             return self._reply(content="The user you mentioned cannot be found.")
 
@@ -88,7 +89,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
-        if (user_id := state.custom_data.get("i", None)) is None:
+        if (user_id := get_custom_int(state.custom_data, "i", None)) is None:
             return self._edit_message(
                 content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
             )
@@ -141,11 +142,11 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
 
     async def __create_page_content(
         self,
-        server_id: str,
-        user_id: str,
+        server_id: int,
+        user_id: int,
         page_index: int,
         page_size: int,
-        owner_id: str
+        owner_id: int
     ) -> tuple[
             UndefinedOrNoneOr[str],
             UndefinedOrNoneOr[Embed],
@@ -183,7 +184,7 @@ class ViewWarnStrikesWorkflow(WorkflowBase):
                 style=ComponentStyle.DANGER,
                 custom_data={
                     "i": str(warn_strike.identifier),
-                    "u": user_id
+                    "u": str(user_id)
                 }
             ))
 

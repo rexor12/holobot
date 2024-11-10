@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass(kw_only=True, frozen=True)
 class MemberData:
-    user_id: str
+    user_id: int
     avatar_url: str | None
     server_specific_avatar_url: str | None
     name: str

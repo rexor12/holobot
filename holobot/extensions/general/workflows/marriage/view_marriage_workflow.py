@@ -42,7 +42,7 @@ class ViewMarriageWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        user_id = str(user) if user else context.author_id
+        user_id = user if user else context.author_id
         marriage = await self.__marriage_manager.get_marriage(context.server_id, user_id)
         if not marriage:
             return self._reply(

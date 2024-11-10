@@ -34,7 +34,7 @@ class _PollState:
     options: list[str] = field(default_factory=list)
     votes: list[int] = field(default_factory=list)
     total_votes: int = 0
-    voters: set[str] = field(default_factory=set)
+    voters: set[int] = field(default_factory=set)
     lock: Lock = field(default_factory=Lock)
 
 @injectable(IWorkflow)
@@ -237,13 +237,13 @@ class PollWorkflow(WorkflowBase):
             )
 
     @staticmethod
-    def __get_cache_key(server_id: str, user_id: str, poll_id: str) -> str:
+    def __get_cache_key(server_id: int, user_id: int, poll_id: str) -> str:
         return f"poll/{server_id}/{user_id}/{poll_id}"
 
     async def create_poll_state(
         self,
-        server_id: str,
-        author_id: str,
+        server_id: int,
+        author_id: int,
         title: str,
         options: Sequence[str],
         durationInMinutes: int
@@ -263,7 +263,7 @@ class PollWorkflow(WorkflowBase):
 
     def __create_response_items(
         self,
-        owner_id: str,
+        owner_id: int,
         state: _PollState
     ) -> tuple[Embed, StackLayout]:
         buttons = list[ComponentBase]()

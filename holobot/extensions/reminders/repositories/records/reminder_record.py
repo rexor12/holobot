@@ -6,9 +6,9 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 @dataclass(kw_only=True)
 class ReminderRecord(Record):
     id: PrimaryKey[int]
-    user_id: str
-    server_id: str | None
-    channel_id: str | None
+    user_id: int
+    server_id: int | None
+    channel_id: int | None
     message: str | None
     location: int
     created_at: datetime

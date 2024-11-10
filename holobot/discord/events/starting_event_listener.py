@@ -37,8 +37,8 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
     async def __get_command_builders(
         self,
         bot: Bot
-    ) -> dict[str, list[CommandBuilder]]:
-        builder_tree: dict[str, list[CommandBuilder]] = {}
+    ) -> dict[int, list[CommandBuilder]]:
+        builder_tree: dict[int, list[CommandBuilder]] = {}
         command_builders = await self.__workflow_registry.get_command_builders(bot)
         for server_id, builders in command_builders.items():
             cb = get_or_add(builder_tree, server_id, lambda _: list[CommandBuilder](), None)
@@ -54,7 +54,7 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
     async def __register_commands(
         self,
         bot: Bot,
-        command_builders: dict[str, list[CommandBuilder]]
+        command_builders: dict[int, list[CommandBuilder]]
     ) -> None:
         application = await bot.rest.fetch_application()
         for server_id, builders in command_builders.items():
@@ -62,7 +62,7 @@ class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
                 await bot.rest.set_application_commands(
                     application=application.id,
                     commands=builders,
-                    guild=int(server_id) if server_id != "" else hikari.UNDEFINED
+                    guild=server_id if server_id != 0 else hikari.UNDEFINED
                 )
             except Exception as error:
                 self.__logger.error(

@@ -9,7 +9,7 @@ from .records import WalletRecord
 
 @injectable(IWalletRepository)
 class WalletRepository(
-    RepositoryBase[str, WalletRecord, Wallet],
+    RepositoryBase[int, WalletRecord, Wallet],
     IWalletRepository
 ):
     @property
@@ -21,8 +21,8 @@ class WalletRepository(
         return Wallet
 
     @property
-    def identifier_type(self) -> type[str]:
-        return str
+    def identifier_type(self) -> type[int]:
+        return int
 
     @property
     def table_name(self) -> str:

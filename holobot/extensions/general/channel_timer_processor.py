@@ -11,7 +11,7 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.logging.enums.log_level import LogLevel
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
-from holobot.sdk.threading.utils import wait
+from holobot.sdk.threading.utils import COMPLETED_TASK, wait
 from holobot.sdk.utils.datetime_utils import utcnow
 from holobot.sdk.utils.timedelta_utils import format_timedelta
 
@@ -36,12 +36,13 @@ class ChannelTimerProcessor(IStartable):
     def priority(self) -> int:
         return 1000
 
-    async def start(self):
+    def start(self) -> Awaitable[None]:
         self.__logger.info("Channel timers are enabled")
         self.__token_source = CancellationTokenSource()
         self.__background_task = asyncio.create_task(
             self.__process_items(self.__token_source.token)
         )
+        return COMPLETED_TASK
 
     async def stop(self):
         if self.__token_source: self.__token_source.cancel()

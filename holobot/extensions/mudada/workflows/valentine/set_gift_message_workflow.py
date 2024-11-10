@@ -57,7 +57,7 @@ class SetGiftMessageWorkflow(WorkflowBase):
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(content=self.__i18n.get("interactions.server_only_interaction_error"))
 
-        target_user_id = str(user)
+        target_user_id = user
         if target_user_id == context.author_id:
             return self._reply(content=self.__i18n.get("extensions.mudada.set_gift_message_workflow.self_transfer_error"))
 

@@ -9,6 +9,7 @@ from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, ComponentStyle, StackLayout
 )
+from holobot.discord.sdk.workflows.interactables.components.component_utils import get_custom_int
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
@@ -23,7 +24,7 @@ from holobot.sdk.utils.datetime_utils import utcnow
 
 _MAX_ROUNDS: int = 3
 _EXPIRY_TIME: datetime.timedelta = datetime.timedelta(minutes=5)
-_DM_SERVER_ID: str = "-1"
+_DM_SERVER_ID: int = -1
 _INITIATOR_KEY: str = "i"
 _ACTION_TYPE_KEY: str = "a"
 
@@ -47,9 +48,9 @@ class _ActionOutcome(IntEnum):
 @dataclass(kw_only=True)
 class _GameState:
     started_at: datetime.datetime
-    initiator_id: str
+    initiator_id: int
     initiator_name: str
-    target_id: str
+    target_id: int
     target_name: str
     is_bot_target: bool = False
     initiator_action: _Action | None = None
@@ -93,7 +94,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
         user: int | None = None
     ) -> InteractionResponse:
         target_id = (
-            str(user)
+            user
             if user is not None
             else self.__user_data_provider.get_self().user_id
         )
@@ -156,7 +157,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
                         owner_id=target_id,
                         text=self.__i18n.get("common.buttons.accept"),
                         custom_data={
-                            _INITIATOR_KEY: game_state.initiator_id
+                            _INITIATOR_KEY: str(game_state.initiator_id)
                         }
                     ),
                     Button(
@@ -165,7 +166,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
                         text=self.__i18n.get("common.buttons.decline"),
                         style=ComponentStyle.SECONDARY,
                         custom_data={
-                            _INITIATOR_KEY: game_state.initiator_id
+                            _INITIATOR_KEY: str(game_state.initiator_id)
                         }
                     ),
                     self.__create_help_button(),
@@ -183,7 +184,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
         context: InteractionContext,
         state: ButtonState
     ) -> InteractionResponse:
-        if (initiator_id := state.custom_data.get(_INITIATOR_KEY)) is None:
+        if (initiator_id := get_custom_int(state.custom_data, _INITIATOR_KEY)) is None:
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 is_ephemeral=True
@@ -239,7 +240,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
         context: InteractionContext,
         state: ButtonState
     ) -> InteractionResponse:
-        if (initiator_id := state.custom_data.get(_INITIATOR_KEY)) is None:
+        if (initiator_id := get_custom_int(state.custom_data, _INITIATOR_KEY)) is None:
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 is_ephemeral=True
@@ -269,15 +270,15 @@ class RockPaperScissorsWorkflow(WorkflowBase):
         state: ButtonState
     ) -> InteractionResponse:
         if (
-            (initiator_id := state.custom_data.get(_INITIATOR_KEY)) is None
-            or (action_type := state.custom_data.get(_ACTION_TYPE_KEY)) is None
+            (initiator_id := get_custom_int(state.custom_data, _INITIATOR_KEY)) is None
+            or (action_type := get_custom_int(state.custom_data, _ACTION_TYPE_KEY)) is None
         ):
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 is_ephemeral=True
             )
 
-        action_type = _Action(int(action_type))
+        action_type = _Action(action_type)
         server_id = RockPaperScissorsWorkflow.__get_server_id(context)
         cache_key = RockPaperScissorsWorkflow.__get_cache_key(server_id, initiator_id)
         game_state = await self.__cache.get(cache_key)
@@ -399,7 +400,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
         context: InteractionContext,
         state: ButtonState
     ) -> InteractionResponse:
-        if (initiator_id := state.custom_data.get(_INITIATOR_KEY)) is None:
+        if (initiator_id := get_custom_int(state.custom_data, _INITIATOR_KEY)) is None:
             return self._reply(
                 content=self.__i18n.get("interactions.invalid_interaction_data_error"),
                 is_ephemeral=True
@@ -452,11 +453,11 @@ class RockPaperScissorsWorkflow(WorkflowBase):
         )
 
     @staticmethod
-    def __get_cache_key(server_id: str, user_id: str) -> str:
+    def __get_cache_key(server_id: int, user_id: int) -> str:
         return f"game-rps/{server_id}/{user_id}"
 
     @staticmethod
-    def __get_server_id(context: InteractionContext) -> str:
+    def __get_server_id(context: InteractionContext) -> int:
         if isinstance(context, ServerChatInteractionContext):
             return context.server_id
         return _DM_SERVER_ID
@@ -512,7 +513,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
     async def __create_new_game(
         self,
         context: InteractionContext,
-        target_id: str,
+        target_id: int,
         is_bot_target: bool
     ) -> _GameState:
         target_user = await self.__user_data_provider.get_user_data_by_id(target_id)
@@ -528,8 +529,8 @@ class RockPaperScissorsWorkflow(WorkflowBase):
 
     def __create_action_button(
         self,
-        initiator_id: str,
-        owner_id: str,
+        initiator_id: int,
+        owner_id: int,
         action_type: _Action
     ) -> Button:
         return Button(
@@ -538,7 +539,7 @@ class RockPaperScissorsWorkflow(WorkflowBase):
             emoji=self.__emoji_by_actions[action_type.value],
             style=ComponentStyle.SECONDARY,
             custom_data={
-                _INITIATOR_KEY: initiator_id,
+                _INITIATOR_KEY: str(initiator_id),
                 _ACTION_TYPE_KEY: str(action_type.value)
             }
         )
@@ -578,18 +579,18 @@ class RockPaperScissorsWorkflow(WorkflowBase):
     def __create_help_button(self) -> Button:
         return Button(
             id="grps_help",
-            owner_id="0",
+            owner_id=0,
             text=self.__i18n.get("common.buttons.help"),
             style=ComponentStyle.SECONDARY
         )
 
-    def __create_forfeit_button(self, initiator_id: str) -> Button:
+    def __create_forfeit_button(self, initiator_id: int) -> Button:
         return Button(
             id="grps_forfeit",
-            owner_id="0",
+            owner_id=0,
             text=self.__i18n.get("extensions.general.rock_paper_scissors_workflow.forfeit"),
             style=ComponentStyle.DANGER,
             custom_data={
-                _INITIATOR_KEY: initiator_id
+                _INITIATOR_KEY: str(initiator_id)
             }
         )

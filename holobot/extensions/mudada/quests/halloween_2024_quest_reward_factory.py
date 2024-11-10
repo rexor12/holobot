@@ -22,7 +22,7 @@ _REWARD_BY_TIERS = {
 @injectable(IQuestRewardFactory)
 class Halloween2024QuestRewardFactory(IQuestRewardFactory):
     @property
-    def relevant_server_ids(self) -> tuple[str, ...]:
+    def relevant_server_ids(self) -> tuple[int, ...]:
         return (self.__options.value.MudadaServerId,)
 
     @property
@@ -42,8 +42,8 @@ class Halloween2024QuestRewardFactory(IQuestRewardFactory):
     async def create_quest_rewards(
         self,
         quest_code: str,
-        server_id: str,
-        user_id: str
+        server_id: int,
+        user_id: int
     ) -> Iterable[QuestRewardBase]:
         currency = await self.__currency_data_provider.get_currency_by_code(
             server_id,

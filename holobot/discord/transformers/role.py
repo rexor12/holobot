@@ -6,6 +6,6 @@ TRole = HikariPartialRole | HikariRole
 
 def to_model(dto: TRole) -> Role:
     return Role(
-        id=str(dto.id),
+        id=dto.id,
         name=dto.name
     )

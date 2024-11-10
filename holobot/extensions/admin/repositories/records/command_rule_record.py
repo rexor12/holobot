@@ -8,10 +8,10 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 class CommandRuleRecord(Record):
     id: PrimaryKey[int]
     created_at: datetime
-    created_by: str
-    server_id: str
+    created_by: int
+    server_id: int
     state: RuleState
     command_group: str | None
     command_subgroup: str | None
     command: str | None
-    channel_id: str | None
+    channel_id: int | None

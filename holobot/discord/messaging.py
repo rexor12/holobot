@@ -29,12 +29,12 @@ class Messaging(IMessaging):
         self.__component_transformer = component_transformer
         self.__log = logger_factory.create(Messaging)
 
-    async def send_private_message(self, user_id: str, message: str) -> None:
+    async def send_private_message(self, user_id: int, message: str) -> None:
         assert_not_none(user_id, "user_id")
         assert_not_none(message, "message")
 
         try:
-            user = await get_bot().get_user_by_id(int(user_id))
+            user = await get_bot().get_user_by_id(user_id)
             self.__log.trace("Sending DM...", user_id=user_id)
             await user.send(message)
         except HikariForbiddenError as error:
@@ -43,23 +43,25 @@ class Messaging(IMessaging):
             ) from error
         except HikariNotFoundError as error:
             raise UserNotFoundError(
+                user_id,
+                None,
                 "Cannot send the private message, because the user cannot be found."
             ) from error
 
     async def send_channel_message(
         self,
-        server_id: str,
-        channel_id: str,
+        server_id: int,
+        channel_id: int,
         content: str | Embed,
         components: ComponentBase | list[LayoutBase] | None = None,
         *,
         suppress_user_mentions: bool = False
-    ) -> str:
+    ) -> int:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(content, "content")
 
-        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+        channel = await get_bot().get_guild_channel(server_id, channel_id)
         if not channel or not isinstance(channel, TextableGuildChannel):
             self.__log.trace(
                 "Tried to send a guild message to a non-messageable channel",
@@ -81,21 +83,21 @@ class Messaging(IMessaging):
                 user_mentions=not suppress_user_mentions
             )
 
-            return str(message.id)
+            return message.id
         except HikariForbiddenError as error:
             raise ForbiddenError("Cannot send messages to the specified channel.") from error
 
     async def crosspost_message(
         self,
-        server_id: str,
-        channel_id: str,
-        message_id: str
+        server_id: int,
+        channel_id: int,
+        message_id: int
     ) -> None:
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(message_id, "message_id")
 
-        channel = await get_bot().get_guild_channel(int(server_id), int(channel_id))
+        channel = await get_bot().get_guild_channel(server_id, channel_id)
         if not isinstance(channel, GuildNewsChannel):
             raise InvalidChannelError(
                 server_id,
@@ -103,7 +105,7 @@ class Messaging(IMessaging):
                 "The source channel must be a news-type channel."
             )
 
-        await get_bot().rest.crosspost_message(channel, int(message_id))
+        await get_bot().rest.crosspost_message(channel, message_id)
 
-    def delete_message(self, channel_id: str, message_id: str) -> Awaitable[None]:
-        return get_bot().rest.delete_message(int(channel_id), int(message_id))
+    def delete_message(self, channel_id: int, message_id: int) -> Awaitable[None]:
+        return get_bot().rest.delete_message(channel_id, message_id)

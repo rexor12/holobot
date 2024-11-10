@@ -4,7 +4,7 @@ from typing import Protocol
 from holobot.discord.sdk.models import Server
 
 class IBotDataProvider(Protocol):
-    def get_user_id(self) -> str:
+    def get_user_id(self) -> int | None:
         ...
 
     def get_avatar_url(self) -> str:

@@ -59,7 +59,7 @@ class SummonUserWorkflow(WorkflowBase):
 
         try:
             member = (
-                await self.__member_data_provider.get_basic_data_by_id(context.server_id, str(user))
+                await self.__member_data_provider.get_basic_data_by_id(context.server_id, user)
             )
             if not member:
                 return self._reply(

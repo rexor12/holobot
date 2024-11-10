@@ -4,7 +4,7 @@ from holobot.sdk.database.entities import Identifier
 
 @dataclass(kw_only=True)
 class QuestProtoId(Identifier):
-    server_id: str
+    server_id: int
     """The identifier of the server the quest prototype belongs to."""
 
     code: str
@@ -14,8 +14,8 @@ class QuestProtoId(Identifier):
         return f"QuestProto/{self.server_id}/{self.code}"
 
     @staticmethod
-    def create(server_id: str | None, code: str) -> 'QuestProtoId':
+    def create(server_id: int | None, code: str) -> 'QuestProtoId':
         return QuestProtoId(
-            server_id=server_id or "0",
+            server_id=server_id or 0,
             code=code
         )

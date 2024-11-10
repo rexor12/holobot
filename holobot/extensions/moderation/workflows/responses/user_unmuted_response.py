@@ -4,5 +4,5 @@ from holobot.discord.sdk.workflows.interactables.models import InteractionRespon
 
 @dataclass
 class UserUnmutedResponse(InteractionResponse):
-    author_id: str = ""
-    user_id: str = ""
+    author_id: int = 0
+    user_id: int = 0

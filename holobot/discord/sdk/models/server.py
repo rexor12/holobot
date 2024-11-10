@@ -5,10 +5,10 @@ from datetime import datetime
 class Server:
     """Holds basic information about a server."""
 
-    identifier: str
+    identifier: int
     """The identifier of the server."""
 
-    owner_id: str | None
+    owner_id: int | None
     """The identifier of the server owner."""
 
     owner_name: str | None

@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from hikari import CommandType
 from hikari.api.special_endpoints import ContextMenuCommandBuilder, SlashCommandBuilder
@@ -92,10 +92,10 @@ class WorkflowRegistry(IWorkflowRegistry):
     ) -> tuple[IWorkflow, Modal] | None:
         return self.__modals.get(identifier)
 
-    async def get_command_builders(self, bot: Bot) -> dict[str, Sequence[SlashCommandBuilder]]:
+    async def get_command_builders(self, bot: Bot) -> Mapping[int, Sequence[SlashCommandBuilder]]:
         self.__log.info("Registering commands...")
-        builders_by_servers: dict[str, dict[str, CommandGroupBuilder | CommandBuilder]] = {}
-        subgroup_builders_by_servers: dict[str, dict[str, CommandSubGroupBuilder]] = {}
+        builders_by_servers: dict[int, dict[str, CommandGroupBuilder | CommandBuilder]] = {}
+        subgroup_builders_by_servers: dict[int, dict[str, CommandSubGroupBuilder]] = {}
         total_command_count = 0
         for group_name, group in self.__commands.items():
             for subgroup_name, subgroup in group.items():
@@ -135,9 +135,9 @@ class WorkflowRegistry(IWorkflowRegistry):
             for server_id, builders in builders_by_servers.items()
         }
 
-    async def get_menu_item_builders(self, bot: Bot) -> dict[str, Sequence[ContextMenuCommandBuilder]]:
+    async def get_menu_item_builders(self, bot: Bot) -> Mapping[int, Sequence[ContextMenuCommandBuilder]]:
         self.__log.info("Registering user menu items...")
-        builders = {}
+        builders = dict[int, list[ContextMenuCommandBuilder]]()
         for menu_item in sorted(self.__menu_items.values(), key=lambda i: i[1].priority, reverse=True):
             authorized_server_ids = await self.__authorization_data_provider.get_authorized_server_ids(menu_item[1])
             for server_id in authorized_server_ids:

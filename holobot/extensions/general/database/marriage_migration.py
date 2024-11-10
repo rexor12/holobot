@@ -1,23 +1,41 @@
 from asyncpg.connection import Connection
 
-from holobot.sdk.database.migration import MigrationBase, MigrationInterface
+from holobot.sdk.database.migration import IMigration, MigrationBase
 from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
-@injectable(MigrationInterface)
+@injectable(IMigration)
 class MarriageMigration(MigrationBase):
-    _TABLE_NAME = "marriages"
-
     def __init__(self) -> None:
-        super().__init__(MarriageMigration._TABLE_NAME, {
-            0: MigrationPlan(0, 1, self.__initialize_table),
-            1: MigrationPlan(1, 2, self.__upgrade_to_v2),
-            2: MigrationPlan(2, 3, self.__upgrade_to_v3)
-        }, {})
+        super().__init__(
+            "marriages",
+            [
+                MigrationPlan(1, self.__initialize_table),
+                MigrationPlan(2, self.__upgrade_to_v2),
+                MigrationPlan(3, self.__upgrade_to_v3),
+                MigrationPlan(202411071725, self.__upgrade_to_v4)
+            ]
+        )
+
+    async def __upgrade_to_v4(self, connection: Connection) -> None:
+        uc_name = await self._query_unique_constraint_name(connection, self.table_name)
+        await connection.execute(f"ALTER TABLE {self.table_name} DROP CONSTRAINT {uc_name}")
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            " ALTER COLUMN server_id TYPE BIGINT USING server_id::BIGINT,\n"
+            " ALTER COLUMN user_id1 TYPE BIGINT USING user_id1::BIGINT,\n"
+            " ALTER COLUMN user_id2 TYPE BIGINT USING user_id2::BIGINT"
+        )
+
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}"
+            f" ADD CONSTRAINT uc_{self.table_name} UNIQUE (server_id, user_id1, user_id2)"
+        )
 
     async def __upgrade_to_v3(self, connection: Connection) -> None:
         await connection.execute((
-            f"ALTER TABLE {MarriageMigration._TABLE_NAME}"
+            f"ALTER TABLE {self.table_name}"
             " ADD COLUMN lick_count INTEGER NOT NULL DEFAULT 0,"
             " ADD COLUMN bite_count INTEGER NOT NULL DEFAULT 0,"
             " ADD COLUMN handhold_count INTEGER NOT NULL DEFAULT 0,"
@@ -26,13 +44,13 @@ class MarriageMigration(MigrationBase):
 
     async def __upgrade_to_v2(self, connection: Connection) -> None:
         await connection.execute((
-            f"ALTER TABLE {MarriageMigration._TABLE_NAME}"
+            f"ALTER TABLE {self.table_name}"
             " ADD COLUMN last_level_up_at TIMESTAMP DEFAULT NULL"
         ))
 
     async def __initialize_table(self, connection: Connection) -> None:
         await connection.execute((
-            f"CREATE TABLE {MarriageMigration._TABLE_NAME} ("
+            f"CREATE TABLE {self.table_name} ("
             " id SERIAL PRIMARY KEY,"
             " server_id VARCHAR(20) NOT NULL,"
             " user_id1 VARCHAR(20) NOT NULL,"

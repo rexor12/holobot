@@ -7,8 +7,8 @@ from holobot.sdk.database.entities import PrimaryKey, Record
 class TransactionRecord(Record):
     id: PrimaryKey[int]
     created_at: datetime
-    owner_id: str
-    target_id: str
+    owner_id: int
+    target_id: int
     amount: int
     message: str | None
     is_finalized: bool

@@ -1,3 +1,4 @@
+from .choose_item_workflow import ChooseItemWorkflow
 from .fortune_cookie_workflow import FortuneCookieWorkflow
 from .magic_eight_ball_workflow import MagicEightBallWorkflow
 from .react_workflow import ReactWorkflow

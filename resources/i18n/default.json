@@ -108,6 +108,9 @@
         },
 
         "general": {
+            "choose_item_workflow": {
+                "result": "Lo and behold, I choose **{result}**."
+            },
             "clear_badge_workflow": {
                 "cleared_all_badges": "I have removed all your badges from display.",
                 "cleared_badge": "I have removed your badge from _slot {slot_index}_.",
@@ -456,8 +459,8 @@
                 "game_already_over_error": "This game has ended already."
             },
             "roll_number_workflow": {
-                "unusual_roll_result": "I rolled an unusually shaped die for you and got {value}. („• ᴗ •„)",
-                "usual_roll_result": "I rolled a {name} for you and got {value}. („• ᴗ •„)",
+                "unusual_roll_result": "**{value}** is the number that appeared on the unusually shaped die.",
+                "usual_roll_result": "**{value}** is the number the {name} displays.",
                 "die_1": "Möbius strip",
                 "die_4": "tetrahedron",
                 "die_6": "cube",
@@ -474,11 +477,11 @@
                 "profile_not_found_error": "Alas, it seems you're trying to view the profile of someone who hasn't received any reputation points <:reputation:1228232389264674879>, yet."
             },
             "summon_user_workflow": {
-                "self_summon": "And thus, be summoned, <@{user_id}>! („• ᴗ •„)",
+                "self_summon": "And thus, be summoned, <@{user_id}>!",
                 "dm_summon_with_message": "{user_name} requests your presence at <#{channel_id}>:\n> {message}",
                 "dm_summon": "{user_name} requests your presence at <#{channel_id}>.",
-                "successful_summon": "I'll be back in a moment with <@{user_id}>...",
-                "cannot_summon_bot_error": "I'm sorry, but I'd rather not disturb a fellow bot. (｡•́︿•̀｡)"
+                "successful_summon": "I'll be back in a moment's time with <@{user_id}>...",
+                "cannot_summon_bot_error": "Pray forgive me for I'd rather not disturb a fellow bot."
             },
             "take_money_workflow": {
                 "too_little_money_error": "You can't take less than 1 of any currency from someone.",

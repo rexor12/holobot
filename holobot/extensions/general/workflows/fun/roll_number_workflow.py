@@ -1,6 +1,5 @@
 from random import randint
 
-from holobot.discord.sdk.actions import ReplyAction
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import command
@@ -22,6 +21,7 @@ class RollNumberWorkflow(WorkflowBase):
 
     @command(
         description="Generates a random integer between the specified bounds.",
+        group_name="random",
         name="roll",
         options=(
             Option("max", "The upper bound.", OptionType.INTEGER, True),
@@ -47,12 +47,12 @@ class RollNumberWorkflow(WorkflowBase):
             )
             message_key = "extensions.general.roll_number_workflow.usual_roll_result"
 
-        return InteractionResponse(
-            action=ReplyAction(content=self.__i18n_provider.get(
+        return self._reply(
+            content=self.__i18n_provider.get(
                 message_key,
                 {
                     "name": die_name,
                     "value": result
                 }
-            ))
+            )
         )

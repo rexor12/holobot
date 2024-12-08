@@ -16,3 +16,8 @@ class Environment(IEnvironment):
     @property
     def version(self) -> Version:
         return self._VERSION
+
+    # TODO Update this when sharding is implemented.
+    @property
+    def shard_id(self) -> int:
+        return 0

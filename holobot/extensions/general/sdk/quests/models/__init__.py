@@ -1,3 +1,4 @@
+from .background_quest_reward import BackgroundQuestReward
 from .badge_quest_reward import BadgeQuestReward
 from .currency_quest_reward import CurrencyQuestReward
 from .iquest import IQuest

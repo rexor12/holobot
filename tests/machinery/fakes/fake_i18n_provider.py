@@ -3,7 +3,7 @@ from typing import Any
 
 from holobot.sdk.i18n.ii18n_provider import II18nProvider
 
-class TestI18nProvider(II18nProvider):
+class FakeI18nProvider(II18nProvider):
     def get(
         self,
         key: str,

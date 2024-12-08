@@ -10,3 +10,7 @@ class IEnvironment(Protocol):
     @property
     def version(self) -> Version:
         ...
+
+    @property
+    def shard_id(self) -> int:
+        ...

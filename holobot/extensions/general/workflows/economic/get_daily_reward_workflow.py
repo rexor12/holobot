@@ -14,7 +14,7 @@ from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.utils.timedelta_utils import textify_timedelta
+from holobot.sdk.utils.datetime_utils import utcnow
 
 @injectable(IWorkflow)
 class GetDailyRewardWorkflow(WorkflowBase):
@@ -73,7 +73,7 @@ class GetDailyRewardWorkflow(WorkflowBase):
                     content=self.__i18n.get(
                         "extensions.general.get_daily_reward_workflow.cooldown_error",
                         {
-                            "cooldown": textify_timedelta(error.time_left)
+                            "reset_at": int((utcnow() + error.time_left).timestamp())
                         }
                     )
                 )

@@ -3,7 +3,7 @@ import os
 from holobot.sdk.system.ienvironment import IEnvironment
 from holobot.sdk.system.models.version import Version
 
-class TestEnvironment(IEnvironment):
+class FakeEnvironment(IEnvironment):
     _ROOT_PATH = os.getcwd()
 
     @property
@@ -13,3 +13,7 @@ class TestEnvironment(IEnvironment):
     @property
     def version(self) -> Version:
         return Version(1)
+
+    @property
+    def shard_id(self) -> int:
+        return 10

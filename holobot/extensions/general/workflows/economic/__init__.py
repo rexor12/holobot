@@ -1,5 +1,5 @@
 from .create_currency_workflow import CreateCurrencyWorkflow
-# from .get_daily_reward_workflow import GetDailyRewardWorkflow
+from .get_daily_reward_workflow import GetDailyRewardWorkflow
 from .gift_money_workflow import GiftMoneyWorkflow
 from .give_money_workflow import GiveMoneyWorkflow
 from .remove_currency_workflow import RemoveCurrencyWorkflow

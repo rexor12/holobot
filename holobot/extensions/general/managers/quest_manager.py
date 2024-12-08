@@ -1,4 +1,4 @@
-from collections.abc import Awaitable, Iterable, Sequence
+from collections.abc import AsyncGenerator, Awaitable, Sequence
 from datetime import timedelta
 
 from holobot.extensions.general.enums import QuestResetType
@@ -24,7 +24,7 @@ from holobot.extensions.general.sdk.wallets.models import WalletId
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc, utcnow
-from holobot.sdk.utils.iterable_utils import multi_to_dict, of_type
+from holobot.sdk.utils.iterable_utils import multi_to_dict
 
 @injectable(IQuestManager)
 class QuestManager(IQuestManager):
@@ -284,23 +284,41 @@ class QuestManager(IQuestManager):
         quest_proto: QuestProto
     ) -> Sequence[QuestRewardBase]:
         granted_rewards = list[QuestRewardBase]()
-        granted_rewards.extend(await self.__get_granted_currencies(quest_proto))
-        granted_rewards.extend(await self.__get_granted_badges(quest_proto))
-        # TODO IQuestRewardFactory per server, not just code!
-        if factory := self.__quest_reward_factories.get(quest_proto.identifier.code):
-            for quest_reward in await factory.create_quest_rewards(quest_proto.identifier.code, server_id, user_id):
+        async for quest_reward in self.__create_quest_rewards(quest_proto, server_id, user_id):
+            if await self.__try_grant_reward(
+                quest_reward,
+                server_id,
+                user_id,
+                quest_proto.identifier
+            ):
                 granted_rewards.append(quest_reward)
-
-        await self.__grant_currencies(server_id, user_id, of_type(granted_rewards, CurrencyQuestReward))
-        await self.__grant_badges(user_id, of_type(granted_rewards, BadgeQuestReward))
 
         return granted_rewards
 
-    async def __get_granted_currencies(
+    async def __create_quest_rewards(
+        self,
+        quest_proto: QuestProto,
+        server_id: int,
+        user_id: int
+    ) -> AsyncGenerator[QuestRewardBase]:
+        async for granted_currency in self.__create_currency_rewards(quest_proto):
+            yield granted_currency
+
+        async for granted_badge in self.__create_badge_rewards(quest_proto):
+            yield granted_badge
+
+        if factory := self.__quest_reward_factories.get(quest_proto.identifier.code):
+            for quest_reward in await factory.create_quest_rewards(
+                quest_proto.identifier.code,
+                server_id,
+                user_id
+            ):
+                yield quest_reward
+
+    async def __create_currency_rewards(
         self,
         quest_proto: QuestProto
-    ) -> Sequence[CurrencyQuestReward]:
-        granted_currencies = list[CurrencyQuestReward]()
+    ) -> AsyncGenerator[CurrencyQuestReward]:
         rewards = (
             (quest_proto.reward_currency_id_1, quest_proto.reward_currency_count_1),
             (quest_proto.reward_currency_id_2, quest_proto.reward_currency_count_2)
@@ -313,20 +331,17 @@ class QuestManager(IQuestManager):
             if not currency:
                 continue
 
-            granted_currencies.append(CurrencyQuestReward(
+            yield CurrencyQuestReward(
                 currency_id=currency_id,
                 emoji_id=currency.emoji_id,
                 emoji_name=currency.emoji_name,
                 count=currency_count
-            ))
+            )
 
-        return granted_currencies
-
-    async def __get_granted_badges(
+    async def __create_badge_rewards(
         self,
         quest_proto: QuestProto
-    ) -> Sequence[BadgeQuestReward]:
-        granted_badges = list[BadgeQuestReward]()
+    ) -> AsyncGenerator[BadgeQuestReward]:
         rewards = (
             (quest_proto.reward_badge_sid_1, quest_proto.reward_badge_id_1),
         )
@@ -342,58 +357,79 @@ class QuestManager(IQuestManager):
             if not badge_name:
                 continue
 
-            granted_badges.append(BadgeQuestReward(
+            yield BadgeQuestReward(
                 count=1,
                 badge_id=typed_badge_id,
                 name=badge_name
-            ))
+            )
 
-        return granted_badges
-
-    async def __grant_currencies(
+    async def __try_grant_reward(
         self,
+        quest_reward: QuestRewardBase,
         server_id: int,
         user_id: int,
-        currencies: Iterable[CurrencyQuestReward]
-    ) -> None:
-        for currency in currencies:
-            if currency.count <= 0:
-                continue
+        quest_proto_id: QuestProtoId
+    ) -> bool:
+        if quest_reward.count <= 0:
+            return False
+        if isinstance(quest_reward, CurrencyQuestReward):
+            return await self.__try_grant_currency(quest_reward, server_id, user_id)
+        if isinstance(quest_reward, BadgeQuestReward):
+            return await self.__try_grant_badge(quest_reward, user_id)
 
-            wallet_id = WalletId(
-                user_id=user_id,
-                currency_id=currency.currency_id,
-                server_id=server_id
-            )
-            wallet = await self.__wallet_repository.get(wallet_id)
-            if wallet:
-                wallet.amount += currency.count
-                await self.__wallet_repository.update(wallet)
-            else:
-                wallet = Wallet(
-                    identifier=wallet_id,
-                    amount=currency.count
-                )
-                await self.__wallet_repository.add(wallet)
+        self.__logger.warning(
+            "Failed to grant an unknown quest item",
+            server_id=server_id,
+            user_id=user_id,
+            quest_reward_type=type(quest_reward).__name__,
+            quest_proto_id=str(quest_proto_id)
+        )
 
-    async def __grant_badges(
+        return False
+
+    async def __try_grant_currency(
         self,
-        user_id: int,
-        badges: Iterable[BadgeQuestReward]
-    ) -> None:
-        for badge in badges:
-            user_badge_id = UserBadgeId(
-                user_id=user_id,
-                server_id=badge.badge_id.server_id,
-                badge_id=badge.badge_id.badge_id
+        quest_reward: CurrencyQuestReward,
+        server_id: int,
+        user_id: int
+    ) -> bool:
+        wallet_id = WalletId(
+            user_id=user_id,
+            currency_id=quest_reward.currency_id,
+            server_id=server_id
+        )
+        wallet = await self.__wallet_repository.get(wallet_id)
+        if wallet:
+            wallet.amount += quest_reward.count
+            await self.__wallet_repository.update(wallet)
+        else:
+            wallet = Wallet(
+                identifier=wallet_id,
+                amount=quest_reward.count
             )
-            user_badge = await self.__user_badge_repository.get(user_badge_id)
-            if user_badge:
-                # Already acquired
-                continue
+            await self.__wallet_repository.add(wallet)
 
-            user_badge = UserBadge(
-                identifier=user_badge_id,
-                unlocked_at=utcnow()
-            )
-            await self.__user_badge_repository.add(user_badge)
+        return True
+
+    async def __try_grant_badge(
+        self,
+        quest_reward: BadgeQuestReward,
+        user_id: int
+    ) -> bool:
+        user_badge_id = UserBadgeId(
+            user_id=user_id,
+            server_id=quest_reward.badge_id.server_id,
+            badge_id=quest_reward.badge_id.badge_id
+        )
+        user_badge = await self.__user_badge_repository.get(user_badge_id)
+        if user_badge:
+            # Already acquired
+            return True
+
+        user_badge = UserBadge(
+            identifier=user_badge_id,
+            unlocked_at=utcnow()
+        )
+        await self.__user_badge_repository.add(user_badge)
+
+        return True

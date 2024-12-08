@@ -1,1 +1,2 @@
-from .json_serializer import deserialize
+from .json_serializer import JsonSerializer, deserialize
+from .json_type_hierarchy_root import json_type_hierarchy_root

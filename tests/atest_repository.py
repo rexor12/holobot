@@ -15,7 +15,7 @@ from holobot.framework.database.database_options import DatabaseOptions
 from holobot.framework.database.unit_of_work_provider import UnitOfWorkProvider
 from holobot.sdk.configs import IOptions
 from holobot.sdk.utils.datetime_utils import utcnow
-from tests.machinery import TestLoggerFactory
+from tests.machinery.fakes import FakeLoggerFactory
 
 USER_ID = 401490060156862466
 SERVER_ID = 999259836439081030
@@ -137,7 +137,7 @@ async def main():
 event_loop = asyncio.get_event_loop()
 task: Awaitable[None] | None = None
 try:
-    logger_factory = TestLoggerFactory()
+    logger_factory = FakeLoggerFactory()
     database_manager = DatabaseManager(
         TestOptionsProvider(),
         logger_factory,

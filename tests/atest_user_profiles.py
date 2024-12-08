@@ -9,7 +9,7 @@ from holobot.extensions.general.options import UserProfileOptions
 from holobot.extensions.general.providers import IReputationDataProvider
 from holobot.extensions.general.sdk.badges.models import BadgeId
 from holobot.sdk.configs import IOptions
-from tests.machinery import TestEnvironment, TestI18nProvider, TestLoggerFactory
+from tests.machinery.fakes import FakeEnvironment, FakeI18nProvider, FakeLoggerFactory
 
 class TestOptionsProvider(IOptions[UserProfileOptions]):
     @property
@@ -46,9 +46,9 @@ class TestReputationDataProvider(IReputationDataProvider):
         raise NotImplementedError
 
 # Set up test environment
-environment = TestEnvironment()
-i18n_provider = TestI18nProvider()
-logger_factory = TestLoggerFactory()
+environment = FakeEnvironment()
+i18n_provider = FakeI18nProvider()
+logger_factory = FakeLoggerFactory()
 options = TestOptionsProvider()
 factory = UserProfileFactory(
     environment=environment,

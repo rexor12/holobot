@@ -1,3 +1,4 @@
+from .backgrounds_migration import BackgroundsMigration
 from .badge_migration import BadgeMigration
 from .channel_timer_migration import ChannelTimerMigration
 from .currencies_migration import CurrenciesMigration

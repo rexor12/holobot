@@ -155,7 +155,7 @@
             "get_daily_reward_workflow": {
                 "daily_reward_disabled": "Pray, forgive me, but the daily reward is disabled.",
                 "invalid_quest_id": "Pray, forgive me, but this feature is temporarily unavailable.",
-                "cooldown_error": "I've provided you with a bountiful harvest already. I'll be able to give you more in {cooldown}."
+                "cooldown_error": "I've provided you with a bountiful harvest already. I'll be able to give you more at <t:{reset_at}:t>."
             },
             "gift_money_workflow": {
                 "cannot_gift_to_self_error": "Silly, why would you want me to give you your own gifts?",

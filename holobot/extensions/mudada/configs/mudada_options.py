@@ -10,17 +10,17 @@ class MudadaOptions(OptionsDefinition):
     MudadaServerId: int = 0
     """The identifier of the Mudada server."""
 
-    MudaeUserId: str = ""
+    MudaeUserId: int = 0
     """The identifier of the Mudae user."""
 
     MuderaCurrencyCode: str = "MUDERATEST"
     """The code of the currency Kakera can be exchanged for and vice-versa."""
 
-    KakeraExchangeChannelIds: set[str] = field(default_factory=set)
+    KakeraExchangeChannelIds: set[int] = field(default_factory=set)
     """The identifiers of the channels
     where event Kakera can be exchanged for Mudera."""
 
-    MuderaExchangeChannelIds: set[str] = field(default_factory=set)
+    MuderaExchangeChannelIds: set[int] = field(default_factory=set)
     """The identifiers of the channels
     where Mudera can be exchanged for regular Kakera."""
 

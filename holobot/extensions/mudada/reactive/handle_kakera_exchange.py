@@ -83,7 +83,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
         if (
             not (target_user_id := match.group("user_id2"))
             or not (source_user_id := match.group("user_id"))
-            or target_user_id != self.__user_data_provider.get_self().user_id
+            or int(target_user_id) != self.__user_data_provider.get_self().user_id
         ):
             return
 
@@ -156,7 +156,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
         # Trading but not with Holo
         if (
             not (target_user_id := match.group("user_id"))
-            or target_user_id != self.__user_data_provider.get_self().user_id
+            or int(target_user_id) != self.__user_data_provider.get_self().user_id
         ):
             return
 

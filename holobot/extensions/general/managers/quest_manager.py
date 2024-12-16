@@ -2,14 +2,16 @@ from collections.abc import AsyncGenerator, Awaitable, Sequence
 from datetime import timedelta
 
 from holobot.extensions.general.enums import QuestResetType
-from holobot.extensions.general.models import Quest, QuestProto, UserBadge, Wallet
+from holobot.extensions.general.models import Quest, QuestProto
+from holobot.extensions.general.models.items import BadgeItem, CurrencyItem, UserItem
 from holobot.extensions.general.repositories import (
     IBadgeRepository, ICurrencyRepository, IQuestProtoRepository, IQuestRepository,
-    IUserBadgeRepository, IWalletRepository
+    IUserItemRepository
 )
 from holobot.extensions.general.sdk import IQuestRewardFactory
-from holobot.extensions.general.sdk.badges.models import UserBadgeId
-from holobot.extensions.general.sdk.badges.models.badge_id import BadgeId
+from holobot.extensions.general.sdk.badges.models import BadgeId
+from holobot.extensions.general.sdk.items.exceptions import InvalidItemTypeException
+from holobot.extensions.general.sdk.items.models import UserItemId
 from holobot.extensions.general.sdk.quests.dtos import QuestRewardDescriptor
 from holobot.extensions.general.sdk.quests.enums import QuestStatus
 from holobot.extensions.general.sdk.quests.exceptions import (
@@ -18,12 +20,14 @@ from holobot.extensions.general.sdk.quests.exceptions import (
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import (
-    BadgeQuestReward, CurrencyQuestReward, IQuest, QuestId, QuestProtoId, QuestRewardBase
+    BackgroundQuestReward, BadgeQuestReward, CurrencyQuestReward, IQuest, QuestId, QuestProtoId,
+    QuestRewardBase
 )
-from holobot.extensions.general.sdk.wallets.models import WalletId
+from holobot.sdk.chrono import IClock
+from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
-from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc, utcnow
+from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc
 from holobot.sdk.utils.iterable_utils import multi_to_dict
 
 @injectable(IQuestManager)
@@ -31,22 +35,24 @@ class QuestManager(IQuestManager):
     def __init__(
         self,
         badge_repository: IBadgeRepository,
+        clock: IClock,
         currency_repository: ICurrencyRepository,
+        holoflake_provider: IHoloflakeProvider,
         logger_factory: ILoggerFactory,
         quest_proto_repository: IQuestProtoRepository,
         quest_repository: IQuestRepository,
         quest_reward_factories: tuple[IQuestRewardFactory, ...],
-        user_badge_repository: IUserBadgeRepository,
-        wallet_repository: IWalletRepository
+        user_item_repository: IUserItemRepository
     ) -> None:
         super().__init__()
         self.__badge_repository = badge_repository
+        self.__clock = clock
         self.__currency_repository = currency_repository
+        self.__holoflake_provider = holoflake_provider
         self.__logger = logger_factory.create(QuestManager)
         self.__quest_proto_repository = quest_proto_repository
         self.__quest_repository = quest_repository
-        self.__user_badge_repository = user_badge_repository
-        self.__wallet_repository = wallet_repository
+        self.__user_item_repository = user_item_repository
         # TODO IQuestRewardFactory per server, not just code!
         self.__quest_reward_factories = multi_to_dict(
             quest_reward_factories,
@@ -67,7 +73,7 @@ class QuestManager(IQuestManager):
             if not quest.completed_at:
                 return quest
 
-        availability, cooldown = QuestManager.__get_quest_status(quest_proto, quest)
+        availability, cooldown = self.__get_quest_status(quest_proto, quest)
         if availability == QuestStatus.ON_COOLDOWN:
             # cooldown must be non-None if the quest is on cooldown.
             assert cooldown
@@ -106,7 +112,7 @@ class QuestManager(IQuestManager):
         if not quest_proto:
             raise InvalidQuestException(quest_proto_id, "This quest prototype doesn't exist.")
 
-        now = utcnow()
+        now = self.__clock.now_utc()
         if (
             (quest_proto.valid_from is not None and now < quest_proto.valid_from)
             or (quest_proto.valid_to is not None and now > quest_proto.valid_to)
@@ -149,7 +155,7 @@ class QuestManager(IQuestManager):
             return QuestStatus.MISSING
 
         quest = await self.__get_quest(server_id, user_id, quest_proto_id)
-        status, _ = QuestManager.__get_quest_status(quest_proto, quest)
+        status, _ = self.__get_quest_status(quest_proto, quest)
 
         return status
 
@@ -166,8 +172,8 @@ class QuestManager(IQuestManager):
             and quest.objective_count_2 >= quest_proto.objective_count_2
         )
 
-    @staticmethod
     def __get_quest_status(
+        self,
         quest_proto: QuestProto,
         quest: Quest | None
     ) -> tuple[QuestStatus, timedelta | None]:
@@ -190,7 +196,7 @@ class QuestManager(IQuestManager):
             return (QuestStatus.COMPLETED, None)
 
         # The quest has expired already or is not available yet.
-        now = utcnow()
+        now = self.__clock.now_utc()
         if (
             (quest_proto.valid_from is not None and now < quest_proto.valid_from)
             or (quest_proto.valid_to is not None and now > quest_proto.valid_to)
@@ -202,7 +208,7 @@ class QuestManager(IQuestManager):
                 if quest_proto.reset_time is None:
                     return (QuestStatus.UNAVAILABLE, None)
 
-                elapsed_time = utcnow() - quest.completed_at
+                elapsed_time = self.__clock.now_utc() - quest.completed_at
                 return (
                     (
                         QuestStatus.AVAILABLE
@@ -223,7 +229,7 @@ class QuestManager(IQuestManager):
                         if quest.completed_at < last_reset_time
                         else QuestStatus.ON_COOLDOWN
                     ),
-                    next_reset_time - utcnow()
+                    next_reset_time - self.__clock.now_utc()
                 )
             case QuestResetType.WEEKLY_AT:
                 if quest_proto.reset_time is None:
@@ -237,7 +243,7 @@ class QuestManager(IQuestManager):
                         if quest.completed_at < last_reset_time
                         else QuestStatus.ON_COOLDOWN
                     ),
-                    next_reset_time - utcnow()
+                    next_reset_time - self.__clock.now_utc()
                 )
             case QuestResetType.MONTHLY_AT:
                 if quest_proto.reset_time is None:
@@ -376,6 +382,8 @@ class QuestManager(IQuestManager):
             return await self.__try_grant_currency(quest_reward, server_id, user_id)
         if isinstance(quest_reward, BadgeQuestReward):
             return await self.__try_grant_badge(quest_reward, user_id)
+        if isinstance(quest_reward, BackgroundQuestReward):
+            return await self.__try_grant_background(quest_reward, user_id)
 
         self.__logger.warning(
             "Failed to grant an unknown quest item",
@@ -393,21 +401,29 @@ class QuestManager(IQuestManager):
         server_id: int,
         user_id: int
     ) -> bool:
-        wallet_id = WalletId(
-            user_id=user_id,
-            currency_id=quest_reward.currency_id,
-            server_id=server_id
+        user_item = await self.__user_item_repository.get_wallet(
+            user_id,
+            server_id,
+            quest_reward.currency_id
         )
-        wallet = await self.__wallet_repository.get(wallet_id)
-        if wallet:
-            wallet.amount += quest_reward.count
-            await self.__wallet_repository.update(wallet)
+        if user_item:
+            if not isinstance(user_item.item, CurrencyItem):
+                raise InvalidItemTypeException(user_id, server_id, quest_reward.currency_id)
+
+            user_item.item.count += quest_reward.count
+            await self.__user_item_repository.update(user_item)
         else:
-            wallet = Wallet(
-                identifier=wallet_id,
-                amount=quest_reward.count
-            )
-            await self.__wallet_repository.add(wallet)
+            await self.__user_item_repository.add(UserItem(
+                identifier=UserItemId(
+                    server_id=server_id,
+                    user_id=user_id,
+                    serial_id=self.__holoflake_provider.get_next_id()
+                ),
+                item=CurrencyItem(
+                    count=quest_reward.count,
+                    currency_id=quest_reward.currency_id
+                )
+            ))
 
         return True
 
@@ -416,20 +432,35 @@ class QuestManager(IQuestManager):
         quest_reward: BadgeQuestReward,
         user_id: int
     ) -> bool:
-        user_badge_id = UserBadgeId(
-            user_id=user_id,
-            server_id=quest_reward.badge_id.server_id,
-            badge_id=quest_reward.badge_id.badge_id
+        has_badge_already = await self.__user_item_repository.badge_exists(
+            quest_reward.badge_id.server_id,
+            user_id,
+            quest_reward.badge_id.badge_id
         )
-        user_badge = await self.__user_badge_repository.get(user_badge_id)
-        if user_badge:
+        if has_badge_already:
             # Already acquired
             return True
 
-        user_badge = UserBadge(
-            identifier=user_badge_id,
-            unlocked_at=utcnow()
+        user_item = UserItem(
+            identifier=UserItemId(
+                server_id=quest_reward.badge_id.server_id,
+                user_id=user_id,
+                serial_id=self.__holoflake_provider.get_next_id()
+            ),
+            item=BadgeItem(
+                count=1,
+                badge_id=quest_reward.badge_id,
+                unlocked_at=self.__clock.now_utc()
+            )
         )
-        await self.__user_badge_repository.add(user_badge)
+
+        await self.__user_item_repository.add(user_item)
 
         return True
+
+    async def __try_grant_background(
+        self,
+        quest_reward: BackgroundQuestReward,
+        user_id: int
+    ) -> bool:
+        raise NotImplementedError

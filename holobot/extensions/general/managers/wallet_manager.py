@@ -1,75 +1,79 @@
-from holobot.extensions.general.models import Wallet
-from holobot.extensions.general.repositories import ICurrencyRepository, IWalletRepository
+from holobot.extensions.general.models.items import CurrencyItem, UserItem
+from holobot.extensions.general.repositories import ICurrencyRepository, IUserItemRepository
+from holobot.extensions.general.sdk.items.exceptions import InvalidItemTypeException
+from holobot.extensions.general.sdk.items.models import UserItemId
 from holobot.extensions.general.sdk.wallets.exceptions import (
     CurrencyNotFoundException, NotEnoughMoneyException, WalletNotFoundException
 )
 from holobot.extensions.general.sdk.wallets.managers import IWalletManager
-from holobot.extensions.general.sdk.wallets.models import WalletId
+from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
-
-_GLOBAL_SERVER_ID = 0
 
 @injectable(IWalletManager)
 class WalletManager(IWalletManager):
     def __init__(
         self,
         currency_repository: ICurrencyRepository,
-        wallet_repository: IWalletRepository
+        holoflake_provider: IHoloflakeProvider,
+        user_item_repository: IUserItemRepository
     ) -> None:
         super().__init__()
         self.__currency_repository = currency_repository
-        self.__wallet_repository = wallet_repository
+        self.__holoflake_provider = holoflake_provider
+        self.__user_item_repository = user_item_repository
 
     async def give_money(
         self,
         user_id: int,
         currency_id: int,
-        server_id: int | None,
+        server_id: int,
         amount: int
     ) -> None:
-        wallet_id = WalletId(
-            user_id=user_id,
-            currency_id=currency_id,
-            server_id=server_id or _GLOBAL_SERVER_ID
-        )
-        currency_item = await self.__currency_repository.try_get_by_server(currency_id, wallet_id.server_id, True)
+        currency_item = await self.__currency_repository.try_get_by_server(currency_id, server_id, True)
         if not currency_item:
             raise CurrencyNotFoundException(currency_id, server_id)
 
-        wallet = await self.__wallet_repository.get(wallet_id)
+        wallet = await self.__user_item_repository.get_wallet(user_id, server_id, currency_id)
         if wallet:
-            wallet.amount += amount
-            await self.__wallet_repository.update(wallet)
+            if not isinstance(wallet.item, CurrencyItem):
+                raise InvalidItemTypeException(user_id, server_id, currency_id)
+
+            wallet.item.count += amount
+            await self.__user_item_repository.update(wallet)
         else:
-            wallet = Wallet(
-                identifier=wallet_id,
-                amount=amount
-            )
-            await self.__wallet_repository.add(wallet)
+            await self.__user_item_repository.add(UserItem(
+                identifier=UserItemId(
+                    server_id=server_id,
+                    user_id=user_id,
+                    serial_id=self.__holoflake_provider.get_next_id()
+                ),
+                item=CurrencyItem(
+                    count=amount,
+                    currency_id=currency_id
+                )
+            ))
 
     async def take_money(
         self,
         user_id: int,
         currency_id: int,
-        server_id: int | None,
+        server_id: int,
         amount: int,
         allow_take_less: bool
     ) -> None:
-        wallet_id = WalletId(
-            user_id=user_id,
-            currency_id=currency_id,
-            server_id=server_id or _GLOBAL_SERVER_ID
-        )
-        currency_item = await self.__currency_repository.try_get_by_server(currency_id, wallet_id.server_id, True)
+        currency_item = await self.__currency_repository.try_get_by_server(currency_id, server_id, True)
         if not currency_item:
             raise CurrencyNotFoundException(currency_id, server_id)
 
-        wallet = await self.__wallet_repository.get(wallet_id)
+        wallet = await self.__user_item_repository.get_wallet(user_id, server_id, currency_id)
         if not wallet:
-            raise WalletNotFoundException(wallet_id)
+            raise WalletNotFoundException(user_id, server_id, currency_id)
 
-        if not allow_take_less and wallet.amount < amount:
-            raise NotEnoughMoneyException(wallet_id)
+        if not isinstance(wallet.item, CurrencyItem):
+            raise InvalidItemTypeException(user_id, server_id, currency_id)
 
-        wallet.amount = max(wallet.amount - amount, 0)
-        await self.__wallet_repository.update(wallet)
+        if not allow_take_less and wallet.item.count < amount:
+            raise NotEnoughMoneyException(user_id, server_id, currency_id)
+
+        wallet.item.count = max(wallet.item.count - amount, 0)
+        await self.__user_item_repository.update(wallet)

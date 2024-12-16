@@ -423,7 +423,7 @@
                     "Color": "#e6cc80"
                 }
             ],
-            "CustomBackgroundsPath": "resources/images/user_profiles/custom_backgrounds",
+            "CustomBackgroundsPath": "resources/images/user_profiles/custom_backgrounds/*.png",
             "CustomBackgrounds": [
                 {
                     "Code": "1",

@@ -6,6 +6,3 @@ from .marriage import Marriage
 from .quest import Quest
 from .quest_proto import QuestProto
 from .ranking_info import RankingInfo
-from .user_badge import UserBadge
-from .wallet import Wallet
-from .wallet_with_details_dto import WalletWithDetailsDto

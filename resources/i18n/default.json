@@ -133,12 +133,6 @@
                 "currency_created_successfully": "I have just introduced the new currency **{name}** <:{emoji_name}:{emoji_id}>.",
                 "view_currencies_button": "View all"
             },
-            "custom_background_names": {
-                "1": "Town of Beginnings",
-                "2": "Midnight Street",
-                "3": "Rising Shadow",
-                "4": "Feral Battle"
-            },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",

@@ -41,6 +41,7 @@ _ESCAPE_CHARACTERS = {
     '\t': r'\t'
 }
 
+# TODO Support the (de)serialization of generic types (eg. class MyDataClass(Generic[T]))
 class JsonSerializer(IJsonSerializerInternal):
     def __init__(
         self,
@@ -215,7 +216,7 @@ class JsonSerializer(IJsonSerializerInternal):
             buffer.write(str(obj))
             return
         elif isinstance(obj, datetime):
-            buffer.write(obj.isoformat())
+            JsonSerializer.__serialize_string(buffer, obj.isoformat())
             return
         elif is_dataclass(obj):
             self.__serialize_dataclass(buffer, obj)

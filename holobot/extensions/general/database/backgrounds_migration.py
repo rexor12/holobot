@@ -20,7 +20,8 @@ class BackgroundsMigration(MigrationBase):
             " id SERIAL PRIMARY KEY,\n"
             " created_at TIMESTAMP DEFAULT NOW(),\n"
             " code VARCHAR(20) DEFAULT NULL,\n"
-            " name VARCHAR(60) NOT NULL\n"
+            " name VARCHAR(60) NOT NULL,\n"
+            " hide_unowned BOOLEAN NOT NULL DEFAULT true\n"
             ")"
         )
 

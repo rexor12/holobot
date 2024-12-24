@@ -13,7 +13,7 @@ from holobot.discord.sdk.workflows.interactables.enums import MenuType
 from holobot.discord.workflows.builders import (
     CommandBuilder, CommandGroupBuilder, CommandSubGroupBuilder
 )
-from holobot.sdk.diagnostics import DebuggerInterface
+from holobot.sdk.diagnostics import IDebugger
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
@@ -36,7 +36,7 @@ class WorkflowRegistry(IWorkflowRegistry):
     def __init__(
         self,
         authorization_data_provider: IAuthorizationDataProvider,
-        debugger: DebuggerInterface,
+        debugger: IDebugger,
         logger_factory: ILoggerFactory,
         workflows: tuple[IWorkflow, ...]
     ) -> None:
@@ -175,7 +175,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         command_groups: TGroup,
         workflow: IWorkflow,
         command: Command,
-        debugger: DebuggerInterface
+        debugger: IDebugger
     ) -> None:
         group_name = command.group_name or ""
         subgroup_name = command.subgroup_name or ""
@@ -198,7 +198,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         autocomplete_groups: TAutocompleteGroupMap,
         workflow: IWorkflow,
         autocomplete: Autocomplete,
-        debugger: DebuggerInterface
+        debugger: IDebugger
     ) -> None:
         group_name = autocomplete.group_name or ""
         subgroup_name = autocomplete.subgroup_name or ""
@@ -229,7 +229,7 @@ class WorkflowRegistry(IWorkflowRegistry):
     def __initialize_groups(
         self,
         workflows: tuple[IWorkflow, ...],
-        debugger: DebuggerInterface
+        debugger: IDebugger
     ) -> None:
         commands: TGroup = {}
         components: dict[str, tuple[IWorkflow, Component]] = {}

@@ -15,8 +15,8 @@ class UserProfile(AggregateRoot[int]):
     reputation_points: int = 0
     """The number of reputation points the user has."""
 
-    background_image_code: str | None = None
-    """The code of the background image set for the user's profile."""
+    background_image_id: int | None = None
+    """The identifier of the background image set for the user's profile."""
 
     show_badges: bool = True
     """Whether the badges should be displayed on the user's profile."""

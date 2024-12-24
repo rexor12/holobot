@@ -559,9 +559,10 @@
             },
             "view_profile_backgrounds_workflow": {
                 "no_available_backgrounds_error": "Pray, forgive me, there are no available backgrounds at this time. Please, check back later.",
+                "invalid_background_error": "Pray, forgive me, for a background you have unlocked is invalid.\n(This error has been reported to the bot's owner automatically.)",
                 "profile_not_found_error": "Alas, it seems you haven't received any reputation points <:reputation:1228232389264674879>, yet. Get at least one reputation point <:reputation:1228232389264674879> and try again.",
                 "embed_title": "Background preview",
-                "embed_description": "**Name:** {name}\n**Required reputation:** {required_reputation}<:reputation:1228232389264674879>\n**Unlocked:** {is_unlocked}",
+                "embed_description": "**Name:** {name}",
                 "apply_background_button": "Set as background",
                 "background_locked_error": "Alas, it seems you don't have enough reputation points <:reputation:1228232389264674879> to use this background, yet. You still need another **{required_points:,}** <:reputation:1228232389264674879>.",
                 "updated_successfully": "I've updated your preferences; **{background_name}** is now your new profile background."

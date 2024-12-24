@@ -2,11 +2,39 @@ from collections.abc import Awaitable
 from typing import Protocol
 
 from holobot.extensions.general.models.items import UserItem, WalletWithDetailsDto
+from holobot.extensions.general.models.user_profiles import UserProfileBackgroundInfo
 from holobot.extensions.general.sdk.items.models import UserItemId
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
 
 class IUserItemRepository(IRepository[UserItemId, UserItem], Protocol):
+    #region Backgrounds
+
+    def paginate_backgrounds(
+        self,
+        user_id: int,
+        page_index: int,
+        page_size: int
+    ) -> Awaitable[PaginationResult[UserItem]]:
+        ...
+
+    def background_exists(
+        self,
+        user_id: int,
+        background_id: int
+    ) -> Awaitable[bool]:
+        ...
+
+    def paginate_background_infos(
+        self,
+        user_id: int,
+        page_index: int,
+        page_size: int
+    ) -> Awaitable[PaginationResult[UserProfileBackgroundInfo]]:
+        ...
+
+    #endregion
+
     #region Badges
 
     def paginate_badges(

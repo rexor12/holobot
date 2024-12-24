@@ -13,8 +13,16 @@ class UserProfilesMigration(MigrationBase):
                 MigrationPlan(1, self.__initialize_table),
                 MigrationPlan(2, self.__upgrade_to_v1),
                 MigrationPlan(3, self.__upgrade_to_v2),
-                MigrationPlan(202411071725, self.__upgrade_to_v3)
+                MigrationPlan(202411071725, self.__upgrade_to_v3),
+                MigrationPlan(202412211203, self.__upgrade_to_v4)
             ]
+        )
+
+    async def __upgrade_to_v4(self, connection: Connection) -> None:
+        await connection.execute(
+            f"ALTER TABLE {self.table_name}\n"
+            "DROP COLUMN background_image_code,\n"
+            "ADD COLUMN background_image_id BIGINT DEFAULT NULL"
         )
 
     async def __upgrade_to_v3(self, connection: Connection) -> None:

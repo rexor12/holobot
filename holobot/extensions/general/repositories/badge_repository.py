@@ -41,7 +41,7 @@ class BadgeRepository(
         async with (session := await self._get_session()):
             query = (Query
                 .select()
-                .columns("name", "emoji_name", "emoji_id")
+                .columns("name")
                 .from_table(self.table_name)
                 .where()
                 .fields(

@@ -5,12 +5,12 @@ from holobot.sdk.database.migration.models import MigrationPlan
 from holobot.sdk.ioc.decorators import injectable
 
 @injectable(IMigration)
-class BackgroundsMigration(MigrationBase):
+class UserProfileBackgroundsMigration(MigrationBase):
     def __init__(self) -> None:
         super().__init__(
-            "backgrounds",
+            "user_profile_backgrounds",
             (
-                MigrationPlan(202411131200, self.__initialize_table),
+                MigrationPlan(202412211204, self.__initialize_table),
             )
         )
 
@@ -19,9 +19,8 @@ class BackgroundsMigration(MigrationBase):
             f"CREATE TABLE {self.table_name} (\n"
             " id SERIAL PRIMARY KEY,\n"
             " created_at TIMESTAMP DEFAULT NOW(),\n"
-            " code VARCHAR(20) DEFAULT NULL,\n"
-            " name VARCHAR(60) NOT NULL,\n"
-            " hide_unowned BOOLEAN NOT NULL DEFAULT true\n"
+            " code VARCHAR(20) NOT NULL,\n"
+            " name VARCHAR(60) NOT NULL"
             ")"
         )
 

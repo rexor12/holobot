@@ -1,14 +1,14 @@
 import logging
 
 from holobot.sdk.configs import IOptions
-from holobot.sdk.integration import IntegrationInterface
+from holobot.sdk.integration import IIntegration
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from .bot import BotServiceInterface
 from .discord_options import DiscordOptions
 
-@injectable(IntegrationInterface)
-class Integration(IntegrationInterface):
+@injectable(IIntegration)
+class Integration(IIntegration):
     def __init__(
         self,
         bot: BotServiceInterface,

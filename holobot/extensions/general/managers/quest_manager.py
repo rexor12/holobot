@@ -1,9 +1,12 @@
 from collections.abc import AsyncGenerator, Awaitable, Sequence
 from datetime import timedelta
+from typing import cast
 
 from holobot.extensions.general.enums import QuestResetType
 from holobot.extensions.general.models import Quest, QuestProto
-from holobot.extensions.general.models.items import BadgeItem, CurrencyItem, UserItem
+from holobot.extensions.general.models.items import (
+    BackgroundItem, BadgeItem, CurrencyItem, UserItem
+)
 from holobot.extensions.general.repositories import (
     IBadgeRepository, ICurrencyRepository, IQuestProtoRepository, IQuestRepository,
     IUserItemRepository
@@ -14,6 +17,9 @@ from holobot.extensions.general.sdk.items.exceptions import InvalidItemTypeExcep
 from holobot.extensions.general.sdk.items.models import UserItemId
 from holobot.extensions.general.sdk.quests.dtos import QuestRewardDescriptor
 from holobot.extensions.general.sdk.quests.enums import QuestStatus
+from holobot.extensions.general.sdk.quests.events import (
+    IQuestCompleteEventHandler, IQuestEventHandler
+)
 from holobot.extensions.general.sdk.quests.exceptions import (
     InvalidQuestException, QuestCompletedAlreadyException, QuestNotStartedException,
     QuestOnCooldownException, QuestStillInProgressException, QuestUnavailableException
@@ -28,7 +34,7 @@ from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc
-from holobot.sdk.utils.iterable_utils import multi_to_dict
+from holobot.sdk.utils.iterable_utils import group_by_types, multi_to_dict
 
 @injectable(IQuestManager)
 class QuestManager(IQuestManager):
@@ -39,6 +45,7 @@ class QuestManager(IQuestManager):
         currency_repository: ICurrencyRepository,
         holoflake_provider: IHoloflakeProvider,
         logger_factory: ILoggerFactory,
+        quest_event_handlers: tuple[IQuestEventHandler, ...],
         quest_proto_repository: IQuestProtoRepository,
         quest_repository: IQuestRepository,
         quest_reward_factories: tuple[IQuestRewardFactory, ...],
@@ -50,6 +57,10 @@ class QuestManager(IQuestManager):
         self.__currency_repository = currency_repository
         self.__holoflake_provider = holoflake_provider
         self.__logger = logger_factory.create(QuestManager)
+        self.__quest_event_handlers = group_by_types(
+            quest_event_handlers,
+            (IQuestCompleteEventHandler,)
+        )
         self.__quest_proto_repository = quest_proto_repository
         self.__quest_repository = quest_repository
         self.__user_item_repository = user_item_repository
@@ -133,6 +144,14 @@ class QuestManager(IQuestManager):
         quest.repeat_count = quest.repeat_count + 1 if quest.repeat_count is not None else 1
         await self.__quest_repository.update(quest)
         granted_items = await self.__grant_rewards(quest.identifier.server_id, user_id, quest_proto)
+
+        for handler in self.__quest_event_handlers[IQuestCompleteEventHandler]:
+            if quest_proto_id in handler.relevant_quests:
+                await cast(IQuestCompleteEventHandler, handler).on_quest_complete(
+                    quest,
+                    server_id,
+                    user_id
+                )
 
         return QuestRewardDescriptor(
             quest_proto_id=quest_proto_id,
@@ -463,4 +482,26 @@ class QuestManager(IQuestManager):
         quest_reward: BackgroundQuestReward,
         user_id: int
     ) -> bool:
-        raise NotImplementedError
+        has_background_already = await self.__user_item_repository.background_exists(
+            user_id,
+            quest_reward.background_id
+        )
+        if has_background_already:
+            # Already acquired
+            return True
+
+        user_item = UserItem(
+            identifier=UserItemId(
+                server_id=quest_reward.background_id,
+                user_id=user_id,
+                serial_id=self.__holoflake_provider.get_next_id()
+            ),
+            item=BackgroundItem(
+                count=1,
+                background_id=quest_reward.background_id
+            )
+        )
+
+        await self.__user_item_repository.add(user_item)
+
+        return True

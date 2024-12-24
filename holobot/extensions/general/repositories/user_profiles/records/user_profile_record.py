@@ -8,7 +8,7 @@ from holobot.sdk.database.repositories import manually_generated_key
 class UserProfileRecord(Record):
     id: PrimaryKey[int]
     reputation_points: int
-    background_image_code: str | None
+    background_image_id: int | None
     show_badges: bool
     badge_sid1: int | None = None
     badge_id1: int | None = None

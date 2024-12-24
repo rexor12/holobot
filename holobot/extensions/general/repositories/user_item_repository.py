@@ -5,6 +5,7 @@ from holobot.extensions.general.enums import ItemType
 from holobot.extensions.general.models.items import (
     BackgroundItem, BadgeItem, CurrencyItem, ItemBase, UserItem, WalletWithDetailsDto
 )
+from holobot.extensions.general.models.user_profiles import UserProfileBackgroundInfo
 from holobot.extensions.general.repositories.records.items import (
     BackgroundItemStorageModel, BadgeItemStorageModel, CurrencyItemStorageModel,
     ItemStorageModelBase, UserItemRecord
@@ -103,6 +104,80 @@ class UserItemRepository(
         unit_of_work_provider: IUnitOfWorkProvider
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
+
+    #region Backgrounds
+
+    def paginate_backgrounds(
+        self,
+        user_id: int,
+        page_index: int,
+        page_size: int
+    ) -> Awaitable[PaginationResult[UserItem]]:
+        return self._paginate(
+            (("serial_id", Order.ASCENDING),),
+            page_index,
+            page_size,
+            lambda where: where.fields(
+                Connector.AND,
+                ("item_type", Equality.EQUAL, ItemType.BACKGROUND),
+                ("user_id", Equality.EQUAL, user_id)
+            )
+        )
+
+    def background_exists(
+        self,
+        user_id: int,
+        background_id: int
+    ) -> Awaitable[bool]:
+        return self._exists_by_filter(
+            lambda where: where.fields(
+                Connector.AND,
+                ("item_type", Equality.EQUAL, ItemType.BACKGROUND),
+                ("user_id", Equality.EQUAL, user_id),
+                ("item_id1", Equality.EQUAL, background_id)
+            )
+        )
+
+    async def paginate_background_infos(
+        self,
+        user_id: int,
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[UserProfileBackgroundInfo]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("ui.serial_id", "upb.code", "upb.name")
+                .from_table(self.table_name, "ui")
+                .join("user_profile_backgrounds", "ui.item_id1", "upb.id", "upb", "INNER")
+                .where()
+                .fields(
+                    Connector.AND,
+                    ("ui.item_type", Equality.EQUAL, ItemType.BACKGROUND),
+                    ("ui.user_id", Equality.EQUAL, user_id)
+                )
+            )
+
+            result = await query.paginate(
+                (("serial_id", Order.ASCENDING),),
+                page_index,
+                page_size
+            ).compile().fetch(session.connection)
+
+            return PaginationResult[UserProfileBackgroundInfo](
+                result.page_index,
+                result.page_size,
+                result.total_count,
+                [
+                    UserProfileBackgroundInfo(
+                        code=record["code"],
+                        name=record["name"]
+                    )
+                    for record in result.records
+                ]
+            )
+
+    #endregion
 
     #region Badges
 

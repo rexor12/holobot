@@ -1,5 +1,7 @@
+import glob
 import io
 import os
+import pathlib
 from dataclasses import dataclass, field
 
 from PIL import Image, ImageDraw, ImageFont
@@ -7,6 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 from holobot.extensions.general.models.user_profiles import UserProfile
 from holobot.extensions.general.options import UserProfileOptions
 from holobot.extensions.general.providers import IReputationDataProvider
+from holobot.extensions.general.repositories.user_profiles import IUserProfileBackgroundRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -47,18 +50,24 @@ class _AssetCollection:
 
 @injectable(IUserProfileFactory)
 class UserProfileFactory(IUserProfileFactory):
+    @property
+    def priority(self) -> int:
+        return 1000
+
     def __init__(
         self,
         environment: IEnvironment,
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
         options: IOptions[UserProfileOptions],
-        reputation_data_provider: IReputationDataProvider
+        reputation_data_provider: IReputationDataProvider,
+        user_profile_background_repository: IUserProfileBackgroundRepository
     ) -> None:
         super().__init__()
         self.__i18n = i18n_provider
         self.__logger = logger_factory.create(UserProfileFactory)
         self.__reputation_data_provider = reputation_data_provider
+        self.__user_profile_background_repository = user_profile_background_repository
         self.__assets = _AssetCollection(
             card_background=self.__load_image(environment, "card_background.png"),
             text_background=self.__load_image(environment, "text_background.png"),
@@ -76,18 +85,23 @@ class UserProfileFactory(IUserProfileFactory):
             custom_backgrounds=self.__load_custom_backgrounds(environment, options.value.CustomBackgroundsPath)
         )
 
-    def create_profile_image(
+    async def create_profile_image(
         self,
         user_name: str,
         user_profile: UserProfile,
         avatar: bytes | None,
         custom_background_code: str | None = None
     ) -> bytes:
+        background_code = (
+            custom_background_code
+            if custom_background_code
+            else await self.__try_get_background_code(user_profile.background_image_id)
+        )
         user_profile_image = self.__draw_user_profile_image(
             user_name,
             user_profile,
             Image.open(io.BytesIO(avatar)) if avatar is not None else None,
-            self.__get_background_image(custom_background_code or user_profile.background_image_code)
+            self.__get_background_image(background_code)
         )
         output_bytes_io = io.BytesIO()
         user_profile_image.save(output_bytes_io, format="PNG")
@@ -107,19 +121,36 @@ class UserProfileFactory(IUserProfileFactory):
     def __load_custom_backgrounds(
         self,
         environment: IEnvironment,
-        relative_path: str
+        relative_path_pattern: str
     ) -> dict[str, Image.Image]:
         custom_backgrounds = dict[str, Image.Image]()
-        directory_path = os.path.join(environment.root_path, relative_path)
-        for custom_background in self.__reputation_data_provider.get_custom_backgrounds():
-            asset_path = os.path.join(directory_path, custom_background.file_name)
+        absolute_path_pattern = os.path.join(environment.root_path, relative_path_pattern)
+        for asset_path in glob.glob(absolute_path_pattern):
             if not os.path.isfile(asset_path):
                 continue
 
-            self.__logger.debug("Loading custom background...", path=asset_path)
-            custom_backgrounds[custom_background.code] = Image.open(asset_path)
+            asset_code = pathlib.Path(asset_path).stem
+            if not asset_code:
+                self.__logger.warning(
+                    "Skipped unrecognizable custom background",
+                    path=asset_path
+                )
+                continue
+
+            self.__logger.debug("Loading custom background...", path=asset_path, code=asset_code)
+            custom_backgrounds[asset_code] = Image.open(asset_path)
+            self.__logger.debug("Loaded custom background", path=asset_path, code=asset_code)
 
         return custom_backgrounds
+
+    async def __try_get_background_code(
+        self,
+        background_id: int | None
+    ) -> str | None:
+        if not background_id:
+            return None
+
+        return await self.__user_profile_background_repository.get_code(background_id)
 
     def __get_background_image(
         self,

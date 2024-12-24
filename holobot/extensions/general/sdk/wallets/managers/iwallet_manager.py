@@ -6,7 +6,7 @@ class IWalletManager(Protocol):
         self,
         user_id: int,
         currency_id: int,
-        server_id: int | None,
+        server_id: int,
         amount: int
     ) -> Awaitable[None]:
         ...
@@ -15,7 +15,7 @@ class IWalletManager(Protocol):
         self,
         user_id: int,
         currency_id: int,
-        server_id: int | None,
+        server_id: int,
         amount: int,
         allow_take_less: bool
     ) -> Awaitable[None]:

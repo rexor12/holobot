@@ -1,7 +1,5 @@
 from datetime import datetime
 
-import tzlocal
-
 from holobot.discord.sdk.data_providers import IBotDataProvider
 from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -11,7 +9,6 @@ from holobot.discord.sdk.workflows.interactables.components import (
 from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.system import IEnvironment
@@ -34,7 +31,7 @@ class ViewBotInfoWorkflow(WorkflowBase):
         self,
         context: InteractionContext
     ) -> InteractionResponse:
-        current_time = datetime.now(tzlocal.get_localzone())
+        current_time = datetime.now()
         buttons: list[ComponentBase] = [
             Button(
                 id="project_home",

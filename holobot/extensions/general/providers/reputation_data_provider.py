@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from typing import cast
 
 from PIL import ImageColor
@@ -32,17 +31,12 @@ class ReputationDataProvider(IReputationDataProvider):
             map(
                 lambda i: CustomBackgroundInfo(
                     code=i.Code,
-                    required_reputation=i.RequiredReputation,
-                    file_name=i.FileName
+                    required_reputation=i.RequiredReputation
                 ),
                 options.value.CustomBackgrounds
             ),
             key=lambda i: i.required_reputation
         )
-        self.__custom_background_infos_by_code = {
-            item.code: item
-            for item in self.__custom_background_infos
-        }
 
     def get_rank_info(self, reputation_points: int) -> ReputationRankInfo:
         current_rank = binary_search_lower(self.__rank_infos, lambda i: i[0], reputation_points)
@@ -66,10 +60,7 @@ class ReputationDataProvider(IReputationDataProvider):
             )
         )
 
-    def get_custom_backgrounds(self) -> Sequence[CustomBackgroundInfo]:
-        return self.__custom_background_infos
-
-    def get_last_unlocked_custom_background(
+    def get_last_unlocked_background(
         self,
         reputation_points: int
     ) -> CustomBackgroundInfo | None:
@@ -89,18 +80,3 @@ class ReputationDataProvider(IReputationDataProvider):
             if custom_background_info.required_reputation <= reputation_points
             else None
         )
-
-    def is_custom_background_unlocked(self, code: str, reputation_points: int) -> bool:
-        if code not in self.__custom_background_infos_by_code:
-            return False
-
-        return self.__custom_background_infos_by_code[code].required_reputation <= reputation_points
-
-    def get_custom_background(self, index: int) -> CustomBackgroundInfo | None:
-        if index < 0 or index >= len(self.__custom_background_infos):
-            return None
-
-        return self.__custom_background_infos[index]
-
-    def get_custom_background_by_code(self, code: str) -> CustomBackgroundInfo | None:
-        return self.__custom_background_infos_by_code.get(code, None)

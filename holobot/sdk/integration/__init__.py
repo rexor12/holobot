@@ -1,1 +1,1 @@
-from .integration_interface import IntegrationInterface
+from .iintegration import IIntegration

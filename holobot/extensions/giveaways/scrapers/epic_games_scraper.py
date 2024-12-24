@@ -4,6 +4,7 @@ from datetime import datetime, time, timedelta, timezone
 from typing import Any
 
 from holobot.extensions.giveaways.models import EpicScraperOptions, ExternalGiveawayItem
+from holobot.sdk.chrono import IClock
 from holobot.sdk.configs import IOptions
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -11,7 +12,7 @@ from holobot.sdk.network import IHttpClientPool
 from holobot.sdk.network.exceptions import TooManyRequestsError
 from holobot.sdk.network.resilience import AsyncCircuitBreakerPolicy
 from holobot.sdk.serialization.json_serializer import deserialize
-from holobot.sdk.utils import first_or_default, utcnow
+from holobot.sdk.utils import first_or_default
 from .dtos.epic_games_dtos import ChildPromotionalOffer, FreeGamesPromotions, Offer
 from .iscraper import IScraper
 
@@ -29,11 +30,13 @@ EXECUTION_DELAY = timedelta(seconds=5 * 60)
 class EpicGamesScraper(IScraper):
     def __init__(
         self,
+        clock: IClock,
         http_client_pool: IHttpClientPool,
         logger_factory: ILoggerFactory,
         options: IOptions[EpicScraperOptions]
     ) -> None:
         super().__init__()
+        self.__clock = clock
         self.__logger = logger_factory.create(EpicGamesScraper)
         self.__http_client_pool = http_client_pool
         self.__options = options
@@ -44,7 +47,7 @@ class EpicGamesScraper(IScraper):
         return "Epic Games Store"
 
     def get_next_scrape_time(self, last_scrape_time: datetime | None) -> datetime:
-        now = utcnow()
+        now = self.__clock.now_utc()
         if last_scrape_time is None:
             return now - timedelta(minutes=1)
 
@@ -74,7 +77,7 @@ class EpicGamesScraper(IScraper):
 
         giveaway_items = []
         for item in promotions.data.Catalog.searchStore.elements:
-            giveaway_time = EpicGamesScraper.__get_giveaway_data(item)
+            giveaway_time = self.__get_giveaway_data(item)
             if not giveaway_time:
                 self.__logger.debug("Ignored item, because it has no active offer", title=item.title)
                 continue
@@ -85,7 +88,7 @@ class EpicGamesScraper(IScraper):
 
             giveaway_items.append(ExternalGiveawayItem(
                 0,
-                utcnow(),
+                self.__clock.now_utc(),
                 giveaway_time.startDate.astimezone(timezone.utc) if giveaway_time.startDate else None,
                 giveaway_time.endDate.astimezone(timezone.utc) if giveaway_time.endDate else datetime.max.astimezone(timezone.utc),
                 self.name,
@@ -119,36 +122,6 @@ class EpicGamesScraper(IScraper):
         return circuit_breaker.recovery_timeout
 
     @staticmethod
-    def __get_giveaway_data(item: Offer) -> ChildPromotionalOffer | None:
-        offers: list[ChildPromotionalOffer] = []
-        for promotional_offer in item.promotions.promotionalOffers:
-            offers.extend(
-                child_promotional_offer
-                for child_promotional_offer in promotional_offer.promotionalOffers
-                if EpicGamesScraper.__is_active_giveaway(child_promotional_offer)
-            )
-
-        if not offers:
-            return None
-
-        sorted_offers = sorted(
-            offers,
-            key=lambda i: i.endDate or datetime.min.astimezone(timezone.utc),
-            reverse=True
-        )
-        return sorted_offers[0]
-
-    @staticmethod
-    def __is_active_giveaway(offer: ChildPromotionalOffer) -> bool:
-        now = utcnow()
-        return ((offer.startDate is None or offer.startDate <= now)
-                and (offer.endDate is None or offer.endDate > now)
-                and offer.discountSetting.discountType is not None
-                and offer.discountSetting.discountPercentage is not None
-                and offer.discountSetting.discountType.upper() == "PERCENTAGE"
-                and not int(offer.discountSetting.discountPercentage))
-
-    @staticmethod
     def __get_preview_image(offer: Offer) -> str | None:
         for image_key in OFFER_IMAGE_TYPES:
             if image := first_or_default(offer.keyImages, lambda i, k=image_key: i.type == k, None):
@@ -173,3 +146,31 @@ class EpicGamesScraper(IScraper):
         )
 
         return product_home.pageSlug if product_home else None
+
+    def __get_giveaway_data(self, item: Offer) -> ChildPromotionalOffer | None:
+        offers: list[ChildPromotionalOffer] = []
+        for promotional_offer in item.promotions.promotionalOffers:
+            offers.extend(
+                child_promotional_offer
+                for child_promotional_offer in promotional_offer.promotionalOffers
+                if self.__is_active_giveaway(child_promotional_offer)
+            )
+
+        if not offers:
+            return None
+
+        sorted_offers = sorted(
+            offers,
+            key=lambda i: i.endDate or datetime.min.astimezone(timezone.utc),
+            reverse=True
+        )
+        return sorted_offers[0]
+
+    def __is_active_giveaway(self, offer: ChildPromotionalOffer) -> bool:
+        now = self.__clock.now_utc()
+        return ((offer.startDate is None or offer.startDate <= now)
+                and (offer.endDate is None or offer.endDate > now)
+                and offer.discountSetting.discountType is not None
+                and offer.discountSetting.discountPercentage is not None
+                and offer.discountSetting.discountType.upper() == "PERCENTAGE"
+                and not int(offer.discountSetting.discountPercentage))

@@ -1,14 +1,24 @@
-from holobot.extensions.general.sdk.wallets.models import WalletId
-
 class NotEnoughMoneyException(Exception):
     @property
-    def wallet_id(self) -> WalletId:
-        return self.__wallet_id
+    def user_id(self) -> int:
+        return self.__user_id
+
+    @property
+    def server_id(self) -> int:
+        return self.__server_id
+
+    @property
+    def currency_id(self) -> int:
+        return self.__currency_id
 
     def __init__(
         self,
-        wallet_id: WalletId,
+        user_id: int,
+        server_id: int,
+        currency_id: int,
         message: str | None = None
     ) -> None:
         super().__init__(message)
-        self.__wallet_id = wallet_id
+        self.__user_id = user_id
+        self.__server_id = server_id
+        self.__currency_id = currency_id

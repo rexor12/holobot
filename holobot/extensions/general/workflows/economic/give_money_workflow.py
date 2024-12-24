@@ -8,12 +8,13 @@ from holobot.discord.sdk.workflows.interactables.models import (
     AutocompleteOption, InteractionResponse, Option
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import Wallet
-from holobot.extensions.general.repositories import ICurrencyRepository, IWalletRepository
-from holobot.extensions.general.sdk.wallets.models import WalletId
+from holobot.extensions.general.models.items import CurrencyItem, UserItem
+from holobot.extensions.general.repositories import ICurrencyRepository, IUserItemRepository
+from holobot.extensions.general.sdk.items.models import UserItemId
 from holobot.extensions.general.workflows.economic.utils import get_currency_autocomplete_choices
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
 
 _MONEY_AMOUNT_MAX: int = 1_000_000_000
@@ -24,15 +25,17 @@ class GiveMoneyWorkflow(WorkflowBase):
     def __init__(
         self,
         currency_repository: ICurrencyRepository,
+        holoflake_provider: IHoloflakeProvider,
         i18n_provider: II18nProvider,
         unit_of_work_provider: IUnitOfWorkProvider,
-        wallet_repository: IWalletRepository
+        user_item_repository: IUserItemRepository
     ) -> None:
         super().__init__()
         self.__currency_repository = currency_repository
+        self.__holoflake_provider = holoflake_provider
         self.__i18n = i18n_provider
         self.__unit_of_work_provider = unit_of_work_provider
-        self.__wallet_repository = wallet_repository
+        self.__user_item_repository = user_item_repository
 
     @command(
         group_name="economic",
@@ -68,7 +71,6 @@ class GiveMoneyWorkflow(WorkflowBase):
             )
 
         currency_id = int(currency)
-        wallet_id = WalletId(user_id=user, currency_id=currency_id, server_id=context.server_id)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             currency_item = await self.__currency_repository.try_get_by_server(currency_id, context.server_id, False)
             if not currency_item:
@@ -76,16 +78,27 @@ class GiveMoneyWorkflow(WorkflowBase):
                     content=self.__i18n.get("extensions.general.give_money_workflow.invalid_currency_error")
                 )
 
-            wallet = await self.__wallet_repository.get(wallet_id)
+            wallet = await self.__user_item_repository.get_wallet(
+                user,
+                context.server_id,
+                currency_id
+            )
             if wallet:
-                wallet.amount += amount
-                await self.__wallet_repository.update(wallet)
+                wallet.item.count += amount
+                await self.__user_item_repository.update(wallet)
             else:
-                wallet = Wallet(
-                    identifier=wallet_id,
-                    amount=amount
+                wallet = UserItem(
+                    identifier=UserItemId(
+                        server_id=context.server_id,
+                        user_id=user,
+                        serial_id=self.__holoflake_provider.get_next_id()
+                    ),
+                    item=CurrencyItem(
+                        count=amount,
+                        currency_id=currency_id
+                    )
                 )
-                await self.__wallet_repository.add(wallet)
+                await self.__user_item_repository.add(wallet)
 
             unit_of_work.complete()
 
@@ -94,7 +107,7 @@ class GiveMoneyWorkflow(WorkflowBase):
                 "extensions.general.give_money_workflow.successfully_gave_money",
                 {
                     "user_id": wallet.identifier.user_id,
-                    "amount": wallet.amount,
+                    "amount": wallet.item.count,
                     "emoji_id": currency_item.emoji_id,
                     "emoji_name": currency_item.emoji_name
                 }

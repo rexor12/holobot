@@ -423,27 +423,23 @@
                     "Color": "#e6cc80"
                 }
             ],
-            "CustomBackgroundsPath": "resources/images/user_profiles/custom_backgrounds",
+            "CustomBackgroundsPath": "resources/images/user_profiles/custom_backgrounds/*.png",
             "CustomBackgrounds": [
                 {
                     "Code": "1",
-                    "RequiredReputation": 25,
-                    "FileName": "1.png"
+                    "RequiredReputation": 25
                 },
                 {
                     "Code": "2",
-                    "RequiredReputation": 100,
-                    "FileName": "2.png"
+                    "RequiredReputation": 100
                 },
                 {
                     "Code": "3",
-                    "RequiredReputation": 200,
-                    "FileName": "3.png"
+                    "RequiredReputation": 200
                 },
                 {
                     "Code": "4",
-                    "RequiredReputation": 750,
-                    "FileName": "4.png"
+                    "RequiredReputation": 750
                 }
             ]
         },

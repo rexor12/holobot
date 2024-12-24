@@ -1,3 +1,5 @@
+from typing import cast
+
 from holobot.discord.sdk.data_providers import IUserDataProvider
 from holobot.discord.sdk.models import Embed, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
@@ -10,16 +12,15 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse, Option
 from holobot.extensions.general.managers.user_profiles import IUserProfileManager
+from holobot.extensions.general.models.items import BadgeItem
 from holobot.extensions.general.models.user_profiles import UserProfile
-from holobot.extensions.general.repositories import IBadgeRepository, IUserBadgeRepository
+from holobot.extensions.general.repositories import IBadgeRepository, IUserItemRepository
 from holobot.extensions.general.repositories.user_profiles import IUserProfileRepository
 from holobot.extensions.general.sdk.badges.models import BadgeId
-from holobot.extensions.general.sdk.badges.models.user_badge_id import UserBadgeId
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.utils.iterable_utils import batch
-from holobot.sdk.utils.string_utils import try_parse_int
 from holobot.sdk.utils.type_utils import UndefinedOrNoneOr
 
 _BADGE_SERVER_ID_PARAMETER: str = "s"
@@ -35,8 +36,8 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         badge_repository: IBadgeRepository,
         i18n_provider: II18nProvider,
         unit_of_work_provider: IUnitOfWorkProvider,
-        user_badge_repository: IUserBadgeRepository,
         user_data_provider: IUserDataProvider,
+        user_item_repository: IUserItemRepository,
         user_profile_repository: IUserProfileRepository,
         user_profile_manager: IUserProfileManager
     ) -> None:
@@ -44,8 +45,8 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         self.__badge_repository = badge_repository
         self.__i18n = i18n_provider
         self.__unit_of_work_provider = unit_of_work_provider
-        self.__user_badge_repository = user_badge_repository
         self.__user_data_provider = user_data_provider
+        self.__user_item_repository = user_item_repository
         self.__user_profile_repository = user_profile_repository
         self.__user_profile_manager = user_profile_manager
 
@@ -234,14 +235,14 @@ class ViewUserBadgesWorkflow(WorkflowBase):
             )
 
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
-            user_badge_id = UserBadgeId(
-                user_id=context.author_id,
-                server_id=badge_server_id,
-                badge_id=badge_id
-            )
             typed_badge_id = BadgeId(server_id=badge_server_id, badge_id=badge_id)
+            has_badge = await self.__user_item_repository.badge_exists(
+                badge_server_id,
+                context.author_id,
+                badge_id
+            )
             if (
-                not await self.__user_badge_repository.exists(user_badge_id)
+                not has_badge
                 or not (badge := await self.__badge_repository.get(typed_badge_id))
             ):
                 return self._edit_message(
@@ -307,7 +308,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
         ComponentBase | list[LayoutBase] | None
     ]:
         is_self = owner_id == user_id
-        result = await self.__user_badge_repository.paginate(user_id, page_index, page_size)
+        result = await self.__user_item_repository.paginate_badges(user_id, page_index, page_size)
         if not result.items:
             return (
                 self.__i18n.get(
@@ -324,13 +325,14 @@ class ViewUserBadgesWorkflow(WorkflowBase):
 
         badge_descriptors = list[str]()
         layouts = list[LayoutBase]()
-        for items in batch(result.items, 5):
+        for user_items in batch(result.items, 5):
             layout = StackLayout(id="dummy")
 
-            for item in items:
+            for user_item in user_items:
+                badge_item = cast(BadgeItem, user_item.item)
                 badge_id = BadgeId(
-                    server_id=item.identifier.server_id,
-                    badge_id=item.identifier.badge_id
+                    server_id=badge_item.badge_id.server_id,
+                    badge_id=badge_item.badge_id.badge_id
                 )
                 badge = await self.__badge_repository.get(badge_id)
                 if not badge:
@@ -348,7 +350,7 @@ class ViewUserBadgesWorkflow(WorkflowBase):
                         "emoji_id": badge.emoji_id,
                         "name": badge.name,
                         "description": badge.description,
-                        "unlocked_at": int(item.unlocked_at.timestamp())
+                        "unlocked_at": int(badge_item.unlocked_at.timestamp())
                     }
                 ))
 

@@ -99,7 +99,7 @@ class UserProfileRepository(
         model = UserProfile(
             identifier=record.id.value,
             reputation_points=record.reputation_points,
-            background_image_code=record.background_image_code,
+            background_image_id=record.background_image_id,
             show_badges=record.show_badges
         )
 
@@ -115,7 +115,7 @@ class UserProfileRepository(
         record = UserProfileRecord(
             id=PrimaryKey(model.identifier),
             reputation_points=model.reputation_points,
-            background_image_code=model.background_image_code,
+            background_image_id=model.background_image_id,
             show_badges=model.show_badges
         )
 

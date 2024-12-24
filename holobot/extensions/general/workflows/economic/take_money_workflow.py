@@ -8,8 +8,7 @@ from holobot.discord.sdk.workflows.interactables.models import (
     AutocompleteOption, InteractionResponse, Option
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.repositories import ICurrencyRepository, IWalletRepository
-from holobot.extensions.general.sdk.wallets.models import WalletId
+from holobot.extensions.general.repositories import ICurrencyRepository, IUserItemRepository
 from holobot.extensions.general.workflows.economic.utils import get_currency_autocomplete_choices
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
@@ -24,13 +23,13 @@ class TakeMoneyWorkflow(WorkflowBase):
         currency_repository: ICurrencyRepository,
         i18n_provider: II18nProvider,
         unit_of_work_provider: IUnitOfWorkProvider,
-        wallet_repository: IWalletRepository
+        user_item_repository: IUserItemRepository
     ) -> None:
         super().__init__()
         self.__currency_repository = currency_repository
         self.__i18n = i18n_provider
         self.__unit_of_work_provider = unit_of_work_provider
-        self.__wallet_repository = wallet_repository
+        self.__user_item_repository = user_item_repository
 
     @command(
         group_name="economic",
@@ -60,16 +59,7 @@ class TakeMoneyWorkflow(WorkflowBase):
                 content=self.__i18n.get("extensions.general.take_money_workflow.too_little_money_error")
             )
 
-        if user is None:
-            await self.__wallet_repository.remove_from_all_users(amount)
-            return self._reply(
-                content=self.__i18n.get(
-                    "extensions.general.take_money_workflow.successfully_removed_money_from_all"
-                )
-            )
-
         currency_id = int(currency)
-        wallet_id = WalletId(user_id=user, currency_id=currency_id, server_id=context.server_id)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             currency_item = await self.__currency_repository.try_get_by_server(currency_id, context.server_id, False)
             if not currency_item:
@@ -77,7 +67,7 @@ class TakeMoneyWorkflow(WorkflowBase):
                     content=self.__i18n.get("extensions.general.take_money_workflow.invalid_currency_error")
                 )
 
-            wallet = await self.__wallet_repository.get(wallet_id)
+            wallet = await self.__user_item_repository.get_wallet(user, context.server_id, currency_id)
             if not wallet:
                 return self._reply(
                     content=self.__i18n.get(
@@ -88,8 +78,8 @@ class TakeMoneyWorkflow(WorkflowBase):
                     )
                 )
 
-            wallet.amount = max(wallet.amount - amount, 0)
-            await self.__wallet_repository.update(wallet)
+            wallet.item.count = max(wallet.item.count - amount, 0)
+            await self.__user_item_repository.update(wallet)
             unit_of_work.complete()
 
         return self._reply(
@@ -97,7 +87,7 @@ class TakeMoneyWorkflow(WorkflowBase):
                 "extensions.general.take_money_workflow.successfully_removed_money",
                 {
                     "user_id": wallet.identifier.user_id,
-                    "amount": wallet.amount,
+                    "amount": wallet.item.count,
                     "emoji_id": currency_item.emoji_id,
                     "emoji_name": currency_item.emoji_name
                 }

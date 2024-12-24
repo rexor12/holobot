@@ -13,6 +13,7 @@ class WalletsMigration(MigrationBase):
                 MigrationPlan(1, self.__initialize_table),
                 MigrationPlan(202411071725, self.__upgrade_to_v2),
                 MigrationPlan(202411071727, self.__upgrade_to_v3)
+                # NOTE: UserItemsMigration 202411131202 drops this table.
             ]
         )
 

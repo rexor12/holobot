@@ -9,7 +9,9 @@ from holobot.discord.sdk.workflows.interactables.models import Cooldown, Interac
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.managers.user_profiles import IUserProfileManager
 from holobot.extensions.general.models.user_profiles import ReputationCooldown
-from holobot.extensions.general.repositories.user_profiles import IReputationCooldownRepository
+from holobot.extensions.general.repositories.user_profiles import (
+    IReputationCooldownRepository, IUserProfileBackgroundRepository
+)
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -25,6 +27,7 @@ class GiveReputationPointWorkflow(WorkflowBase):
         member_data_provider: IMemberDataProvider,
         reputation_cooldown_repository: IReputationCooldownRepository,
         unit_of_work_provider: IUnitOfWorkProvider,
+        user_profile_background_repository: IUserProfileBackgroundRepository,
         user_profile_manager: IUserProfileManager
     ) -> None:
         super().__init__()
@@ -32,6 +35,7 @@ class GiveReputationPointWorkflow(WorkflowBase):
         self.__member_data_provider = member_data_provider
         self.__reputation_cooldown_repository = reputation_cooldown_repository
         self.__unit_of_work_provider = unit_of_work_provider
+        self.__user_profile_background_repository = user_profile_background_repository
         self.__user_profile_manager = user_profile_manager
 
     @command(
@@ -107,14 +111,16 @@ class GiveReputationPointWorkflow(WorkflowBase):
                 )
             )
 
+        background_name = await self.__user_profile_background_repository.get_name_by_code(
+            last_custom_background.code
+        )
+
         return self._reply(
             content=self.__i18n.get(
                 "extensions.general.give_reputation_point_workflow.reputation_given_successfully_with_unlock",
                 {
                     "target_user_id": target_user_id,
-                    "custom_background_name": self.__i18n.get(
-                        f"extensions.general.custom_background_names.{last_custom_background.code}"
-                    )
+                    "custom_background_name": background_name
                 }
             )
         )

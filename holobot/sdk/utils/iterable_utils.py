@@ -1,4 +1,4 @@
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable, Sequence
 from typing import Any, TypeVar
 
 from holobot.sdk.exceptions import ArgumentError
@@ -56,6 +56,21 @@ def multi_to_dict(
                 raise ArgumentError("iterable", f"Duplicate key '{str(key)}'.")
 
             result[key] = item
+
+    return result
+
+def group_by_types(
+    iterable: Iterable[T],
+    grouping_types: tuple[type, ...]
+) -> dict[type, Sequence[T]]:
+    result = dict[type, Sequence[T]]()
+    for grouping_type in grouping_types:
+        group = list[T]()
+        for item in iterable:
+            if isinstance(item, grouping_type):
+                group.append(item)
+
+        result[grouping_type] = group
 
     return result
 

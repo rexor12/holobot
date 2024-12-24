@@ -1,5 +1,4 @@
 from holobot.discord.sdk.actions.enums import DeferType
-from holobot.discord.sdk.enums import Permission
 from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.decorators import autocomplete, command
@@ -8,12 +7,14 @@ from holobot.discord.sdk.workflows.interactables.models import (
     AutocompleteOption, InteractionResponse, Option
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
-from holobot.extensions.general.models import Wallet
-from holobot.extensions.general.repositories import ICurrencyRepository, IWalletRepository
-from holobot.extensions.general.sdk.wallets.models import WalletId
+from holobot.extensions.general.models.items import CurrencyItem, UserItem
+from holobot.extensions.general.repositories import ICurrencyRepository, IUserItemRepository
+from holobot.extensions.general.sdk.items.models import UserItemId
+from holobot.extensions.general.sdk.wallets.managers import IWalletManager
 from holobot.extensions.general.workflows.economic.utils import get_currency_autocomplete_choices
 from holobot.sdk.database import IUnitOfWorkProvider
 from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
 
 _MONEY_AMOUNT_MAX: int = 1_000_000_000
@@ -24,15 +25,18 @@ class GiftMoneyWorkflow(WorkflowBase):
     def __init__(
         self,
         currency_repository: ICurrencyRepository,
+        holoflake_provider: IHoloflakeProvider,
         i18n_provider: II18nProvider,
         unit_of_work_provider: IUnitOfWorkProvider,
-        wallet_repository: IWalletRepository
+        user_item_repository: IUserItemRepository,
+        wallet_manager: IWalletManager
     ) -> None:
         super().__init__()
         self.__currency_repository = currency_repository
+        self.__holoflake_provider = holoflake_provider
         self.__i18n = i18n_provider
         self.__unit_of_work_provider = unit_of_work_provider
-        self.__wallet_repository = wallet_repository
+        self.__user_item_repository = user_item_repository
 
     @command(
         group_name="economic",
@@ -88,34 +92,47 @@ class GiftMoneyWorkflow(WorkflowBase):
                     content=self.__i18n.get("extensions.general.gift_money_workflow.currency_untradable_error")
                 )
 
-            own_wallet_id = WalletId.create(context.author_id, currency_id, currency_item.server_id)
-            target_wallet_id = WalletId.create(user, currency_id, currency_item.server_id)
-            own_wallet = await self.__wallet_repository.get(own_wallet_id)
-            if not own_wallet or own_wallet.amount < amount:
+            own_wallet = await self.__user_item_repository.get_wallet(
+                context.author_id,
+                currency_item.server_id or 0,
+                currency_id
+            )
+            if not own_wallet or own_wallet.item.count < amount:
                 return self._reply(
                     content=self.__i18n.get(
                         "extensions.general.gift_money_workflow.not_enough_money_error",
                         {
-                            "amount": own_wallet.amount if own_wallet else 0,
+                            "amount": own_wallet.item.count if own_wallet else 0,
                             "emoji_id": currency_item.emoji_id,
                             "emoji_name": currency_item.emoji_name
                         }
                     )
                 )
 
-            target_wallet = await self.__wallet_repository.get(target_wallet_id)
+            target_wallet = await self.__user_item_repository.get_wallet(
+                user,
+                currency_item.server_id or 0,
+                currency_id
+            )
             if target_wallet:
-                target_wallet.amount += amount
-                await self.__wallet_repository.update(target_wallet)
+                target_wallet.item.count += amount
+                await self.__user_item_repository.update(target_wallet)
             else:
-                target_wallet = Wallet(
-                    identifier=target_wallet_id,
-                    amount=amount
+                target_wallet = UserItem(
+                    identifier=UserItemId(
+                        server_id=currency_item.server_id or 0,
+                        user_id=user,
+                        serial_id=self.__holoflake_provider.get_next_id()
+                    ),
+                    item=CurrencyItem(
+                        count=amount,
+                        currency_id=currency_id
+                    )
                 )
-                await self.__wallet_repository.add(target_wallet)
+                await self.__user_item_repository.add(target_wallet)
 
-            own_wallet.amount -= amount
-            await self.__wallet_repository.update(own_wallet)
+            own_wallet.item.count -= amount
+            await self.__user_item_repository.update(own_wallet)
 
             unit_of_work.complete()
 

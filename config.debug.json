@@ -17,6 +17,9 @@
     },
 
     "General": {
+        "EconomicOptions": {
+            "DailyCheckInQuestCode": "BADGETEST"
+        },
         "RockPaperScissorsOptions": {
             "RockEmojiId": 1263953427692785695,
             "RockEmojiName": "pstplane",

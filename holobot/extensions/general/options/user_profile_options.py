@@ -12,7 +12,6 @@ class _ReputationTableItem:
 class _CustomBackgroundItem:
     Code: str
     RequiredReputation: int
-    FileName: str
 
 @dataclass
 class UserProfileOptions(OptionsDefinition):

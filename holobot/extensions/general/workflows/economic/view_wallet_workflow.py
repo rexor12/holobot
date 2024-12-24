@@ -9,7 +9,7 @@ from holobot.discord.sdk.workflows.interactables.decorators import command, comp
 from holobot.discord.sdk.workflows.interactables.models import Cooldown, InteractionResponse
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.options import EconomicOptions
-from holobot.extensions.general.repositories import IWalletRepository
+from holobot.extensions.general.repositories import IUserItemRepository
 from holobot.sdk.configs import IOptions
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
@@ -23,12 +23,12 @@ class ViewWalletWorkflow(WorkflowBase):
         self,
         i18n_provider: II18nProvider,
         options: IOptions[EconomicOptions],
-        wallet_repository: IWalletRepository
+        user_item_repository: IUserItemRepository
     ) -> None:
         super().__init__()
         self.__i18n = i18n_provider
         self.__options = options
-        self.__wallet_repository = wallet_repository
+        self.__user_item_repository = user_item_repository
 
     @command(
         group_name="economic",
@@ -41,7 +41,7 @@ class ViewWalletWorkflow(WorkflowBase):
         self,
         context: InteractionContext
     ) -> InteractionResponse:
-        server_id = context.server_id if isinstance(context, ServerChatInteractionContext) else None
+        server_id = context.server_id if isinstance(context, ServerChatInteractionContext) else 0
         content, embed, components = await self.__create_page_content(
             context.author_id,
             server_id,
@@ -74,7 +74,7 @@ class ViewWalletWorkflow(WorkflowBase):
 
         content, embed, components = await self.__create_page_content(
             user_id,
-            get_custom_int(state.custom_data, "s", None),
+            get_custom_int(state.custom_data, "s", 0) or 0,
             state.custom_data.get("g", "0") == "1",
             max(state.current_page, 0),
             _PAGE_SIZE
@@ -89,7 +89,7 @@ class ViewWalletWorkflow(WorkflowBase):
     async def __create_page_content(
         self,
         user_id: int,
-        server_id: int | None,
+        server_id: int,
         include_global: bool,
         page_index: int,
         page_size: int
@@ -98,7 +98,7 @@ class ViewWalletWorkflow(WorkflowBase):
         UndefinedOrNoneOr[Embed],
         ComponentBase | list[LayoutBase] | None
     ]:
-        result = await self.__wallet_repository.paginate_wallets_with_details(
+        result = await self.__user_item_repository.paginate_wallets_with_details(
             user_id,
             server_id,
             include_global,
@@ -106,7 +106,7 @@ class ViewWalletWorkflow(WorkflowBase):
             page_size
         )
         if not result.items and result.total_count > 0:
-            result = await self.__wallet_repository.paginate_wallets_with_details(
+            result = await self.__user_item_repository.paginate_wallets_with_details(
                 user_id,
                 server_id,
                 include_global,

@@ -133,12 +133,6 @@
                 "currency_created_successfully": "I have just introduced the new currency **{name}** <:{emoji_name}:{emoji_id}>.",
                 "view_currencies_button": "View all"
             },
-            "custom_background_names": {
-                "1": "Town of Beginnings",
-                "2": "Midnight Street",
-                "3": "Rising Shadow",
-                "4": "Feral Battle"
-            },
             "divorce_workflow": {
                 "not_married_error": "I can't divorce you because you aren't married.",
                 "confirm_divorce": "Getting divorced will completely reset every relationship statistics with <@{spouse_id}>. Are you sure you want to get divorced?",
@@ -155,7 +149,7 @@
             "get_daily_reward_workflow": {
                 "daily_reward_disabled": "Pray, forgive me, but the daily reward is disabled.",
                 "invalid_quest_id": "Pray, forgive me, but this feature is temporarily unavailable.",
-                "cooldown_error": "I've provided you with a bountiful harvest already. I'll be able to give you more in {cooldown}."
+                "cooldown_error": "I've provided you with a bountiful harvest already. I'll be able to give you more at <t:{reset_at}:t>."
             },
             "gift_money_workflow": {
                 "cannot_gift_to_self_error": "Silly, why would you want me to give you your own gifts?",
@@ -565,9 +559,10 @@
             },
             "view_profile_backgrounds_workflow": {
                 "no_available_backgrounds_error": "Pray, forgive me, there are no available backgrounds at this time. Please, check back later.",
+                "invalid_background_error": "Pray, forgive me, for a background you have unlocked is invalid.\n(This error has been reported to the bot's owner automatically.)",
                 "profile_not_found_error": "Alas, it seems you haven't received any reputation points <:reputation:1228232389264674879>, yet. Get at least one reputation point <:reputation:1228232389264674879> and try again.",
                 "embed_title": "Background preview",
-                "embed_description": "**Name:** {name}\n**Required reputation:** {required_reputation}<:reputation:1228232389264674879>\n**Unlocked:** {is_unlocked}",
+                "embed_description": "**Name:** {name}",
                 "apply_background_button": "Set as background",
                 "background_locked_error": "Alas, it seems you don't have enough reputation points <:reputation:1228232389264674879> to use this background, yet. You still need another **{required_points:,}** <:reputation:1228232389264674879>.",
                 "updated_successfully": "I've updated your preferences; **{background_name}** is now your new profile background."

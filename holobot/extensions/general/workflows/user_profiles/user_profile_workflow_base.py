@@ -42,7 +42,7 @@ class UserProfileWorkflowBase(WorkflowBase):
             if isinstance(cached_avatar, bytes):
                 avatar_bytes = cached_avatar
 
-        return self._user_profile_factory.create_profile_image(
+        return await self._user_profile_factory.create_profile_image(
             user_data.name,
             user_profile,
             avatar_bytes,

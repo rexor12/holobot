@@ -4,4 +4,3 @@ from dataclasses import dataclass
 class CustomBackgroundInfo:
     code: str
     required_reputation: int
-    file_name: str

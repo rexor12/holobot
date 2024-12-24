@@ -3,7 +3,7 @@ from hikari.api.special_endpoints import CommandBuilder
 
 from holobot.discord.bot import Bot
 from holobot.discord.workflows import IWorkflowRegistry
-from holobot.sdk.diagnostics import DebuggerInterface
+from holobot.sdk.diagnostics import IDebugger
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils import get_or_add
@@ -16,7 +16,7 @@ _EVENT_TYPE = hikari.StartingEvent
 class StartingEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
     def __init__(
         self,
-        debugger: DebuggerInterface,
+        debugger: IDebugger,
         logger_factory: ILoggerFactory,
         workflow_registry: IWorkflowRegistry
     ) -> None:

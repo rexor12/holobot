@@ -7,5 +7,7 @@ from .quest_migration import QuestMigration
 from .quest_proto_migration import QuestProtoMigration
 from .reputation_cooldowns_migration import ReputationCooldownsMigration
 from .user_badge_migration import UserBadgeMigration
+from .user_items_migration import UserItemsMigration
+from .user_profile_backgrounds_migration import UserProfileBackgroundsMigration
 from .user_profiles_migration import UserProfilesMigration
 from .wallet_migration import WalletsMigration

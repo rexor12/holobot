@@ -4,3 +4,5 @@ from .reputation_change_info import ReputationChangeInfo
 from .reputation_cooldown import ReputationCooldown
 from .reputation_rank_info import ReputationRankInfo
 from .user_profile import UserProfile
+from .user_profile_background import UserProfileBackground
+from .user_profile_background_info import UserProfileBackgroundInfo

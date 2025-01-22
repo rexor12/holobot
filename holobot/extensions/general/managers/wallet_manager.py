@@ -6,6 +6,7 @@ from holobot.extensions.general.sdk.wallets.exceptions import (
     CurrencyNotFoundException, NotEnoughMoneyException, WalletNotFoundException
 )
 from holobot.extensions.general.sdk.wallets.managers import IWalletManager
+from holobot.extensions.general.sdk.wallets.models import ExchangeInfo
 from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -28,7 +29,7 @@ class WalletManager(IWalletManager):
         currency_id: int,
         server_id: int,
         amount: int
-    ) -> None:
+    ) -> ExchangeInfo:
         currency_item = await self.__currency_repository.try_get_by_server(currency_id, server_id, True)
         if not currency_item:
             raise CurrencyNotFoundException(currency_id, server_id)
@@ -38,20 +39,33 @@ class WalletManager(IWalletManager):
             if not isinstance(wallet.item, CurrencyItem):
                 raise InvalidItemTypeException(user_id, server_id, currency_id)
 
+            previous_amount = wallet.item.count
             wallet.item.count += amount
             await self.__user_item_repository.update(wallet)
-        else:
-            await self.__user_item_repository.add(UserItem(
-                identifier=UserItemId(
-                    server_id=server_id,
-                    user_id=user_id,
-                    serial_id=self.__holoflake_provider.get_next_id()
-                ),
-                item=CurrencyItem(
-                    count=amount,
-                    currency_id=currency_id
-                )
-            ))
+
+            return ExchangeInfo(
+                currency_id=currency_id,
+                previous_amount=previous_amount,
+                new_amount=wallet.item.count
+            )
+
+        await self.__user_item_repository.add(UserItem(
+            identifier=UserItemId(
+                server_id=server_id,
+                user_id=user_id,
+                serial_id=self.__holoflake_provider.get_next_id()
+            ),
+            item=CurrencyItem(
+                count=amount,
+                currency_id=currency_id
+            )
+        ))
+
+        return ExchangeInfo(
+            currency_id=currency_id,
+            previous_amount=0,
+            new_amount=amount
+        )
 
     async def take_money(
         self,
@@ -60,7 +74,7 @@ class WalletManager(IWalletManager):
         server_id: int,
         amount: int,
         allow_take_less: bool
-    ) -> None:
+    ) -> ExchangeInfo:
         currency_item = await self.__currency_repository.try_get_by_server(currency_id, server_id, True)
         if not currency_item:
             raise CurrencyNotFoundException(currency_id, server_id)
@@ -75,5 +89,12 @@ class WalletManager(IWalletManager):
         if not allow_take_less and wallet.item.count < amount:
             raise NotEnoughMoneyException(user_id, server_id, currency_id)
 
+        previous_amount = wallet.item.count
         wallet.item.count = max(wallet.item.count - amount, 0)
         await self.__user_item_repository.update(wallet)
+
+        return ExchangeInfo(
+            currency_id=currency_id,
+            previous_amount=previous_amount,
+            new_amount=wallet.item.count
+        )

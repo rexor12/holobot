@@ -1,4 +1,7 @@
+from typing import cast
+
 from holobot.extensions.general.models import Badge
+from holobot.extensions.general.models.items import BadgeDisplayInfo
 from holobot.extensions.general.sdk.badges.models import BadgeId
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
@@ -55,6 +58,31 @@ class BadgeRepository(
                 return None
 
             return result.get("name", None)
+
+    async def get_display_info(
+        self,
+        badge_id: BadgeId
+    ) -> BadgeDisplayInfo:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("name", "emoji_id", "emoji_name")
+                .from_table(self.table_name)
+                .where()
+                .fields(
+                    Connector.AND,
+                    ("server_id", Equality.EQUAL, badge_id.server_id),
+                    ("badge_id", Equality.EQUAL, badge_id.badge_id)
+                )
+            )
+            if (result := await query.compile().fetchrow(session.connection)) is None:
+                raise ValueError(f"Bage with identifier '{badge_id}' cannot be found.")
+
+            return BadgeDisplayInfo(
+                name=cast(str, result.get("name")),
+                emoji_id=cast(int, result.get("emoji_id")),
+                emoji_name=cast(str, result.get("emoji_name"))
+            )
 
     def _map_record_to_model(self, record: BadgeRecord) -> Badge:
         return Badge(

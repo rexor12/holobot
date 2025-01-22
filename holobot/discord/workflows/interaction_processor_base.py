@@ -77,36 +77,6 @@ class InteractionProcessorBase(
                 self.__log.error("An unhandled exception occurred while processing an interaction", error, **execution_data)
                 await self.__try_send_error_response(interaction, execution_data)
 
-    @abstractmethod
-    def _get_interactable_descriptor(
-        self,
-        interaction: TInteraction
-    ) -> InteractionDescriptor[TInteractable]:
-        ...
-
-    @abstractmethod
-    def _on_interaction_processed(
-        self,
-        interaction: TInteraction,
-        descriptor: InteractionDescriptor[TInteractable],
-        response: InteractionResponse
-    ) -> Awaitable[None]:
-        ...
-
-    async def _send_error_response(
-        self,
-        interaction: TInteraction,
-        localization_key: str = "interactions.unhandled_interaction_error"
-    ) -> None:
-        await self.__action_processor.process(
-            interaction,
-            ReplyAction(
-                content=self.__i18n_provider.get(localization_key)
-            ),
-            DeferType.NONE,
-            True
-        )
-
     @staticmethod
     def _resolve_argument(
         value: hikari.Snowflake | str | int | float | bool | None,
@@ -150,6 +120,43 @@ class InteractionProcessorBase(
                     )
                 )
 
+    @abstractmethod
+    def _get_interactable_descriptor(
+        self,
+        interaction: TInteraction
+    ) -> InteractionDescriptor[TInteractable]:
+        ...
+
+    @abstractmethod
+    def _on_interaction_processed(
+        self,
+        interaction: TInteraction,
+        descriptor: InteractionDescriptor[TInteractable],
+        response: InteractionResponse
+    ) -> Awaitable[None]:
+        ...
+
+    async def _send_error_response(
+        self,
+        interaction: TInteraction,
+        localization_key: str = "interactions.unhandled_interaction_error"
+    ) -> None:
+        await self.__action_processor.process(
+            interaction,
+            ReplyAction(
+                content=self.__i18n_provider.get(localization_key)
+            ),
+            DeferType.NONE,
+            True
+        )
+
+    def _resolve_argument_name(
+        self,
+        interactable: TInteractable,
+        argument_name: str
+    ) -> str:
+        return argument_name
+
     async def __process_interaction(
         self,
         interaction: TInteraction,
@@ -185,10 +192,14 @@ class InteractionProcessorBase(
             await self.__try_create_initial_response(interaction, interactable)
 
         with execution_context.start("Interactable processed"):
+            # TODO (Shops) Resolve argument name (from "argument_name")
             response = await interactable.callback(
                 descriptor.workflow,
                 context,
-                **descriptor.arguments
+                **{
+                    self._resolve_argument_name(interactable, argument_name): argument_value
+                    for argument_name, argument_value in descriptor.arguments.items()
+                }
             )
 
         execution_data["response_action"] = type(response.action).__name__

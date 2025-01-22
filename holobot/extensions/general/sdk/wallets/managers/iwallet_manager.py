@@ -1,6 +1,8 @@
 from collections.abc import Awaitable
 from typing import Protocol
 
+from holobot.extensions.general.sdk.wallets.models import ExchangeInfo
+
 class IWalletManager(Protocol):
     def give_money(
         self,
@@ -8,7 +10,7 @@ class IWalletManager(Protocol):
         currency_id: int,
         server_id: int,
         amount: int
-    ) -> Awaitable[None]:
+    ) -> Awaitable[ExchangeInfo]:
         ...
 
     def take_money(
@@ -18,5 +20,5 @@ class IWalletManager(Protocol):
         server_id: int,
         amount: int,
         allow_take_less: bool
-    ) -> Awaitable[None]:
+    ) -> Awaitable[ExchangeInfo]:
         ...

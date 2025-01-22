@@ -1,6 +1,8 @@
 from collections.abc import Awaitable, Iterable
+from typing import cast
 
 from holobot.extensions.general.models import Currency
+from holobot.extensions.general.models.items import CurrencyDisplayInfo
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.extensions.general.sdk.currencies.models import ICurrency
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
@@ -141,6 +143,27 @@ class CurrencyRepository(
                     result.get("name", "")
                 )
                 for result in results
+            )
+
+    async def get_display_info(
+        self,
+        currency_id: int
+    ) -> CurrencyDisplayInfo:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("name", "emoji_id", "emoji_name")
+                .from_table(self.table_name)
+                .where()
+                .field("id", Equality.EQUAL, currency_id)
+            )
+            if (result := await query.compile().fetchrow(session.connection)) is None:
+                raise ValueError(f"Currency with identifier '{currency_id}' cannot be found.")
+
+            return CurrencyDisplayInfo(
+                name=cast(str, result.get("name")),
+                emoji_id=cast(int, result.get("emoji_id")),
+                emoji_name=cast(str, result.get("emoji_name"))
             )
 
     def get_currency_by_code(self, server_id: int, code: str) -> Awaitable[ICurrency | None]:

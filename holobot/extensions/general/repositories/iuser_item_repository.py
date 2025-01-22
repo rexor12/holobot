@@ -10,6 +10,13 @@ from holobot.sdk.queries import PaginationResult
 class IUserItemRepository(IRepository[UserItemId, UserItem], Protocol):
     #region Backgrounds
 
+    def get_background(
+        self,
+        user_id: int,
+        background_id: int
+    ) -> Awaitable[UserItem | None]:
+        ...
+
     def paginate_backgrounds(
         self,
         user_id: int,
@@ -36,6 +43,14 @@ class IUserItemRepository(IRepository[UserItemId, UserItem], Protocol):
     #endregion
 
     #region Badges
+
+    def get_badge(
+        self,
+        server_id: int,
+        user_id: int,
+        badge_id: int
+    ) -> Awaitable[UserItem | None]:
+        ...
 
     def paginate_badges(
         self,

@@ -1,5 +1,7 @@
 from collections.abc import Awaitable
+from typing import cast
 
+from holobot.extensions.general.models.items import BackgroundDisplayInfo
 from holobot.extensions.general.models.user_profiles import UserProfileBackground
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
@@ -87,6 +89,25 @@ class UserProfileBackgroundRepository(
                 return None
 
             return result.get("name", None)
+
+    async def get_display_info(
+        self,
+        background_id: int
+    ) -> BackgroundDisplayInfo:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("name")
+                .from_table(self.table_name)
+                .where()
+                .field("id", Equality.EQUAL, background_id)
+            )
+            if (result := await query.compile().fetchrow(session.connection)) is None:
+                raise ValueError(f"Background with identifier '{background_id}' cannot be found.")
+
+            return BackgroundDisplayInfo(
+                name=cast(str, result.get("name"))
+            )
 
     def _map_record_to_model(self, record: UserProfileBackgroundRecord) -> UserProfileBackground:
         return UserProfileBackground(

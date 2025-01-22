@@ -2,6 +2,7 @@ from collections.abc import Awaitable, Iterable
 from typing import Protocol
 
 from holobot.extensions.general.models import Currency
+from holobot.extensions.general.models.items import CurrencyDisplayInfo
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.sdk.database.repositories import IRepository
 from holobot.sdk.queries import PaginationResult
@@ -37,4 +38,10 @@ class ICurrencyRepository(IRepository[int, Currency], ICurrencyDataProvider, Pro
         max_count: int,
         include_global: bool
     ) -> Awaitable[Iterable[tuple[int, str]]]:
+        ...
+
+    def get_display_info(
+        self,
+        currency_id: int
+    ) -> Awaitable[CurrencyDisplayInfo]:
         ...

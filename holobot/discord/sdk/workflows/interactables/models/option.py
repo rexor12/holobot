@@ -27,3 +27,6 @@ class Option:
 
     choices: tuple[Choice, ...] = field(default_factory=tuple)
     """An optional list of pre-defined choices that can be selected."""
+
+    argument_name: str | None = None
+    """The name of the argument the option maps to."""

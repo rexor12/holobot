@@ -1,5 +1,3 @@
-from collections.abc import Awaitable
-
 from holobot.extensions.general.models import FortuneCookie
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey

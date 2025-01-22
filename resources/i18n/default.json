@@ -108,6 +108,13 @@
         },
 
         "general": {
+            "buy_item_workflow": {
+                "item_owned_already_error": "Alas, you have too many of this item already.",
+                "not_enough_money_error": "Alas, you seem to lack the funds for this purchase.",
+                "missing_item_error": "Alas, this is an item I cannot sell to you.",
+                "purchase_free": "I've transferred **[{item_name}]**x**{item_count}** to your inventory for free.",
+                "purchase": "I've transferred **[{item_name}]**x**{item_count}** to your inventory in exchange for **{transaction_cost:,}** <:{currency_emoji_name}:{currency_emoji_id}>. You have **{currency_left:,}** <:{currency_emoji_name}:{currency_emoji_id}> left."
+            },
             "choose_item_workflow": {
                 "result": "Lo and behold, I choose **{result}**."
             },

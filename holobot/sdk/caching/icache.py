@@ -28,6 +28,9 @@ class ICache(Protocol[TKey, TValue]):
     ) -> Awaitable[TValue | UndefinedType]:
         """Gets the item with the given key, if exists; otherwise adds it.
 
+        Note: Expiring objects are automatically disposed if they implement
+        the IDisposable interface.
+
         :param key: The key that identifies the item.
         :type key: TKey
         :param value_or_factory: A factory method that creates the value, or the value itself, to be added.
@@ -47,6 +50,9 @@ class ICache(Protocol[TKey, TValue]):
     ) -> Awaitable[TValue | UndefinedType]:
         """Adds the specified value or replaces the existing one.
 
+        Note: The replaced object is automatically disposed if it implements
+        the IDisposable interface.
+
         :param key: The key that identifies the item.
         :type key: TKey
         :param value: The value to be added.
@@ -59,4 +65,13 @@ class ICache(Protocol[TKey, TValue]):
         ...
 
     def remove(self, key: TKey) -> Awaitable[TValue | UndefinedType]:
+        """Removes the value associated to the specified key, if it exists.
+
+        Note: The object must be disposed by the caller in this case.
+
+        :param key: The key that identifies the item.
+        :type key: TKey
+        :return: The cached value, if exists; otherwise, an undefined.
+        :rtype: Awaitable[TValue | UndefinedType]
+        """
         ...

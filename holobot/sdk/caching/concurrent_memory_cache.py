@@ -4,6 +4,7 @@ from collections.abc import Awaitable, Callable
 from datetime import timedelta
 from typing import Generic, TypeVar
 
+from holobot.sdk import IDisposable
 from holobot.sdk.concurrency import IAsyncDisposable
 from holobot.sdk.exceptions import ArgumentError
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
@@ -127,7 +128,7 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
             return UNDEFINED
 
         async with self.__lock:
-            self.__remove_entry(key)
+            self.__remove_entry(key, True)
 
             entry = _CacheEntry(value, policy)
             self.__entries[key] = entry
@@ -142,7 +143,7 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
         key: _CacheEntryKey[TKey]
     ) -> TValue | UndefinedType:
         async with self.__lock:
-            return self.__remove_entry(key)
+            return self.__remove_entry(key, False)
 
     async def _on_dispose(self) -> None:
         if self.__token_source: self.__token_source.cancel()
@@ -157,21 +158,29 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
             return UNDEFINED
 
         if entry.policy.is_expired():
-            self.__remove_entry(key)
+            self.__remove_entry(key, True)
             return UNDEFINED
 
         entry.policy.on_entry_accessed()
 
         return entry.value
 
-    def __remove_entry(self, key: _CacheEntryKey[TKey]) -> TValue | UndefinedType:
+    def __remove_entry(
+        self,
+        key: _CacheEntryKey[TKey],
+        dispose_value: bool
+    ) -> TValue | UndefinedType:
         value = self.__entries.pop(key, None)
         value2 = self.__expires.pop(key, None)
 
         if value is not None:
+            if isinstance(value.value, IDisposable):
+                value.value.dispose()
             return value.value
 
         if value2 is not None:
+            if isinstance(value2.value, IDisposable):
+                value2.value.dispose()
             return value2.value
 
         return UNDEFINED
@@ -188,7 +197,7 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
                 ):
                     continue
 
-                self.__remove_entry(key)
+                self.__remove_entry(key, True)
 
 _DEFAULT_NO_EXPIRATION_POLICY = NoExpirationCacheEntryPolicy()
 

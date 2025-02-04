@@ -19,6 +19,7 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagina
         self.__constants: list[tuple[str, Any]] = []
         self.__table_name: str | None = None
         self.__table_alias: str | None = None
+        self.__schema_name: str | None = None
         self.__is_count_select: bool = False
         self.__has_from_part: bool = False
 
@@ -42,10 +43,16 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagina
         self.__is_count_select = True
         return self
 
-    def from_table(self, table_name: str, alias: str | None = None) -> SelectBuilder:
+    def from_table(
+        self,
+        table_name: str,
+        alias: str | None = None,
+        schema_name: str | None = None
+    ) -> SelectBuilder:
         self.__table_name = table_name
         self.__table_alias = alias
         self.__has_from_part = True
+        self.__schema_name = schema_name
         return self
 
     def from_function(self, function_name: str, arguments: tuple[str, ...]) -> FunctionBuilder:
@@ -97,6 +104,10 @@ class SelectBuilder(ICompileableQueryPartBuilder[CompiledQuery], ISupportsPagina
             sql.append("FROM")
 
         if self.__table_name:
+            if self.__schema_name:
+                sql.append(self.__schema_name)
+                sql.append(".")
+
             sql.append(self.__table_name)
             if self.__table_alias:
                 sql.extend(("AS", self.__table_alias))

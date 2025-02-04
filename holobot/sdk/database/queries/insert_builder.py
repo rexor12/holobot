@@ -10,6 +10,7 @@ from .returning_builder import ReturningBuilder
 class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
     def __init__(self) -> None:
         self.__table_name: str = ""
+        self.__schema_name: str | None = None
         self.__fields: dict[str, Any | None] = {}
 
     @property
@@ -17,11 +18,20 @@ class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         return self.__table_name
 
     @property
+    def schema_name(self) -> str | None:
+        return self.__schema_name
+
+    @property
     def set_fields(self) -> dict[str, Any | None]:
         return self.__fields
 
-    def in_table(self, table_name: str) -> InsertBuilder:
+    def in_table(
+        self,
+        table_name: str,
+        schema_name: str | None = None
+    ) -> InsertBuilder:
         self.__table_name = table_name
+        self.__schema_name = schema_name
         return self
 
     def field(self, column_name: str, value: Any | None) -> InsertBuilder:
@@ -46,9 +56,13 @@ class InsertBuilder(ICompileableQueryPartBuilder[CompiledQuery]):
         if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        sql = (
-            f"INSERT INTO {self.__table_name} "
-            f"({', '.join(self.__fields)}) VALUES "
-            f"({', '.join(f'${index + 1}' for index in range(len(self.__fields)))})"
-        )
-        return (sql, tuple(self.__fields.values()))
+        sql_parts = ["INSERT INTO "]
+        if self.__schema_name:
+            sql_parts.append(self.__schema_name)
+            sql_parts.append(".")
+
+        sql_parts.append(self.__table_name)
+        sql_parts.append(f" ({', '.join(self.__fields)}) VALUES ")
+        sql_parts.append(f"({', '.join(f'${index + 1}' for index in range(len(self.__fields)))})")
+
+        return ("".join(sql_parts), tuple(self.__fields.values()))

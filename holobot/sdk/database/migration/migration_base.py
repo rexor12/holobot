@@ -11,19 +11,25 @@ class MigrationBase(IMigration):
         return self.__table_name
 
     @property
+    def schema_name(self) -> str:
+        return self.__schema_name
+
+    @property
     def plans(self) -> Sequence[MigrationPlan]:
         return self.__plans
 
     def __init__(
         self,
         table_name: str,
-        plans: Sequence[MigrationPlan]
+        plans: Sequence[MigrationPlan],
+        schema_name: str = "public"
     ):
         super().__init__()
         if not table_name:
             raise ValueError("The specified table name is invalid.")
 
         self.__table_name = table_name
+        self.__schema_name = schema_name
         self.__plans = plans
 
     async def _execute_script(self, connection: Connection, path: str) -> None:

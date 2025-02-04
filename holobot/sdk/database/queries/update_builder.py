@@ -9,6 +9,7 @@ from .where_builder import WhereBuilder
 class UpdateBuilder(IQueryPartBuilder):
     def __init__(self) -> None:
         self.__table_name: str = ""
+        self.__schema_name: str | None = None
         self.__fields: dict[str, tuple[Any | None, bool]] = {}
 
     @property
@@ -16,11 +17,20 @@ class UpdateBuilder(IQueryPartBuilder):
         return self.__table_name
 
     @property
+    def schema_name(self) -> str | None:
+        return self.__schema_name
+
+    @property
     def set_fields(self) -> dict[str, Any | None]:
         return self.__fields
 
-    def table(self, table_name: str) -> UpdateBuilder:
+    def table(
+        self,
+        table_name: str,
+        schema_name: str | None = None
+    ) -> UpdateBuilder:
         self.__table_name = table_name
+        self.__schema_name = schema_name
         return self
 
     def field(self, column_name: str, value: Any | None, is_raw_value: bool = False) -> UpdateBuilder:
@@ -43,7 +53,14 @@ class UpdateBuilder(IQueryPartBuilder):
         if not self.__fields:
             raise ValueError("The UPDATE clause must have at least one field.")
 
-        sql = ["UPDATE", self.__table_name, "SET"]
+        sql = ["UPDATE"]
+        if self.__schema_name:
+            sql.append(f"{self.__schema_name}.{self.__table_name}")
+        else:
+            sql.append(self.__table_name)
+
+        sql.append("SET")
+
         arguments = []
         if len(self.__fields) > 1:
             sql.extend(("(", ", ".join(self.__fields), ") = ("))

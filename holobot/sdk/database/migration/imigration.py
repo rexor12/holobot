@@ -9,5 +9,9 @@ class IMigration(Protocol):
         ...
 
     @property
+    def schema_name(self) -> str:
+        ...
+
+    @property
     def plans(self) -> Sequence[MigrationPlan]:
         ...

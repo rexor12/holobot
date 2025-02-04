@@ -118,6 +118,17 @@ class RepositoryBase(
         """
 
     @property
+    def schema_name(self) -> str:
+        """Gets the name of the schema the repository operates on.
+
+        Note: By default, this value is "public".
+
+        :return: The name of the repository's schema.
+        :rtype: str
+        """
+        return "public"
+
+    @property
     @abstractmethod
     def table_name(self) -> str:
         """Gets the name of the table the repository operates on.
@@ -156,7 +167,7 @@ class RepositoryBase(
         async with (session := await self._get_session()):
             identifier_row = await (Query
                 .insert()
-                .in_table(self.table_name)
+                .in_table(self.table_name, self.schema_name)
                 .fields(*fields)
                 .returning()
                 .columns(*self.__id_columns.keys())
@@ -178,7 +189,12 @@ class RepositoryBase(
             return existing_model
 
         async with (session := await self._get_session()):
-            builder = Query.select().columns(*self.column_names).from_table(self.table_name).where()
+            builder = (Query
+                .select()
+                .columns(*self.column_names)
+                .from_table(self.table_name, None, self.schema_name)
+                .where()
+            )
             result = await (self
                 ._add_id_filter(builder, identifier)
                 .compile()
@@ -195,7 +211,7 @@ class RepositoryBase(
             query = (Query
                 .select()
                 .columns(*self.column_names)
-                .from_table(self.table_name)
+                .from_table(self.table_name, None, self.schema_name)
             )
             results = await query.compile().fetch(session.connection)
 
@@ -214,7 +230,7 @@ class RepositoryBase(
             result = await (Query
                 .select()
                 .column("COUNT(*)")
-                .from_table(self.table_name)
+                .from_table(self.table_name, None, self.schema_name)
                 .compile()
                 .fetchval(session.connection)
             )
@@ -225,7 +241,12 @@ class RepositoryBase(
         record = self._map_model_to_record(model)
         fields = self._get_fields(record, False)
         async with (session := await self._get_session()):
-            builder = Query.update().table(self.table_name).fields(*fields).where()
+            builder = (Query
+                .update()
+                .table(self.table_name, self.schema_name)
+                .fields(*fields)
+                .where()
+            )
             result = await (self
                 ._add_id_filter(builder, model.identifier)
                 .compile()
@@ -240,7 +261,7 @@ class RepositoryBase(
 
     async def delete(self, identifier: TIdentifier) -> int:
         async with (session := await self._get_session()):
-            builder = Query.delete().from_table(self.table_name).where()
+            builder = Query.delete().from_table(self.table_name, self.schema_name).where()
             result = await (self
                 ._add_id_filter(builder, identifier)
                 .compile()
@@ -289,7 +310,7 @@ class RepositoryBase(
             query = filter_builder(Query
                 .select()
                 .column("COUNT(*)")
-                .from_table(self.table_name)
+                .from_table(self.table_name, None, self.schema_name)
                 .where()
             )
             result = await query.compile().fetchval(session.connection)
@@ -312,7 +333,7 @@ class RepositoryBase(
             query = filter_builder(Query
                 .select()
                 .columns(*self.column_names)
-                .from_table(self.table_name)
+                .from_table(self.table_name, None, self.schema_name)
                 .where()
             )
             results = await query.compile().fetch(session.connection)
@@ -343,7 +364,7 @@ class RepositoryBase(
             query = filter_builder(Query
                 .select()
                 .columns(*self.column_names)
-                .from_table(self.table_name)
+                .from_table(self.table_name, None, self.schema_name)
                 .where()
             )
             result = await query.compile().fetchrow(session.connection)
@@ -371,7 +392,7 @@ class RepositoryBase(
             query = filter_builder(Query
                 .select()
                 .constant("1", "_T")
-                .from_table(self.table_name)
+                .from_table(self.table_name, None, self.schema_name)
                 .where()
             )
             result = await query.exists().compile().fetchval(session.connection)
@@ -415,7 +436,7 @@ class RepositoryBase(
         async with (session := await self._get_session()):
             query = filter_builder(Query
                 .delete()
-                .from_table(self.table_name)
+                .from_table(self.table_name, self.schema_name)
                 .where()
             )
             identifier_rows = await (query
@@ -447,7 +468,7 @@ class RepositoryBase(
         """
 
         async with (session := await self._get_session()):
-            query = Query.update().table(self.table_name)
+            query = Query.update().table(self.table_name, self.schema_name)
             for column_name, value, is_raw_value in fields:
                 query = query.field(column_name, value, is_raw_value)
 
@@ -487,7 +508,7 @@ class RepositoryBase(
         """
 
         async with (session := await self._get_session()):
-            query = Query.select().columns(*self.column_names).from_table(self.table_name)
+            query = Query.select().columns(*self.column_names).from_table(self.table_name, None, self.schema_name)
             if filter_builder is not None:
                 query = filter_builder(query.where())
 

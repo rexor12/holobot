@@ -10,7 +10,8 @@ from holobot.discord.sdk.workflows.interactables.models import Choice, Interacti
 from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.mudada.constants import (
-    MUDADA_FEATURE_NAME, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
+    MUDADA_FEATURE_NAME, VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME,
+    VALENTINES_2025_EVENT_TOGGLE_FEATURE_NAME
 )
 from holobot.extensions.mudada.models.feature_state import FeatureState
 from holobot.extensions.mudada.repositories import IFeatureStateRepository
@@ -22,9 +23,11 @@ from holobot.sdk.ioc.decorators import injectable
 class EventType(IntEnum):
     UNKNOWN = 0
     VALENTINES2024 = 1
+    VALENTINES2025 = 2
 
 EVENT_TYPE_TO_FEATURE_STATE_NAME_MAP: dict[EventType, str] = {
-    EventType.VALENTINES2024: VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME
+    EventType.VALENTINES2024: VALENTINES_2024_EVENT_TOGGLE_FEATURE_NAME,
+    EventType.VALENTINES2025: VALENTINES_2025_EVENT_TOGGLE_FEATURE_NAME
 }
 
 @injectable(IWorkflow)
@@ -53,7 +56,8 @@ class AdminToggleEventWorkflow(WorkflowBase):
                 "The event to turn on or off.",
                 OptionType.INTEGER,
                 choices=(
-                    Choice("Valentine's Day", EventType.VALENTINES2024),
+                    Choice("Valentine's Day '24", EventType.VALENTINES2024),
+                    Choice("Valentine's Day '25", EventType.VALENTINES2025),
                 )
             ),
             Option("enabled", "The new state of the event.", OptionType.BOOLEAN)

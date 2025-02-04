@@ -26,3 +26,13 @@ class MudadaOptions(OptionsDefinition):
 
     ExchangeQuotaPerUser: int = 0
     """The maximum amount of Kakera that each user can exchange for Mudera."""
+
+    RatingChartApiUrl: str = ""
+    """The URL of the rating chart API.
+
+    The chart data will be passed as `chart_data`.
+    """
+
+    Valentine2025MaxReward: int = 0
+    Valentine2025RewardPerRating: int = 0
+    Valentine2025RewardCurrencyCode: str = "MUDERATEST"

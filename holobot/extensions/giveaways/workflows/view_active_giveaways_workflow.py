@@ -70,7 +70,9 @@ class ViewActiveGiveawaysWorkflow(WorkflowBase):
             or (page_index := try_parse_int(page_index)) is None
             or (item_index := try_parse_int(item_index)) is None):
             return self._edit_message(
-                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error")
+                content=self.__i18n_provider.get("interactions.invalid_interaction_data_error"),
+                embed=None,
+                components=None
             )
 
         content, embed, components = await self.__create_page_content(

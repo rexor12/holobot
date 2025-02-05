@@ -4,3 +4,6 @@ from .mudada_feature_state_migration import MudadaFeatureStateMigration
 from .mudada_halloween_rewards_migration import MudadaHalloweenRewardsMigration
 from .mudada_transactions_migration import MudadaTransactionsMigration
 from .mudada_wallets_migration import MudadaWalletsMigration
+from .schema_migration import SchemaMigration
+from .user_rewards_migration import UserRewardsMigration
+from .valentine2025_migration import Valentine2025Migration

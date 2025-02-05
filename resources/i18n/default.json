@@ -903,6 +903,13 @@
                 "trick_message": "The bag rustles… but alas, only whispers of shadows inside. The Spooky Wolf has tricked you this time!\n||This has a 10% chance of happening and the next time you're guaranteed an x2 reward multiplier.||",
                 "embed_footer": "Check back tomorrow for another Trick-or-Treat bag."
             },
+            "rate_user_workflow": {
+                "cannot_rate_self_error": "You can't rate yourself, silly.",
+                "not_rated_yet_error": "You haven't rated <@{user_id}>, yet.",
+                "rating_successful": "I've recorded your [rating]({chart_url}) of <@{user_id}>. You can re-do it any time.",
+                "rating_successful_with_reward": "I've recorded your [rating]({chart_url}) of <@{user_id}>. You can re-do it any time.\n\nAs a bonus, this generous wolf has given you **{granted_amount:,}** <:{currency_emoji_name}:{currency_emoji_id}>. You can earn an additional **{amount_left:,}** <:{currency_emoji_name}:{currency_emoji_id}> by rating more people.",
+                "unrating_successful": "I've removed your rating of <@{user_id}>. You can re-do it any time."
+            },
             "reset_reservations_workflow": {
                 "nothing_to_return_error": "You haven't given anyone any gifts, yet.",
                 "successful_reset": "I've retrieved all **{returned_amount:,}** <:bonbon:1196752635773079572>. You now have **{total_amount:,}** <:bonbon:1196752635773079572> left."
@@ -939,6 +946,15 @@
                 "gift_finalized_already_error": "Alas, your gift has been delivered to <@{user_id}> already, therefore you aren't able to change them anymore.",
                 "taken_less_successfully": "I've retrieved the remaining **{taken_amount:,}** <:bonbon:1196752635773079572> from <@{user_id}>. You now have **{total_amount:,}** <:bonbon:1196752635773079572>.",
                 "taken_exact_successfully": "I've retrieved **{taken_amount:,}** <:bonbon:1196752635773079572> from <@{user_id}>. You now have **{total_amount:,}** <:bonbon:1196752635773079572>."
+            },
+            "view_rating_workflow": {
+                "no_ratings_yet_error": "You don't have any ratings, yet.",
+                "rating_not_found_error": "The sneaky wolf has taken those ratings away. Please, use this command again.",
+                "rating_chart": "[Here]({chart_url}) is your rating chart.",
+                "combo_box_placeholder": "Select a person",
+                "embed_title": "Your statistics",
+                "embed_description": "This is how **{source_name}** rated you.",
+                "embed_description_with_message": "This is how **{source_name}** rated you.\n\nTheir message to you:\n> {message}"
             }
         },
 

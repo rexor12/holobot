@@ -2,10 +2,12 @@ import asyncio
 import os
 from collections.abc import Awaitable, Callable
 from datetime import timedelta
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
+from holobot.sdk import IDisposable
 from holobot.sdk.concurrency import IAsyncDisposable
 from holobot.sdk.exceptions import ArgumentError
+from holobot.sdk.logging import ILogger, ILoggerFactory
 from holobot.sdk.threading import CancellationToken, CancellationTokenSource
 from holobot.sdk.threading.utils import wait
 from holobot.sdk.utils import UNDEFINED, UndefinedType
@@ -68,12 +70,14 @@ class _CacheEntry(Generic[TValue]):
 class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
     def __init__(
         self,
-        cleanup_interval: timedelta
+        cleanup_interval: timedelta,
+        logger: ILogger
     ) -> None:
         super().__init__()
         if cleanup_interval < ZERO_TIMEDELTA:
             raise ArgumentError("cleanup_interval", "Value must be positive.")
 
+        self.__logger = logger
         self.__entries = dict[_CacheEntryKey[TKey], _CacheEntry[TValue]]()
         self.__expires = dict[_CacheEntryKey[TKey], _CacheEntry[TValue]]()
         # TODO Async reader-writer lock?
@@ -127,7 +131,7 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
             return UNDEFINED
 
         async with self.__lock:
-            self.__remove_entry(key)
+            self.__remove_entry(key, True)
 
             entry = _CacheEntry(value, policy)
             self.__entries[key] = entry
@@ -142,7 +146,7 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
         key: _CacheEntryKey[TKey]
     ) -> TValue | UndefinedType:
         async with self.__lock:
-            return self.__remove_entry(key)
+            return self.__remove_entry(key, False)
 
     async def _on_dispose(self) -> None:
         if self.__token_source: self.__token_source.cancel()
@@ -157,21 +161,27 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
             return UNDEFINED
 
         if entry.policy.is_expired():
-            self.__remove_entry(key)
+            self.__remove_entry(key, True)
             return UNDEFINED
 
         entry.policy.on_entry_accessed()
 
         return entry.value
 
-    def __remove_entry(self, key: _CacheEntryKey[TKey]) -> TValue | UndefinedType:
+    def __remove_entry(
+        self,
+        key: _CacheEntryKey[TKey],
+        dispose_value: bool
+    ) -> TValue | UndefinedType:
         value = self.__entries.pop(key, None)
         value2 = self.__expires.pop(key, None)
 
         if value is not None:
+            self.__try_dispose_entry(value)
             return value.value
 
         if value2 is not None:
+            self.__try_dispose_entry(value2)
             return value2.value
 
         return UNDEFINED
@@ -188,7 +198,16 @@ class _ItemStore(IAsyncDisposable, Generic[TKey, TValue]):
                 ):
                     continue
 
-                self.__remove_entry(key)
+                self.__remove_entry(key, True)
+
+    def __try_dispose_entry(self, entry: Any) -> None:
+        # Can't type-check against a Protocol at runtime,
+        # so quick-check if there is a suitable-ish method.
+        try:
+            if entry is not None and hasattr(entry, "dispose"):
+                cast(IDisposable, entry).dispose()
+        except Exception as error:
+            self.__logger.error("Failed to dispose cache entry", error)
 
 _DEFAULT_NO_EXPIRATION_POLICY = NoExpirationCacheEntryPolicy()
 
@@ -197,10 +216,15 @@ class ConcurrentMemoryCache(ICache, IAsyncDisposable, Generic[TKey, TValue]):
 
     def __init__(
         self,
+        logger_factory: ILoggerFactory,
         cleanup_interval: timedelta | None = None
     ):
+        logger = logger_factory.create(ConcurrentMemoryCache)
         self.__stores = tuple(
-            _ItemStore[TKey, TValue](cleanup_interval or DEFAULT_CLEANUP_INTERVAL)
+            _ItemStore[TKey, TValue](
+                cleanup_interval or DEFAULT_CLEANUP_INTERVAL,
+                logger
+            )
             for _ in range(DEGREE_OF_PARALLELISM)
         )
 

@@ -14,6 +14,7 @@ from holobot.sdk.lifecycle import IStartable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.system import IEnvironment
 from holobot.sdk.threading.utils import COMPLETED_TASK
+from holobot.sdk.utils.iterable_utils import select_many
 from .types import I18nGroup
 
 _ARGUMENTS_SENTINEL: dict[str, Any] = {}
@@ -153,27 +154,18 @@ class I18nProvider(II18nProvider, II18nManager, IStartable):
 
     def reload_all(self) -> None:
         languages: dict[str, I18nGroup] = {}
-        if self.__options.value.ResourceDirectoryPath:
-            i18n_directory = os.path.join(self.__options.value.ResourceDirectoryPath, "i18n")
-        else:
-            i18n_directory = os.path.join(self.__environment.root_path, "resources", "i18n")
-
-        i18n_files = sorted(
-            glob.glob("*.json", root_dir=i18n_directory),
-            key=cmp_to_key(I18nProvider.__compare_file_names)
-        )
-
-        for file_name in i18n_files:
-            file_info = os.path.splitext(file_name)
+        i18n_file_paths = self.__get_resource_file_paths()
+        for file_path in i18n_file_paths:
+            file_info = os.path.splitext(file_path)
             name_parts = file_info[0].split("_")
             language = _DEFAULT_LANGUAGE if len(name_parts) < 2 else name_parts[1]
-            i18n_group = I18nProvider.__build_map(os.path.join(i18n_directory, file_name))
+            i18n_group = I18nProvider.__build_map(file_path)
             if language in languages:
                 languages[language].merge(i18n_group)
-                self.__logger.debug("Merged I18N files", merge_source=file_name)
+                self.__logger.debug("Merged I18N files", merge_source=file_path)
             else:
                 languages[language] = i18n_group
-                self.__logger.debug("Loaded I18N file", file_name=file_name)
+                self.__logger.debug("Loaded I18N file", file_name=file_path)
 
         self.__languages = languages
 
@@ -219,6 +211,29 @@ class I18nProvider(II18nProvider, II18nManager, IStartable):
             return 1
 
         return 0
+
+    def __get_resource_file_paths(
+        self
+    ) -> Iterable[str]:
+        # Sort the localization files so that overrides come after the base ones.
+        # Stable sorting should be used so that the correct sequence is produced
+        # according to the list determined by the configured paths.
+        resource_directory_paths = map(
+            lambda path: os.path.join(path, "i18n"),
+            self.__options.value.ResourceDirectoryPaths or [self.__environment.root_path]
+        )
+        resource_file_paths = sorted(
+            select_many(
+                resource_directory_paths,
+                lambda path: map(
+                    lambda file_name: os.path.join(path, file_name),
+                    glob.glob("*.json", root_dir=path)
+                )
+            ),
+            key=cmp_to_key(I18nProvider.__compare_file_names)
+        )
+
+        return resource_file_paths
 
     def __get_value_by_key(
         self,

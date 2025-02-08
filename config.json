@@ -184,10 +184,11 @@
             "IsNetworkTraceEnabled": "__HOLO_IS_DISCORD_NETWORK_TRACE_ENABLED__"
         },
         "EnvironmentOptions": {
+            "AssetSlidingExpirationTimeInMinutes": 10,
             "IsDebug": "__HOLO_IS_DEBUG__",
             "LogLevel": "__HOLO_LOG_LEVEL__",
             "HttpPoolSize": "__HOLO_HTTP_POOL_SIZE__",
-            "ResourceDirectoryPath": ""
+            "ResourceDirectoryPaths": ["resources"]
         },
         "DatabaseOptions": {
             "Host": "__HOLO_DATABASE_HOST__",

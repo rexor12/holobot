@@ -1,5 +1,4 @@
 import asyncio
-import types
 from collections.abc import Awaitable, Generator
 from datetime import timedelta
 from typing import Any, Generic, TypeVar

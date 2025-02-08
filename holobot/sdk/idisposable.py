@@ -1,5 +1,6 @@
-# NOTE: Doesn't inherit from Protocol, because isinstance checks don't work then.
-class IDisposable:
+from typing import Protocol
+
+class IDisposable(Protocol):
     def __enter__(self):
         return self
 

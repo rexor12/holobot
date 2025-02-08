@@ -12,14 +12,14 @@ from kanata.models import InjectableScopeType
 from holobot.framework import Kernel
 from holobot.framework.caching import ObjectCache
 from holobot.framework.configs import Configurator, OptionsProvider
-from holobot.framework.logging import LoggerManager, LoggerWrapper
+from holobot.framework.logging import DefaultLoggerFactory, LoggerManager, LoggerWrapper
 from holobot.framework.logging.handlers import ForwardEntryHandler
 from holobot.framework.logging.processors import ignore_loggers_by_name
 from holobot.framework.system import Environment
 from holobot.sdk.caching import ICache, IObjectCache
 from holobot.sdk.configs import IConfigurator, IOptions
 from holobot.sdk.lifecycle import IStartable
-from holobot.sdk.logging import ILoggerManager
+from holobot.sdk.logging import ILoggerFactory, ILoggerManager
 from holobot.sdk.logging.enums import LogLevel
 from holobot.sdk.system import IEnvironment
 
@@ -62,6 +62,8 @@ logging.basicConfig(
 logger_manager = LoggerManager()
 logger_manager.set_min_log_level(log_level)
 
+logger_factory = DefaultLoggerFactory(logger_manager)
+
 logger.info("Configured logging", log_level=log_level.name or log_level.value)
 
 # The idea here is to register the services for each extension independently,
@@ -70,10 +72,11 @@ logger.info("Configured logging", log_level=log_level.name or log_level.value)
 catalog_builder = InjectableCatalogBuilder()
 catalog_builder.add_module("holobot")
 catalog_builder.register_instance(logger_manager, (ILoggerManager,))
+catalog_builder.register_instance(logger_factory, (ILoggerFactory,))
 catalog_builder.register_instance(environment, (IEnvironment,))
 catalog_builder.register_instance(configurator, (IConfigurator,))
 catalog_builder.register_generic(OptionsProvider, (IOptions,), InjectableScopeType.SINGLETON)
-catalog_builder.register_instance(ObjectCache(), (ICache[Any, Any], IObjectCache, IStartable))
+catalog_builder.register_instance(ObjectCache(logger_factory), (ICache[Any, Any], IObjectCache, IStartable))
 logger.info("Loaded all modules")
 
 scope = LifetimeScope(catalog_builder.build())

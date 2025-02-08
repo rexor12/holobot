@@ -4,6 +4,7 @@ from typing import Any, TypeVar
 from holobot.sdk.caching import CacheEntryPolicy, CacheView, ConcurrentMemoryCache, IObjectCache
 from holobot.sdk.exceptions import InvalidOperationError
 from holobot.sdk.lifecycle import IStartable
+from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.type_utils import UndefinedType
 
 TKey = TypeVar("TKey")
@@ -16,12 +17,13 @@ class ObjectCache(IObjectCache, IStartable):
     def priority(self) -> int:
         return 100
 
-    def __init__(self) -> None:
+    def __init__(self, logger_factory: ILoggerFactory) -> None:
         super().__init__()
+        self.__logger_factory = logger_factory
         self.__cache: ConcurrentMemoryCache[Any, Any] | None = None
 
     async def start(self):
-        self.__cache = ConcurrentMemoryCache()
+        self.__cache = ConcurrentMemoryCache(self.__logger_factory)
 
     async def stop(self):
         if self.__cache:

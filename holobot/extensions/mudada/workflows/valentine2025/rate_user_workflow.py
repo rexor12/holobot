@@ -6,12 +6,15 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import (
     Choice, InteractionResponse, Option, StringOption
 )
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
 from holobot.extensions.general.sdk.currencies.models import ICurrency
 from holobot.extensions.general.sdk.wallets.managers import IWalletManager
 from holobot.extensions.mudada.configs import MudadaOptions
-from holobot.extensions.mudada.constants import VALENTINES_2025_EVENT_TOGGLE_FEATURE_NAME
+from holobot.extensions.mudada.constants import (
+    MUDADA_FEATURE_NAME, VALENTINES_2025_EVENT_TOGGLE_FEATURE_NAME
+)
 from holobot.extensions.mudada.factories import ChartData, IRatingChartFactory
 from holobot.extensions.mudada.models import Valentine2025Rating, Valentine2025RatingId
 from holobot.extensions.mudada.models.user_reward import UserReward
@@ -72,7 +75,8 @@ class RateUserWorkflow(WorkflowBase):
             Option("creativity", "How creative do you think the person is?", OptionType.INTEGER, choices=_SCORES),
             Option("chemistry", "How well do you get along with the person?", OptionType.INTEGER, choices=_SCORES),
             StringOption("message", "An optional message for the person.", is_mandatory=False, max_length=250),
-        )
+        ),
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def rate_user(
         self,
@@ -187,7 +191,8 @@ class RateUserWorkflow(WorkflowBase):
         description="Removes your rating of a person's qualities.",
         options=(
             Option("user", "The user to clear the rating for.", OptionType.USER),
-        )
+        ),
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def unrate_user(
         self,

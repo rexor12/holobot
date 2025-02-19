@@ -7,7 +7,9 @@ from holobot.discord.sdk.workflows.interactables.components import (
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.extensions.mudada.factories import ChartData, IRatingChartFactory
 from holobot.extensions.mudada.models import Valentine2025Rating, Valentine2025RatingId
 from holobot.extensions.mudada.repositories.valentine2025 import IValentine2025RatingRepository
@@ -37,7 +39,8 @@ class ViewRatingWorkflow(WorkflowBase):
         group_name="mudada",
         subgroup_name="valentine",
         name="mychart",
-        description="See an aggregated chart of other users' ratings of you."
+        description="See an aggregated chart of other users' ratings of you.",
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def view_my_chart(
         self,
@@ -87,7 +90,8 @@ class ViewRatingWorkflow(WorkflowBase):
         group_name="mudada",
         subgroup_name="valentine",
         name="myratings",
-        description="See a list of all ratings you got from others."
+        description="See a list of all ratings you got from others.",
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
     )
     async def view_my_ratings(
         self,
@@ -112,7 +116,10 @@ class ViewRatingWorkflow(WorkflowBase):
             is_ephemeral=True
         )
 
-    @component(identifier="mv25sel")
+    @component(
+        identifier="mv25sel",
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
+    )
     async def display_rating(
         self,
         context: InteractionContext,
@@ -151,7 +158,10 @@ class ViewRatingWorkflow(WorkflowBase):
             components=components
         )
 
-    @component(identifier="mv25pag")
+    @component(
+        identifier="mv25pag",
+        restrictions=(FeatureRestriction(feature_name=MUDADA_FEATURE_NAME),)
+    )
     async def change_page(
         self,
         context: InteractionContext,

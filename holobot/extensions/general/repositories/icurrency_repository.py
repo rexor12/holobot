@@ -1,4 +1,4 @@
-from collections.abc import Awaitable, Iterable
+from collections.abc import Awaitable, Iterable, Sequence
 from typing import Protocol
 
 from holobot.extensions.general.models import Currency
@@ -44,4 +44,10 @@ class ICurrencyRepository(IRepository[int, Currency], ICurrencyDataProvider, Pro
         self,
         currency_id: int
     ) -> Awaitable[CurrencyDisplayInfo]:
+        ...
+
+    def get_display_infos(
+        self,
+        currency_ids: Sequence[int]
+    ) -> Awaitable[list[CurrencyDisplayInfo]]:
         ...

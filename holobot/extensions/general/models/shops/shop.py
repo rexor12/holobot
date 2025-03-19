@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from holobot.extensions.general.enums import ItemType
 from holobot.extensions.general.sdk.shops.models import ShopId
 from holobot.sdk.database.entities import AggregateRoot
 

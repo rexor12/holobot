@@ -3,12 +3,12 @@ from holobot.discord.sdk.servers import IMemberDataProvider
 from holobot.discord.sdk.utils.string_utils import escape_user_text
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
-    ComboBox, ComboBoxItem, ComboBoxState, LayoutBase, Paginator, PaginatorState, StackLayout
+    ComboBox, ComboBoxItem, ComboBoxState, Paginator, PaginatorState, StackLayout
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
 from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
-from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
+from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, View
 from holobot.extensions.mudada.constants import MUDADA_FEATURE_NAME
 from holobot.extensions.mudada.factories import ChartData, IRatingChartFactory
 from holobot.extensions.mudada.models import Valentine2025Rating, Valentine2025RatingId
@@ -193,7 +193,7 @@ class ViewRatingWorkflow(WorkflowBase):
         source_user_id: int | None,
         target_user_id: int,
         page_index: int
-    ) -> tuple[str | None, Embed | None, list[LayoutBase] | None]:
+    ) -> View:
         metadatas = await self.__rating_repository.paginate_ratings(
             target_user_id,
             page_index,
@@ -208,10 +208,8 @@ class ViewRatingWorkflow(WorkflowBase):
             )
 
         if not metadatas.items:
-            return (
-                self.__i18n.get("extensions.mudada.view_rating_workflow.no_ratings_yet_error"),
-                None,
-                None
+            return View(
+                content=self.__i18n.get("extensions.mudada.view_rating_workflow.no_ratings_yet_error")
             )
 
         rating_id = Valentine2025RatingId(
@@ -220,16 +218,13 @@ class ViewRatingWorkflow(WorkflowBase):
         )
         rating = await self.__rating_repository.get(rating_id)
         if not rating:
-            return (
-                self.__i18n.get("extensions.mudada.view_rating_workflow.rating_not_found_error"),
-                None,
-                None
+            return View(
+                content=self.__i18n.get("extensions.mudada.view_rating_workflow.rating_not_found_error")
             )
 
-        return (
-            None,
-            await self.__create_embed(rating, server_id),
-            [
+        return View(
+            embed=await self.__create_embed(rating, server_id),
+            components=[
                 StackLayout(
                     id="combo_box_container",
                     children=[

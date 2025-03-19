@@ -1,11 +1,6 @@
-from dataclasses import dataclass, field
-
-from holobot.extensions.general.models.items import ItemDisplayInfoBase
+from dataclasses import dataclass
 
 @dataclass(kw_only=True)
 class ShopDisplayInfo:
+    identifier: int
     name: str
-    page_index: int
-    page_size: int
-    item_count: int
-    items: list[ItemDisplayInfoBase] = field(default_factory=list)

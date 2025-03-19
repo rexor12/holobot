@@ -1,4 +1,4 @@
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Sequence
 from typing import cast
 
 from holobot.extensions.general.models.items import BackgroundDisplayInfo
@@ -106,8 +106,31 @@ class UserProfileBackgroundRepository(
                 raise ValueError(f"Background with identifier '{background_id}' cannot be found.")
 
             return BackgroundDisplayInfo(
+                background_id=background_id,
                 name=cast(str, result.get("name"))
             )
+
+    async def get_display_infos(
+        self,
+        background_ids: Sequence[int]
+    ) -> list[BackgroundDisplayInfo]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("id", "name")
+                .from_table(self.table_name)
+                .where()
+                .field_in("id", background_ids)
+            )
+            records = await query.compile().fetch(session.connection)
+
+            return [
+                BackgroundDisplayInfo(
+                    background_id=cast(int, record.get("id")),
+                    name=cast(str, record.get("name"))
+                )
+                for record in records
+            ]
 
     def _map_record_to_model(self, record: UserProfileBackgroundRecord) -> UserProfileBackground:
         return UserProfileBackground(

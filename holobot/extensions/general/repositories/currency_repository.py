@@ -1,4 +1,4 @@
-from collections.abc import Awaitable, Iterable
+from collections.abc import Awaitable, Iterable, Sequence
 from typing import cast
 
 from holobot.extensions.general.models import Currency
@@ -152,7 +152,7 @@ class CurrencyRepository(
         async with (session := await self._get_session()):
             query = (Query
                 .select()
-                .columns("name", "emoji_id", "emoji_name")
+                .columns("id", "name", "emoji_id", "emoji_name")
                 .from_table(self.table_name)
                 .where()
                 .field("id", Equality.EQUAL, currency_id)
@@ -161,10 +161,35 @@ class CurrencyRepository(
                 raise ValueError(f"Currency with identifier '{currency_id}' cannot be found.")
 
             return CurrencyDisplayInfo(
+                currency_id=cast(int, result.get("id")),
                 name=cast(str, result.get("name")),
                 emoji_id=cast(int, result.get("emoji_id")),
                 emoji_name=cast(str, result.get("emoji_name"))
             )
+
+    async def get_display_infos(
+        self,
+        currency_ids: Sequence[int]
+    ) -> list[CurrencyDisplayInfo]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("id", "name", "emoji_id", "emoji_name")
+                .from_table(self.table_name)
+                .where()
+                .field_in("id", currency_ids)
+            )
+            records = await query.compile().fetch(session.connection)
+
+            return [
+                CurrencyDisplayInfo(
+                    currency_id=cast(int, record.get("id")),
+                    name=cast(str, record.get("name")),
+                    emoji_id=cast(int, record.get("emoji_id")),
+                    emoji_name=cast(str, record.get("emoji_name"))
+                )
+                for record in records
+            ]
 
     def get_currency_by_code(self, server_id: int, code: str) -> Awaitable[ICurrency | None]:
         return self._get_by_filter(lambda where: where.fields(

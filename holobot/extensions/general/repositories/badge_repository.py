@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import cast
 
 from holobot.extensions.general.models import Badge
@@ -79,10 +80,40 @@ class BadgeRepository(
                 raise ValueError(f"Bage with identifier '{badge_id}' cannot be found.")
 
             return BadgeDisplayInfo(
+                badge_id=badge_id,
                 name=cast(str, result.get("name")),
                 emoji_id=cast(int, result.get("emoji_id")),
                 emoji_name=cast(str, result.get("emoji_name"))
             )
+
+    async def get_display_infos(
+        self,
+        server_id: int,
+        badge_ids: Sequence[int]
+    ) -> list[BadgeDisplayInfo]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("badge_id", "name", "emoji_id", "emoji_name")
+                .from_table(self.table_name)
+                .where()
+                .field_in("badge_id", badge_ids)
+                .and_field("server_id", Equality.EQUAL, server_id)
+            )
+            records = await query.compile().fetch(session.connection)
+
+            return [
+                BadgeDisplayInfo(
+                    badge_id=BadgeId(
+                        server_id=server_id,
+                        badge_id=cast(int, record.get("badge_id"))
+                    ),
+                    name=cast(str, record.get("name")),
+                    emoji_id=cast(int, record.get("emoji_id")),
+                    emoji_name=cast(str, record.get("emoji_name"))
+                )
+                for record in records
+            ]
 
     def _map_record_to_model(self, record: BadgeRecord) -> Badge:
         return Badge(

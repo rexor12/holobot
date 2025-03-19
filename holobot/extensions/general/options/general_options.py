@@ -38,3 +38,6 @@ class GeneralOptions(OptionsDefinition):
 
     FortuneCookieEmbedThumbnailUrl: str | None = None
     """The URL of the thumbnail image to display in the fortune cookie embed."""
+
+    ShopEmbedThumbnailUrl: str | None = None
+    """ The URL of the thumbnail image to display in the shop embed."""

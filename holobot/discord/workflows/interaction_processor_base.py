@@ -192,7 +192,6 @@ class InteractionProcessorBase(
             await self.__try_create_initial_response(interaction, interactable)
 
         with execution_context.start("Interactable processed"):
-            # TODO (Shops) Resolve argument name (from "argument_name")
             response = await interactable.callback(
                 descriptor.workflow,
                 context,

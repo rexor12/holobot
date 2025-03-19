@@ -1,4 +1,4 @@
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Sequence
 from typing import Protocol
 
 from holobot.extensions.general.models import Badge
@@ -14,4 +14,11 @@ class IBadgeRepository(IRepository[BadgeId, Badge], Protocol):
         self,
         badge_id: BadgeId
     ) -> Awaitable[BadgeDisplayInfo]:
+        ...
+
+    def get_display_infos(
+        self,
+        server_id: int,
+        badge_ids: Sequence[int]
+    ) -> Awaitable[list[BadgeDisplayInfo]]:
         ...

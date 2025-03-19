@@ -28,6 +28,7 @@ class ShopItemsMigration(MigrationBase):
             " price_currency_id BIGINT NOT NULL,\n"
             " price_amount INTEGER NOT NULL,\n"
             " PRIMARY KEY(server_id, shop_id, serial_id),\n"
-            " CONSTRAINT fk_shops FOREIGN KEY(server_id, shop_id) REFERENCES shops(server_id, shop_id) ON DELETE CASCADE\n"
+            " CONSTRAINT fk_shops FOREIGN KEY(server_id, shop_id) REFERENCES shops(server_id, shop_id) ON DELETE CASCADE,\n"
+            " CONSTRAINT fk_currencies FOREIGN KEY(price_currency_id) REFERENCES currencies(id) ON DELETE CASCADE\n"
             ")"
         ))

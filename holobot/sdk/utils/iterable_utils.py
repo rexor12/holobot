@@ -1,5 +1,5 @@
-from collections.abc import Callable, Generator, Iterable, Sequence
-from typing import Any, TypeVar
+from collections.abc import AsyncGenerator, Callable, Generator, Iterable, Sequence
+from typing import Any, TypeVar, cast
 
 from holobot.sdk.exceptions import ArgumentError
 
@@ -36,6 +36,12 @@ def find_or_none(
             return index
 
     return None
+
+def select(
+    iterable: Iterable[T],
+    transformer: Callable[[T], T2]
+) -> Iterable[T2]:
+    return map(transformer, iterable)
 
 def select_many(
     iterable: Iterable[T],
@@ -110,3 +116,46 @@ def batch(
             yield items
 
         items.clear()
+
+def group_by(
+    iterable: Iterable[T],
+    key_selector: Callable[[T], T2]
+) -> dict[T2, Sequence[T]]:
+    result = dict[T2, Sequence[T]]()
+    for item in iterable:
+        key = key_selector(item)
+        if key in result:
+            collection = cast(list[T], result[key])
+        else:
+            result[key] = collection = list[T]()
+
+        collection.append(item)
+
+    return result
+
+def unique(
+    iterable: Iterable[T]
+) -> Iterable[T]:
+    return set(iterable)
+
+def unique_by(
+    iterable: Iterable[T],
+    projection: Callable[[T], T2]
+) -> Iterable[T]:
+    items = set[T2]()
+    for item in iterable:
+        key = projection(item)
+        if key in items:
+            continue
+
+        yield item
+        items.add(key)
+
+async def extend_async(
+    target: list[T],
+    source: AsyncGenerator[T, Any]
+) -> list[T]:
+    async for item in source:
+        target.append(item)
+
+    return target

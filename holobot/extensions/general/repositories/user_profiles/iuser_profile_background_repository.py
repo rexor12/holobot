@@ -1,4 +1,4 @@
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Sequence
 from typing import Protocol
 
 from holobot.extensions.general.models.items import BackgroundDisplayInfo
@@ -22,4 +22,10 @@ class IUserProfileBackgroundRepository(IRepository[int, UserProfileBackground], 
         self,
         background_id: int
     ) -> Awaitable[BackgroundDisplayInfo]:
+        ...
+
+    def get_display_infos(
+        self,
+        background_ids: Sequence[int]
+    ) -> Awaitable[list[BackgroundDisplayInfo]]:
         ...

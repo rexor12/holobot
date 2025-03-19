@@ -1,1 +1,1 @@
-from .buy_item_workflow import BuyItemWorkflow
+from .browse_shops_workflow import BrowseShopsWorkflow

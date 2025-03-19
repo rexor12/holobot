@@ -102,8 +102,8 @@
                 "log_level_changed": "The log level has been changed."
             },
             "set_operating_mode_workflow": {
-                "normal_mode_enabled": "Normal operating mode has been enabled.",
-                "maintenance_mode_enabled": "Maintenance mode has been enabled."
+                "normal_mode_enabled": "🟢Normal operating mode has been enabled.",
+                "maintenance_mode_enabled": "🔨Maintenance mode has been enabled."
             }
         },
 
@@ -113,7 +113,13 @@
                 "not_enough_money_error": "Alas, you seem to lack the funds for this purchase.",
                 "missing_item_error": "Alas, this is an item I cannot sell to you.",
                 "purchase_free": "I've transferred **[{item_name}]**x**{item_count}** to your inventory for free.",
-                "purchase": "I've transferred **[{item_name}]**x**{item_count}** to your inventory in exchange for **{transaction_cost:,}** <:{currency_emoji_name}:{currency_emoji_id}>. You have **{currency_left:,}** <:{currency_emoji_name}:{currency_emoji_id}> left."
+                "purchase": "I've transferred **[{item_name}]**x**{item_count}** to your inventory in exchange for **{transaction_cost:,}** <:{currency_emoji_name}:{currency_emoji_id}>. You have **{currency_left:,}** <:{currency_emoji_name}:{currency_emoji_id}> left.",
+                "shop_empty_error": "Alas, **{shop_name}** has run out of its stock. Check back later.",
+                "shop_title": "Shop: {shop_name}",
+                "item_description": "**{index}.** **[{item_name}]**x{item_count:,} - **{item_price:,}** <:{currency_emoji_name}:{currency_emoji_id}>",
+                "shop_footer": "Use the buttons to view or purchase items.",
+                "buy_button": "Buy #{index}",
+                "view_shop_button": "View shop"
             },
             "choose_item_workflow": {
                 "result": "Lo and behold, I choose **{result}**."

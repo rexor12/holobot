@@ -35,6 +35,15 @@ class ColumnConstraintBuilder(IConstraintBuilder):
             sql.append(self.equality.to_operator())
             if self.is_raw_value:
                 sql.append(self.value)
+            elif self.equality == Equality.LIKE:
+                sql.append(f"${base_param_index}")
+                arguments.append(f"%{self.value}%")
+            elif self.equality == Equality.LIKE_START:
+                sql.append(f"${base_param_index}")
+                arguments.append(f"%{self.value}")
+            elif self.equality == Equality.LIKE_END:
+                sql.append(f"${base_param_index}")
+                arguments.append(f"{self.value}%")
             else:
                 sql.append(f"${base_param_index}")
                 arguments.append(self.value)

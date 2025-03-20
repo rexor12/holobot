@@ -62,6 +62,7 @@ class IsInteractableOnCooldownRule(IWorkflowExecutionRule):
             )
         ) if time_left > 0 else (False, None)
 
+    # NOTE: Threads share their cooldowns with their parent channels.
     @staticmethod
     def __get_entity_id(
         interactable: Interactable,

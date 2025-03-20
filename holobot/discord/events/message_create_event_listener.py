@@ -2,8 +2,9 @@ import hikari
 
 from holobot.discord.bot import Bot
 from holobot.discord.sdk.events import MessageReceivedEvent
-from holobot.discord.sdk.models import InteractionInfo, Message
+from holobot.discord.sdk.models import Message
 from holobot.discord.transformers.embed import to_model
+from holobot.discord.utils.interaction_utils import ChannelInfo
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
 from .discord_event_listener_base import DiscordEventListenerBase
@@ -25,29 +26,43 @@ class MessageCreateEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
         self.__listeners = sorted(listeners, key=lambda i: i.priority)
 
     async def on_event(self, bot: Bot, event: _EVENT_TYPE) -> None:
+        channel_id, thread_id = MessageCreateEventListener.get_channel_and_thread_ids(event)
         local_event = MessageReceivedEvent(
             message=Message(
                 author_id=event.message.author.id,
                 server_id=event.message.guild_id,
-                channel_id=event.message.channel_id,
+                channel_id=channel_id,
+                thread_id=thread_id,
                 message_id=event.message_id,
                 content=event.message.content,
                 embeds=tuple(map(to_model, event.message.embeds)),
-                # We're lazy so components aren't parsed for regular messages.
+                # No wasting resources on components.
                 components=()
             ),
-            interaction=MessageCreateEventListener.__create_interaction_info(event)
+            interaction=None
         )
 
         for listener in self.__listeners:
             await listener.on_event(local_event)
 
     @staticmethod
-    def __create_interaction_info(event: _EVENT_TYPE) -> InteractionInfo | None:
-        if not (interaction := event.message.interaction):
-            return None
+    def get_channel_and_thread_ids(
+        event: _EVENT_TYPE
+    ) -> ChannelInfo:
+        if not isinstance(event, hikari.GuildMessageCreateEvent):
+            return ChannelInfo(
+                channel_id=event.channel_id,
+                thread_id=None
+            )
 
-        return InteractionInfo(
-            author_id=interaction.user.id,
-            name=interaction.name
+        channel = event.get_channel()
+        channel_id = event.channel_id
+        thread_id = None
+        if isinstance(channel, hikari.GuildThreadChannel):
+            channel_id = channel.parent_id
+            thread_id = event.channel_id
+
+        return ChannelInfo(
+            channel_id=channel_id,
+            thread_id=thread_id
         )

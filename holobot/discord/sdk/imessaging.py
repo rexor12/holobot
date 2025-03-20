@@ -12,6 +12,7 @@ class IMessaging(Protocol):
         self,
         server_id: int,
         channel_id: int,
+        thread_id: int | None,
         content: str | Embed,
         components: ComponentBase | list[LayoutBase] | None = None,
         *,

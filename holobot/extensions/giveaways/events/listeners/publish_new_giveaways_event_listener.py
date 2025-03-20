@@ -46,6 +46,7 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
             message_id = await self.__messaging.send_channel_message(
                 options.AnnouncementServerId,
                 options.AnnouncementChannelId,
+                None,
                 Embed(
                     title=self.__i18n_provider.get(
                         "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost_header"

@@ -13,6 +13,7 @@ from holobot.discord.sdk.workflows.models import (
     ServerMessageInteractionContext, ServerUserInteractionContext
 )
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
+from holobot.discord.utils.interaction_utils import get_channel_and_thread_ids
 from holobot.discord.workflows import InteractionProcessorBase, IWorkflowRegistry
 from holobot.discord.workflows.models import InteractionDescriptor
 from holobot.sdk.diagnostics import IExecutionContextFactory
@@ -80,6 +81,8 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
         if not interaction.guild_id:
             raise InteractionContextNotSupportedError()
 
+        channel_id, thread_id = get_channel_and_thread_ids(interaction)
+
         match interaction.command_type:
             case CommandType.MESSAGE:
                 return ServerMessageInteractionContext(
@@ -90,7 +93,8 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
                     message=None,
                     server_id=interaction.guild_id,
                     server_name=guild.name if (guild := interaction.get_guild()) else None,
-                    channel_id=interaction.channel_id,
+                    channel_id=channel_id,
+                    thread_id=thread_id,
                     target_message_id=cast(int, interaction.target_id)
                 )
             case CommandType.USER:
@@ -102,7 +106,8 @@ class MenuItemProcessor(InteractionProcessorBase[CommandInteraction, MenuItem], 
                     message=None,
                     server_id=interaction.guild_id,
                     server_name=guild.name if (guild := interaction.get_guild()) else None,
-                    channel_id=interaction.channel_id,
+                    channel_id=channel_id,
+                    thread_id=thread_id,
                     target_user_id=cast(int, interaction.target_id)
                 )
             case _:

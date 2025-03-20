@@ -1,7 +1,7 @@
 aiogoogle==5.12.0                   # Used for interacting with Google Cloud APIs.
 asyncpg==0.29.0                     # Used for working with PostgreSQL databases.
 dateparser==1.2.0                   # Used for date-time natural language processing.
-hikari==2.0.0.dev126                # Discord bot framework.
+hikari==2.2.0                       # Discord bot framework.
 kanata==4.0.0.0                     # Dependency injection framework.
 pillow==10.4.0                      # Image manipulation.
 python-dateutil==2.8.2              # Utilities for date and time.

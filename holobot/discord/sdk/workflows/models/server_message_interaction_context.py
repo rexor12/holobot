@@ -9,4 +9,5 @@ class ServerMessageInteractionContext(InteractionContext):
     server_id: int
     server_name: str | None
     channel_id: int
+    thread_id: int | None
     target_message_id: int

@@ -144,6 +144,7 @@ class ReminderProcessor(IStartable):
         await self.__messaging.send_channel_message(
             reminder.server_id,
             reminder.channel_id,
+            None,
             localized_message
         )
 

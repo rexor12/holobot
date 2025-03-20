@@ -80,6 +80,7 @@ class MemberDataProvider(IMemberDataProvider):
 
         guild = await get_bot().get_guild_by_id(server_id)
         member = await get_bot().get_guild_member(guild, user_id)
+
         # Check if the user the owner of the server, in which case all permissions are granted.
         if member.id == guild.owner_id:
             return Permission.all_permissions()

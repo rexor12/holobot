@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from hikari import ComponentInteraction
+import hikari
 
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.events import ComponentProcessedEvent
@@ -13,6 +13,7 @@ from holobot.discord.sdk.workflows.models import (
 )
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
 from holobot.discord.transformers.embed import to_model
+from holobot.discord.utils.interaction_utils import get_channel_and_thread_ids
 from holobot.discord.workflows import (
     IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
 )
@@ -25,8 +26,8 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.reactive import IListener
 
-@injectable(IInteractionProcessor[ComponentInteraction])
-class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Component]):
+@injectable(IInteractionProcessor[hikari.ComponentInteraction])
+class ComponentProcessor(InteractionProcessorBase[hikari.ComponentInteraction, Component]):
     def __init__(
         self,
         action_processor: IActionProcessor,
@@ -45,7 +46,7 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
     def _get_interactable_descriptor(
         self,
-        interaction: ComponentInteraction
+        interaction: hikari.ComponentInteraction
     ) -> InteractionDescriptor[Component]:
         component_id, index = self.__component_transformer.get_component_id(interaction.custom_id)
         invocation_target = self.__workflow_registry.get_component(component_id)
@@ -73,7 +74,7 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
     async def _on_interaction_processed(
         self,
-        interaction: ComponentInteraction,
+        interaction: hikari.ComponentInteraction,
         descriptor: InteractionDescriptor[Component],
         response: InteractionResponse
     ) -> None:
@@ -95,9 +96,11 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
 
     def __get_interaction_context(
         self,
-        interaction: ComponentInteraction,
+        interaction: hikari.ComponentInteraction,
         expected_target_types: dict[str, type[ComponentStateBase]]
     ) -> InteractionContext:
+        channel_id, thread_id = get_channel_and_thread_ids(interaction)
+
         if interaction.guild_id:
             return ServerChatInteractionContext(
                 request_id=uuid4(),
@@ -107,7 +110,8 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
                 message=self.__create_message(interaction, expected_target_types),
                 server_id=interaction.guild_id,
                 server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=interaction.channel_id
+                channel_id=channel_id,
+                thread_id=thread_id
             )
 
         return DirectMessageInteractionContext(
@@ -116,18 +120,21 @@ class ComponentProcessor(InteractionProcessorBase[ComponentInteraction, Componen
             author_name=interaction.user.username,
             author_nickname=None,
             message=self.__create_message(interaction, expected_target_types),
-            channel_id=interaction.channel_id
+            channel_id=channel_id
         )
 
     def __create_message(
         self,
-        interaction: ComponentInteraction,
+        interaction: hikari.ComponentInteraction,
         expected_target_types: dict[str, type[ComponentStateBase]]
     ) -> Message:
+        channel_id, thread_id = get_channel_and_thread_ids(interaction)
+
         return Message(
             author_id=interaction.message.author.id,
             server_id=interaction.guild_id,
-            channel_id=interaction.channel_id,
+            channel_id=channel_id,
+            thread_id=thread_id,
             message_id=interaction.message.id,
             content=interaction.message.content,
             embeds=tuple(map(to_model, interaction.message.embeds)),

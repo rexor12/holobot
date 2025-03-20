@@ -9,4 +9,5 @@ class ServerUserInteractionContext(InteractionContext):
     server_id: int
     server_name: str | None
     channel_id: int
+    thread_id: int | None
     target_user_id: int

@@ -49,6 +49,7 @@ class LogManager(ILogManager):
         await self.__messaging.send_channel_message(
             server_id,
             log_settings.channel_id,
+            None,
             message,
             suppress_user_mentions=True
         )

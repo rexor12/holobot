@@ -13,7 +13,7 @@ from .igeneric_discord_event_listener import IGenericDiscordEventListener
 _EVENT_TYPE = hikari.InteractionCreateEvent
 
 @injectable(IGenericDiscordEventListener)
-class InteractionCreatedEventListener(DiscordEventListenerBase[_EVENT_TYPE]):
+class ProcessInteractionOnInteractionCreate(DiscordEventListenerBase[_EVENT_TYPE]):
     def __init__(
         self,
         autocomplete_processor: IInteractionProcessor[AutocompleteInteraction],

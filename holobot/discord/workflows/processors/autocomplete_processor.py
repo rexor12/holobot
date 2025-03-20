@@ -1,7 +1,7 @@
 from collections.abc import Awaitable
 from uuid import uuid4
 
-from hikari import AutocompleteInteraction, OptionType
+import hikari
 
 from holobot.discord.actions import IActionProcessor
 from holobot.discord.sdk.models import InteractionContext
@@ -12,6 +12,7 @@ from holobot.discord.sdk.workflows.interactables.models import (
 from holobot.discord.sdk.workflows.models import (
     DirectMessageInteractionContext, ServerChatInteractionContext
 )
+from holobot.discord.utils.interaction_utils import get_channel_and_thread_ids
 from holobot.discord.workflows import (
     IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
 )
@@ -23,8 +24,8 @@ from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.threading import COMPLETED_TASK
 
-@injectable(IInteractionProcessor[AutocompleteInteraction])
-class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Autocomplete]):
+@injectable(IInteractionProcessor[hikari.AutocompleteInteraction])
+class AutocompleteProcessor(InteractionProcessorBase[hikari.AutocompleteInteraction, Autocomplete]):
     def __init__(
         self,
         action_processor: IActionProcessor,
@@ -38,7 +39,7 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
 
     def _get_interactable_descriptor(
         self,
-        interaction: AutocompleteInteraction
+        interaction: hikari.AutocompleteInteraction
     ) -> InteractionDescriptor[Autocomplete]:
         group_name = None
         subgroup_name = None
@@ -49,11 +50,11 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
         while options:
             option = options.pop(0)
             match option.type:
-                case OptionType.SUB_COMMAND_GROUP:
+                case hikari.OptionType.SUB_COMMAND_GROUP:
                     group_name = interaction.command_name
                     subgroup_name = option.name
                     options = list(option.options) if option.options else []
-                case OptionType.SUB_COMMAND:
+                case hikari.OptionType.SUB_COMMAND:
                     group_name = group_name or interaction.command_name
                     command_name = option.name
                     options = list(option.options) if option.options else []
@@ -98,7 +99,7 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
 
     def _on_interaction_processed(
         self,
-        interaction: AutocompleteInteraction,
+        interaction: hikari.AutocompleteInteraction,
         descriptor: InteractionDescriptor[Autocomplete],
         response: InteractionResponse
     ) -> Awaitable[None]:
@@ -107,15 +108,17 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
 
     async def _send_error_response(
         self,
-        interaction: AutocompleteInteraction,
+        interaction: hikari.AutocompleteInteraction,
         localization_key: str = "interactions.unhandled_interaction_error"
     ) -> None:
         await interaction.create_response(())
 
     def __get_interaction_context(
         self,
-        interaction: AutocompleteInteraction
+        interaction: hikari.AutocompleteInteraction
     ) -> InteractionContext:
+        channel_id, thread_id = get_channel_and_thread_ids(interaction)
+
         if interaction.guild_id:
             return ServerChatInteractionContext(
                 request_id=uuid4(),
@@ -125,7 +128,8 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
                 message=None,
                 server_id=interaction.guild_id,
                 server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=interaction.channel_id
+                channel_id=channel_id,
+                thread_id=thread_id
             )
 
         return DirectMessageInteractionContext(
@@ -134,5 +138,5 @@ class AutocompleteProcessor(InteractionProcessorBase[AutocompleteInteraction, Au
             author_name=interaction.user.username,
             author_nickname=None,
             message=None,
-            channel_id=interaction.channel_id
+            channel_id=channel_id
         )

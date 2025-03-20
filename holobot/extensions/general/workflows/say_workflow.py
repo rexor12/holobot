@@ -42,6 +42,7 @@ class SayWorkflow(WorkflowBase):
         await self.__messaging.send_channel_message(
             context.server_id,
             context.channel_id,
+            context.thread_id,
             message,
             suppress_user_mentions=True
         )

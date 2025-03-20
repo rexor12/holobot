@@ -98,6 +98,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
                 await self.__messaging.send_channel_message(
                     server_id=event.message.server_id,
                     channel_id=event.message.channel_id,
+                    thread_id=None,
                     content=f"<@{source_user_id}>, the currency associated to the exchange feature cannot be found. Please, ask the moderator team to return your **{kakera_amount:,}** <:kakera:1258854943893360640>."
                 )
                 return
@@ -125,6 +126,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
                 await self.__messaging.send_channel_message(
                     server_id=event.message.server_id,
                     channel_id=event.message.channel_id,
+                    thread_id=None,
                     content=f"<@{source_user_id}>, you have exchanged more <:kakera:1258854943893360640> Kakera than you are allowed to. Please, ask the moderator team to return the **{exchange_quota.lost_amount:,}** <:kakera:1258854943893360640> that you've lost so far."
                 )
 
@@ -141,6 +143,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
         await self.__messaging.send_channel_message(
             server_id=event.message.server_id,
             channel_id=event.message.channel_id,
+            thread_id=None,
             content=f"<@{source_user_id}>, your **{kakera_amount:,}** <:kakera:1258854943893360640> has been exchanged for **{exchanged_amount:,}** <:{currency.emoji_name}:{currency.emoji_id}>. You can still exchange **{mudera_left:,}** <:kakera:1258854943893360640>."
         )
 
@@ -170,6 +173,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
                 await self.__messaging.send_channel_message(
                     server_id=event.message.server_id,
                     channel_id=event.message.channel_id,
+                    thread_id=None,
                     content=f"The currency associated to the exchange feature cannot be found. Don't worry, you haven't lost any <:kakera:1258854943893360640> Kakera."
                 )
                 return
@@ -186,6 +190,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
                 await self.__messaging.send_channel_message(
                     server_id=event.message.server_id,
                     channel_id=event.message.channel_id,
+                    thread_id=None,
                     content=f"<@{event.interaction.author_id}>, alas, it seems you don't have enough <:{currency.emoji_name}:{currency.emoji_id}> Mudera for this exchange."
                 )
                 return
@@ -195,6 +200,7 @@ class HandleKakeraExchange(IListener[MessageReceivedEvent]):
         await self.__messaging.send_channel_message(
             server_id=event.message.server_id,
             channel_id=event.message.channel_id,
+            thread_id=None,
             content=f"{kakera_amount} ka"
         )
 

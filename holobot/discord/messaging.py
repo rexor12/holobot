@@ -52,6 +52,7 @@ class Messaging(IMessaging):
         self,
         server_id: int,
         channel_id: int,
+        thread_id: int | None,
         content: str | Embed,
         components: ComponentBase | list[LayoutBase] | None = None,
         *,
@@ -60,6 +61,11 @@ class Messaging(IMessaging):
         assert_not_none(server_id, "server_id")
         assert_not_none(channel_id, "channel_id")
         assert_not_none(content, "content")
+
+        # As of now, there are no adequate APIs to retrieve threads,
+        # so they are handled as if they were regular channels.
+        # Either Hikari has it in its cache or it won't be found.
+        channel_id = thread_id or channel_id
 
         channel = await get_bot().get_guild_channel(server_id, channel_id)
         if not channel or not isinstance(channel, TextableGuildChannel):

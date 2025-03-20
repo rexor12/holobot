@@ -15,7 +15,11 @@ class Message:
     author_id: int
     server_id: int | None
     channel_id: int
-    message_id: int
+    thread_id: int | None
+
+    # In some cases, such as certain interactions,
+    # a message may not exist.
+    message_id: int | None
     content: str | None = None
     embeds: Sequence[Embed] = field(default_factory=tuple)
     components: Sequence[ComponentStateBase] = field(default_factory=tuple)

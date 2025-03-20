@@ -9,3 +9,4 @@ class ServerChatInteractionContext(InteractionContext):
     server_id: int
     server_name: str
     channel_id: int
+    thread_id: int | None

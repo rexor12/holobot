@@ -11,6 +11,7 @@ from holobot.discord.sdk.workflows.models import (
     DirectMessageInteractionContext, ServerChatInteractionContext
 )
 from holobot.discord.sdk.workflows.rules import IWorkflowExecutionRule
+from holobot.discord.utils.interaction_utils import get_channel_and_thread_ids
 from holobot.discord.workflows import (
     IInteractionProcessor, InteractionProcessorBase, IWorkflowRegistry
 )
@@ -107,6 +108,8 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
         self,
         interaction: hikari.CommandInteraction
     ) -> InteractionContext:
+        channel_id, thread_id = get_channel_and_thread_ids(interaction)
+
         if interaction.guild_id:
             return ServerChatInteractionContext(
                 request_id=uuid4(),
@@ -116,7 +119,8 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
                 message=None,
                 server_id=interaction.guild_id,
                 server_name=guild.name if (guild := interaction.get_guild()) else "Unknown Server",
-                channel_id=interaction.channel_id
+                channel_id=channel_id,
+                thread_id=thread_id
             )
 
         return DirectMessageInteractionContext(
@@ -125,5 +129,5 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
             author_name=interaction.user.username,
             author_nickname=None,
             message=None,
-            channel_id=interaction.channel_id
+            channel_id=channel_id
         )

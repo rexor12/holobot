@@ -26,6 +26,9 @@ class Integration(IIntegration):
             rest_logger = logging.getLogger("hikari.rest")
             rest_logger.setLevel("TRACE_HIKARI")
 
+            gateway_logger = logging.getLogger("hikari.gateway")
+            gateway_logger.setLevel("TRACE_HIKARI")
+
         await self.__bot.start()
         self.__log.info("Discord integration started")
 

@@ -1,10 +1,12 @@
+from collections.abc import Awaitable
+
 from holobot.extensions.general.models.shops import Shop, ShopDisplayInfo
 from holobot.extensions.general.repositories.shops.records import ShopRecord
 from holobot.extensions.general.sdk.shops.models import ShopId
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query
-from holobot.sdk.database.queries.enums import Equality, Order
+from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.queries import PaginationResult
@@ -39,6 +41,18 @@ class ShopRepository(
     ) -> None:
         super().__init__(database_manager, unit_of_work_provider)
 
+    def exists(
+        self,
+        shop_id: ShopId
+    ) -> Awaitable[bool]:
+        return self._exists_by_filter(
+            lambda where: where.fields(
+                Connector.AND,
+                ("server_id", Equality.EQUAL, shop_id.server_id),
+                ("shop_id", Equality.EQUAL, shop_id.shop_id)
+            )
+        )
+
     async def paginate_shop_infos(
         self,
         server_id: int,
@@ -50,7 +64,7 @@ class ShopRepository(
             query = (Query
                 .select()
                 .columns("shop_id", "shop_name")
-                .from_table(self.table_name, None, self.schema_name)
+                .from_table(self.table_name, schema_name=self.schema_name)
                 .where()
                 .field("server_id", Equality.EQUAL, server_id)
             )
@@ -76,6 +90,33 @@ class ShopRepository(
                     for record in result.records
                 ]
             )
+
+    def count_by_server(
+        self,
+        server_id: int
+    ) -> Awaitable[int]:
+        return self._count_by_filter(
+            lambda where: where.field("server_id", Equality.EQUAL, server_id)
+        )
+
+    async def get_shop_name(
+        self,
+        shop_id: ShopId
+    ) -> str | None:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select().column("shop_name")
+                .from_table(self.table_name, schema_name=self.schema_name)
+                .where()
+                .fields(
+                    Connector.AND,
+                    ("server_id", Equality.EQUAL, shop_id.server_id),
+                    ("shop_id", Equality.EQUAL, shop_id.shop_id)
+                )
+                .limit().max_count(1)
+            )
+
+            return await query.compile().fetchval(session.connection)
 
     def _map_record_to_model(self, record: ShopRecord) -> Shop:
         return Shop(

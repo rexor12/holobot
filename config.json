@@ -340,6 +340,9 @@
             "ScissorsEmojiId": 1263954032821665893,
             "ScissorsEmojiName": "psttank"
         },
+        "ShopOptions": {
+            "MaxShopsPerServer": 2
+        },
         "UserProfileOptions": {
             "ReputationTable": [
                 {

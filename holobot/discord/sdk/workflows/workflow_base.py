@@ -113,7 +113,7 @@ class WorkflowBase(IWorkflow):
         suppress_user_mentions: bool = False,
         attachments: Sequence[bytes] | None | UndefinedType = UNDEFINED
     ) -> InteractionResponse:
-        """Edit an already existing message.
+        """Edit an already existing message while keeping any undefined components.
 
         This is typically useful for component interactions.
 
@@ -127,6 +127,43 @@ class WorkflowBase(IWorkflow):
         :type suppress_user_mentions: bool, optional
         :param attachments: Files to be attached to the message.
         :type attachments: Sequence[bytes] | None | UndefinedType, optional
+        :return: The interaction response.
+        :rtype: InteractionResponse
+        """
+
+        return InteractionResponse(
+            action=EditMessageAction(
+                content=content,
+                embed=embed,
+                components=components or [],
+                suppress_user_mentions=suppress_user_mentions,
+                attachments=attachments
+            )
+        )
+
+    def _clear_message(
+        self,
+        *,
+        content: str | None = None,
+        embed: Embed | None = None,
+        components: ComponentBase | list[LayoutBase] | None = None,
+        suppress_user_mentions: bool = False,
+        attachments: Sequence[bytes] | None = None
+    ) -> InteractionResponse:
+        """Edit an already existing message while clearing the unspecified components.
+
+        This is typically useful for component interactions.
+
+        :param content: The text content of the message, defaults to None
+        :type content: str | None, optional
+        :param embed: The embed content of the message, defaults to None
+        :type embed: Embed | None, optional
+        :param components: Zero or more components to attach to the message, defaults to None
+        :type components: ComponentBase | list[LayoutBase] | None, optional
+        :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False
+        :type suppress_user_mentions: bool, optional
+        :param attachments: Files to be attached to the message.
+        :type attachments: Sequence[bytes] | None, optional
         :return: The interaction response.
         :rtype: InteractionResponse
         """

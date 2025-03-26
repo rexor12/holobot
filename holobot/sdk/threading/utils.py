@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import Awaitable, Generator
 from datetime import timedelta
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from .cancellation_promise import CancellationPromise
 from .cancellation_token import CancellationToken

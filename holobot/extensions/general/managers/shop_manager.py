@@ -3,14 +3,15 @@ from typing import Any
 
 from holobot.extensions.general.enums import GrantItemOutcome, ItemType
 from holobot.extensions.general.exceptions import (
-    ShopItemNotFoundError, ShopNotFoundError, UnknownShopItemTypeError
+    ShopItemNotFoundError, ShopNotFoundError, TooManyShopsError, UnknownShopItemTypeError
 )
 from holobot.extensions.general.models.items import (
-    BackgroundItem, BadgeItem, CurrencyDisplayInfo, CurrencyItem, UserItem
+    BackgroundItem, BadgeDisplayInfo, BadgeItem, CurrencyDisplayInfo, CurrencyItem, UserItem
 )
 from holobot.extensions.general.models.shops import (
-    DetailedShopDisplayInfo, ShopDisplayInfo, ShopItem, ShopItemDisplayInfo, TransactionInfo
+    DetailedShopDisplayInfo, Shop, ShopDisplayInfo, ShopItem, ShopItemDisplayInfo, TransactionInfo
 )
+from holobot.extensions.general.options import ShopOptions
 from holobot.extensions.general.repositories import IBadgeRepository, ICurrencyRepository
 from holobot.extensions.general.repositories.shops import IShopItemRepository, IShopRepository
 from holobot.extensions.general.repositories.user_profiles import IUserProfileBackgroundRepository
@@ -18,6 +19,8 @@ from holobot.extensions.general.sdk.badges.models import BadgeId
 from holobot.extensions.general.sdk.shops.models import ShopId, ShopItemId
 from holobot.extensions.general.sdk.wallets.managers import IWalletManager
 from holobot.sdk.chrono import IClock
+from holobot.sdk.configs import IOptions
+from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.queries import PaginationResult
@@ -33,7 +36,9 @@ class ShopManager(IShopManager):
         badge_repository: IBadgeRepository,
         clock: IClock,
         currency_repository: ICurrencyRepository,
+        holoflake_provider: IHoloflakeProvider,
         logger_factory: ILoggerFactory,
+        options: IOptions[ShopOptions],
         shop_repository: IShopRepository,
         shop_item_repository: IShopItemRepository,
         user_item_manager: IUserItemManager,
@@ -44,7 +49,9 @@ class ShopManager(IShopManager):
         self.__badge_repository = badge_repository
         self.__clock = clock
         self.__currency_repository = currency_repository
+        self.__holoflake_provider = holoflake_provider
         self.__logger = logger_factory.create(ShopManager)
+        self.__options = options
         self.__shop_repository = shop_repository
         self.__shop_item_repository = shop_item_repository
         self.__user_item_manager = user_item_manager
@@ -148,6 +155,84 @@ class ShopManager(IShopManager):
             item_count=total_item_count,
             exchange_info=exchange_info
         )
+
+    async def create_shop(
+        self,
+        server_id: int,
+        shop_name: str
+    ) -> ShopId:
+        shop_count_max = self.__options.value.MaxShopsPerServer
+        if shop_count_max == 0:
+            raise TooManyShopsError(0, 0)
+
+        shop_count = await self.__shop_repository.count_by_server(server_id)
+        if shop_count >= shop_count_max:
+            raise TooManyShopsError(shop_count, shop_count_max)
+
+        shop_id = ShopId(
+            server_id=server_id,
+            shop_id=self.__holoflake_provider.get_next_id()
+        )
+        await self.__shop_repository.add(
+            Shop(
+                identifier=shop_id,
+                shop_name=shop_name
+            )
+        )
+
+        return shop_id
+
+    def get_shop_name(
+        self,
+        shop_id: ShopId
+    ) -> Awaitable[str | None]:
+        return self.__shop_repository.get_shop_name(
+            shop_id
+        )
+
+    def remove_shop(
+        self,
+        shop_id: ShopId
+    ) -> Awaitable[int]:
+        return self.__shop_repository.delete(shop_id)
+
+    def remove_shop_item(
+        self,
+        shop_item_id: ShopItemId
+    ) -> Awaitable[int]:
+        return self.__shop_item_repository.delete(shop_item_id)
+
+    async def add_badge_to_shop(
+        self,
+        shop_id: ShopId,
+        badge_id: BadgeId,
+        currency_id: int,
+        currency_amount: int
+    ) -> tuple[BadgeDisplayInfo, CurrencyDisplayInfo]:
+        if not await self.__shop_repository.exists(shop_id):
+            raise ShopNotFoundError(shop_id)
+
+        badge_info = await self.__badge_repository.get_display_info(badge_id)
+        currency_info = await self.__currency_repository.get_display_info(currency_id)
+
+        await self.__shop_item_repository.add(
+            ShopItem(
+                identifier=ShopItemId(
+                    server_id=shop_id.server_id,
+                    shop_id=shop_id.shop_id,
+                    serial_id=self.__holoflake_provider.get_next_id()
+                ),
+                item_type=ItemType.BADGE,
+                item_id1=badge_id.badge_id,
+                item_id2=None,
+                item_id3=None,
+                count=1,
+                price_currency_id=currency_id,
+                price_amount=currency_amount
+            )
+        )
+
+        return (badge_info, currency_info)
 
     def __grant_currency(
         self,

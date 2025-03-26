@@ -4,6 +4,7 @@ import asyncio
 from holobot.framework.lifecycle import LifecycleManagerInterface
 from holobot.sdk import KernelInterface
 from holobot.sdk.database import IDatabaseManager
+from holobot.sdk.i18n import I18nContext
 from holobot.sdk.integration import IIntegration
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
@@ -17,7 +18,8 @@ class Kernel(KernelInterface):
         database_manager: IDatabaseManager,
         environment: IEnvironment,
         integrations: tuple[IIntegration, ...],
-        lifecycle_manager: LifecycleManagerInterface
+        lifecycle_manager: LifecycleManagerInterface,
+        i18n_context: I18nContext # Needs a dependee for kanata to instantiate it.
     ) -> None:
         super().__init__()
         self.__logger = logger_factory.create(Kernel)

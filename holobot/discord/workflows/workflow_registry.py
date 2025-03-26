@@ -213,7 +213,7 @@ class WorkflowRegistry(IWorkflowRegistry):
         else:
             autocomplete_options = autocomplete_subgroups[subgroup_name]
 
-        for option_name in (autocomplete.options or ("")):
+        for option_name in (autocomplete.options or ("",)):
             autocomplete_name = (
                 f"d{autocomplete.name}"
                 if debugger.is_debug_mode_enabled()

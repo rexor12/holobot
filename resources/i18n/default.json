@@ -108,7 +108,7 @@
         },
 
         "general": {
-            "buy_item_workflow": {
+            "browse_shops_workflow": {
                 "item_owned_already_error": "Alas, you have too many of this item already.",
                 "not_enough_money_error": "Alas, you seem to lack the funds for this purchase.",
                 "missing_item_error": "Alas, this is an item I cannot sell to you.",
@@ -119,7 +119,7 @@
                 "item_description": "**{index}.** **[{item_name}]**x{item_count:,} - **{item_price:,}** <:{currency_emoji_name}:{currency_emoji_id}>",
                 "shop_footer": "Use the buttons to view or purchase items.",
                 "buy_button": "Buy #{index}",
-                "view_shop_button": "View shop"
+                "view_shop_button": "Back to shop"
             },
             "choose_item_workflow": {
                 "result": "Lo and behold, I choose **{result}**."
@@ -205,6 +205,23 @@
                 ],
                 "response_message": "> {question}\n\n{answer}",
                 "cooldown_error": "The ball, akin to a treasured relic, is currently in the midst of its well-deserved respite. ({seconds_left:,.0f} seconds)"
+            },
+            "manage_shops_workflow": {
+                "server_shops_disabled_error": "Alas, I'm afraid custom shops cannot be created in this server.",
+                "too_many_shops_error": "Alas, I'm afraid there are too many shops. Pray, close one or more before creating a new one.",
+                "shop_not_found_error": "Alas, it seems this shop is no longer open.",
+                "badge_not_found_error": "Alas, it seems this badge no longer exists.",
+                "currency_not_found_error": "Alas, it seems this currency no longer exists.",
+                "shop_created_successfully": "Rejoice, the shop **{shop_name}** has just been set up. I wish you a bountiful harvest.",
+                "shop_removal_cancelled": "The shop won't be closed and it will continue to welcome customers.",
+                "shop_removed_successfully": "The shop has closed its doors for good.",
+                "badge_added_successfully": "I've added the badge <:{badge_emoji_name}:{badge_emoji_id}> **{badge_name}** to the shop. It is available for purchase for **{price:,}** <:{currency_emoji_name}:{currency_emoji_id}>.",
+                "shop_empty_error": "Alas, **{shop_name}** needs to stock up. Add some items first.",
+                "shop_title": "Shop: {shop_name}",
+                "item_description": "**{index}.** **[{item_name}]**x{item_count:,} - **{item_price:,}** <:{currency_emoji_name}:{currency_emoji_id}>",
+                "remove_button": "Remove #{index}",
+                "shop_item_removed_successfully": "I've removed the item from the shop.",
+                "view_shop_button": "Back to shop"
             },
             "marry_workflow": {
                 "already_married": "Verily, you are already wed to <@{spouse_id}>. Would you truly dally with another, forsaking your vows?",

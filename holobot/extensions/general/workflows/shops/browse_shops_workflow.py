@@ -1,4 +1,4 @@
-from holobot.discord.sdk.models import AutocompleteChoice, Embed, EmbedFooter, InteractionContext
+from holobot.discord.sdk.models import Embed, EmbedFooter, InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
 from holobot.discord.sdk.workflows.interactables.components import (
     Button, ButtonState, Paginator, PaginatorState, StackLayout
@@ -21,18 +21,17 @@ from holobot.extensions.general.sdk.wallets.exceptions import (
 )
 from holobot.sdk.configs import IOptions
 from holobot.sdk.database import IUnitOfWorkProvider
-from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.i18n import localize
 from holobot.sdk.ioc.decorators import injectable
+from .utils import autocomplete_global_shop, autocomplete_shop
 
-_AUTOCOMPLETE_COUNT_MAX = 5
-_SHOP_ITEM_COUNT_MAX = 7
+_SHOP_ITEM_COUNT_MAX = 5
 
 @injectable(IWorkflow)
 class BrowseShopsWorkflow(WorkflowBase):
     def __init__(
         self,
         currency_repository: ICurrencyRepository,
-        i18n_provider: II18nProvider,
         options: IOptions[GeneralOptions],
         shop_manager: IShopManager,
         unit_of_work_provider: IUnitOfWorkProvider,
@@ -40,7 +39,6 @@ class BrowseShopsWorkflow(WorkflowBase):
     ) -> None:
         super().__init__()
         self.__currency_repository = currency_repository
-        self.__i18n = i18n_provider
         self.__options = options
         self.__shop_manager = shop_manager
         self.__unit_of_work_provider = unit_of_work_provider
@@ -61,7 +59,7 @@ class BrowseShopsWorkflow(WorkflowBase):
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
             return self._reply(
-                content=self.__i18n.get("interactions.server_only_interaction_error")
+                content=localize("interactions.server_only_interaction_error")
             )
 
         content, embed, components = await self.__create_shop_view(
@@ -89,11 +87,6 @@ class BrowseShopsWorkflow(WorkflowBase):
         context: InteractionContext,
         shop_id: str
     ) -> InteractionResponse:
-        if not isinstance(context, ServerChatInteractionContext):
-            return self._reply(
-                content=self.__i18n.get("interactions.server_only_interaction_error")
-            )
-
         content, embed, components = await self.__create_shop_view(
             ShopId(server_id=0, shop_id=int(shop_id)),
             0,
@@ -120,10 +113,8 @@ class BrowseShopsWorkflow(WorkflowBase):
             or (shop_id := get_custom_int(state.custom_data, "s")) is None
             or (is_global := get_custom_int(state.custom_data, "g")) is None
         ):
-            return self._edit_message(
-                content=self.__i18n.get("interactions.server_only_interaction_error"),
-                embed=None,
-                components=None
+            return self._clear_message(
+                content=localize("interactions.server_only_interaction_error")
             )
 
         server_id = 0 if is_global else context.server_id
@@ -149,17 +140,22 @@ class BrowseShopsWorkflow(WorkflowBase):
         state: PaginatorState
     ) -> InteractionResponse:
         if (
-            not isinstance(context, ServerChatInteractionContext)
-            or (shop_id := get_custom_int(state.custom_data, "s")) is None
+            (shop_id := get_custom_int(state.custom_data, "s")) is None
             or (is_global := get_custom_int(state.custom_data, "g")) is None
         ):
-            return self._edit_message(
-                content=self.__i18n.get("interactions.server_only_interaction_error"),
-                embed=None,
-                components=None
+            return self._clear_message(
+                content=localize("interactions.server_only_interaction_error")
             )
 
-        server_id = 0 if is_global else context.server_id
+        if is_global:
+            server_id = 0
+        elif not isinstance(context, ServerChatInteractionContext):
+            return self._clear_message(
+                content=localize("interactions.server_only_interaction_error")
+            )
+        else:
+            server_id = context.server_id
+
         content, embed, components = await self.__create_shop_view(
             ShopId(server_id=server_id, shop_id=shop_id),
             max(state.current_page, 0),
@@ -187,10 +183,8 @@ class BrowseShopsWorkflow(WorkflowBase):
             or (item_id := get_custom_int(state.custom_data, "i")) is None
             or (is_global := get_custom_int(state.custom_data, "g")) is None
         ):
-            return self._edit_message(
-                content=self.__i18n.get("interactions.server_only_interaction_error"),
-                embed=None,
-                components=None
+            return self._clear_message(
+                content=localize("interactions.server_only_interaction_error")
             )
 
         try:
@@ -212,7 +206,7 @@ class BrowseShopsWorkflow(WorkflowBase):
             )
             if transaction_info.outcome == GrantItemOutcome.GRANTED_ALREADY:
                 return self._edit_message(
-                    content=self.__i18n.get("extensions.general.buy_item_workflow.item_owned_already_error"),
+                    content=localize("extensions.general.browse_shops_workflow.item_owned_already_error"),
                     embed=None,
                     components=self.__create_view_shop_button(
                         shop_id,
@@ -223,7 +217,7 @@ class BrowseShopsWorkflow(WorkflowBase):
 
             if transaction_info.exchange_info is None:
                 return self._edit_message(
-                    content=self.__i18n.get("extensions.general.buy_item_workflow.purchase_free"),
+                    content=localize("extensions.general.browse_shops_workflow.purchase_free"),
                     embed=None,
                     components=self.__create_view_shop_button(
                         shop_id,
@@ -239,8 +233,8 @@ class BrowseShopsWorkflow(WorkflowBase):
             )
 
             return self._edit_message(
-                content=self.__i18n.get(
-                    "extensions.general.buy_item_workflow.purchase",
+                content=localize(
+                    "extensions.general.browse_shops_workflow.purchase",
                     {
                         "item_name": item_display_info.name,
                         "item_count": transaction_info.item_count,
@@ -259,7 +253,7 @@ class BrowseShopsWorkflow(WorkflowBase):
             )
         except (NotEnoughMoneyException, WalletNotFoundException, CurrencyNotFoundException):
             return self._edit_message(
-                content=self.__i18n.get("extensions.general.buy_item_workflow.not_enough_money_error"),
+                content=localize("extensions.general.browse_shops_workflow.not_enough_money_error"),
                 embed=None,
                 components=self.__create_view_shop_button(
                     shop_id,
@@ -269,7 +263,7 @@ class BrowseShopsWorkflow(WorkflowBase):
             )
         except ShopItemNotFoundError:
             return self._edit_message(
-                content=self.__i18n.get("extensions.general.buy_item_workflow.missing_item_error"),
+                content=localize("extensions.general.browse_shops_workflow.missing_item_error"),
                 embed=None,
                 components=self.__create_view_shop_button(
                     shop_id,
@@ -293,13 +287,10 @@ class BrowseShopsWorkflow(WorkflowBase):
             return self._autocomplete([])
 
         return self._autocomplete(
-            await self.__get_shop_autocomplete_options(
-                context.server_id,
-                (
-                    target_option.value
-                    if isinstance(target_option.value, str) and target_option.value
-                    else None
-                )
+            await autocomplete_shop(
+                self.__shop_manager,
+                context,
+                target_option
             )
         )
 
@@ -314,38 +305,12 @@ class BrowseShopsWorkflow(WorkflowBase):
         options: tuple[AutocompleteOption, ...],
         target_option: AutocompleteOption
     ) -> InteractionResponse:
-        if not isinstance(context, ServerChatInteractionContext):
-            return self._autocomplete([])
-
         return self._autocomplete(
-            await self.__get_shop_autocomplete_options(
-                0,
-                (
-                    target_option.value
-                    if isinstance(target_option.value, str) and target_option.value
-                    else None
-                )
+            await autocomplete_global_shop(
+                self.__shop_manager,
+                target_option
             )
         )
-
-    async def __get_shop_autocomplete_options(
-        self,
-        server_id: int,
-        search_text: str | None
-    ) -> list[AutocompleteChoice]:
-        shop_infos = await self.__shop_manager.paginate_shops(
-            server_id,
-            search_text,
-            0,
-            _AUTOCOMPLETE_COUNT_MAX
-        )
-
-        return [
-            AutocompleteChoice(
-                name=shop_info.name,
-                value=str(shop_info.identifier)
-            ) for shop_info in shop_infos.items
-        ]
 
     def __create_view_shop_button(
         self,
@@ -356,8 +321,8 @@ class BrowseShopsWorkflow(WorkflowBase):
         return Button(
             id="vshop",
             owner_id=owner_id,
-            text=self.__i18n.get(
-                "extensions.general.buy_item_workflow.view_shop_button"
+            text=localize(
+                "extensions.general.browse_shops_workflow.view_shop_button"
             ),
             custom_data={
                 "s": str(shop_id),
@@ -386,8 +351,8 @@ class BrowseShopsWorkflow(WorkflowBase):
 
         if not shop_data.items:
             return View(
-                content=self.__i18n.get(
-                    "extensions.general.buy_item_workflow.shop_empty_error",
+                content=localize(
+                    "extensions.general.browse_shops_workflow.shop_empty_error",
                     {
                         "shop_name": shop_data.name
                     }
@@ -398,15 +363,15 @@ class BrowseShopsWorkflow(WorkflowBase):
 
         return View(
             embed=Embed(
-                title=self.__i18n.get(
-                    "extensions.general.buy_item_workflow.shop_title",
+                title=localize(
+                    "extensions.general.browse_shops_workflow.shop_title",
                     {
                         "shop_name": shop_data.name
                     }
                 ),
                 description="\n".join(
-                    self.__i18n.get(
-                        "extensions.general.buy_item_workflow.item_description",
+                    localize(
+                        "extensions.general.browse_shops_workflow.item_description",
                         {
                             "index": item_index + 1,
                             "item_name": item.item_info.name,
@@ -420,8 +385,8 @@ class BrowseShopsWorkflow(WorkflowBase):
                 ),
                 thumbnail_url=self.__options.value.ShopEmbedThumbnailUrl,
                 footer=EmbedFooter(
-                    text=self.__i18n.get(
-                        "extensions.general.buy_item_workflow.shop_footer"
+                    text=localize(
+                        "extensions.general.browse_shops_workflow.shop_footer"
                     )
                 )
             ),
@@ -432,8 +397,8 @@ class BrowseShopsWorkflow(WorkflowBase):
                         Button(
                             id="sbuyi",
                             owner_id=owner_id,
-                            text=self.__i18n.get(
-                                "extensions.general.buy_item_workflow.buy_button",
+                            text=localize(
+                                "extensions.general.browse_shops_workflow.buy_button",
                                 {
                                     "index": item_index + 1
                                 }

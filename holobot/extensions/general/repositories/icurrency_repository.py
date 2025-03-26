@@ -51,3 +51,12 @@ class ICurrencyRepository(IRepository[int, Currency], ICurrencyDataProvider, Pro
         currency_ids: Sequence[int]
     ) -> Awaitable[list[CurrencyDisplayInfo]]:
         ...
+
+    def paginate_currency_infos(
+        self,
+        server_id: int,
+        name_part: str | None,
+        page_index: int,
+        page_size: int
+    ) -> Awaitable[PaginationResult[CurrencyDisplayInfo]]:
+        ...

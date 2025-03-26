@@ -4,6 +4,7 @@ from typing import cast
 from holobot.extensions.general.models import Currency
 from holobot.extensions.general.models.items import CurrencyDisplayInfo
 from holobot.extensions.general.sdk.currencies.data_providers import ICurrencyDataProvider
+from holobot.extensions.general.sdk.currencies.exceptions import CurrencyNotFoundException
 from holobot.extensions.general.sdk.currencies.models import ICurrency
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
@@ -129,7 +130,7 @@ class CurrencyRepository(
             query = (Query
                 .select()
                 .columns("id", "name")
-                .from_table(self.table_name)
+                .from_table(self.table_name, schema_name=self.schema_name)
                 .where()
                 .expression(build_filter())
                 .limit()
@@ -153,12 +154,12 @@ class CurrencyRepository(
             query = (Query
                 .select()
                 .columns("id", "name", "emoji_id", "emoji_name")
-                .from_table(self.table_name)
+                .from_table(self.table_name, schema_name=self.schema_name)
                 .where()
                 .field("id", Equality.EQUAL, currency_id)
             )
             if (result := await query.compile().fetchrow(session.connection)) is None:
-                raise ValueError(f"Currency with identifier '{currency_id}' cannot be found.")
+                raise CurrencyNotFoundException(currency_id)
 
             return CurrencyDisplayInfo(
                 currency_id=cast(int, result.get("id")),
@@ -175,7 +176,7 @@ class CurrencyRepository(
             query = (Query
                 .select()
                 .columns("id", "name", "emoji_id", "emoji_name")
-                .from_table(self.table_name)
+                .from_table(self.table_name, schema_name=self.schema_name)
                 .where()
                 .field_in("id", currency_ids)
             )
@@ -197,6 +198,46 @@ class CurrencyRepository(
             ("server_id", Equality.EQUAL, server_id),
             ("code", Equality.EQUAL, code)
         ))
+
+    async def paginate_currency_infos(
+        self,
+        server_id: int,
+        name_part: str | None,
+        page_index: int,
+        page_size: int
+    ) -> PaginationResult[CurrencyDisplayInfo]:
+        async with (session := await self._get_session()):
+            query = (Query
+                .select()
+                .columns("id", "name", "emoji_id", "emoji_name")
+                .from_table(self.table_name, schema_name=self.schema_name)
+                .where()
+                .field("server_id", Equality.EQUAL, server_id)
+            )
+
+            if name_part:
+                query = query.and_field("name", Equality.LIKE, name_part)
+
+            result = await query.paginate(
+                (("id", Order.ASCENDING),),
+                page_index,
+                page_size
+            ).compile().fetch(session.connection)
+
+            return PaginationResult[CurrencyDisplayInfo](
+                result.page_index,
+                result.page_size,
+                result.total_count,
+                [
+                    CurrencyDisplayInfo(
+                        currency_id=cast(int, record.get("id")),
+                        name=cast(str, record.get("name")),
+                        emoji_id=cast(int, record.get("emoji_id")),
+                        emoji_name=cast(str, record.get("emoji_name"))
+                    )
+                    for record in result.records
+                ]
+            )
 
     def _map_record_to_model(self, record: CurrencyRecord) -> Currency:
         return Currency(
@@ -223,13 +264,3 @@ class CurrencyRepository(
             emoji_name=model.emoji_name,
             is_tradable=model.is_tradable
         )
-
-    @staticmethod
-    def __build_server_filter(server_id: int, include_global: bool):
-        if include_global:
-            return or_expression(
-                column_expression("server_id", Equality.EQUAL, server_id),
-                column_expression("server_id", Equality.EQUAL, None)
-            )
-
-        return column_expression("server_id", Equality.EQUAL, server_id)

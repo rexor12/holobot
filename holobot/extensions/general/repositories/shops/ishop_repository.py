@@ -1,4 +1,5 @@
 from collections.abc import Awaitable
+from datetime import datetime
 from typing import Protocol
 
 from holobot.extensions.general.models.shops import Shop, ShopDisplayInfo
@@ -32,4 +33,11 @@ class IShopRepository(IRepository[ShopId, Shop], Protocol):
         self,
         shop_id: ShopId
     ) -> Awaitable[str | None]:
+        ...
+
+    def is_valid(
+        self,
+        shop_id: ShopId,
+        timestamp: datetime
+    ) -> Awaitable[bool]:
         ...

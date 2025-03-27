@@ -68,3 +68,13 @@ class IShopManager(Protocol):
         currency_amount: int
     ) -> Awaitable[tuple[BadgeDisplayInfo, CurrencyDisplayInfo]]:
         ...
+
+    def add_currency_to_shop(
+        self,
+        shop_id: ShopId,
+        currency_id: int,
+        currency_amount: int,
+        price_currency_id: int,
+        price_currency_amount: int
+    ) -> Awaitable[tuple[CurrencyDisplayInfo, CurrencyDisplayInfo]]:
+        ...

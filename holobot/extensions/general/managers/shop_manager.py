@@ -3,7 +3,8 @@ from typing import Any
 
 from holobot.extensions.general.enums import GrantItemOutcome, ItemType
 from holobot.extensions.general.exceptions import (
-    ShopItemNotFoundError, ShopNotFoundError, TooManyShopsError, UnknownShopItemTypeError
+    ShopItemNotFoundError, ShopNotAvailableError, ShopNotFoundError, TooManyShopsError,
+    UnknownShopItemTypeError
 )
 from holobot.extensions.general.models.items import (
     BackgroundItem, BadgeDisplayInfo, BadgeItem, CurrencyDisplayInfo, CurrencyItem, UserItem
@@ -122,6 +123,13 @@ class ShopManager(IShopManager):
         shop_item_id: ShopItemId,
         count: int = 1
     ) -> TransactionInfo:
+        shop_id = ShopId(
+            server_id=shop_item_id.server_id,
+            shop_id=shop_item_id.shop_id
+        )
+        if not await self.__shop_repository.is_valid(shop_id, self.__clock.now_utc()):
+            raise ShopNotAvailableError(shop_id)
+
         shop_item = await self.__shop_item_repository.get(shop_item_id)
         if not shop_item:
             raise ShopItemNotFoundError(shop_item_id)
@@ -176,7 +184,9 @@ class ShopManager(IShopManager):
         await self.__shop_repository.add(
             Shop(
                 identifier=shop_id,
-                shop_name=shop_name
+                shop_name=shop_name,
+                valid_from=None,
+                valid_to=None
             )
         )
 
@@ -233,6 +243,39 @@ class ShopManager(IShopManager):
         )
 
         return (badge_info, currency_info)
+
+    async def add_currency_to_shop(
+        self,
+        shop_id: ShopId,
+        currency_id: int,
+        currency_amount: int,
+        price_currency_id: int,
+        price_currency_amount: int
+    ) -> tuple[CurrencyDisplayInfo, CurrencyDisplayInfo]:
+        if not await self.__shop_repository.exists(shop_id):
+            raise ShopNotFoundError(shop_id)
+
+        currency_info = await self.__currency_repository.get_display_info(currency_id)
+        price_currency_info = await self.__currency_repository.get_display_info(price_currency_id)
+
+        await self.__shop_item_repository.add(
+            ShopItem(
+                identifier=ShopItemId(
+                    server_id=shop_id.server_id,
+                    shop_id=shop_id.shop_id,
+                    serial_id=self.__holoflake_provider.get_next_id()
+                ),
+                item_type=ItemType.CURRENCY,
+                item_id1=currency_info.currency_id,
+                item_id2=None,
+                item_id3=None,
+                count=currency_amount,
+                price_currency_id=price_currency_id,
+                price_amount=price_currency_amount
+            )
+        )
+
+        return (currency_info, price_currency_info)
 
     def __grant_currency(
         self,

@@ -10,7 +10,7 @@ class ShopItemsMigration(MigrationBase):
         super().__init__(
             "shop_items",
             [
-                MigrationPlan(202501171054, self.__initialize_table),
+                MigrationPlan(202503272326, self.__initialize_table),
             ]
         )
 

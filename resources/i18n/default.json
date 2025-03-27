@@ -117,7 +117,7 @@
                 "shop_empty_error": "Alas, **{shop_name}** has run out of its stock. Check back later.",
                 "shop_title": "Shop: {shop_name}",
                 "item_description": "**{index}.** **[{item_name}]**x{item_count:,} - **{item_price:,}** <:{currency_emoji_name}:{currency_emoji_id}>",
-                "shop_footer": "Use the buttons to view or purchase items.",
+                "shop_footer": "Use the buttons to purchase items.",
                 "buy_button": "Buy #{index}",
                 "view_shop_button": "Back to shop"
             },
@@ -221,7 +221,9 @@
                 "item_description": "**{index}.** **[{item_name}]**x{item_count:,} - **{item_price:,}** <:{currency_emoji_name}:{currency_emoji_id}>",
                 "remove_button": "Remove #{index}",
                 "shop_item_removed_successfully": "I've removed the item from the shop.",
-                "view_shop_button": "Back to shop"
+                "view_shop_button": "View shop",
+                "same_currency_error": "Alas, you can't exchange the same currency for itself.",
+                "currency_added_successfully": "I've added the currency **{currency_amount:,}** <:{currency_emoji_name}:{currency_emoji_id}> to the shop. It is available for purchase for **{price:,}** <:{price_currency_emoji_name}:{price_currency_emoji_id}>."
             },
             "marry_workflow": {
                 "already_married": "Verily, you are already wed to <@{spouse_id}>. Would you truly dally with another, forsaking your vows?",

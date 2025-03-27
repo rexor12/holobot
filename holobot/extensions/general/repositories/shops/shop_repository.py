@@ -1,4 +1,5 @@
 from collections.abc import Awaitable
+from datetime import datetime
 
 from holobot.extensions.general.models.shops import Shop, ShopDisplayInfo
 from holobot.extensions.general.repositories.shops.records import ShopRecord
@@ -6,6 +7,9 @@ from holobot.extensions.general.sdk.shops.models import ShopId
 from holobot.sdk.database import IDatabaseManager, IUnitOfWorkProvider
 from holobot.sdk.database.entities import PrimaryKey
 from holobot.sdk.database.queries import Query
+from holobot.sdk.database.queries.constraints import (
+    and_expression, column_expression, or_expression
+)
 from holobot.sdk.database.queries.enums import Connector, Equality, Order
 from holobot.sdk.database.repositories import RepositoryBase
 from holobot.sdk.ioc.decorators import injectable
@@ -118,18 +122,44 @@ class ShopRepository(
 
             return await query.compile().fetchval(session.connection)
 
+    def is_valid(
+        self,
+        shop_id: ShopId,
+        timestamp: datetime
+    ) -> Awaitable[bool]:
+        return self._exists_by_filter(
+            lambda where: where.expression(
+                and_expression(
+                    column_expression("server_id", Equality.EQUAL, shop_id.server_id),
+                    column_expression("shop_id", Equality.EQUAL, shop_id.shop_id),
+                    or_expression(
+                        column_expression("valid_from", Equality.EQUAL, None),
+                        column_expression("valid_from", Equality.GREATER_OR_EQUAL, timestamp)
+                    ),
+                    or_expression(
+                        column_expression("valid_to", Equality.EQUAL, None),
+                        column_expression("valid_to", Equality.LESS_OR_EQUAL, timestamp)
+                    )
+                )
+            )
+        )
+
     def _map_record_to_model(self, record: ShopRecord) -> Shop:
         return Shop(
             identifier=ShopId(
                 server_id=record.server_id.value,
                 shop_id=record.shop_id.value
             ),
-            shop_name=record.shop_name
+            shop_name=record.shop_name,
+            valid_from=record.valid_from,
+            valid_to=record.valid_to
         )
 
     def _map_model_to_record(self, model: Shop) -> ShopRecord:
         return ShopRecord(
             server_id=PrimaryKey(model.identifier.server_id),
             shop_id=PrimaryKey(model.identifier.shop_id),
-            shop_name=model.shop_name
+            shop_name=model.shop_name,
+            valid_from=model.valid_from,
+            valid_to=model.valid_to
         )

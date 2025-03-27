@@ -12,7 +12,6 @@ from holobot.discord.sdk.workflows.interactables.enums import OptionType
 from holobot.discord.sdk.workflows.interactables.models import (
     AutocompleteOption, Cooldown, InteractionResponse, Option, StringOption
 )
-from holobot.discord.sdk.workflows.interactables.views import Modal
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, View
 from holobot.extensions.general.exceptions import TooManyShopsError
 from holobot.extensions.general.exceptions.shop_not_found_error import ShopNotFoundError
@@ -55,6 +54,9 @@ class ManageShopsWorkflow(WorkflowBase):
         self.__register_autocomplete_shop("shop", "manage", "remove", "shop")
         self.__register_autocomplete_shop("shop", "manage", "addbadge", "shop")
         self.__register_autocomplete_shop("shop", "manage", "changeitems", "shop")
+        self.__register_autocomplete_currency("shop", "manage", "addbadge", "currency")
+        self.__register_autocomplete_shop("shop", "manage", "addcurrency", "shop")
+        self.__register_autocomplete_currency("shop", "manage", "addcurrency", ("currency", "price_currency"))
 
     @command(
         group_name="shop",
@@ -228,10 +230,11 @@ class ManageShopsWorkflow(WorkflowBase):
                 content=localize("interactions.server_only_interaction_error")
             )
 
+        shop_id_int = int(shop_id)
         async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
             try:
                 badge_info, currency_info = await self.__shop_manager.add_badge_to_shop(
-                    ShopId(server_id=context.server_id, shop_id=int(shop_id)),
+                    ShopId(server_id=context.server_id, shop_id=shop_id_int),
                     BadgeId(server_id=context.server_id, badge_id=int(badge_id)),
                     int(currency_id),
                     currency_amount
@@ -268,6 +271,90 @@ class ManageShopsWorkflow(WorkflowBase):
                     "currency_emoji_name": currency_info.emoji_name,
                     "price": currency_amount
                 }
+            ),
+            components=self.__create_view_shop_button(
+                shop_id_int,
+                context.author_id
+            )
+        )
+
+    @command(
+        group_name="shop",
+        subgroup_name="manage",
+        name="addcurrency",
+        description="Adds a currency to a shop.",
+        cooldown=Cooldown(duration=10),
+        options=(
+            StringOption("shop", "The shop to modify.", argument_name="shop_id", is_autocomplete=True),
+            StringOption("currency", "The currency to add.", argument_name="currency_id", is_autocomplete=True),
+            Option("amount", "The amount of currency a purchase gives the user.", OptionType.INTEGER, argument_name="currency_amount"),
+            StringOption("price_currency", "The type of currency used to pay for the item.", argument_name="price_currency_id", is_autocomplete=True),
+            Option("price", "The price of the item.", OptionType.INTEGER, argument_name="price_currency_amount"),
+        )
+    )
+    async def add_currency_to_shop(
+        self,
+        context: InteractionContext,
+        shop_id: str,
+        currency_id: str,
+        currency_amount: int,
+        price_currency_id: str,
+        price_currency_amount: int
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._reply(
+                content=localize("interactions.server_only_interaction_error")
+            )
+
+        currency_id_int = int(currency_id)
+        price_currency_id_int = int(price_currency_id)
+        if currency_id == price_currency_id:
+            return self._reply(
+                content=localize(
+                    "extensions.general.manage_shops_workflow.same_currency_error"
+                )
+            )
+
+        shop_id_int = int(shop_id)
+        async with (unit_of_work := await self.__unit_of_work_provider.create_new()):
+            try:
+                currency_info, price_currency_info = await self.__shop_manager.add_currency_to_shop(
+                    ShopId(server_id=context.server_id, shop_id=shop_id_int),
+                    currency_id_int,
+                    currency_amount,
+                    price_currency_id_int,
+                    price_currency_amount
+                )
+
+                unit_of_work.complete()
+            except ShopNotFoundError:
+                return self._reply(
+                    content=localize(
+                        "extensions.general.manage_shops_workflow.shop_not_found_error"
+                    )
+                )
+            except CurrencyNotFoundException:
+                return self._reply(
+                    content=localize(
+                        "extensions.general.manage_shops_workflow.currency_not_found_error"
+                    )
+                )
+
+        return self._reply(
+            content=localize(
+                "extensions.general.manage_shops_workflow.currency_added_successfully",
+                {
+                    "currency_emoji_id": currency_info.emoji_id,
+                    "currency_emoji_name": currency_info.emoji_name,
+                    "currency_amount": currency_amount,
+                    "price_currency_emoji_id": price_currency_info.emoji_id,
+                    "price_currency_emoji_name": price_currency_info.emoji_name,
+                    "price": price_currency_amount
+                }
+            ),
+            components=self.__create_view_shop_button(
+                shop_id_int,
+                context.author_id
             )
         )
 
@@ -298,35 +385,6 @@ class ManageShopsWorkflow(WorkflowBase):
                 name=badge_info.name,
                 value=str(badge_info.badge_id.badge_id)
             ) for badge_info in badge_infos.items
-        ])
-
-    @autocomplete(
-        group_name="shop",
-        subgroup_name="manage",
-        command_name="addbadge",
-        options=("currency",)
-    )
-    async def autocomplete_currency(
-        self,
-        context: InteractionContext,
-        options: tuple[AutocompleteOption, ...],
-        target_option: AutocompleteOption
-    ) -> InteractionResponse:
-        if not isinstance(context, ServerChatInteractionContext):
-            return self._autocomplete([])
-
-        currency_infos = await self.__currency_repository.paginate_currency_infos(
-            context.server_id,
-            target_option.value if isinstance(target_option.value, str) else None,
-            0,
-            5
-        )
-
-        return self._autocomplete([
-            AutocompleteChoice(
-                name=badge_info.name,
-                value=str(badge_info.currency_id)
-            ) for badge_info in currency_infos.items
         ])
 
     @command(
@@ -473,6 +531,28 @@ class ManageShopsWorkflow(WorkflowBase):
                 target_option
             )
         )
+    async def __autocomplete_currency(
+        self,
+        context: InteractionContext,
+        options: tuple[AutocompleteOption, ...],
+        target_option: AutocompleteOption
+    ) -> InteractionResponse:
+        if not isinstance(context, ServerChatInteractionContext):
+            return self._autocomplete([])
+
+        currency_infos = await self.__currency_repository.paginate_currency_infos(
+            context.server_id,
+            target_option.value if isinstance(target_option.value, str) else None,
+            0,
+            5
+        )
+
+        return self._autocomplete([
+            AutocompleteChoice(
+                name=item_info.name,
+                value=str(item_info.currency_id)
+            ) for item_info in currency_infos.items
+        ])
 
     def __register_autocomplete_shop(
         self,
@@ -487,6 +567,21 @@ class ManageShopsWorkflow(WorkflowBase):
             name=name,
             options=(option_name,),
             callback=ManageShopsWorkflow.__autocomplete_shop
+        ))
+
+    def __register_autocomplete_currency(
+        self,
+        group_name: str,
+        subgroup_name: str,
+        name: str,
+        option_name: str | tuple[str, ...]
+    ) -> None:
+        self.add_registration(Autocomplete(
+            group_name=group_name,
+            subgroup_name=subgroup_name,
+            name=name,
+            options=option_name if isinstance(option_name, tuple) else (option_name,),
+            callback=ManageShopsWorkflow.__autocomplete_currency
         ))
 
     def __create_view_shop_button(

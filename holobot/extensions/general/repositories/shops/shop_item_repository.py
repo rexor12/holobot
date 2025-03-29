@@ -56,6 +56,18 @@ class ShopItemRepository(
             )
         )
 
+    def count_by_shop(
+        self,
+        shop_id: ShopId
+    ) -> Awaitable[int]:
+        return self._count_by_filter(
+            lambda where: where.fields(
+                Connector.AND,
+                ("server_id", Equality.EQUAL, shop_id.server_id),
+                ("shop_id", Equality.EQUAL, shop_id.shop_id)
+            )
+        )
+
     def _map_record_to_model(self, record: ShopItemRecord) -> ShopItem:
         return ShopItem(
             identifier=ShopItemId(

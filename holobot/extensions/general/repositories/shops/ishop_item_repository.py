@@ -14,3 +14,9 @@ class IShopItemRepository(IRepository[ShopItemId, ShopItem], Protocol):
         page_size: int
     ) -> Awaitable[PaginationResult[ShopItem]]:
         ...
+
+    def count_by_shop(
+        self,
+        shop_id: ShopId
+    ) -> Awaitable[int]:
+        ...

@@ -3,8 +3,8 @@ from typing import Any
 
 from holobot.extensions.general.enums import GrantItemOutcome, ItemType
 from holobot.extensions.general.exceptions import (
-    ShopItemNotFoundError, ShopNotAvailableError, ShopNotFoundError, TooManyShopsError,
-    UnknownShopItemTypeError
+    ShopItemNotFoundError, ShopNotAvailableError, ShopNotFoundError, TooManyShopItemsError,
+    TooManyShopsError, UnknownShopItemTypeError
 )
 from holobot.extensions.general.models.items import (
     BackgroundItem, BadgeDisplayInfo, BadgeItem, CurrencyDisplayInfo, CurrencyItem, UserItem
@@ -219,8 +219,7 @@ class ShopManager(IShopManager):
         currency_id: int,
         currency_amount: int
     ) -> tuple[BadgeDisplayInfo, CurrencyDisplayInfo]:
-        if not await self.__shop_repository.exists(shop_id):
-            raise ShopNotFoundError(shop_id)
+        await self.__validate_shop_for_new_item(shop_id)
 
         badge_info = await self.__badge_repository.get_display_info(badge_id)
         currency_info = await self.__currency_repository.get_display_info(currency_id)
@@ -252,8 +251,7 @@ class ShopManager(IShopManager):
         price_currency_id: int,
         price_currency_amount: int
     ) -> tuple[CurrencyDisplayInfo, CurrencyDisplayInfo]:
-        if not await self.__shop_repository.exists(shop_id):
-            raise ShopNotFoundError(shop_id)
+        await self.__validate_shop_for_new_item(shop_id)
 
         currency_info = await self.__currency_repository.get_display_info(currency_id)
         price_currency_info = await self.__currency_repository.get_display_info(price_currency_id)
@@ -276,6 +274,17 @@ class ShopManager(IShopManager):
         )
 
         return (currency_info, price_currency_info)
+
+    async def __validate_shop_for_new_item(
+        self,
+        shop_id: ShopId
+    ) -> None:
+        shop_item_count_max = self.__options.value.MaxItemsPerShop
+        shop_item_count = await self.__shop_item_repository.count_by_shop(shop_id)
+        if shop_item_count >= shop_item_count_max:
+            raise TooManyShopItemsError(shop_id, shop_item_count, shop_item_count_max)
+        elif shop_item_count == 0 and not await self.__shop_repository.exists(shop_id):
+            raise ShopNotFoundError(shop_id)
 
     def __grant_currency(
         self,

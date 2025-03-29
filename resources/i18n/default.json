@@ -223,7 +223,8 @@
                 "shop_item_removed_successfully": "I've removed the item from the shop.",
                 "view_shop_button": "View shop",
                 "same_currency_error": "Alas, you can't exchange the same currency for itself.",
-                "currency_added_successfully": "I've added the currency **{currency_amount:,}** <:{currency_emoji_name}:{currency_emoji_id}> to the shop. It is available for purchase for **{price:,}** <:{price_currency_emoji_name}:{price_currency_emoji_id}>."
+                "currency_added_successfully": "I've added the currency **{currency_amount:,}** <:{currency_emoji_name}:{currency_emoji_id}> to the shop. It is available for purchase for **{price:,}** <:{price_currency_emoji_name}:{price_currency_emoji_id}>.",
+                "too_many_shop_items_error": "Alas, this shop is too small to sell so many different items. Clear up some space."
             },
             "marry_workflow": {
                 "already_married": "Verily, you are already wed to <@{spouse_id}>. Would you truly dally with another, forsaking your vows?",

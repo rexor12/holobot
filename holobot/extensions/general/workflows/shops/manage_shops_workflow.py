@@ -13,13 +13,14 @@ from holobot.discord.sdk.workflows.interactables.models import (
     AutocompleteOption, Cooldown, InteractionResponse, Option, StringOption
 )
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext, View
-from holobot.extensions.general.exceptions import TooManyShopsError
-from holobot.extensions.general.exceptions.shop_not_found_error import ShopNotFoundError
+from holobot.extensions.general.exceptions import (
+    ShopNotFoundError, TooManyShopItemsError, TooManyShopsError
+)
 from holobot.extensions.general.managers import IShopManager
 from holobot.extensions.general.options import GeneralOptions
 from holobot.extensions.general.repositories import IBadgeRepository, ICurrencyRepository
 from holobot.extensions.general.sdk.badges.exceptions import BadgeNotFoundException
-from holobot.extensions.general.sdk.badges.models.badge_id import BadgeId
+from holobot.extensions.general.sdk.badges.models import BadgeId
 from holobot.extensions.general.sdk.currencies.exceptions import CurrencyNotFoundException
 from holobot.extensions.general.sdk.shops.models import ShopId, ShopItemId
 from holobot.sdk.configs import IOptions
@@ -259,6 +260,12 @@ class ManageShopsWorkflow(WorkflowBase):
                         "extensions.general.manage_shops_workflow.currency_not_found_error"
                     )
                 )
+            except TooManyShopItemsError:
+                return self._reply(
+                    content=localize(
+                        "extensions.general.manage_shops_workflow.too_many_shop_items_error"
+                    )
+                )
 
         return self._reply(
             content=localize(
@@ -337,6 +344,12 @@ class ManageShopsWorkflow(WorkflowBase):
                 return self._reply(
                     content=localize(
                         "extensions.general.manage_shops_workflow.currency_not_found_error"
+                    )
+                )
+            except TooManyShopItemsError:
+                return self._reply(
+                    content=localize(
+                        "extensions.general.manage_shops_workflow.too_many_shop_items_error"
                     )
                 )
 

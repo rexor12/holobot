@@ -6,6 +6,8 @@ from .marriage_migration import MarriageMigration
 from .quest_migration import QuestMigration
 from .quest_proto_migration import QuestProtoMigration
 from .reputation_cooldowns_migration import ReputationCooldownsMigration
+from .shop_items_migration import ShopItemsMigration
+from .shops_migration import ShopsMigration
 from .user_badge_migration import UserBadgeMigration
 from .user_items_migration import UserItemsMigration
 from .user_profile_backgrounds_migration import UserProfileBackgroundsMigration

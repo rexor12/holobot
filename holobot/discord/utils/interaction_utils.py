@@ -2,13 +2,6 @@ from typing import NamedTuple
 
 import hikari
 
-_CHANNEL_BASED_INTERACTION_TYPE = (
-    hikari.AutocompleteInteraction
-    | hikari.CommandInteraction
-    | hikari.ComponentInteraction
-    | hikari.ModalInteraction
-)
-
 class ChannelInfo(NamedTuple):
     channel_id: int
     thread_id: int | None

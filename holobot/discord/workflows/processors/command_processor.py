@@ -104,6 +104,13 @@ class CommandProcessor(InteractionProcessorBase[hikari.CommandInteraction, Comma
         for event_listener in self.__event_listeners:
             await event_listener.on_event(event)
 
+    def _resolve_argument_name(
+        self,
+        interactable: Command,
+        argument_name: str
+    ) -> str:
+        return interactable.option_argument_names[argument_name]
+
     def __get_interaction_context(
         self,
         interaction: hikari.CommandInteraction

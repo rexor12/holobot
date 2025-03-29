@@ -329,7 +329,8 @@
             ],
             "MatchMarriageBonusScore": "5:1;17:2;29:3;40:4;62:5;87:6;100:7",
             "MarriageEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1WxjyhkUSFMsupnrO36Lp_jQKgF9PVvIg",
-            "FortuneCookieEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1a3refqlc9_K8O0VoGipnsS8FpI_Y89c5"
+            "FortuneCookieEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1a3refqlc9_K8O0VoGipnsS8FpI_Y89c5",
+            "ShopEmbedThumbnailUrl": "https://lh3.googleusercontent.com/d/1RwGHD31tcqQUk-AhIPHxjAc8zyoB2d9a"
         },
         "RockPaperScissorsOptions": {
             "RockEmojiId": 1263954019660075041,
@@ -338,6 +339,9 @@
             "PaperEmojiName": "pstship",
             "ScissorsEmojiId": 1263954032821665893,
             "ScissorsEmojiName": "psttank"
+        },
+        "ShopOptions": {
+            "MaxShopsPerServer": 2
         },
         "UserProfileOptions": {
             "ReputationTable": [

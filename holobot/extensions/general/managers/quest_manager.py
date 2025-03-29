@@ -2,19 +2,13 @@ from collections.abc import AsyncGenerator, Awaitable, Sequence
 from datetime import timedelta
 from typing import cast
 
-from holobot.extensions.general.enums import QuestResetType
+from holobot.extensions.general.enums import GrantItemOutcome, QuestResetType
 from holobot.extensions.general.models import Quest, QuestProto
-from holobot.extensions.general.models.items import (
-    BackgroundItem, BadgeItem, CurrencyItem, UserItem
-)
 from holobot.extensions.general.repositories import (
-    IBadgeRepository, ICurrencyRepository, IQuestProtoRepository, IQuestRepository,
-    IUserItemRepository
+    IBadgeRepository, ICurrencyRepository, IQuestProtoRepository, IQuestRepository
 )
 from holobot.extensions.general.sdk import IQuestRewardFactory
 from holobot.extensions.general.sdk.badges.models import BadgeId
-from holobot.extensions.general.sdk.items.exceptions import InvalidItemTypeException
-from holobot.extensions.general.sdk.items.models import UserItemId
 from holobot.extensions.general.sdk.quests.dtos import QuestRewardDescriptor
 from holobot.extensions.general.sdk.quests.enums import QuestStatus
 from holobot.extensions.general.sdk.quests.events import (
@@ -26,15 +20,13 @@ from holobot.extensions.general.sdk.quests.exceptions import (
 )
 from holobot.extensions.general.sdk.quests.managers import IQuestManager
 from holobot.extensions.general.sdk.quests.models import (
-    BackgroundQuestReward, BadgeQuestReward, CurrencyQuestReward, IQuest, QuestId, QuestProtoId,
-    QuestRewardBase
+    BadgeQuestReward, CurrencyQuestReward, IQuest, QuestId, QuestProtoId, QuestRewardBase
 )
 from holobot.sdk.chrono import IClock
-from holobot.sdk.identification import IHoloflakeProvider
 from holobot.sdk.ioc.decorators import injectable
-from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.utils.datetime_utils import get_last_day_of_week, today_midnight_utc
 from holobot.sdk.utils.iterable_utils import group_by_types, multi_to_dict
+from .iuser_item_manager import IUserItemManager
 
 @injectable(IQuestManager)
 class QuestManager(IQuestManager):
@@ -43,27 +35,23 @@ class QuestManager(IQuestManager):
         badge_repository: IBadgeRepository,
         clock: IClock,
         currency_repository: ICurrencyRepository,
-        holoflake_provider: IHoloflakeProvider,
-        logger_factory: ILoggerFactory,
         quest_event_handlers: tuple[IQuestEventHandler, ...],
         quest_proto_repository: IQuestProtoRepository,
         quest_repository: IQuestRepository,
         quest_reward_factories: tuple[IQuestRewardFactory, ...],
-        user_item_repository: IUserItemRepository
+        user_item_manager: IUserItemManager
     ) -> None:
         super().__init__()
         self.__badge_repository = badge_repository
         self.__clock = clock
         self.__currency_repository = currency_repository
-        self.__holoflake_provider = holoflake_provider
-        self.__logger = logger_factory.create(QuestManager)
         self.__quest_event_handlers = group_by_types(
             quest_event_handlers,
             (IQuestCompleteEventHandler,)
         )
         self.__quest_proto_repository = quest_proto_repository
         self.__quest_repository = quest_repository
-        self.__user_item_repository = user_item_repository
+        self.__user_item_manager = user_item_manager
         # TODO IQuestRewardFactory per server, not just code!
         self.__quest_reward_factories = multi_to_dict(
             quest_reward_factories,
@@ -310,12 +298,7 @@ class QuestManager(IQuestManager):
     ) -> Sequence[QuestRewardBase]:
         granted_rewards = list[QuestRewardBase]()
         async for quest_reward in self.__create_quest_rewards(quest_proto, server_id, user_id):
-            if await self.__try_grant_reward(
-                quest_reward,
-                server_id,
-                user_id,
-                quest_proto.identifier
-            ):
+            if await self.__try_grant_reward(quest_reward, server_id, user_id):
                 granted_rewards.append(quest_reward)
 
         return granted_rewards
@@ -392,116 +375,12 @@ class QuestManager(IQuestManager):
         self,
         quest_reward: QuestRewardBase,
         server_id: int,
-        user_id: int,
-        quest_proto_id: QuestProtoId
-    ) -> bool:
-        if quest_reward.count <= 0:
-            return False
-        if isinstance(quest_reward, CurrencyQuestReward):
-            return await self.__try_grant_currency(quest_reward, server_id, user_id)
-        if isinstance(quest_reward, BadgeQuestReward):
-            return await self.__try_grant_badge(quest_reward, user_id)
-        if isinstance(quest_reward, BackgroundQuestReward):
-            return await self.__try_grant_background(quest_reward, user_id)
-
-        self.__logger.warning(
-            "Failed to grant an unknown quest item",
-            server_id=server_id,
-            user_id=user_id,
-            quest_reward_type=type(quest_reward).__name__,
-            quest_proto_id=str(quest_proto_id)
-        )
-
-        return False
-
-    async def __try_grant_currency(
-        self,
-        quest_reward: CurrencyQuestReward,
-        server_id: int,
         user_id: int
     ) -> bool:
-        user_item = await self.__user_item_repository.get_wallet(
-            user_id,
+        outcome, _ = await self.__user_item_manager.try_grant_quest_reward(
             server_id,
-            quest_reward.currency_id
-        )
-        if user_item:
-            if not isinstance(user_item.item, CurrencyItem):
-                raise InvalidItemTypeException(user_id, server_id, quest_reward.currency_id)
-
-            user_item.item.count += quest_reward.count
-            await self.__user_item_repository.update(user_item)
-        else:
-            await self.__user_item_repository.add(UserItem(
-                identifier=UserItemId(
-                    server_id=server_id,
-                    user_id=user_id,
-                    serial_id=self.__holoflake_provider.get_next_id()
-                ),
-                item=CurrencyItem(
-                    count=quest_reward.count,
-                    currency_id=quest_reward.currency_id
-                )
-            ))
-
-        return True
-
-    async def __try_grant_badge(
-        self,
-        quest_reward: BadgeQuestReward,
-        user_id: int
-    ) -> bool:
-        has_badge_already = await self.__user_item_repository.badge_exists(
-            quest_reward.badge_id.server_id,
             user_id,
-            quest_reward.badge_id.badge_id
-        )
-        if has_badge_already:
-            # Already acquired
-            return True
-
-        user_item = UserItem(
-            identifier=UserItemId(
-                server_id=quest_reward.badge_id.server_id,
-                user_id=user_id,
-                serial_id=self.__holoflake_provider.get_next_id()
-            ),
-            item=BadgeItem(
-                count=1,
-                badge_id=quest_reward.badge_id,
-                unlocked_at=self.__clock.now_utc()
-            )
+            quest_reward
         )
 
-        await self.__user_item_repository.add(user_item)
-
-        return True
-
-    async def __try_grant_background(
-        self,
-        quest_reward: BackgroundQuestReward,
-        user_id: int
-    ) -> bool:
-        has_background_already = await self.__user_item_repository.background_exists(
-            user_id,
-            quest_reward.background_id
-        )
-        if has_background_already:
-            # Already acquired
-            return True
-
-        user_item = UserItem(
-            identifier=UserItemId(
-                server_id=quest_reward.background_id,
-                user_id=user_id,
-                serial_id=self.__holoflake_provider.get_next_id()
-            ),
-            item=BackgroundItem(
-                count=1,
-                background_id=quest_reward.background_id
-            )
-        )
-
-        await self.__user_item_repository.add(user_item)
-
-        return True
+        return outcome == GrantItemOutcome.GRANTED

@@ -26,8 +26,20 @@ class Command(Interactable):
     options: tuple[Option, ...] = field(default_factory=tuple)
     """The list of arguments the command takes."""
 
+    option_argument_names: dict[str, str] = field(init=False)
+    """A mapping of option names to their respective argument names.
+
+    This MUST NOT be changed manually (read-only).
+    """
+
     default_permissions: Permission = Permission.NONE
     """The default permissions required for a user to be able to use this command."""
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self.group_name}, {self.subgroup_name}, {self.name})"
+
+    def __post_init__(self):
+        self.option_argument_names = {
+            option.name: option.argument_name or option.name
+            for option in self.options
+        }

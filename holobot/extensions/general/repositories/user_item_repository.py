@@ -107,6 +107,20 @@ class UserItemRepository(
 
     #region Backgrounds
 
+    def get_background(
+        self,
+        user_id: int,
+        background_id: int
+    ) -> Awaitable[UserItem | None]:
+        return self._get_by_filter(lambda where: (where
+            .fields(
+                Connector.AND,
+                ("item_type", Equality.EQUAL, ItemType.BACKGROUND),
+                ("user_id", Equality.EQUAL, user_id),
+                ("item_id1", Equality.EQUAL, background_id)
+            )
+        ))
+
     def paginate_backgrounds(
         self,
         user_id: int,
@@ -180,6 +194,22 @@ class UserItemRepository(
     #endregion
 
     #region Badges
+
+    def get_badge(
+        self,
+        server_id: int,
+        user_id: int,
+        badge_id: int
+    ) -> Awaitable[UserItem | None]:
+        return self._get_by_filter(lambda where: (where
+            .fields(
+                Connector.AND,
+                ("item_type", Equality.EQUAL, ItemType.BADGE),
+                ("server_id", Equality.EQUAL, server_id),
+                ("user_id", Equality.EQUAL, user_id),
+                ("item_id1", Equality.EQUAL, badge_id)
+            )
+        ))
 
     def paginate_badges(
         self,

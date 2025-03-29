@@ -60,7 +60,7 @@ class WhereBuilder(IWhereBuilder, ISupportsPagination):
     def field_in(
         self,
         column_name: str,
-        values: Sequence[T] # type: ignore
+        values: Sequence[T]
     ) -> WhereConstraintBuilder:
         self.constraint = ColumnInConstraintBuilder(column_name, values)
         return WhereConstraintBuilder(self)

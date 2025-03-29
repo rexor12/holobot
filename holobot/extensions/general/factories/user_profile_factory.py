@@ -4,17 +4,13 @@ from dataclasses import dataclass
 from PIL import Image, ImageDraw, ImageFont
 
 from holobot.extensions.general.models.user_profiles import UserProfile
-from holobot.extensions.general.options import UserProfileOptions
 from holobot.extensions.general.providers import IReputationDataProvider
 from holobot.extensions.general.repositories.user_profiles import IUserProfileBackgroundRepository
-from holobot.framework.configs import EnvironmentOptions
-from holobot.sdk.configs import IOptions
 from holobot.sdk.diagnostics import Stopwatch
 from holobot.sdk.i18n import II18nProvider
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.logging import ILoggerFactory
 from holobot.sdk.resources import IAssetManager
-from holobot.sdk.system import IEnvironment
 from .iuser_profile_factory import IUserProfileFactory
 
 _BADGES_PER_ROW: int = 25
@@ -56,11 +52,8 @@ class UserProfileFactory(IUserProfileFactory):
     def __init__(
         self,
         asset_manager: IAssetManager,
-        environment: IEnvironment,
-        environment_options: IOptions[EnvironmentOptions],
         i18n_provider: II18nProvider,
         logger_factory: ILoggerFactory,
-        user_profile_options: IOptions[UserProfileOptions],
         reputation_data_provider: IReputationDataProvider,
         user_profile_background_repository: IUserProfileBackgroundRepository
     ) -> None:

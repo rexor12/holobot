@@ -17,12 +17,13 @@ class MemberDataProvider(IMemberDataProvider):
     async def get_basic_data_by_id(
         self,
         server_id: int,
-        user_id: int
+        user_id: int,
+        use_cache: bool = True
     ) -> MemberData:
         assert_not_none(server_id, "server_id")
         assert_not_none(user_id, "user_id")
 
-        user = await get_bot().get_guild_member(server_id, user_id)
+        user = await get_bot().get_guild_member(server_id, user_id, use_cache)
         return MemberDataProvider.__member_to_basic_data(user)
 
     async def try_get_basic_data_by_id(
@@ -133,6 +134,8 @@ class MemberDataProvider(IMemberDataProvider):
             user_id=user.id,
             avatar_url=user.avatar_url and user.avatar_url.url,
             server_specific_avatar_url=user.guild_avatar_url and user.guild_avatar_url.url,
+            banner_url=user.banner_url and user.banner_url.url,
+            server_specific_banner_url=user.guild_banner_url and user.guild_banner_url.url,
             name=user.username,
             nick_name=user.nickname,
             is_self=bot_user == user,

@@ -8,7 +8,8 @@ class IMemberDataProvider(Protocol):
     def get_basic_data_by_id(
         self,
         server_id: int,
-        user_id: int
+        user_id: int,
+        use_cache: bool = True
     ) -> Awaitable[MemberData]:
         ...
 

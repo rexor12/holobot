@@ -611,7 +611,7 @@
                 "embed_footer": "Artwork by {artist}",
                 "embed_title_global": "{user}'s global avatar",
                 "embed_title_server": "{user}'s server specific avatar",
-                "no_avatar_error": "I'm sorry, but <@{user_id}> doesn't have an avatar. (｡•́︿•̀｡)",
+                "no_avatar_error": "Alas, it seems <@{user_id}> has no avatars.",
                 "global_button": "Global",
                 "server_button": "Server"
             },
@@ -630,8 +630,11 @@
                 "equip_another_button": "Back to badges"
             },
             "view_user_banner_workflow": {
-                "embed_title": "{user}'s banner",
-                "no_banner_error": "I'm sorry, but <@{user_id}> doesn't have a banner. (｡•́︿•̀｡)"
+                "embed_title_global": "{user}'s global banner",
+                "embed_title_server": "{user}'s server specific banner",
+                "no_banner_error": "Alas, it seems <@{user_id}> has no banners.",
+                "global_button": "Global",
+                "server_button": "Server"
             },
             "view_wallet_workflow": {
                 "empty_wallet_error": "Alas, it seems a mischievous wolf has taken all your coins.",

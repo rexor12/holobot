@@ -17,7 +17,7 @@ from holobot.discord.sdk.workflows.interactables.components.enums import Compone
 from holobot.discord.sdk.workflows.interactables.components.models import ButtonState
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.enums import OptionType
-from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
+from holobot.discord.sdk.workflows.interactables.models import Choice, InteractionResponse, Option
 from holobot.discord.sdk.workflows.models import ServerChatInteractionContext
 from holobot.extensions.general.options import AvatarOptions
 from holobot.sdk.configs import IOptions
@@ -61,14 +61,25 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                 "user",
                 "The user to view. By default, it's yourself.",
                 type=OptionType.USER,
-                is_mandatory=False
+                is_mandatory=False,
+                argument_name="user_id"
             ),
+            Option(
+                "kind",
+                "The type of avatar you want to see.",
+                type=OptionType.INTEGER,
+                is_mandatory=False,
+                choices=(
+                    Choice("Global", 0),
+                    Choice("Server", 1)
+                )
+            )
         )
     )
     async def view_user_avatar(
         self,
         context: InteractionContext,
-        user: int | None = None,
+        user_id: int | None = None,
         kind: int | None = None
     ) -> InteractionResponse:
         if not isinstance(context, ServerChatInteractionContext):
@@ -76,20 +87,10 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                 content=self.__i18n_provider.get("interactions.server_only_interaction_error")
             )
 
-        if kind is None:
-            avatar_kind = _AvatarKind.SERVER_SPECIFIC
-        else:
-            try:
-                avatar_kind = _AvatarKind(kind)
-            except ValueError:
-                return self._reply(content=self.__i18n_provider.get("invalid_argument_error"))
-            else:
-                avatar_kind = _AvatarKind.SERVER_SPECIFIC
-
         content, components = await self.__get_response_view(
             context,
-            user if user else None,
-            avatar_kind
+            user_id if user_id else None,
+            _AvatarKind.GLOBAL if kind == 0 else _AvatarKind.SERVER_SPECIFIC
         )
 
         return self._reply(
@@ -253,7 +254,11 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                     text=self.__i18n_provider.get(
                         "extensions.general.view_user_avatar_workflow.global_button"
                     ),
-                    style=ComponentStyle.SECONDARY,
+                    style=(
+                        ComponentStyle.PRIMARY
+                        if not global_button_enabled
+                        else ComponentStyle.SECONDARY
+                    ),
                     is_enabled=global_button_enabled,
                     custom_data=custom_data
                 ),
@@ -263,7 +268,11 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                     text=self.__i18n_provider.get(
                         "extensions.general.view_user_avatar_workflow.server_button"
                     ),
-                    style=ComponentStyle.SECONDARY,
+                    style=(
+                        ComponentStyle.PRIMARY
+                        if not server_button_enabled
+                        else ComponentStyle.SECONDARY
+                    ),
                     is_enabled=server_button_enabled,
                     custom_data=custom_data
                 )
@@ -285,6 +294,7 @@ class ViewUserAvatarWorkflow(WorkflowBase):
                     embed_title_i18n_key,
                     { "user": member_data.display_name }
                 ),
+                color=member_data.color,
                 image_url=avatar_url,
                 footer=footer
             ),

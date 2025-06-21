@@ -7,9 +7,10 @@ import hikari.impl.special_endpoints as endpoints
 
 from holobot.discord import DiscordOptions
 from holobot.discord.sdk.workflows.interactables.components import (
-    Button, ButtonState, ComboBox, ComboBoxState, ComponentBase, ComponentStateBase, ComponentStyle,
-    LayoutBase, Paginator, PaginatorState, RoleSelector, RoleSelectorState, StackLayout, TextBox,
-    TextBoxState, TextBoxStyle
+    AttachmentUrl, Button, ButtonState, ComboBox, ComboBoxState, ComponentBase, ComponentStateBase,
+    ComponentStyle, ContainerLayout, Label, LayoutBase, Paginator, PaginatorState, RoleSelector,
+    RoleSelectorState, SectionLayout, Separator, StackLayout, TextBox, TextBoxState, TextBoxStyle,
+    Thumbnail
 )
 from holobot.discord.sdk.workflows.interactables.views import Modal, ModalState
 from holobot.discord.transformers.emoji import to_model as emoji_to_model
@@ -39,18 +40,28 @@ class _ControlData(NamedTuple):
     version: int
     custom_data: dict[str, str]
 
+# TODO Fix limit checks.
+# Total components: The limit for total components in a message has been increased to 40.
+# Top-level components: There is no longer a limit on top level components in a message (previously it was 10).
+# Container Component: There is no longer a limit on the number of components in a Container Component (previously it was 10).
 @injectable(IComponentTransformer)
 class ComponentTransformer(IComponentTransformer):
     def __init__(self, options: IOptions[DiscordOptions]) -> None:
         super().__init__()
         self.__options = options
         self.__control_transformers: dict[type[ComponentBase], _TComponentBuilder] = {
+            ContainerLayout: self.__add_container_layout,
             StackLayout: self.__add_stack_layout,
-            Paginator: self.__add_paginator,
+            SectionLayout: self.__add_section_layout,
+
             Button: self.__add_button,
             ComboBox: self.__add_combo_box,
+            Label: self.__add_label,
+            RoleSelector: self.__add_role_selector,
+            Separator: self.__add_separator,
             TextBox: self.__add_text_box,
-            RoleSelector: self.__add_role_selector
+
+            Paginator: self.__add_paginator
         }
 
     def create_controls(
@@ -246,9 +257,9 @@ class ComponentTransformer(IComponentTransformer):
         control: hikari.PartialComponent,
         expected_target_types: dict[str, type[ComponentStateBase]]
     ) -> Generator[ComponentStateBase, Any, None]:
-        if isinstance(control, hikari.ActionRowComponent):
+        if isinstance(control, (hikari.ActionRowComponent, hikari.ContainerComponent)):
             for child in control.components:
-                # TODO Restore StackLayout.
+                # TODO Restore layouts.
                 results = self.__create_control_states_internal(
                     interaction,
                     child,
@@ -256,6 +267,12 @@ class ComponentTransformer(IComponentTransformer):
                 )
                 for result in results:
                     yield result
+            return
+
+        if isinstance(control, hikari.SectionComponent):
+            # NOTE: We're looking for the exact same button so we ignore the rest.
+            if isinstance(control.accessory, hikari.ButtonComponent) and control.accessory.custom_id == interaction.custom_id:
+                yield self.__create_button_state(control.accessory, expected_target_types)
             return
 
         if isinstance(control, hikari.ButtonComponent):
@@ -279,6 +296,9 @@ class ComponentTransformer(IComponentTransformer):
 
         if isinstance(control, hikari.TextInputComponent):
             yield self.__create_text_box_state(control, expected_target_types)
+            return
+
+        if isinstance(control, hikari.SeparatorComponent):
             return
 
         raise ArgumentError("control", f"Unknown control type '{type(control)}'.")
@@ -306,14 +326,37 @@ class ComponentTransformer(IComponentTransformer):
 
         raise ArgumentError("control", f"Unknown modal control type '{type(control)}'.")
 
+    def __add_container_layout(
+        self,
+        control: ContainerLayout,
+        container: special_endpoints.ComponentBuilder | None,
+        counters: dict[str, int]
+    ) -> special_endpoints.ComponentBuilder | None:
+        if container:
+            raise ArgumentError("container", "A container layout cannot be placed in another layout.")
+
+        child_count = len(control.children)
+        assert_range(child_count, 1, 40, "control.children")
+
+        builder = endpoints.ContainerComponentBuilder(
+            id=hikari.UNDEFINED,
+            accent_color=hikari.Color(control.accent_color) if control.accent_color is not None else hikari.UNDEFINED,
+            spoiler=control.is_spoiler
+        )
+
+        for child in control.children:
+            self.__create_control(child, builder, counters)
+
+        return builder
+
     def __add_stack_layout(
         self,
         control: StackLayout,
         container: special_endpoints.ComponentBuilder | None,
         counters: dict[str, int]
     ) -> special_endpoints.ComponentBuilder | None:
-        if container:
-            raise ArgumentError("A stack layout cannot be placed in a container layout.")
+        if container and not isinstance(container, special_endpoints.ContainerComponentBuilder):
+            raise ArgumentError("container", f"A stack layout can only be placed in a container layout, but got '{type(container)}'.")
 
         child_count = len(control.children)
         assert_range(child_count, 0, 5, "control.children")
@@ -329,7 +372,76 @@ class ComponentTransformer(IComponentTransformer):
         for child in control.children:
             self.__create_control(child, builder, counters)
 
+        if container:
+            container.add_component(builder)
+
         return builder
+
+    def __add_section_layout(
+        self,
+        control: SectionLayout,
+        container: special_endpoints.ComponentBuilder | None,
+        counters: dict[str, int]
+    ) -> special_endpoints.ComponentBuilder | None:
+        child_count = len(control.children)
+        assert_range(child_count, 1, 40, "control.children")
+        if container and not isinstance(container, special_endpoints.ContainerComponentBuilder):
+            raise ArgumentError("container", f"A section layout can only be placed in a container layout, but got '{type(container)}'.")
+
+        builder = endpoints.SectionComponentBuilder(
+            id=hikari.UNDEFINED,
+            accessory=(
+                self.__create_button(control.accessory, counters)
+                if isinstance(control.accessory, Button)
+                else self.__create_thumbnail(control.accessory, counters)
+            ),
+            components=[
+                self.__create_label(child, counters)
+                for child in control.children
+            ]
+        )
+
+        if container:
+            container.add_component(builder)
+
+        return builder
+
+    def __create_button(
+        self,
+        control: Button,
+        counters: dict[str, int]
+    ) -> special_endpoints.ButtonBuilder:
+        if not control.emoji:
+            assert_not_none(control.text, "control.text")
+            assert_range(len(cast(str, control.text)), 1, 80, "control.text")
+        if not control.text and not control.emoji:
+            raise ArgumentError("control", "At least one of the button's text or emoji must be specified.")
+        if control.style is ComponentStyle.LINK:
+            if not control.url:
+                raise ArgumentError(f"The URL of the link-style button '{control.id}' must be specified.")
+
+            return endpoints.LinkButtonBuilder(
+                id=hikari.UNDEFINED,
+                emoji=control.emoji or hikari.UNDEFINED,
+                label=control.text or hikari.UNDEFINED,
+                is_disabled=not control.is_enabled,
+                url=control.url
+            )
+
+        return endpoints.InteractiveButtonBuilder(
+            id=hikari.UNDEFINED,
+            emoji=control.emoji or hikari.UNDEFINED,
+            label=control.text or hikari.UNDEFINED,
+            is_disabled=not control.is_enabled,
+            style=_COMPONENT_STYLE_MAP.get(control.style, hikari.ButtonStyle.PRIMARY),
+            custom_id=ComponentTransformer.__pack_custom_data(
+                control.id,
+                ComponentTransformer.__increment_counter(counters, control.id),
+                control.owner_id,
+                0,
+                control.custom_data
+            )
+        )
 
     def __add_button(
         self,
@@ -338,38 +450,13 @@ class ComponentTransformer(IComponentTransformer):
         counters: dict[str, int]
     ) -> special_endpoints.ComponentBuilder | None:
         assert_not_none(container, "container")
-        if not control.emoji:
-            assert_not_none(control.text, "control.text")
-            assert_range(len(cast(str, control.text)), 1, 80, "control.text")
         if not isinstance(container, endpoints.MessageActionRowBuilder):
             raise ArgumentError(f"A button can only be placed in an action row, but got '{type(container)}'.")
-        if not control.text and not control.emoji:
-            raise ArgumentError("control", "At least one of the button's text or emoji must be specified.")
 
-        if control.style is ComponentStyle.LINK:
-            if not control.url:
-                raise ArgumentError(f"The URL of the link-style button '{control.id}' must be specified.")
+        builder = self.__create_button(control, counters)
+        container.add_component(builder)
 
-            return container.add_link_button(
-                control.url,
-                emoji=control.emoji or hikari.UNDEFINED,
-                label=control.text or hikari.UNDEFINED,
-                is_disabled=not control.is_enabled
-            )
-
-        return container.add_interactive_button(
-            _COMPONENT_STYLE_MAP.get(control.style, hikari.ButtonStyle.PRIMARY),
-            ComponentTransformer.__pack_custom_data(
-                control.id,
-                ComponentTransformer.__increment_counter(counters, control.id),
-                control.owner_id,
-                0,
-                control.custom_data
-            ),
-            emoji=control.emoji or hikari.UNDEFINED,
-            label=control.text or hikari.UNDEFINED,
-            is_disabled=not control.is_enabled
-        )
+        return builder
 
     def __create_button_state(
         self,
@@ -560,6 +647,51 @@ class ComponentTransformer(IComponentTransformer):
             selected_values=selected_values
         )
 
+    def __create_label(
+        self,
+        control: Label,
+        counters: dict[str, int]
+    ) -> special_endpoints.TextDisplayComponentBuilder:
+        return endpoints.TextDisplayComponentBuilder(
+            id=hikari.UNDEFINED,
+            content=control.content
+        )
+
+    def __add_label(
+        self,
+        control: Label,
+        container: special_endpoints.ComponentBuilder | None,
+        counters: dict[str, int]
+    ) -> special_endpoints.ComponentBuilder | None:
+        assert_not_none(container, "container")
+        if not isinstance(container, (endpoints.SectionComponentBuilder, endpoints.ContainerComponentBuilder)):
+            raise ArgumentError(f"A label can only be placed in a section or a container, but got '{type(container)}'.")
+
+        builder = self.__create_label(control, counters)
+        container.add_component(builder)
+
+        return builder
+
+    def __add_separator(
+        self,
+        control: Separator,
+        container: special_endpoints.ComponentBuilder | None,
+        counters: dict[str, int]
+    ) -> special_endpoints.ComponentBuilder | None:
+        if container and not isinstance(container, special_endpoints.ContainerComponentBuilder):
+            raise ArgumentError("container", f"A section layout can only be placed in a container layout, but got '{type(container)}'.")
+
+        builder = endpoints.SeparatorComponentBuilder(
+            id=hikari.UNDEFINED,
+            spacing=hikari.SpacingType.LARGE if control.spacing == 2 else hikari.SpacingType.SMALL,
+            divider=control.has_divider
+        )
+
+        if container:
+            container.add_component(builder)
+
+        return builder
+
     def __add_text_box(
         self,
         control: TextBox,
@@ -610,4 +742,19 @@ class ComponentTransformer(IComponentTransformer):
             owner_id=data.owner_id,
             value=control.value,
             custom_data=data.custom_data
+        )
+
+    def __create_thumbnail(
+        self,
+        control: Thumbnail,
+        counters: dict[str, int]
+    ) -> special_endpoints.ThumbnailComponentBuilder:
+        if control.description:
+            assert_range(len(control.description), 0, 1024, "control.description")
+
+        return endpoints.ThumbnailComponentBuilder(
+            id=hikari.UNDEFINED,
+            media=control.media.raw_url if isinstance(control.media, AttachmentUrl) else control.media,
+            description=control.description or hikari.UNDEFINED,
+            spoiler=control.is_spoiler
         )

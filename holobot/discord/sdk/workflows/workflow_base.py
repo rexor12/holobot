@@ -68,8 +68,8 @@ class WorkflowBase(IWorkflow):
     def _reply(
         self,
         *,
-        content: str | None = None,
-        embed: Embed | None = None,
+        content: str | None | UndefinedType = UNDEFINED,
+        embed: Embed | None | UndefinedType = UNDEFINED,
         components: ComponentBase | list[LayoutBase] | None = None,
         suppress_user_mentions: bool = False,
         is_ephemeral: bool | UndefinedType = UNDEFINED,
@@ -77,10 +77,10 @@ class WorkflowBase(IWorkflow):
     ) -> InteractionResponse:
         """Reply to the interaction with a normal message.
 
-        :param content: The text content of the message, defaults to None
-        :type content: str | None, optional
-        :param embed: The embed content of the message, defaults to None
-        :type embed: Embed | None, optional
+        :param content: The text content of the message, defaults to UNDEFINED
+        :type content: str | None | UndefinedType, optional
+        :param embed: The embed content of the message, defaults to UNDEFINED
+        :type embed: Embed | None | UndefinedType, optional
         :param components: Zero or more components to attach to the message, defaults to None
         :type components: ComponentBase | list[LayoutBase] | None, optional
         :param suppress_user_mentions: Whether user mentions should be suppressed to avoid pings, defaults to False

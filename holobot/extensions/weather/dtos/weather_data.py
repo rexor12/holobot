@@ -28,10 +28,16 @@ class ConditionData:
     icon: str | None = None
 
 @dataclass
+class SysData:
+    country: str | None = None
+
+@dataclass
 class WeatherData:
     name: str = "Unknown"
+    timezone: int | None = None
     weather: list[ConditionData] = field(default_factory=list)
     main: MainData = field(default_factory=MainData)
     coord: CoordinatesData = field(default_factory=CoordinatesData)
     wind: WindData = field(default_factory=WindData)
     clouds: CloudsData = field(default_factory=CloudsData)
+    sys: SysData = field(default_factory=SysData)

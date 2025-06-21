@@ -112,12 +112,14 @@ class WeatherClient(IWeatherClient):
 
         return Weather(
             name=dto.name,
+            country_code=dto.sys.country,
             longitude=dto.coord.lon,
             latitude=dto.coord.lat,
             temperature=dto.main.temp,
             temperature_feels_like=dto.main.feels_like or dto.main.temp,
             humidity=dto.main.humidity,
             cloudiness=dto.clouds.all,
+            utc_offset_seconds=dto.timezone,
             condition=(
                 Condition(
                     identifier=dto.weather[0].id,

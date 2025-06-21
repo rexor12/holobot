@@ -1,19 +1,23 @@
-from holobot.discord.sdk.models import Embed, EmbedField, EmbedFooter, InteractionContext
+from datetime import timedelta
+
+from holobot.discord.sdk.models import InteractionContext
 from holobot.discord.sdk.workflows import IWorkflow, WorkflowBase
-from holobot.discord.sdk.workflows.interactables.components import Button
-from holobot.discord.sdk.workflows.interactables.components.enums import ComponentStyle
+from holobot.discord.sdk.workflows.interactables.components import (
+    Button, ComponentStyle, ContainerLayout, Label, SectionLayout, Separator, Thumbnail
+)
 from holobot.discord.sdk.workflows.interactables.decorators import command
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse, Option
 from holobot.extensions.weather import IWeatherClient
 from holobot.extensions.weather.exceptions import (
     InvalidLocationError, OpenWeatherError, QueryQuotaExhaustedError
 )
-from holobot.extensions.weather.models import OpenWeatherOptions, Weather
+from holobot.extensions.weather.models import Condition, OpenWeatherOptions, Weather, Wind
 from holobot.sdk.configs import IOptions
 from holobot.sdk.exceptions import InvalidOperationError
-from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.i18n import localize, localize_random_list_item
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.network.resilience.exceptions import CircuitBrokenError
+from holobot.sdk.utils.datetime_utils import utcnow
 
 _WIND_DIRECTIONS_BY_EIGHTH: tuple[str, ...] = ("north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest")
 
@@ -21,12 +25,10 @@ _WIND_DIRECTIONS_BY_EIGHTH: tuple[str, ...] = ("north", "northeast", "east", "so
 class GetBasicWeatherWorkflow(WorkflowBase):
     def __init__(
         self,
-        i18n_provider: II18nProvider,
         options: IOptions[OpenWeatherOptions],
         weather_client: IWeatherClient
     ) -> None:
         super().__init__()
-        self.__i18n_provider = i18n_provider
         self.__options = options
         self.__weather_client = weather_client
 
@@ -46,177 +48,156 @@ class GetBasicWeatherWorkflow(WorkflowBase):
             weather_data = await self.__weather_client.get_weather_data(city)
             if weather_data.temperature is None:
                 return self._reply(
-                    content=self.__i18n_provider.get(
+                    content=localize(
                         "extensions.weather.get_basic_weather_workflow.no_information_error"
                     )
                 )
 
-            return self._reply(
-                embed=self.__create_embed(weather_data),
-                components=Button(
-                    id="gmaps_link",
-                    owner_id=context.author_id,
-                    text=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.map_button"
-                    ),
-                    url=self.__options.value.MapUrl.format(
-                        latitude=weather_data.latitude,
-                        longitude=weather_data.longitude
-                    ),
-                    style=ComponentStyle.LINK
-                ) if self.__options.value.MapUrl else None
-            )
+            return self._reply(components=self.__create_view(weather_data))
         except InvalidLocationError:
             return self._reply(
-                content=self.__i18n_provider.get(
+                content=localize(
                     "extensions.weather.get_basic_weather_workflow.invalid_location_error"
                 )
             )
         except OpenWeatherError as error:
             return self._reply(
-                content=self.__i18n_provider.get(
+                content=localize(
                     "extensions.weather.get_basic_weather_workflow.openweather_error",
                     { "code": error.error_code }
                 )
             )
         except InvalidOperationError:
-            return self._reply(content=self.__i18n_provider.get("feature_disabled_error"))
+            return self._reply(content=localize("feature_disabled_error"))
         except QueryQuotaExhaustedError:
-            return self._reply(content=self.__i18n_provider.get("feature_quota_exhausted_error"))
+            return self._reply(content=localize("feature_quota_exhausted_error"))
         except CircuitBrokenError:
-            return self._reply(content=self.__i18n_provider.get("rate_limit_error"))
+            return self._reply(content=localize("rate_limit_error"))
 
-    def __create_embed(self, weather: Weather) -> Embed:
-        if weather.wind and weather.wind.degrees is not None:
-            wind_direction_key = _WIND_DIRECTIONS_BY_EIGHTH[
-                int(weather.wind.degrees * len(_WIND_DIRECTIONS_BY_EIGHTH) / 360) % len(_WIND_DIRECTIONS_BY_EIGHTH)
-            ]
-            wind_direction = self.__i18n_provider.get(
-                f"extensions.weather.get_basic_weather_workflow.wind_directions.{wind_direction_key}"
-            )
-            wind_value = self.__i18n_provider.get(
-                "extensions.weather.get_basic_weather_workflow.embed_field_wind_value",
+    @staticmethod
+    def __get_wind_description(data: Weather) -> str:
+        if not data.wind:
+            return ""
+
+        wind_speed = data.wind.speed or 0
+        wind_speed_higher_order = (data.wind.speed or 0) * 3.6
+        if data.wind.degrees is None:
+            return localize(
+                "extensions.weather.get_basic_weather_workflow.wind_no_direction_label",
                 {
-                    "speed": weather.wind.speed,
-                    "direction": wind_direction
+                    "wind_speed": wind_speed,
+                    "wind_speed_higher_order": wind_speed_higher_order
                 }
             )
-        elif weather.wind:
-            wind_value = self.__i18n_provider.get(
-                "extensions.weather.get_basic_weather_workflow.embed_field_wind_no_degrees_value",
-                { "speed": weather.wind.speed }
-            )
-        else:
-            wind_value = "N/A"
 
-        embed = Embed(
-            title=self.__i18n_provider.get(
-                "extensions.weather.get_basic_weather_workflow.embed_title"
-            ),
-            description=self.__i18n_provider.get(
-                "extensions.weather.get_basic_weather_workflow.embed_description",
-                { "location": weather.name }
-            ),
-            footer=EmbedFooter(
-                text=self.__i18n_provider.get(
-                    "extensions.weather.get_basic_weather_workflow.embed_footer"
-                ),
-                icon_url=self.__options.value.IconUrl
-            ),
-            fields=[
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_temperature"
-                    ),
-                    value=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_temperature_value",
-                        {
-                            "temperature": (
-                                f"{weather.temperature:,.2f}"
-                                if weather.temperature is not None
-                                else "N/A"
-                            ),
-                            "temperature_fahrenheit": (
-                                f"{weather.temperature_fahrenheit:,.2f}"
-                                if weather.temperature is not None
-                                else "N/A"
-                            )
-                        }
+        wind_direction_key = _WIND_DIRECTIONS_BY_EIGHTH[
+            int(data.wind.degrees * len(_WIND_DIRECTIONS_BY_EIGHTH) / 360) % len(_WIND_DIRECTIONS_BY_EIGHTH)
+        ]
+        wind_direction = localize(
+            f"extensions.weather.get_basic_weather_workflow.wind_directions.{wind_direction_key}"
+        )
+
+        return localize(
+            "extensions.weather.get_basic_weather_workflow.wind_label",
+            {
+                "wind_speed": wind_speed,
+                "wind_speed_higher_order": wind_speed_higher_order,
+                "wind_direction": wind_direction
+            }
+        )
+
+    @staticmethod
+    def __get_time_description(data: Weather) -> str:
+        if data.utc_offset_seconds is None:
+            return ""
+
+        local_time = utcnow() + timedelta(seconds=data.utc_offset_seconds)
+
+        return localize(
+            "extensions.weather.get_basic_weather_workflow.time_label",
+            {
+                "local_time": local_time.strftime("%Y.%m.%d. %H:%M:%S")
+            }
+        )
+
+    def __create_view(self, data: Weather) -> ContainerLayout:
+        header = Label(
+            id="1_1_1",
+            content=localize(
+                "extensions.weather.get_basic_weather_workflow.header_label",
+                {
+                    "name": data.name,
+                    "country_flag": data.unicode_country_flag,
+                    "quote": localize_random_list_item(
+                        "extensions.weather.get_basic_weather_workflow.quotes"
                     )
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_temperature_feels"
+                }
+            )
+        )
+        wind_description = GetBasicWeatherWorkflow.__get_wind_description(data)
+        time_description = GetBasicWeatherWorkflow.__get_time_description(data)
+        weather_data = Label(
+            id="1_3_1",
+            content=localize(
+                "extensions.weather.get_basic_weather_workflow.weather_label",
+                {
+                    "temperature": data.temperature,
+                    "temperature_feels_like": data.temperature_feels_like,
+                    "humidity": data.humidity,
+                    "cloudiness": data.cloudiness,
+                    "condition": (
+                        data.condition.description
+                        if data.condition and data.condition.description
+                        else localize("extensions.weather.get_basic_weather_workflow.unknown_condition")
                     ),
-                    value=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_temperature_feels_value",
-                        {
-                            "temperature": (
-                                f"{weather.temperature_feels_like:,.2f}"
-                                if weather.temperature_feels_like is not None
-                                else "N/A"
-                            ),
-                            "temperature_fahrenheit": (
-                                f"{weather.temperature_feels_like_fahrenheit:,.2f}"
-                                if weather.temperature_feels_like is not None
-                                else "N/A"
-                            )
-                        }
+                    "wind_info": wind_description,
+                    "time_info": time_description
+                }
+            )
+        )
+
+        layout = ContainerLayout(
+            id="1",
+            accent_color=0xEB7D00,
+            children=[
+                SectionLayout(
+                    id="1_1",
+                    children=[header],
+                    accessory=Button(
+                        id="1_1_0",
+                        owner_id=0,
+                        text=localize(
+                            "extensions.weather.get_basic_weather_workflow.map_button"
+                        ),
+                        url=self.__options.value.MapUrl.format(
+                            latitude=data.latitude,
+                            longitude=data.longitude
+                        ),
+                        style=ComponentStyle.LINK
                     )
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_humidity"
+                )
+                if self.__options.value.MapUrl
+                else header,
+                Separator(id="1_2"),
+                SectionLayout(
+                    id="1_3",
+                    accessory=Thumbnail(
+                        id="1_3_0",
+                        media=data.condition.condition_image_url,
+                        description=data.condition.description
                     ),
-                    value=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_humidity_value",
-                        {
-                            "humidity": (
-                                str(weather.humidity)
-                                if weather.humidity is not None
-                                else "N/A"
-                            )
-                        }
-                    )
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_condition"
-                    ),
-                    value=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_condition_value",
-                        {
-                            "description": (
-                                weather.condition.description
-                                if weather.condition and weather.condition.description
-                                else "N/A"
-                            )
-                        }
-                    )
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_wind"
-                    ),
-                    value=wind_value
-                ),
-                EmbedField(
-                    name=self.__i18n_provider.get(
-                        "extensions.weather.get_basic_weather_workflow.embed_field_cloudiness"
-                    ),
-                    value=(
-                        self.__i18n_provider.get(
-                            "extensions.weather.get_basic_weather_workflow.embed_field_cloudiness_value",
-                            { "cloudiness": int(weather.cloudiness) }
-                        )
-                        if weather.cloudiness is not None
-                        else "N/A"
+                    children=[weather_data]
+                )
+                if data.condition and data.condition.condition_image_url
+                else weather_data,
+                Separator(id="1_4"),
+                Label(
+                    id="1_5",
+                    content=localize(
+                        "extensions.weather.get_basic_weather_workflow.footer_label"
                     )
                 )
             ]
         )
 
-        if weather.condition and weather.condition.condition_image_url:
-            embed.thumbnail_url = weather.condition.condition_image_url
-
-        return embed
+        return layout

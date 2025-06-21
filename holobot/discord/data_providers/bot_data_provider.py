@@ -13,7 +13,7 @@ class BotDataProvider(IBotDataProvider):
 
     def get_avatar_url(self) -> str:
         user = get_bot().get_me()
-        return str(user.avatar_url) if user else ""
+        return str(user.make_avatar_url()) if user else ""
 
     def get_latency(self) -> float:
         return get_bot().heartbeat_latency * 1000

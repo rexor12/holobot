@@ -1,3 +1,4 @@
+from .components_v2_demo import ComponentsV2Demo
 from .reload_i18n_workflow import ReloadI18nWorkflow
 from .set_log_level_workflow import SetLogLevelWorkflow
 from .set_operating_mode_workflow import SetOperatingModeWorkflow

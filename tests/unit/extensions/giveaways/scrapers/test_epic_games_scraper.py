@@ -49,7 +49,7 @@ class TestEpicGamesScraper(unittest.TestCase):
                 datetime(2022, 12, 29, 16, 5, tzinfo=timezone.utc),
                 datetime(2023, 1, 12, 16, 5, tzinfo=timezone.utc)
             ),
-            # Releases tomorrow, last scraped after the previous release -> should scrape tomorrow at 10 AM (US/Central).
+            # Releases tomorrow, last scraped after the previous release -> should scrape tomorrow at 10 AM (America/Chicago).
             (
                 datetime(2023, 1, 11, 18, 0, tzinfo=timezone.utc),
                 datetime(2023, 1, 11, 16, 5, tzinfo=timezone.utc),

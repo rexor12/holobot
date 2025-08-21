@@ -22,7 +22,8 @@ OFFER_IMAGE_TYPES: tuple[str, ...] = (
 
 # Epic Games always updates the free games on Thursdays at 10 PM CT.
 # But we'll check daily for random promotions.
-EPIC_UPDATE_TIMEZONE = zoneinfo.ZoneInfo("US/Central")
+# America/Chicago = previously US/Central (an IANA link).
+EPIC_UPDATE_TIMEZONE = zoneinfo.ZoneInfo("America/Chicago")
 EPIC_UPDATE_TIME = time(hour=10)
 EXECUTION_DELAY = timedelta(seconds=5 * 60)
 

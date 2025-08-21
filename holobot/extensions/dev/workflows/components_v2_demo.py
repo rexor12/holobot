@@ -7,6 +7,8 @@ from holobot.discord.sdk.workflows.interactables.components import (
 )
 from holobot.discord.sdk.workflows.interactables.decorators import command, component
 from holobot.discord.sdk.workflows.interactables.models import InteractionResponse
+from holobot.discord.sdk.workflows.interactables.restrictions import FeatureRestriction
+from holobot.extensions.dev.constants import DEV_FEATURE_NAME
 from holobot.extensions.general.providers import IReactionProvider
 from holobot.sdk.ioc.decorators import injectable
 
@@ -22,7 +24,8 @@ class ComponentsV2Demo(WorkflowBase):
     @command(
         name="componentsv2",
         description="Components V2 demo.",
-        required_permissions=Permission.ADMINISTRATOR
+        required_permissions=Permission.ADMINISTRATOR,
+        restrictions=(FeatureRestriction(feature_name=DEV_FEATURE_NAME),)
     )
     async def execute(
         self,

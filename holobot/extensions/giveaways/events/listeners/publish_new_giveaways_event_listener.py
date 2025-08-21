@@ -5,7 +5,7 @@ from holobot.discord.sdk.servers import IServerDataProvider
 from holobot.extensions.giveaways.events.models import NewGiveawaysEvent
 from holobot.extensions.giveaways.models import GiveawayOptions
 from holobot.sdk.configs import IOptions
-from holobot.sdk.i18n import II18nProvider
+from holobot.sdk.i18n import localize, localize_list_items
 from holobot.sdk.ioc.decorators import injectable
 from holobot.sdk.reactive import IListener
 
@@ -13,13 +13,11 @@ from holobot.sdk.reactive import IListener
 class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
     def __init__(
         self,
-        i18n_provider: II18nProvider,
         messaging: IMessaging,
         options: IOptions[GiveawayOptions],
         server_data_provider: IServerDataProvider
     ) -> None:
         super().__init__()
-        self.__i18n_provider = i18n_provider
         self.__messaging = messaging
         self.__options = options
         self.__server_data_provider = server_data_provider
@@ -29,13 +27,14 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
         if not self.__is_enabled:
             return
 
-        items_i18n = self.__i18n_provider.get_list_items(
+        items_i18n = localize_list_items(
             "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost_list_item",
             [
                 {
                     "title": giveaway.title,
                     "source": giveaway.source_name,
-                    "url": giveaway.url
+                    "url": giveaway.url,
+                    "store": localize(f"extensions.giveaways.publish_new_giveaways_event_listener.stores.{giveaway.source_name}"),
                 }
                 for giveaway in event.giveaways
             ]
@@ -48,10 +47,10 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
                 options.AnnouncementChannelId,
                 None,
                 Embed(
-                    title=self.__i18n_provider.get(
+                    title=localize(
                         "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost_header"
                     ),
-                    description=self.__i18n_provider.get(
+                    description=localize(
                         "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost",
                         {
                             "items": "\n".join(items_i18n)
@@ -59,7 +58,7 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
                     ),
                     thumbnail_url=self.__options.value.GiveawayEmbedThumbnailUrl,
                     footer=EmbedFooter(
-                        text=self.__i18n_provider.get(
+                        text=localize(
                             "extensions.giveaways.publish_new_giveaways_event_listener.new_giveaways_crosspost_footer"
                         )
                     )
@@ -91,7 +90,7 @@ class PublishNewGiveawaysEventListener(IListener[NewGiveawaysEvent]):
             )
             await self.__messaging.send_private_message(
                 server_data.owner_id,
-                self.__i18n_provider.get(
+                localize(
                     "extensions.giveaways.publish_new_giveaways_event_listener.cannot_announce_error",
                     {
                         "channel_id": options.AnnouncementChannelId,

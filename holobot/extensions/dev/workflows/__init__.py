@@ -1,3 +1,4 @@
+from .announce_giveaway_test_workflow import AnnounceGiveawayTestWorkflow
 from .components_v2_demo import ComponentsV2Demo
 from .reload_i18n_workflow import ReloadI18nWorkflow
 from .set_log_level_workflow import SetLogLevelWorkflow

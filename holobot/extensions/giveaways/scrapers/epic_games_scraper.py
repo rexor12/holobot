@@ -130,6 +130,18 @@ class EpicGamesScraper(IScraper):
 
     @staticmethod
     def __get_page_slug(offer: Offer) -> str | None:
+        # Priority:
+        # - catalogNs.mappings[pageType=productHome]
+        # - productSlug
+        # - customAttributes[key=com.epicgames.app.productSlug]
+
+        product_home = first_or_default(
+            offer.catalogNs.mappings,
+            lambda i: i.pageType == "productHome"
+        )
+        if product_home and product_home.pageSlug:
+            return product_home.pageSlug
+
         if offer.productSlug:
             return offer.productSlug
 
@@ -140,12 +152,7 @@ class EpicGamesScraper(IScraper):
         if custom_attribute and custom_attribute.value:
             return custom_attribute.value
 
-        product_home = first_or_default(
-            offer.catalogNs.mappings,
-            lambda i: i.pageType == "productHome"
-        )
-
-        return product_home.pageSlug if product_home else None
+        return None
 
     def __get_giveaway_data(self, item: Offer) -> ChildPromotionalOffer | None:
         offers: list[ChildPromotionalOffer] = []
